@@ -1,0 +1,29 @@
+## Interface: 70300
+## Name: AzeriteUI
+## Title: |cff7284abAzerite|r|cffffffffUI|r
+## Author: Daniel Troconis, Lars "Goldpaw" Norberg
+## Notes: Custom user graphical interface.|n|nDesign by Daniel Troconis.|nCode by Lars Norberg.|n|n|cff4488ffPayPal|r|cffffffff:|r |n|cffffffffazerite@cogwerkz.org|r
+## Version: 1.0
+## DefaultState: Enabled
+## SavedVariables: AzeriteUI_DB
+## X-Donate: PayPal:azerite@cogwerkz.org
+## X-Category: Interface Enhancements
+
+### Back-end
+core\CogWheel\!CogWheel\CogWheel.lua
+core\CogWheel\!CogWheel\Cogs.xml
+
+### Fonts
+fonts.xml
+
+### Databases
+data.xml
+
+### Main
+main.lua
+
+### Media (needed at all?)
+media.xml
+
+### Modules
+modules.xml

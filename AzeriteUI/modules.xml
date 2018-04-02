@@ -1,0 +1,12 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+<Script file='modules\actionbar_main.lua'/>
+<Script file='modules\chat_bubbles.lua'/>
+<Script file='modules\chat_windows.lua'/>
+<Script file='modules\map_minimap.lua'/>
+<Script file='modules\unitframe_player.lua'/>
+<Script file='modules\unitframe_target.lua'/>
+<Script file='modules\unitframe_nameplates.lua'/>
+
+
+</Ui>

@@ -1,0 +1,12 @@
+package-as: AzeriteUI
+enable-nolib-creation: no
+
+move-folders:
+    AzeriteUI/AzeriteUI: AzeriteUI
+
+license-output: LICENSE.txt
+
+ignore:
+    - CHANGELOG.md
+    - README.md
+    - LICENSE.md
