@@ -24,7 +24,7 @@
 
 **Only AzeriteUI Enabled**
 <!--- Please provide information about whether or not you can reproduce it -->
-<!--- when DiabolicUI is the only addon enabled -->
+<!--- when AzeriteUI is the only addon enabled -->
 
 
 **Additional Information**
