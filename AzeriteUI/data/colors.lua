@@ -35,7 +35,17 @@ end
 
 -- General coloring
 C.General = {
-	-- Standard colors used by most modules
+
+	-- used as an overlay vertex color for most of the artwork
+	Overlay 		= prepare( 227/255, 231/255, 216/255 ),
+
+	-- playerframe health color
+	Health 			= prepare( 191/255,   0/255,  18/255 ),
+
+
+
+
+
 	Normal 			= prepare( 229/255, 178/255,  38/255 ),
 	Highlight 		= prepare( 250/255, 250/255, 250/255 ),
 	Title 			= prepare( 255/255, 234/255, 137/255 ),
@@ -45,53 +55,31 @@ C.General = {
 	Gold 			= prepare( 255/255, 180/255,  64/255 ),
 	Orange 			= prepare( 255/255, 128/255,  64/255 ),
 	Blue 			= prepare(  64/255, 128/255, 255/255 ),
-
 	DarkRed 		= prepare( 178/255,  25/255,  25/255 ),
 	DimRed 			= prepare( 204/255,  26/255,  26/255 ),
 	OffGreen 		= prepare(  89/255, 201/255,  89/255 ),
 	OffWhite 		= prepare( 201/255, 201/255, 201/255 ),
 
-	-- XP Bar coloring
-	XP 				= prepare( 251/255, 120/255,  29/255 ), -- also used for buffs... gotta fix that
-	XPRested 		= prepare( 251/255, 120/255,  29/255 ), 
-	XPRestedBonus 	= prepare(  84/255,  40/255,   9/255 ),
-	XPBright 		= prepare( 255/255, 214/255, 137/255 ), 
-	XPRestedBright 	= prepare( 255/255, 214/255, 137/255 ), 
-	XPBonusBright 	= prepare(  85/255,  71/255,  46/255 ),
-	XPComplimentary = prepare(  33/255,  82/255, 166/255 ),
-	Honor 			= prepare( 230/255, 204/255, 128/255 ),
-
-	-- UI Colors
-	UIBackdrop 		= prepare( 140/255, 118/255, 110/255 ),
-	UIBorder 		= prepare(  70/255,  59/255,  55/255 ),
-	UIOverlay 		= prepare(  51/255,  17/255,   6/255 ),
-
-	-- Fallback health color for tooltips
-	HealthGreen 	= prepare(  64/255, 131/255,  38/255 ),
-
-	-- gear information about inspected players
 	Prefix 			= prepare( 255/255, 238/255, 170/255 ),
 	Detail 			= prepare( 250/255, 250/255, 250/255 ),
 	BoA 			= prepare( 230/255, 204/255, 128/255 ), 
 	PvP 			= prepare( 163/255,  53/255, 238/255 )
-
 }
 
--- Unit Class Coloring (slightly different from Blizzard's)
+-- Unit Class Coloring
 C.Class = {
-	DEATHKNIGHT 	= prepare( 176/255,  31/255,  79/255 ), -- slightly more blue, less red, to stand out from angry mobs better
-	DEMONHUNTER 	= prepare( 163/255,  48/255, 201/255 ),
+	DEATHKNIGHT 	= prepare( 255/255, 190/255,  12/255 ), 
+	DEMONHUNTER 	= prepare( 149/255, 221/255,  18/255 ), 
 	DRUID 			= prepare( 255/255, 125/255,  10/255 ),
-	HUNTER 			= prepare( 191/255, 232/255, 115/255 ), -- slightly more green and yellow, to stand more out from friendly players/npcs
+	HUNTER 			= prepare( 191/255, 232/255, 115/255 ), 
 	MAGE 			= prepare( 105/255, 204/255, 240/255 ),
 	MONK 			= prepare(   0/255, 255/255, 150/255 ),
-	PALADIN 		= prepare( 255/255, 130/255, 226/255 ), -- less pink, more purple
-	--PALADIN 		= prepare( 245/255, 140/255, 186/255 ), -- original 
-	PRIEST 			= prepare( 220/255, 235/255, 250/255 ), -- tilted slightly towards blue, and somewhat toned down. chilly.
-	ROGUE 			= prepare( 255/255, 225/255,  95/255 ), -- slightly more orange than Blizz, to avoid the green effect when shaded with black
-	SHAMAN 			= prepare(  32/255, 122/255, 222/255 ), -- brighter, to move it a bit away from the mana color
-	WARLOCK 		= prepare( 148/255, 130/255, 201/255 ),
-	WARRIOR 		= prepare( 199/255, 156/255, 110/255 ),
+	PALADIN 		= prepare( 211/255, 156/255,  42/255 ), 
+	PRIEST 			= prepare( 220/255, 235/255, 250/255 ), 
+	ROGUE 			= prepare( 105/255,  73/255, 175/255 ), 
+	SHAMAN 			= prepare( 255/255, 190/255,  12/255 ), 
+	WARLOCK 		= prepare( 227/255,  71/255, 226/255 ), 
+	WARRIOR 		= prepare( 229/255, 156/255, 110/255 ), 
 	UNKNOWN 		= prepare( 195/255, 202/255, 217/255 )
 }
 
@@ -108,8 +96,7 @@ C.Debuff = {
 C.Faction = {
 	Alliance 		= prepare(  74/255,  84/255, 232/255 ), -- Alliance
 	Horde 			= prepare( 229/255,  13/255,  18/255 ), -- Horde
-	Neutral 		= prepare( 192/255, 192/255, 133/255 )
-	--Neutral 		= prepare( 255/255, 255/255, 178/255 )
+	Neutral 		= prepare( 249/255, 158/255,  35/255 ) 	-- same as neutral reaction color from now on
 }
 
 -- Unit Friendships
@@ -127,17 +114,20 @@ C.Friendship = {
 -- Unit Power 
 C.Power = {
 	-- Primary Resources
+	ENERGY 					= prepare(  0/255, 255/255, 141/255), -- Rogues, Druids, Monks
+	RAGE 					= prepare(255/255,  22/255,   0/255), -- Druids, Warriors
+	MANA 					= prepare(  0/255, 116/255, 255/255), -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
+
+
+
 	CHI 					= prepare(181/255, 255/255, 234/255), -- Monk (MoP)
-	ENERGY 					= prepare(255/255, 168/255,  25/255), -- Rogues, Druids, Monks (MoP)
 	FOCUS 					= prepare(255/255, 128/255,  64/255), -- Hunters (Cata) and Hunter Pets
 	FURY 					= prepare(192/255,  89/255, 217/255), -- Vengeance Demon Hunter (Legion)
 	HOLY_POWER 				= prepare(245/255, 254/255, 145/255), -- Paladins (All in Cata, only Retribution in Legion)
 	INSANITY 				= prepare(102/255,  64/255, 204/255), -- Shadow Priests (Legion)
 	LUNAR_POWER 			= prepare(121/255, 152/255, 192/255), -- Balance Druid Astral Power in (Legion)
 	MAELSTROM 				= prepare( 96/255, 160/255, 255/255), -- Shamans (Legion)
-	MANA 					= prepare( 18/255,  68/255, 255/255), -- Druid, Hunter (WotLK), Mage, Monk, Paladin, Priest, Shaman, Warlock
 	PAIN 					= prepare(217/255, 105/255,   0/255), -- Havoc Demon Hunter (Legion)
-	RAGE 					= prepare(255/255,   0/255,   0/255), -- Druids, Warriors
 	RUNIC_POWER 			= prepare(  0/255, 209/255, 255/255), -- Death Knights
 
 	-- Point based secondary resources
@@ -218,15 +208,15 @@ C.Threat = {
 
 -- Zone Coloring
 C.Zone = {
-	sanctuary 	= prepare( 104/255, 204/255, 239/255 ), 
-	arena 		= prepare( 175/255,  76/255,  56/255 ),
-	friendly 	= prepare(  64/255, 175/255,  38/255 ), 
-	hostile 	= prepare( 175/255,  76/255,  56/255 ), 
-	contested 	= prepare( 229/255, 159/255,  28/255 ),
-	combat 		= prepare( 175/255,  76/255,  56/255 ), 
+	sanctuary 		= prepare( 104/255, 204/255, 239/255 ), 
+	arena 			= prepare( 175/255,  76/255,  56/255 ),
+	friendly 		= prepare(  64/255, 175/255,  38/255 ), 
+	hostile 		= prepare( 175/255,  76/255,  56/255 ), 
+	contested 		= prepare( 229/255, 159/255,  28/255 ),
+	combat 			= prepare( 175/255,  76/255,  56/255 ), 
 
 	-- instances, bgs, contested zones on pve realms 
-	unknown 	= prepare( 255/255, 234/255, 137/255 )
+	unknown 		= prepare( 255/255, 234/255, 137/255 )
 }
 
 C.Quality = {}

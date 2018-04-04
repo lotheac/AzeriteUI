@@ -13,17 +13,20 @@
 core\CogWheel\!CogWheel\CogWheel.lua
 core\CogWheel\!CogWheel\Cogs.xml
 
-### Fonts
+### Fontobjects and fontstyles
 fonts.xml
 
-### Databases
+### Databases, colors, etc
 data.xml
 
 ### Main
 main.lua
 
-### Media (needed at all?)
+### XML defined media objects
 media.xml
 
-### Modules
+### Unitframe widgets etc
+elements.xml
+
+### Front-end modules, styling, etc
 modules.xml

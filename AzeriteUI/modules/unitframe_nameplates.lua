@@ -5,7 +5,7 @@ if (not AzeriteUI) then
 end
 
 local NamePlates = AzeriteUI:NewModule("NamePlates", "CogEvent", "CogNamePlate", "CogDB")
-local C = NamePlates:GetDatabase("AzeriteUI: Colors")
+local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -20,6 +20,9 @@ local UnitReaction = _G.UnitReaction
 -- Adding support for WeakAuras' personal resource attachments
 local WEAKAURAS = NamePlates:IsAddOnEnabled("WeakAuras")
 
+-- Current player level
+local LEVEL = UnitLevel("player") 
+
 
 -- Utility Functions
 -----------------------------------------------------------------
@@ -28,15 +31,15 @@ local WEAKAURAS = NamePlates:IsAddOnEnabled("WeakAuras")
 local getDifficultyColorByLevel = function(level)
 	level = level - LEVEL
 	if (level > 4) then
-		return C.General.DimRed.colorCode
+		return Colors.General.DimRed.colorCode
 	elseif (level > 2) then
-		return C.General.Orange.colorCode
+		return Colors.General.Orange.colorCode
 	elseif (level >= -2) then
-		return C.General.Normal.colorCode
+		return Colors.General.Normal.colorCode
 	elseif (level >= -GetQuestGreenRange()) then
-		return C.General.OffGreen.colorCode
+		return Colors.General.OffGreen.colorCode
 	else
-		return C.General.Gray.colorCode
+		return Colors.General.Gray.colorCode
 	end
 end
 
@@ -53,16 +56,16 @@ local UpdateLevel = function(plate, unit)
 	local isBoss = classificiation == "worldboss" or level and level < 1
 
 	if isBoss then
-		local Level = self.Level 
+		local Level = plate.Level 
 		if Level then 
 			Level:SetText("")
 		end 
-		local BossIcon = self.BossIcon
+		local BossIcon = plate.BossIcon
 		if BossIcon then 
 			BossIcon:Show()
 		end 
 	else
-		local Level = self.Level 
+		local Level = plate.Level 
 		if Level then 
 
 			local isElite = classificiation == "elite" or classificiation == "rareelite"
@@ -72,20 +75,20 @@ local UpdateLevel = function(plate, unit)
 			local levelstring
 			if (level and (level > 0)) then
 				if UnitIsFriend("player", unit) then
-					levelstring = C.General.OffWhite.colorCode .. level .. "|r"
+					levelstring = plate.colors.General.OffWhite.colorCode .. level .. "|r"
 				else
 					levelstring = (getDifficultyColorByLevel(level)) .. level .. "|r"
 				end
 				if (classificiation == "elite") or (classificiation == "rareelite") then
-					levelstring = levelstring .. C.Reaction[UnitReaction(unit, "player")].colorCode .. "+|r"
+					levelstring = levelstring .. plate.colors.Reaction[UnitReaction(unit, "player")].colorCode .. "+|r"
 				end
 				if (classificiation == "rareelite") or (classificiation == "rare") then
-					levelstring = levelstring .. C.General.DimRed.colorCode .. " (rare)|r"
+					levelstring = levelstring .. plate.colors.General.DimRed.colorCode .. " (rare)|r"
 				end
 			end
 			Level:SetText(levelstring)
 		end 
-		local BossIcon = self.BossIcon
+		local BossIcon = plate.BossIcon
 		if BossIcon then 
 			BossIcon:Hide()
 		end 
@@ -242,7 +245,7 @@ end
 -- This is where we create our own custom elements.
 NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 
-	plate.colors = C -- use our global addon color table
+	plate.colors = Colors -- use our global addon color table
 
 	do 
 		return 
@@ -375,7 +378,7 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	--CastValue:SetPoint("BOTTOM", Cast, "TOP", 0, 6)
 	CastValue:SetPoint("TOPLEFT", Cast, "TOPRIGHT", 4, -(Cast:GetHeight() - Cast:GetHeight())/2)
 	CastValue:SetFontObject(DiabolicFont_SansBold10)
-	CastValue:SetTextColor(C.General.Prefix[1], C.General.Prefix[2], C.General.Prefix[3])
+	CastValue:SetTextColor(plate.colors.General.Prefix[1], plate.colors.General.Prefix[2], plate.colors.General.Prefix[3])
 	CastValue:Hide()
 	Cast.Value = CastValue
 
@@ -407,7 +410,7 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	--SpellName:SetDrawLayer("OVERLAY")
 	--SpellName:SetPoint("BOTTOM", Health, "TOP", 0, 6)
 	--SpellName:SetFontObject(DiabolicFont_SansBold10)
-	--SpellName:SetTextColor(C.General.Prefix[1], C.General.Prefix[2], C.General.Prefix[3])
+	--SpellName:SetTextColor(plate.colors.General.Prefix[1], plate.colors.General.Prefix[2], plate.colors.General.Prefix[3])
 	--Spell.Name = SpellName
 
 	-- Cast Icon
@@ -435,7 +438,7 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	local Level = Health:CreateFontString()
 	Level:SetDrawLayer("OVERLAY")
 	Level:SetFontObject(DiabolicFont_SansBold10)
-	Level:SetTextColor(C.General.OffWhite[1], C.General.OffWhite[2], C.General.OffWhite[3])
+	Level:SetTextColor(plate.colors.General.OffWhite[1], plate.colors.General.OffWhite[2], plate.colors.General.OffWhite[3])
 	Level:SetJustifyV("TOP")
 	Level:SetHeight(10)
 	Level:SetPoint("TOPLEFT", Health, "TOPRIGHT", 4, -(Health:GetHeight() - Level:GetHeight())/2)
@@ -546,6 +549,17 @@ end
 -----------------------------------------------------------------
 
 NamePlates.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_LEVEL_UP") then 
+		local level = ...
+		if (level and (level ~= LEVEL)) then
+			LEVEL = level
+		else
+			local level = UnitLevel("player")
+			if (level ~= LEVEL) then
+				LEVEL = level
+			end
+		end
+	end
 end
 
 NamePlates.OnInit = function(self)
