@@ -18,7 +18,7 @@ local SetCVar = _G.SetCVar
 local UnitReaction = _G.UnitReaction
 
 -- Adding support for WeakAuras' personal resource attachments
-local WEAKAURAS = NamePlates:IsAddOnEnabled("WeakAuras")
+local WEAKAURAS
 
 -- Current player level
 local LEVEL = UnitLevel("player") 
@@ -31,17 +31,37 @@ local LEVEL = UnitLevel("player")
 local getDifficultyColorByLevel = function(level)
 	level = level - LEVEL
 	if (level > 4) then
-		return Colors.General.DimRed.colorCode
+		return C.General.DimRed.colorCode
 	elseif (level > 2) then
-		return Colors.General.Orange.colorCode
+		return C.General.Orange.colorCode
 	elseif (level >= -2) then
-		return Colors.General.Normal.colorCode
+		return C.General.Normal.colorCode
 	elseif (level >= -GetQuestGreenRange()) then
-		return Colors.General.OffGreen.colorCode
+		return C.General.OffGreen.colorCode
 	else
-		return Colors.General.Gray.colorCode
+		return C.General.Gray.colorCode
 	end
 end
+
+-- Proxy function to get media from our local media folder
+local getPath = function(fileName)
+	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
+end 
+
+
+-- Callbacks
+-----------------------------------------------------------------
+
+-- Number abbreviations
+local OverrideValue = function(fontString, unit, min, max)
+	if (min >= 1e8) then 		fontString:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
+	elseif (min >= 1e6) then 	fontString:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
+	elseif (min >= 1e5) then 	fontString:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
+	elseif (min >= 1e3) then 	fontString:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
+	elseif (min > 0) then 		fontString:SetText(min) 						-- 1 - 999
+	else 						fontString:SetText("")
+	end 
+end 
 
 
 -- Element Update Overrides
@@ -556,14 +576,14 @@ NamePlates.OnEvent = function(self, event, ...)
 		else
 			local level = UnitLevel("player")
 			if (level ~= LEVEL) then
-				LEVEL = level
+				LEVEL = levelW
 			end
 		end
 	end
 end
 
 NamePlates.OnInit = function(self)
-	
+	local WEAKAURAS = self:IsAddOnEnabled("WeakAuras")
 end 
 
 NamePlates.OnEnable = function(self)

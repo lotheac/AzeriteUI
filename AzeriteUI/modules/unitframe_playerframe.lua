@@ -14,9 +14,33 @@ local unpack = unpack
 
 -- WoW API
 local GetQuestGreenRange = _G.GetQuestGreenRange
+local UnitLevel = _G.UnitLevel
 
 -- Current player level
 local LEVEL = UnitLevel("player") 
+
+
+-- This allows the healthbar spark 
+-- to exactly follow the contour of the health bar.
+-- 		keyPercent 		= width percentage where the change occurs 
+-- 		topOffset 		= height percentage up from the top of the bar (negative means downwards/smaller spark)
+-- 		bottomOffset 	= height percentage down from the bottom of the bar (negative means upwards/smaller spark)
+
+local barMap = {
+	-- We assume a bar of base size 512x64 here, as our texture is, 
+	-- thus all percentages are calculated from the actual pixel sizes for accuracy. 
+	{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
+	{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
+	{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
+	{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, -- #4: bottom peak, now starts shrinking from the bottom
+	{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, -- #4: bottom peak, now starts shrinking from the bottom
+	{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, -- #5: starts shrinking from the top
+	{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
+}
+
+--local crystalMap = {
+--
+--}
 
 
 -- Utility Functions
@@ -51,7 +75,7 @@ end
 local OverrideValue = function(fontString, unit, min, max)
 	if (min >= 1e8) then 		fontString:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	fontString:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	fontString:SetFormattedText("%dk", min/1e4) 	-- 100k - 999k
+	elseif (min >= 1e5) then 	fontString:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
 	elseif (min >= 1e3) then 	fontString:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
 	elseif (min > 0) then 		fontString:SetText(min) 						-- 1 - 999
 	else 						fontString:SetText("")
@@ -102,11 +126,8 @@ local Style = function(self, unit, id, ...)
 	health:Place("BOTTOMLEFT", 20, 20)
 	health:SetStatusBarTexture(getPath("hp_cap_bar"))
 	health:SetStatusBarColor(self.colors.General.Health[1], self.colors.General.Health[2], self.colors.General.Health[3], .85)
-	health:SetSparkSize(35, 80)
-	health:SetSparkTexture([[Interface\CastingBar\UI-CastingBar-Spark]])
-	health:SetSparkTexCoord(0, 1, 25/80, 55/80)
 	health:SetSparkColor( 255/255,  27/255,   0/255 )
-	health:SetSparkBlendMode("ADD")
+	health:SetSparkMap(barMap)
 	health.frequent = 1/120
 	self.Health = health
 
@@ -148,11 +169,6 @@ local Style = function(self, unit, id, ...)
 	mana:Place("RIGHT", health, "LEFT", -12, 26) -- 8, 26
 	mana:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3"))
 	mana:SetStatusBarColor(unpack(self.colors.Power.MANA))
-	mana:SetSparkSize(85, 85)
-	mana:SetSparkTexture([[Interface\CastingBar\UI-CastingBar-Spark]])
-	mana:SetSparkRotated(true)
-	mana:SetSparkColor(unpack(self.colors.Power.MANA))
-	mana:SetSparkBlendMode("ADD")
 	self.Mana = mana
 
 	-- mana backdrop
@@ -164,6 +180,15 @@ local Style = function(self, unit, id, ...)
 	manaBg:SetVertexColor(  22/255,  26/255, 22/255, .82) 
 	self.ManaBG = manaBg
 
+	-- mana shade
+	local manaFg2 = mana:GetOverlay():CreateTexture()
+	manaFg2:SetDrawLayer("BORDER", -1)
+	manaFg2:SetSize(85, 85)
+	manaFg2:SetPoint("CENTER", 0, 0)
+	manaFg2:SetTexture(getPath("shade_circle"))
+	manaFg2:SetVertexColor(  0, 0, 0, 1) 
+	self.ManaFG2 = manaFg2
+	
 	-- mana overlay case
 	local manaFg = mana:GetOverlay():CreateTexture()
 	manaFg:SetDrawLayer("BORDER")
@@ -193,6 +218,7 @@ local Style = function(self, unit, id, ...)
 	power:Place("RIGHT", health, "LEFT", -6, 47)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
 	power:SetOrientation("UP")
+	--power:SetSparkMap(crystalMap)
 	power.HideMana = true 
 	self.Power = power
 
@@ -261,10 +287,5 @@ UnitFramePlayer.OnInit = function(self)
 end 
 
 UnitFramePlayer.OnEnable = function(self)
-
 	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
-end 
-
-UnitFramePlayer.GetFrame = function(self)
-	return self.frame
 end 

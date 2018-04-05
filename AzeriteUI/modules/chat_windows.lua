@@ -1,3 +1,4 @@
+local ADDON = ...
 
 local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
@@ -21,8 +22,13 @@ local UIFrameIsFading = _G.UIFrameIsFading
 local UnitAffectingCombat = _G.UnitAffectingCombat
 
 
-local alphaLocks = {}
 
+
+-- Proxy function to get media from our local media folder
+local getPath = function(fileName)
+	return ([[Interface\AddOns\%s\media\%s]]):format(ADDON, fileName)
+end 
+	
 ChatWindows.UpdateWindowAlpha = function(self, frame)
 	local editBox = self:GetChatWindowCurrentEditBox(frame)
 	local alpha
@@ -50,6 +56,7 @@ ChatWindows.PostCreateTemporaryChatWindow = function(self, frame, ...)
 	self:PostCreateChatWindow(frame)
 end 
 
+local alphaLocks = {}
 ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	-- Window
@@ -254,12 +261,9 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 end 
 
-ChatWindows.OnEvent = function(self, event, ...)
-end
-
 ChatWindows.OnInit = function(self)
 
-	CHAT_FRAME_BUTTON_FRAME_MIN_ALPHA = 0
+	_G.CHAT_FRAME_BUTTON_FRAME_MIN_ALPHA = 0
 
 	-- avoid mouseover alpha change, yet keep the background textures
 	local alphaProxy = function(...) self:UpdateWindowAlpha(...) end
