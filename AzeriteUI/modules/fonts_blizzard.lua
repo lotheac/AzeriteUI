@@ -51,14 +51,15 @@ end
 
 
 -- Changes the fonts rendered by the game engine 
--- (These are the fonts rendered directly in the 3D world)
+-- These are the fonts rendered directly in the 3D world, 
+-- like on-screen damage (not FCT) and unit names.
 BlizzardFonts.SetGameEngineFonts = function(self)
 	local normal = getPath('Myriad Pro Regular')
 	local condensed = getPath('Myriad Pro Condensed')
 	local bold = getPath('Myriad Pro Bold')
 	local boldCondensed = getPath('Myriad Pro Bold Condensed')
 	
-	-- game engine fonts
+	-- Game Engine Fonts
 	-- *These will only be updated when the user
 	-- relogs into the game from the character selection screen, 
 	-- not when simply reloading the user interface!
@@ -70,11 +71,12 @@ BlizzardFonts.SetGameEngineFonts = function(self)
 
 	_G.STANDARD_TEXT_FONT = condensed
 	_G.DAMAGE_TEXT_FONT = boldCondensed 
-	_G.NAMEPLATE_FONT = "GameFontWhite" -- 12 -- -- This changed to being names instead of objects in Legion 
-	_G.NAMEPLATE_SPELLCAST_FONT = "GameFontWhiteTiny" -- 9
 
-	_G.UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT = 14
-	_G.CHAT_FONT_HEIGHTS = { 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32 }
+	-- Fonts inherited by the nameplates.
+	-- This changed to being names of font objects instead of font objects in Legion 
+	_G.NAMEPLATE_FONT = "GameFontWhite"  
+	_G.NAMEPLATE_SPELLCAST_FONT = "GameFontWhiteTiny" 
+
 end
 
 -- Change some of the Blizzard font objects to use the fonts we've chosen.
@@ -85,11 +87,8 @@ BlizzardFonts.SetFontObjects = function(self)
 	local bold = getPath('Myriad Pro Bold')
 	local boldCondensed = getPath('Myriad Pro Bold Condensed')
 	
-	self:SetFont("NumberFontNormal", condensed)
 	self:SetFont("FriendsFont_Large", normal)
 	self:SetFont("GameFont_Gigantic", normal) 
-	self:SetFont("GameFontWhite", boldCondensed) -- nameplate font
-	self:SetFont("ChatBubbleFont", condensed) 
 	self:SetFont("FriendsFont_UserText", normal)
 	self:SetFont("QuestFont_Large", normal, 14, "", 0, 0, 0) -- 15
 	self:SetFont("QuestFont_Shadow_Huge", normal, 16, "", 0, 0, 0) -- 18
@@ -99,8 +98,51 @@ BlizzardFonts.SetFontObjects = function(self)
 	self:SetFont("CoreAbilityFont", normal) -- 32 
 	self:SetFont("QuestFont_Shadow_Small", normal, nil, "", 0, 0, 0) -- 14 
 	self:SetFont("MailFont_Large", normal, nil, "", 0, 0, 0) -- 15
-	self:SetFont("CombatTextFont", boldCondensed, 100, "", -.75, -.75, .35) -- floating combat text
-	self:SetFont("ChatFontNormal", condensed, nil, "", -.75, -.75, 1) -- chat font
+
+	-- Dropdown menus
+	self:SetFont("GameFontNormalSmallLeft", normal, 14, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
+	self:SetFont("GameFontHighlightSmall", normal, 14, "", -.75, -.75, 1, .9, .9, .9, 0, 0, 0)
+	self:SetFont("GameFontHighlightSmallLeft", normal, 14, "", -.75, -.75, 1, .9, .9, .9, 0, 0, 0)
+	self:SetFont("GameFontDisableSmallLeft", normal, 14, "", -.75, -.75, 1, .6, .6, .6, 0, 0, 0)
+
+	for i = 1, 2 do
+		local fontObject = 
+		self:SetFont("DropDownList"..i.."Button1NormalText", normal, 14, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
+	end 
+
+
+	_G.UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT = 14
+
+
+	-- Number Font
+	-- Most numbers inherit from this. We should base our own on this too.
+	self:SetFont("NumberFontNormal", condensed)
+
+	-- NamePlate Font
+	-- These are the font objects nameplates inherit from. 
+	-- We should be using this in our custom nameplates too.
+	self:SetFont("GameFontWhite", boldCondensed) -- 12
+	self:SetFont("GameFontWhiteTiny", boldCondensed) -- 9
+
+	-- Chat Font
+	-- This is the cont used by chat windows and inputboxes. 
+	-- When set early enough in the loading process, all windows inherit this.
+	self:SetFont("ChatFontNormal", condensed, nil, "", -.75, -.75, 1) 
+
+	-- Various chat constants
+	_G.CHAT_FONT_HEIGHTS = { 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32 }
+
+	-- Chat Bubble Font
+	-- This is what chat bubbles inherit from. 
+	-- We should use this in our custom bubbles too.
+	self:SetFont("ChatBubbleFont", condensed) 
+
+	-- Blizzard Floating Combat Text (FCT)
+	-- We're leaving this unchanged, as blizzard's font renders a LOT better.
+	-- I have tried with all sizes including blizzard's crazy 100256 number,
+	-- but any of our own fonts just look bad no matter what I do. 
+	-- Leaving the commented out code here just for reference.
+	--self:SetFont("CombatTextFont", bold, 100, "", -1.25, -1.25, .75) 
 end
 
 BlizzardFonts.SetCombatText = function(self)

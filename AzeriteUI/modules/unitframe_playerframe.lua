@@ -20,15 +20,9 @@ local UnitLevel = _G.UnitLevel
 local LEVEL = UnitLevel("player") 
 
 
--- This allows the healthbar spark 
--- to exactly follow the contour of the health bar.
--- 		keyPercent 		= width percentage where the change occurs 
--- 		topOffset 		= height percentage up from the top of the bar (negative means downwards/smaller spark)
--- 		bottomOffset 	= height percentage down from the bottom of the bar (negative means upwards/smaller spark)
-
+-- Health Bar Map
+-- (Texture Size 512x64, Growth: RIGHT)
 local barMap = {
-	-- We assume a bar of base size 512x64 here, as our texture is, 
-	-- thus all percentages are calculated from the actual pixel sizes for accuracy. 
 	{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
 	{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
 	{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
@@ -38,9 +32,26 @@ local barMap = {
 	{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
 }
 
---local crystalMap = {
---
---}
+-- Power Crystal Map
+-- (Texture Size 256, 256, Growth: UP)
+-- (topOffset = left - bottomOffset = right)
+local crystalMap2 = {
+	top = {
+		{ keyPercent =   0/256, offset =  -65/256 }, -- #1: 
+		{ keyPercent =  72/256, offset =    0/256 }, -- #2: 
+		{ keyPercent = 116/256, offset =  -16/256 }, -- #3: 
+		{ keyPercent = 128/256, offset =  -28/256 }, -- #4: 
+		{ keyPercent = 256/256, offset =  -84/256 }, -- #5: 
+	},
+	bottom = {
+		{ keyPercent =   0/256, offset =  -47/256 }, -- #1: 
+		{ keyPercent =  84/256, offset =    0/256 }, -- #2: 
+		{ keyPercent = 135/256, offset =  -24/256 }, -- #3: 
+		{ keyPercent = 142/256, offset =  -32/256 }, -- #4: 
+		{ keyPercent = 225/256, offset =  -79/256 }, -- #5: 
+		{ keyPercent = 256/256, offset = -168/256 }, -- #6: 
+	}
+}
 
 
 -- Utility Functions
@@ -218,7 +229,7 @@ local Style = function(self, unit, id, ...)
 	power:Place("RIGHT", health, "LEFT", -6, 47)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
 	power:SetOrientation("UP")
-	--power:SetSparkMap(crystalMap)
+	power:SetSparkMap(crystalMap2)
 	power.HideMana = true 
 	self.Power = power
 
