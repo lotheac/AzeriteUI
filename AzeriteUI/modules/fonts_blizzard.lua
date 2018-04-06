@@ -145,25 +145,29 @@ end
 
 BlizzardFonts.SetCombatText = function(self)
 
+	-- speed!
 	local CombatText_ClearAnimationList = _G.CombatText_ClearAnimationList
 	local CombatText_FountainScroll = _G.CombatText_FountainScroll
 	local CombatText_StandardScroll = _G.CombatText_StandardScroll
 
+	-- Various globals controlling the FCT
 	_G.NUM_COMBAT_TEXT_LINES = 10 -- 20
 	_G.COMBAT_TEXT_CRIT_MAXHEIGHT = 70 -- 60
 	_G.COMBAT_TEXT_CRIT_MINHEIGHT = 35 -- 30
-	--COMBAT_TEXT_CRIT_SCALE_TIME = 0.05;
-	--COMBAT_TEXT_CRIT_SHRINKTIME = 0.2;
-	_G.COMBAT_TEXT_FADEOUT_TIME = .75; -- 1.3
+	--COMBAT_TEXT_CRIT_SCALE_TIME = 0.05
+	--COMBAT_TEXT_CRIT_SHRINKTIME = 0.2
+	_G.COMBAT_TEXT_FADEOUT_TIME = .75 -- 1.3
 	_G.COMBAT_TEXT_HEIGHT = 25 -- 25
-	--COMBAT_TEXT_LOW_HEALTH_THRESHOLD = 0.2;
-	--COMBAT_TEXT_LOW_MANA_THRESHOLD = 0.2;
-	--COMBAT_TEXT_MAX_OFFSET = 130;
-	_G.COMBAT_TEXT_SCROLLSPEED = 1.9; -- 1.9
-	_G.COMBAT_TEXT_SPACING = 4 * _G.COMBAT_TEXT_Y_SCALE --10
-	--COMBAT_TEXT_STAGGER_RANGE = 20;
-	--COMBAT_TEXT_X_ADJUSTMENT = 80;
+	--COMBAT_TEXT_LOW_HEALTH_THRESHOLD = 0.2
+	--COMBAT_TEXT_LOW_MANA_THRESHOLD = 0.2
+	--COMBAT_TEXT_MAX_OFFSET = 130
+	_G.COMBAT_TEXT_SCROLLSPEED = 1.3 -- 1.9
+	_G.COMBAT_TEXT_SPACING = 2 * _G.COMBAT_TEXT_Y_SCALE --10
+	--COMBAT_TEXT_STAGGER_RANGE = 20
+	--COMBAT_TEXT_X_ADJUSTMENT = 80
 
+	-- Hooking changes to text positions after blizz setting changes, 
+	-- to show the text in positions that work well with our UI. 
 	hooksecurefunc("CombatText_UpdateDisplayedMessages", function() 
 		if ( COMBAT_TEXT_FLOAT_MODE == "1" ) then
 			_G.COMBAT_TEXT_SCROLL_FUNCTION = CombatText_StandardScroll
