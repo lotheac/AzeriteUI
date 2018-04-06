@@ -110,9 +110,7 @@ BlizzardFonts.SetFontObjects = function(self)
 		self:SetFont("DropDownList"..i.."Button1NormalText", normal, 14, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
 	end 
 
-
 	_G.UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT = 14
-
 
 	-- Number Font
 	-- Most numbers inherit from this. We should base our own on this too.
@@ -146,18 +144,55 @@ BlizzardFonts.SetFontObjects = function(self)
 end
 
 BlizzardFonts.SetCombatText = function(self)
-	_G.COMBAT_TEXT_HEIGHT = 24
-	_G.COMBAT_TEXT_CRIT_MAXHEIGHT = 64
-	_G.COMBAT_TEXT_CRIT_MINHEIGHT = 24
-	_G.COMBAT_TEXT_SCROLLSPEED = 3
+
+	local CombatText_ClearAnimationList = _G.CombatText_ClearAnimationList
+	local CombatText_FountainScroll = _G.CombatText_FountainScroll
+	local CombatText_StandardScroll = _G.CombatText_StandardScroll
+
+	_G.NUM_COMBAT_TEXT_LINES = 10 -- 20
+	_G.COMBAT_TEXT_CRIT_MAXHEIGHT = 70 -- 60
+	_G.COMBAT_TEXT_CRIT_MINHEIGHT = 35 -- 30
+	--COMBAT_TEXT_CRIT_SCALE_TIME = 0.05;
+	--COMBAT_TEXT_CRIT_SHRINKTIME = 0.2;
+	_G.COMBAT_TEXT_FADEOUT_TIME = .75; -- 1.3
+	_G.COMBAT_TEXT_HEIGHT = 25 -- 25
+	--COMBAT_TEXT_LOW_HEALTH_THRESHOLD = 0.2;
+	--COMBAT_TEXT_LOW_MANA_THRESHOLD = 0.2;
+	--COMBAT_TEXT_MAX_OFFSET = 130;
+	_G.COMBAT_TEXT_SCROLLSPEED = 1.9; -- 1.9
+	_G.COMBAT_TEXT_SPACING = 4 * _G.COMBAT_TEXT_Y_SCALE --10
+	--COMBAT_TEXT_STAGGER_RANGE = 20;
+	--COMBAT_TEXT_X_ADJUSTMENT = 80;
+
 	hooksecurefunc("CombatText_UpdateDisplayedMessages", function() 
-		----if COMBAT_TEXT_FLOAT_MODE == "1" then
-		----	COMBAT_TEXT_LOCATIONS.startY = 484
-		----	COMBAT_TEXT_LOCATIONS.endY = 709
-		----end
-		_G.COMBAT_TEXT_LOCATIONS.startY = 120 -- 220
-		_G.COMBAT_TEXT_LOCATIONS.endY = 280 -- 440
+		if ( COMBAT_TEXT_FLOAT_MODE == "1" ) then
+			_G.COMBAT_TEXT_SCROLL_FUNCTION = CombatText_StandardScroll
+			_G.COMBAT_TEXT_LOCATIONS = {
+				startX = 0,
+				startY = 259 * _G.COMBAT_TEXT_Y_SCALE,
+				endX = 0,
+				endY = 389 * _G.COMBAT_TEXT_Y_SCALE
+			}
+		elseif ( COMBAT_TEXT_FLOAT_MODE == "2" ) then
+			_G.COMBAT_TEXT_SCROLL_FUNCTION = CombatText_StandardScroll
+			_G.COMBAT_TEXT_LOCATIONS = {
+				startX = 0,
+				startY = 389 * _G.COMBAT_TEXT_Y_SCALE,
+				endX = 0,
+				endY =  259 * _G.COMBAT_TEXT_Y_SCALE
+			}
+		else
+			_G.COMBAT_TEXT_SCROLL_FUNCTION = CombatText_FountainScroll
+			_G.COMBAT_TEXT_LOCATIONS = {
+				startX = 0,
+				startY = 389 * _G.COMBAT_TEXT_Y_SCALE,
+				endX = 0,
+				endY = 609 * _G.COMBAT_TEXT_Y_SCALE
+			}
+		end
+		CombatText_ClearAnimationList()
 	end)
+
 end 
 
 -- Fonts (especially game engine fonts) need to be set very early in the loading process, 
