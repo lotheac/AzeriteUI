@@ -3,6 +3,9 @@ local ADDON = ...
 local AzeriteUI = CogWheel("CogModule"):NewModule("AzeriteUI", "CogDB", "CogEvent", "CogBlizzard")
 AzeriteUI:SetAddon(ADDON) 
 
+CogWheel("CogFrame"):SetDefaultScale( 1920/1440 )
+
+
 -- Tell the backend where our saved variables are found.
 -- *it's important that we're doing this here, before any configs are created at all.
 AzeriteUI:RegisterSavedVariablesGlobal("AzeriteUI_DB")

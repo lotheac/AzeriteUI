@@ -21,6 +21,7 @@
 <Script file='elements\unitframe_health.lua'/>
 <Script file='elements\unitframe_level.lua'/>
 <Script file='elements\unitframe_name.lua'/>
+<Script file='elements\unitframe_portrait.lua'/>
 <Script file='elements\unitframe_power.lua'/>
 <Script file='elements\unitframe_role.lua'/>
 <Script file='elements\unitframe_spec.lua'/>

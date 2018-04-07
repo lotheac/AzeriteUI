@@ -74,6 +74,7 @@ local Enable = function(self)
 			self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy)
 			self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 		end 
+		return true
 	end
 end 
 
@@ -86,7 +87,6 @@ local Disable = function(self)
 			self:UnregisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy)
 			self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 		end 
-		return true
 	end
 end 
 

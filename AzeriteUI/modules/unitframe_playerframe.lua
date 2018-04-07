@@ -97,45 +97,50 @@ local OverrideValue = function(fontString, unit, min, max)
 	end 
 end 
 
-local PostUpdateSpec = function(spec, unit, specID)
-end 
-
-local PlayerAtLevelCap = function(self)
-	-- Expansion level is also stored in the constant LE_EXPANSION_LEVEL_CURRENT
-	-- *I thought about showing XP disabled twinks as max level too, 
-	--  but I actually don't think that would be a logical decision.  
-	--  A twink is a user choice, and having a permanent low/mid level bar should be part of that.  
-	return (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) --  or (IsXPUserDisabled())
-end 
-
 -- Style Post Updates
 -- Styling function applying sizes and textures 
 -- based on what kind of target we have, and its level. 
 local PostUpdateTextures = function(self)
 	-- War Seasoned
 	if (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
-		self.Health:SetStatusBarTexture(getPath("hp_cap_bar"))
-		self.HealthBG:SetTexture(getPath("hp_cap_case"))
-		self.HealthBG:SetVertexColor(227/255, 231/255, 216/255)
+		local health = self.Health
+		health:SetSize(289, 30)
+		health:SetStatusBarTexture(getPath("hp_cap_bar"))
+		health:SetStatusBarColor(unpack(self.colors.General.Health))
+		health:SetSparkMap(barMap)
+
+		local healthBg = self.Health.Bg
+		healthBg:SetSize(329, 68)
+		healthBg:SetPoint("CENTER", 0, 0)
+		healthBg:SetTexture(getPath("hp_cap_case"))
+		healthBg:SetVertexColor(227/255, 231/255, 216/255)
 
 	-- Battle Hardened
 	elseif (LEVEL >= 40) then 
-		self.Health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-		self.HealthBG:SetTexture(getPath("hp_mid_case"))
-		self.HealthBG:SetVertexColor(227/255, 231/255, 216/255)
+		local health = self.Health
+		health:SetSize(289, 28)
+		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+		health:SetStatusBarColor(unpack(self.colors.General.Health))
+		health:SetSparkMap(barMap)
+
+		local healthBg = self.Health.Bg
+		healthBg:SetSize(329, 68)
+		healthBg:SetPoint("CENTER", 0, -1)
+		healthBg:SetTexture(getPath("hp_mid_case"))
+		healthBg:SetVertexColor(227/255, 231/255, 216/255)
 
 	-- Novice
 	else 
-		self.Health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-		self.HealthBG:SetTexture(getPath("hp_low_case"))
-		self.HealthBG:SetVertexColor(225/255 *2/3, 220/255 *2/3, 205/255 *2/3) -- darken it a bit?
-	end 
-end 
+		local health = self.Health
+		health:SetSize(289, 28)
+		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+		health:SetStatusBarColor(unpack(self.colors.General.Health))
 
-local PostUpdateSpec = function(spec, unit, specIndex)
-	local color = specIndex and spec._owner.colors.General["Spec"..specIndex]
-	if color then 
-		spec:SetVertexColor(unpack(color))
+		local healthBg = self.Health.Bg
+		healthBg:SetSize(329, 70)
+		healthBg:SetPoint("CENTER", 0, -1)
+		healthBg:SetTexture(getPath("hp_low_case"))
+		healthBg:SetVertexColor(225/255 *2/3, 220/255 *2/3, 205/255 *2/3)
 	end 
 end 
 
@@ -176,8 +181,7 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------
 
 	-- health
-	local health = content:CreateStatusBar(self)
-	health:SetFrameLevel(health:GetFrameLevel() + 3) -- raise it above the power/mana frames
+	local health = content:CreateStatusBar()
 	health:SetSize(289, 30)
 	health:Place("BOTTOMLEFT", 20, 20)
 	health:SetStatusBarColor(1,1,1,.85)
@@ -191,10 +195,7 @@ local Style = function(self, unit, id, ...)
 	healthBg:SetDrawLayer("BACKGROUND", -1)
 	healthBg:SetSize(329, 68)
 	healthBg:SetPoint("CENTER", 0, 0)
-	self.HealthBG = healthBg
-
-	-- Update textures according to player level
-	PostUpdateTextures(self)
+	self.Health.Bg = healthBg
 
 	-- health value text
 	local healthVal = health:CreateFontString()
@@ -211,11 +212,10 @@ local Style = function(self, unit, id, ...)
 	self.Health.Value.Override = OverrideValue
 
 
-
 	-- power
-	local power = content:CreateStatusBar(self)
+	local power = backdrop:CreateStatusBar()
 	power:SetSize(90, 105)
-	power:Place("RIGHT", health, "LEFT", -6, 47)
+	power:Place("BOTTOMLEFT", -76,  30)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
 	power:SetStatusBarColor(1,1,1,.92) -- only the alpha changes should prevail here
 	power:SetOrientation("UP")
@@ -256,11 +256,10 @@ local Style = function(self, unit, id, ...)
 	self.Power.Value.Override = OverrideValue
 
 
-
 	-- mana orb 
-	local mana = content:CreateOrb(self)
+	local mana = backdrop:CreateOrb()
 	mana:SetSize(85, 85)
-	mana:Place("RIGHT", health, "LEFT", -8, 26) -- 12, 26
+	mana:Place("BOTTOMLEFT", -73, 19) 
 	mana:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3"))
 	mana:SetStatusBarColor(unpack(self.colors.Power.MANA))
 	mana.showResource = "MANA"
@@ -291,7 +290,6 @@ local Style = function(self, unit, id, ...)
 	manaFg:SetPoint("CENTER", 0, 0)
 	manaFg:SetTexture(getPath("pw_orb_case"))
 	manaFg:SetVertexColor( 188/255, 205/255, 188/255, 1) 
-	--self.ManaFG = manaFg
 	
 	-- mana value text
 	local manaVal = mana:GetOverlay():CreateFontString()
@@ -304,6 +302,7 @@ local Style = function(self, unit, id, ...)
 	manaVal:SetShadowOffset(0, 0)
 	manaVal:SetShadowColor(0, 0, 0, 0)
 	manaVal:SetTextColor( 240/255, 240/255, 240/255, .4)
+
 	power[1].Value = manaVal
 	power[1].Value.Override = OverrideValue
 
@@ -324,16 +323,6 @@ local Style = function(self, unit, id, ...)
 	specBg:SetTexture(getPath("triangle_case"))
 	specBg:SetVertexColor(  89/255,  92/255,  88/255, 1)
 
-	local specGem = spec:CreateTexture()
-	specGem:SetDrawLayer("ARTWORK")
-	specGem:SetPoint("CENTER", 0, 1)
-	specGem:SetSize(23,18)
-	specGem:SetTexture(getPath("triangle_gem"))
-
-	-- Proxy the vertexcoloring without exposing the gem texture
-	spec.SetVertexColor = function(_, ...) specGem:SetVertexColor(...) end
-
-	--[[
 	for i = 1,4 do 
 		local specTexture = spec:CreateTexture()
 		specTexture:SetDrawLayer("ARTWORK")
@@ -344,12 +333,11 @@ local Style = function(self, unit, id, ...)
 		specTexture:Hide()
 		spec[i] = specTexture
 	end 
-	]]
 
 	self.Spec = spec
-	self.Spec.PostUpdate = PostUpdateSpec
-
 	
+	-- Update textures according to player level
+	PostUpdateTextures(self)
 end 
 
 UnitFramePlayer.OnEvent = function(self, event, ...)
@@ -365,9 +353,7 @@ UnitFramePlayer.OnEvent = function(self, event, ...)
 		end
 
 		-- Update textures according to player level
-		if self.frame then 
-			PostUpdateTextures(self.frame)
-		end 
+		PostUpdateTextures(self.frame)
 	end
 end
 

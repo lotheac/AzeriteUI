@@ -114,36 +114,22 @@ C.Friendship = {
 C.Power = {
 	-- Primary Resources
 	ENERGY 					= prepare(  0/255, 255/255, 141/255), -- Rogues, Druids, Monks
-	RAGE 					= prepare(255/255,  22/255,   0/255), -- Druids, Warriors
+	FOCUS 					= prepare(125/255, 168/255, 195/255), -- Hunters and Hunter Pets
+	FURY 					= prepare(255/255,   0/255, 111/255), -- Vengeance Demon Hunter
+	INSANITY 				= prepare(102/255,  64/255, 204/255), -- Shadow Priests 
 	MAELSTROM 				= prepare(  0/255, 188/255, 255/255), -- Shamans
 	MANA 					= prepare(  0/255, 116/255, 255/255), -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
-
-
-
-	CHI 					= prepare(181/255, 255/255, 234/255), -- Monk (MoP)
-	FOCUS 					= prepare(255/255, 128/255,  64/255), -- Hunters (Cata) and Hunter Pets
-	FURY 					= prepare(192/255,  89/255, 217/255), -- Vengeance Demon Hunter (Legion)
-	HOLY_POWER 				= prepare(245/255, 254/255, 145/255), -- Paladins (All in Cata, only Retribution in Legion)
-	INSANITY 				= prepare(102/255,  64/255, 204/255), -- Shadow Priests (Legion)
-	LUNAR_POWER 			= prepare(121/255, 152/255, 192/255), -- Balance Druid Astral Power in (Legion)
-	PAIN 					= prepare(217/255, 105/255,   0/255), -- Havoc Demon Hunter (Legion)
-	RUNIC_POWER 			= prepare(  0/255, 209/255, 255/255), -- Death Knights
+	PAIN 					= prepare(190/255, 255/255,   0/255), -- Havoc Demon Hunter 
+	RAGE 					= prepare(255/255,  22/255,   0/255), -- Druids, Warriors
+	RUNIC_POWER 			= prepare(  0/255, 236/255, 255/255), -- Death Knights
 
 	-- Point based secondary resources
 	ARCANE_CHARGES 			= prepare(121/255, 152/255, 192/255), -- Arcane Mage
-	BURNING_EMBERS 			= prepare(151/255,  45/255,  24/255), -- Destruction Warlock (Cata, MoP, WoD)
-	DEMONIC_FURY 			= prepare(105/255,  53/255, 142/255), -- Demonology Warlock (MoP, WoD)
-	ECLIPSE = { 
-		negative 			= prepare( 90/255, 110/255, 172/255), -- Balance Druid (WotLK, Cata, MoP, WoD)
-		positive 			= prepare(255/255, 211/255, 117/255)  -- Balance Druid (WotLK, Cata, MoP, WoD)
-	},
-	RUNES 					= prepare(100/255, 155/255, 225/255), -- Death Knight (Legion) (only one rune type now)
-	RUNES_BLOOD 			= prepare(196/255,  31/255,  60/255), -- Death Knight (WotLK, Cata, MoP, WoD)
-	RUNES_UNHOLY 			= prepare( 73/255, 180/255,  28/255), -- Death Knight (WotLK, Cata, MoP, WoD)
-	RUNES_FROST 			= prepare( 63/255, 103/255, 154/255), -- Death Knight (WotLK, Cata, MoP, WoD)
-	RUNES_DEATH 			= prepare(173/255,  62/255, 145/255), -- Death Knight (WotLK, Cata, MoP, WoD)
-	SHADOW_ORBS 			= prepare(128/255, 128/255, 192/255), -- Shadow Priest (Cata, MoP) 
-	SOUL_SHARDS 			= prepare(148/255, 130/255, 201/255), -- Warlock (All in Cata, Legion, Affliction only in MoP, WoD)
+	CHI 					= prepare(181/255, 255/255, 234/255), -- Monk 
+	HOLY_POWER 				= prepare(245/255, 254/255, 145/255), -- Retribution Paladins 
+	LUNAR_POWER 			= prepare(121/255, 152/255, 192/255), -- Balance Druid Astral Power 
+	RUNES 					= prepare(100/255, 155/255, 225/255), -- Death Knight 
+	SOUL_SHARDS 			= prepare(148/255, 130/255, 201/255), -- Warlock 
 
 	-- Pets
 	HAPPINESS 				= prepare(  0/255, 255/255, 255/255),

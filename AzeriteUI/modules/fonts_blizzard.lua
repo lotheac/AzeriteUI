@@ -63,9 +63,9 @@ BlizzardFonts.SetGameEngineFonts = function(self)
 	-- *These will only be updated when the user
 	-- relogs into the game from the character selection screen, 
 	-- not when simply reloading the user interface!
-	_G.UNIT_NAME_FONT = boldCondensed
-	_G.UNIT_NAME_FONT_CYRILLIC = boldCondensed
-	_G.UNIT_NAME_FONT_ROMAN = boldCondensed
+	_G.UNIT_NAME_FONT = normal
+	_G.UNIT_NAME_FONT_CYRILLIC = normal
+	_G.UNIT_NAME_FONT_ROMAN = normal
 	--_G.UNIT_NAME_FONT_KOREAN = boldCondensed -- unsupported in our fonts
 	--_G.UNIT_NAME_FONT_CHINESE = boldCondensed -- unsupported in our fonts
 

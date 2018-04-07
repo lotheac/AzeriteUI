@@ -73,16 +73,7 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	FCF_SetWindowAlpha(frame, 0, 1)
 	FCF_UpdateButtonSide(frame)
 
-	if (frame:GetParent() == UIParent) then
-		frame:SetParent(self:GetFrame("UICenter"))
-	end
 
-	hooksecurefunc(frame, "SetParent", function(frame, parent) 
-		if (parent == UIParent) then
-			frame:SetParent(self:GetFrame("UICenter"))
-		end
-	end)
-	
 	-- Tabs
 	------------------------------
 
@@ -285,9 +276,20 @@ ChatWindows.OnInit = function(self)
 		end
 	end)
 
+	-- Create a holder frame for our main chat window,
+	-- which we'll use to move and size the window without 
+	-- having to parent it to our upscaled master frame. 
+	-- 
+	-- The problem is that WoW renders chat to pixels 
+	-- when the font is originally defined, 
+	-- and any scaling later on is applied to that pixel font, 
+	-- not to the original vector font. 
+	local frame = self:CreateFrame("Frame")
+	frame:SetPoint("LEFT", 64, 0)
+	frame:SetSize(389, 147)
+
 	self:HandleAllChatWindows()
-	self:SetChatWindowPosition(ChatFrame1, "LEFT", 54, 0)
-	self:SetChatWindowSize(ChatFrame1, 389, 147)
+	self:SetChatWindowAsSlaveTo(ChatFrame1, frame)
 
 	FCF_SetWindowColor(ChatFrame1, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(ChatFrame1, 0, 1)

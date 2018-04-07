@@ -27,13 +27,44 @@ local LEVEL = UnitLevel("player")
 
 -- Constants to hold various info about our last target 
 -- We need this to decide when the artwork should change
-local TARGET_CLASSIFICATION
 local TARGET_GUID
-local TARGET_IS_BOSS 
-local TARGET_IS_PLAYER
-local TARGET_IS_TRIVIAL
-local TARGET_LEVEL
 local TARGET_STYLE
+
+
+-- Health Bar Map (Low, Mid, Cap)
+-- (Texture Size 512x64, Growth: RIGHT)
+local barMap = {
+	{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
+	{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
+	{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
+	{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, -- #4: bottom peak, now starts shrinking from the bottom
+	{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, -- #4: bottom peak, now starts shrinking from the bottom
+	{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, -- #5: starts shrinking from the top
+	{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
+}
+
+-- Health Bar Map (Critter)
+local barMapCritter = {
+
+}
+
+-- Health Bar Map (Boss)
+local barMapBoss = {
+	top = {
+		{ keyPercent =   0/1024, offset =  -24/64 }, 
+		{ keyPercent =  13/1024, offset =    0/64 }, 
+		{ keyPercent = 1018/1024, offset =   0/64 }, 
+		{ keyPercent = 1024/1024, offset = -10/64 }, 
+	},
+	bottom = {
+		{ keyPercent =    0/1024, offset =  -39/64 }, 
+		{ keyPercent =   13/1024, offset =  -16/64 }, 
+		{ keyPercent =  949/1024, offset =  -16/64 }, 
+		{ keyPercent =  977/1024, offset =   -1/64 }, 
+		{ keyPercent =  984/1024, offset =   -2/64 }, 
+		{ keyPercent = 1024/1024, offset =  -52/64 }, 
+	}
+}
 
 
 -- Utility Functions
@@ -60,15 +91,6 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
-local unitAtLevelCap = function(self, unit)
-	local level = UnitLevel(unit)
-	-- Expansion level is also stored in the constant LE_EXPANSION_LEVEL_CURRENT
-	-- *I thought about showing XP disabled twinks as max level too, 
-	--  but I actually don't think that would be a logical decision.  
-	--  A twink is a user choice, and having a permanent low/mid level bar should be part of that.  
-	return (level >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) --  or (IsXPUserDisabled())
-end 
-
 
 -- Callbacks
 -----------------------------------------------------------------
@@ -87,25 +109,270 @@ end
 -- Style Post Updates
 -- Styling function applying sizes and textures 
 -- based on what kind of target we have, and its level. 
-local STYLES = {
-	BOSS = function(self)
-	end,
-	CAP = function(self)
-		local health = self.Health
-		local power = self.Health
-		local health = self.Health
-	end,
-	MID = function(self)
-	end,
-	LOW = function(self)
-	end,
-	CRITTER = function(self)
-	end 
-}
+local PostUpdateTextures = function(self)
 
+	-- Figure out if the various artwork and bar textures need to be updated
+	-- We could put this into element post updates, 
+	-- but to avoid needless checks we limit this to actual target updates. 
+	--local guid = UnitGUID("target")
+	--if (guid ~= TARGET_GUID) then 
+		local unitLevel = UnitLevel("target")
+		local unitClassification = UnitClassification("target")
+
+		if ((unitClassification == "worldboss") or (unitLevel and (unitLevel < 1))) then 
+			if (TARGET_STYLE ~= "BOSS") then 
+				TARGET_STYLE = "BOSS"
+
+				local health = self.Health
+				health:SetSize(400, 30)
+				health:Place("TOPRIGHT", -20, -20)
+				health:SetStatusBarTexture(getPath("hp_boss_bar"))
+				health:SetStatusBarColor(unpack(self.colors.General.Health))
+				health:SetSparkMap(barMapBoss)
+		
+				local healthBg = self.Health.Bg
+				healthBg:SetSize(441, 68)
+				healthBg:SetPoint("CENTER", 1, 0)
+				healthBg:SetTexture(getPath("hp_boss_case"))
+				healthBg:SetVertexColor(227/255, 231/255, 216/255)
+
+				local healthVal = self.Health.Value
+				healthVal:Show()
+
+				local portraitFg = self.Portrait.Fg
+				portraitFg:SetTexture(getPath("portrait_frame_hi"))
+				portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
+			end
+
+		-- War Seasoned / Capped  
+		elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
+			if (TARGET_STYLE ~= "CAP") then 
+				TARGET_STYLE = "CAP"
+
+				local health = self.Health
+				health:SetSize(289, 30)
+				health:Place("TOPRIGHT", -20, -20)
+				health:SetStatusBarTexture(getPath("hp_cap_bar"))
+				health:SetStatusBarColor(unpack(self.colors.General.Health))
+				health:SetSparkMap(barMap)
+		
+				local healthBg = self.Health.Bg
+				healthBg:SetSize(329, 68)
+				healthBg:SetPoint("CENTER", 0, 0)
+				healthBg:SetTexture(getPath("hp_cap_case"))
+				healthBg:SetVertexColor(227/255, 231/255, 216/255)
+
+				local healthVal = self.Health.Value
+				healthVal:Show()
+
+				local portraitFg = self.Portrait.Fg
+				portraitFg:SetTexture(getPath("portrait_frame_hi"))
+				portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
+			end 
+
+		-- Battle Hardened / Mid level
+		elseif (unitLevel >= 40) then 
+			if (TARGET_STYLE ~= "MID") then 
+				TARGET_STYLE = "MID"
+
+				local health = self.Health
+				health:SetSize(289, 28)
+				health:Place("TOPRIGHT", -20, -20)
+				health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+				health:SetStatusBarColor(unpack(self.colors.General.Health))
+				health:SetSparkMap(barMap)
+		
+				local healthBg = self.Health.Bg
+				healthBg:SetSize(329, 68)
+				healthBg:SetPoint("CENTER", 0, -1)
+				healthBg:SetTexture(getPath("hp_mid_case"))
+				healthBg:SetVertexColor(227/255, 231/255, 216/255)
+		
+				local healthVal = self.Health.Value
+				healthVal:Show()
+
+				local portraitFg = self.Portrait.Fg
+				portraitFg:SetTexture(getPath("portrait_frame_hi"))
+				portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
+			end 
+
+		-- Trivial / Critter
+		elseif ((unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+			if (TARGET_STYLE ~= "CRITTER") then 
+				TARGET_STYLE = "CRITTER"
+
+				local health = self.Health
+				health:SetSize(30, 27)
+				health:Place("TOPRIGHT", -18, -18)
+				health:SetStatusBarTexture(getPath("hp_critter_bar"))
+				health:SetStatusBarColor(unpack(self.colors.General.Health))
+				health:SetSparkMap(barMap)
+		
+				local healthBg = self.Health.Bg
+				healthBg:SetSize(56, 53)
+				healthBg:SetPoint("CENTER", 0, -1)
+				healthBg:SetTexture(getPath("hp_critter_case"))
+				healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
+
+				local healthVal = self.Health.Value
+				healthVal:Hide()
+
+				local portraitFg = self.Portrait.Fg
+				portraitFg:SetTexture(getPath("portrait_frame_lo"))
+				portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3)
+			end
+
+			-- Novice / Low Level
+		elseif (unitLevel > 1) or UnitIsPlayer("target") then 
+
+			if (TARGET_STYLE ~= "LOW") then 
+				TARGET_STYLE = "LOW" 
+
+				local health = self.Health
+				health:SetSize(289, 28)
+				health:Place("TOPRIGHT", -20, -20)
+				health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+				health:SetStatusBarColor(unpack(self.colors.General.Health))
+				health:SetSparkMap(barMap)
+
+				local healthVal = self.Health.Value
+				healthVal:Show()
+
+				local healthBg = self.Health.Bg
+				healthBg:SetSize(329, 70)
+				healthBg:SetPoint("CENTER", 0, -1)
+				healthBg:SetTexture(getPath("hp_low_case"))
+				healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
+
+				local portraitFg = self.Portrait.Fg
+				portraitFg:SetTexture(getPath("portrait_frame_lo"))
+				portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3) -- 225/255, 220/255, 205/255
+			end 
+
+		end 
+		
+		-- Update stored values to avoid unneeded updates
+		--TARGET_GUID = guid
+	--end 
+end 
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
+
+
+	-- Frame
+	-----------------------------------------------------------
+
+	self:SetSize(329, 70)
+	self:Place("TOPRIGHT", -135, -79)
+
+	-- Assign our own global custom colors
+	self.colors = Colors
+
+
+	-- Scaffolds
+	-----------------------------------------------------------
+
+	-- frame to contain art backdrops, shadows, etc
+	local backdrop = self:CreateFrame("Frame")
+	backdrop:SetAllPoints()
+	backdrop:SetFrameLevel(self:GetFrameLevel())
+	
+	-- frame to contain bars, icons, etc
+	local content = self:CreateFrame("Frame")
+	content:SetAllPoints()
+	content:SetFrameLevel(self:GetFrameLevel() + 5)
+
+	-- frame to contain art overlays, texts, etc
+	local overlay = self:CreateFrame("Frame")
+	overlay:SetAllPoints()
+	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+
+
+	-- Bars
+	-----------------------------------------------------------
+
+	-- health
+	local health = content:CreateStatusBar()
+	health:Place("TOPRIGHT", -20, -20)
+	health:SetOrientation("LEFT")
+	health:SetStatusBarColor(1,1,1,.85)
+	health:SetFlippedHorizontally(true)
+	health.frequent = 1/120
+	self.Health = health
+
+	-- health backdrop 
+	local healthBg = health:CreateTexture()
+	healthBg:SetDrawLayer("BACKGROUND")
+	healthBg:SetTexCoord(1,0,0,1)
+	self.Health.Bg = healthBg
+
+	-- health value text
+	local healthVal = health:CreateFontString()
+	healthVal:SetPoint("RIGHT", -20, 3)
+	healthVal:SetDrawLayer("OVERLAY")
+	healthVal:SetFontObject(GameFontNormal)
+	healthVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	healthVal:SetJustifyH("CENTER")
+	healthVal:SetJustifyV("MIDDLE")
+	healthVal:SetShadowOffset(0, 0)
+	healthVal:SetShadowColor(0, 0, 0, 0)
+	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
+
+	self.Health.Value = healthVal
+	self.Health.Value.Override = OverrideValue
+
+
+	-- Portrait
+	-----------------------------------------------------------
+
+	local portrait = backdrop:CreateFrame("PlayerModel")
+	portrait:SetPoint("TOPRIGHT", 92 -(140-60)/2 , 46 -(140-60)/2 )
+	portrait:SetSize(60, 60) 
+	portrait.type = "3D"
+	self.Portrait = portrait
+	
+	-- To allow the backdrop and overlay to remain 
+	-- visible even with no visible player model, 
+	-- we add them to our backdrop and overlay frames, 
+	-- not to the portrait frame itself.  
+	local portraitBg = backdrop:CreateTexture()
+	portraitBg:SetDrawLayer("BACKGROUND", 0)
+	portraitBg:SetPoint("TOPRIGHT", 87, 41)
+	portraitBg:SetSize(130, 130)
+	portraitBg:SetTexture(getPath("p_potraitback"))
+	--portraitBg:Hide()
+	self.Portrait.Bg = portraitBg
+
+	local portraitFg = content:CreateTexture()
+	portraitFg:SetDrawLayer("BACKGROUND", 0)
+	portraitFg:SetPoint("TOPRIGHT", 92, 46)
+	portraitFg:SetSize(140, 140)
+	--portraitFg:Hide()
+	self.Portrait.Fg = portraitFg
+
+
+	-- Widgets
+	-----------------------------------------------------------
+	-- level 
+	local level = overlay:CreateFontString()
+	self.Level = level
+
+	local bossIcon = overlay:CreateTexture()
+	self.BossIcon = bossIcon
+
+	-- rarity
+	local classification = overlay:CreateTexture()
+	self.Classification = Classification
+
+	-- who your target is targeting
+	local targeted = overlay:CreateTexture()
+	self.Targeted = targeted
+
+
+	-- Update target frame textures
+	PostUpdateTextures(self)
+
 end
 
 UnitFrameTarget.OnEvent = function(self, event, ...)
@@ -121,56 +388,8 @@ UnitFrameTarget.OnEvent = function(self, event, ...)
 				self:PlaySoundKitID(SOUNDKIT.IG_CREATURE_NEUTRAL_SELECT, "SFX")
 			end
 
-			-- Figure out if the various artwork and bar textures need to be updated
-			-- We could put this into element post updates, 
-			-- but to avoid needless checks we limit this to actual target updates. 
-			local guid = UnitGUID("target")
-			if (guid ~= TARGET_GUID) then 
-				local unitClassification = UnitClassification("target")
-				local unitLevel = UnitLevel("target")
-				local unitIsPlayer = UnitIsPlayer("target")
-				local unitIsTrivial = UnitIsTrivial("target")
-				local unitIsBoss = (unitClassification == "worldboss") or (unitLevel and (unitLevel < 1))
-
-				-- Boss
-				local targetStyle
-				if unitIsBoss then 
-					targetStyle = "BOSS"
-
-				-- Trivial / Critter
-				elseif (unitIsTrival or ((unitLevel == 1) and (not unitIsPlayer))) then
-					targetStyle = "CRITTER"
-
-				-- War Seasoned / Capped  
-				elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
-					targetStyle = "CAP"
-
-				-- Battle Hardened / Mid level
-				elseif (unitLevel >= 40) then 
-					targetStyle = "MID"
-
-				-- Novice / Low Level
-				else
-					targetStyle = "LOW" 
-				end 
-				
-				-- Do we need to update the target style?
-				if (targetStyle ~= TARGET_STYLE) then 
-					if STYLES[TARGET_STYLE] then 
-						STYLES[TARGET_STYLE](self.frame)
-					end 
-				end 
-				
-				-- Update stored values to avoid unneeded updates
-				TARGET_GUID = guid
-				TARGET_LEVEL = unitLevel 
-				TARGET_CLASSIFICATION = unitClassification
-				TARGET_IS_PLAYER = unitIsPlayer
-				TARGET_IS_TRIVIAL = unitIsTrivial
-				TARGET_IS_BOSS = unitIsBoss
-				TARGET_STYLE = targetStyle
-			end 
-
+			-- Update target frame textures
+			PostUpdateTextures(self.frame)
 		else
 			-- Play a sound indicating we lost our target
 			self:PlaySoundKitID(SOUNDKIT.INTERFACE_SOUND_LOST_TARGET_UNIT, "SFX")

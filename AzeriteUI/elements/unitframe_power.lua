@@ -257,6 +257,7 @@ local Enable = function(self)
 				self:EnableFrequentUpdates("Power", power.frequent)
 			end 
 		end 
+		return true
 	end
 end 
 
@@ -277,7 +278,6 @@ local Disable = function(self)
 				self:UnregisterEvent("PLAYER_TALENT_UPDATE", UpdateSpec)
 			end 
 		end
-		return true
 	end
 end 
 
