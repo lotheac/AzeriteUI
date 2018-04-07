@@ -116,18 +116,29 @@ local PostUpdateTextures = function(self)
 	if (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
 		self.Health:SetStatusBarTexture(getPath("hp_cap_bar"))
 		self.HealthBG:SetTexture(getPath("hp_cap_case"))
+		self.HealthBG:SetVertexColor(227/255, 231/255, 216/255)
 
 	-- Battle Hardened
 	elseif (LEVEL >= 40) then 
 		self.Health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 		self.HealthBG:SetTexture(getPath("hp_mid_case"))
+		self.HealthBG:SetVertexColor(227/255, 231/255, 216/255)
 
 	-- Novice
 	else 
 		self.Health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 		self.HealthBG:SetTexture(getPath("hp_low_case"))
+		self.HealthBG:SetVertexColor(225/255 *2/3, 220/255 *2/3, 205/255 *2/3) -- darken it a bit?
 	end 
 end 
+
+local PostUpdateSpec = function(spec, unit, specIndex)
+	local color = specIndex and spec._owner.colors.General["Spec"..specIndex]
+	if color then 
+		spec:SetVertexColor(unpack(color))
+	end 
+end 
+
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
@@ -180,7 +191,6 @@ local Style = function(self, unit, id, ...)
 	healthBg:SetDrawLayer("BACKGROUND", -1)
 	healthBg:SetSize(329, 68)
 	healthBg:SetPoint("CENTER", 0, 0)
-	healthBg:SetVertexColor(unpack(self.colors.General.Overlay)) --assume global artwork color?
 	self.HealthBG = healthBg
 
 	-- Update textures according to player level
@@ -199,55 +209,8 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
 	self.Health.Value = healthVal
 	self.Health.Value.Override = OverrideValue
-	
-	-- mana orb 
-	local mana = content:CreateOrb(self)
-	mana:SetSize(85, 85)
-	mana:Place("RIGHT", health, "LEFT", -12, 26) -- 8, 26
-	mana:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3"))
-	mana:SetStatusBarColor(unpack(self.colors.Power.MANA))
-	self.Mana = mana
 
-	-- mana backdrop
-	local manaBg = mana:CreateTexture()
-	manaBg:SetDrawLayer("BACKGROUND", -2)
-	manaBg:SetSize(85, 85)
-	manaBg:SetPoint("CENTER", 0, 0)
-	manaBg:SetTexture(getPath("pw_orb_bar3"))
-	manaBg:SetVertexColor(  22/255,  26/255, 22/255, .82) 
-	self.ManaBG = manaBg
 
-	-- mana shade
-	local manaFg2 = mana:GetOverlay():CreateTexture()
-	manaFg2:SetDrawLayer("BORDER", -1)
-	manaFg2:SetSize(85, 85)
-	manaFg2:SetPoint("CENTER", 0, 0)
-	manaFg2:SetTexture(getPath("shade_circle"))
-	manaFg2:SetVertexColor(  0, 0, 0, 1) 
-	self.ManaFG2 = manaFg2
-	
-	-- mana overlay case
-	local manaFg = mana:GetOverlay():CreateTexture()
-	manaFg:SetDrawLayer("BORDER")
-	manaFg:SetSize(150, 150)
-	manaFg:SetPoint("CENTER", 0, 0)
-	manaFg:SetTexture(getPath("pw_orb_case"))
-	manaFg:SetVertexColor( 188/255, 205/255, 188/255, 1) 
-	self.ManaFG = manaFg
-	
-	-- mana value text
-	local manaVal = mana:GetOverlay():CreateFontString()
-	manaVal:SetPoint("CENTER", 2, 0)
-	manaVal:SetDrawLayer("OVERLAY")
-	manaVal:SetFontObject(GameFontNormal)
-	manaVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
-	manaVal:SetJustifyH("CENTER")
-	manaVal:SetJustifyV("MIDDLE")
-	manaVal:SetShadowOffset(0, 0)
-	manaVal:SetShadowColor(0, 0, 0, 0)
-	manaVal:SetTextColor( 240/255, 240/255, 240/255, .4)
-	self.Mana.Value = manaVal
-	self.Mana.Value.Override = OverrideValue
 
 	-- power
 	local power = content:CreateStatusBar(self)
@@ -257,7 +220,7 @@ local Style = function(self, unit, id, ...)
 	power:SetStatusBarColor(1,1,1,.92) -- only the alpha changes should prevail here
 	power:SetOrientation("UP")
 	power:SetSparkMap(crystalMap2)
-	power.HideMana = true 
+	power.hideResource = "MANA"
 	self.Power = power
 
 	-- power backdrop
@@ -267,7 +230,7 @@ local Style = function(self, unit, id, ...)
 	powerBg:SetPoint("CENTER", 0, 0)
 	powerBg:SetTexture(getPath("pw_crystal_back"))
 	powerBg:SetVertexColor(1, 1, 1, .85) 
-	self.PowerBG = powerBg
+	--self.PowerBG = powerBg
 
 	-- power overlay art
 	local powerFg = power:CreateTexture()
@@ -275,8 +238,8 @@ local Style = function(self, unit, id, ...)
 	powerFg:SetPoint("BOTTOM", 6, -24)
 	powerFg:SetDrawLayer("ARTWORK")
 	powerFg:SetTexture(getPath("pw_crystal_case"))
-	powerFg:SetVertexColor(unpack(self.colors.General.Overlay))
-	self.PowerFG = powerFg
+	powerFg:SetVertexColor(227/255, 231/255, 216/255)
+	--self.PowerFG = powerFg
 
 	-- power value text
 	local powerVal = power:CreateFontString()
@@ -293,12 +256,95 @@ local Style = function(self, unit, id, ...)
 	self.Power.Value.Override = OverrideValue
 
 
+
+	-- mana orb 
+	local mana = content:CreateOrb(self)
+	mana:SetSize(85, 85)
+	mana:Place("RIGHT", health, "LEFT", -8, 26) -- 12, 26
+	mana:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3"))
+	mana:SetStatusBarColor(unpack(self.colors.Power.MANA))
+	mana.showResource = "MANA"
+	power[1] = mana
+
+	-- mana backdrop
+	local manaBg = mana:CreateTexture()
+	manaBg:SetDrawLayer("BACKGROUND", -2)
+	manaBg:SetSize(85, 85)
+	manaBg:SetPoint("CENTER", 0, 0)
+	manaBg:SetTexture(getPath("pw_orb_bar3"))
+	manaBg:SetVertexColor(  22/255,  26/255, 22/255, .82) 
+	--self.ManaBG = manaBg
+
+	-- mana shade
+	local manaFg2 = mana:GetOverlay():CreateTexture()
+	manaFg2:SetDrawLayer("BORDER", -1)
+	manaFg2:SetSize(85, 85)
+	manaFg2:SetPoint("CENTER", 0, 0)
+	manaFg2:SetTexture(getPath("shade_circle"))
+	manaFg2:SetVertexColor(  0, 0, 0, 1) 
+	--self.ManaFG2 = manaFg2
+	
+	-- mana overlay case
+	local manaFg = mana:GetOverlay():CreateTexture()
+	manaFg:SetDrawLayer("BORDER")
+	manaFg:SetSize(150, 150)
+	manaFg:SetPoint("CENTER", 0, 0)
+	manaFg:SetTexture(getPath("pw_orb_case"))
+	manaFg:SetVertexColor( 188/255, 205/255, 188/255, 1) 
+	--self.ManaFG = manaFg
+	
+	-- mana value text
+	local manaVal = mana:GetOverlay():CreateFontString()
+	manaVal:SetPoint("CENTER", 2, 0)
+	manaVal:SetDrawLayer("OVERLAY")
+	manaVal:SetFontObject(GameFontNormal)
+	manaVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	manaVal:SetJustifyH("CENTER")
+	manaVal:SetJustifyV("MIDDLE")
+	manaVal:SetShadowOffset(0, 0)
+	manaVal:SetShadowColor(0, 0, 0, 0)
+	manaVal:SetTextColor( 240/255, 240/255, 240/255, .4)
+	power[1].Value = manaVal
+	power[1].Value.Override = OverrideValue
+
+
+
 	-- Widgets
 	-----------------------------------------------------------
 
 	-- spec
-	local spec = overlay:CreateTexture()
-	spec:SetDrawLayer("ARTWORK")
+	local spec = overlay:CreateFrame("Frame")
+	spec:SetSize(50,38)
+	spec:Place("CENTER", power, "BOTTOM", 2, -15)
+
+	local specBg = spec:CreateTexture()
+	specBg:SetDrawLayer("BACKGROUND")
+	specBg:SetSize(50,38)
+	specBg:SetPoint("CENTER", 0, 0)
+	specBg:SetTexture(getPath("triangle_case"))
+	specBg:SetVertexColor(  89/255,  92/255,  88/255, 1)
+
+	local specGem = spec:CreateTexture()
+	specGem:SetDrawLayer("ARTWORK")
+	specGem:SetPoint("CENTER", 0, 1)
+	specGem:SetSize(23,18)
+	specGem:SetTexture(getPath("triangle_gem"))
+
+	-- Proxy the vertexcoloring without exposing the gem texture
+	spec.SetVertexColor = function(_, ...) specGem:SetVertexColor(...) end
+
+	--[[
+	for i = 1,4 do 
+		local specTexture = spec:CreateTexture()
+		specTexture:SetDrawLayer("ARTWORK")
+		specTexture:SetPoint("CENTER", 0, 1)
+		specTexture:SetSize(23,18)
+		specTexture:SetTexture(getPath("triangle_gem"))
+		specTexture:SetVertexColor(unpack(self.colors.General["Spec"..i]))
+		specTexture:Hide()
+		spec[i] = specTexture
+	end 
+	]]
 
 	self.Spec = spec
 	self.Spec.PostUpdate = PostUpdateSpec

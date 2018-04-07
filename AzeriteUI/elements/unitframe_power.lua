@@ -78,34 +78,42 @@ local UpdateSpec = function(Self, event, ...)
 	playerSpec = spec
 end
 
-local Update = function(self, event, ...)
-	local unit = self.unit
-	if unitEvents[event] then 
-		local arg = ...
-		if (arg ~= unit) then 
-			return 
-		end 
-	end 
-
-	local Power = self.Power
-	
+local UpdateElement = function(self, Power, unit, event, ...)
 	local powerID, powerType = UnitPowerType(unit)
 
-	-- Check if the module has chosen to 
-	-- hide the power element for the powertype "MANA".
-	if (Power.HideMana) then 
-		-- If the new powertype is "MANA", 
+	-- Check if the power is exclusive to a certain resource type
+	if Power.showResource then 
+
+		-- If the new powertype isn't the one tracked, 
 		-- we hide the power element.
-		if (powerType == "MANA") then 
+		if (powerType ~= Power.showResource) then 
+			Power.powerType = powerType
+			Power:Clear()
+			Power:Hide()
+			return 
+
+		-- If the previous powertype wasn't the one tracked, 
+		-- but the current one is, we need to show the power element again. 
+		elseif (Power.powerType ~= Power.showResource) then 
+			Power.powerType = powerType
+			Power:Show()
+		end 
+
+	-- Check if the power should be hidden on a certain resource type
+	elseif Power.hideResource then 
+
+		-- If the new powertype is the one ignored, 
+		-- we hide the power element.
+		if (powerType == Power.hideResource) then 
 			Power.powerType = powerType
 			Power:Clear()
 			Power:Hide()
 			return
 
-		-- If the previous powertype was "MANA", 
+		-- If the previous powertype was the ignored type, 
 		-- but the current is something else, 
 		-- we need to show the power element again. 
-		elseif (Power.powerType == "MANA") then 
+		elseif (Power.powerType == Power.hideResource) then 
 			Power:Show()
 		end  
 	end 
@@ -189,6 +197,25 @@ local Update = function(self, event, ...)
 	if Power.PostUpdate then
 		Power:PostUpdate(unit, power, powermax)
 	end		
+end 
+
+local Update = function(self, event, ...)
+	local unit = self.unit
+	if unitEvents[event] then 
+		local arg = ...
+		if (arg ~= unit) then 
+			return 
+		end 
+	end 
+
+	-- Update main power element 
+	local Power = self.Power
+	UpdateElement(self, Power, unit, event, ...)
+
+	-- Update additional power elements
+	for i in ipairs(Power) do 
+		UpdateElement(self, Power[i], unit, event, ...)
+	end 
 
 end 
 
@@ -199,9 +226,7 @@ end
 local Enable = function(self)
 	local Power = self.Power
 	if Power then
-		if Power then
-			Power._owner = self
-		end
+		Power._owner = self
 		if Power.frequent then
 			self:EnableFrequentUpdates("Power", Power.frequent)
 		else
@@ -221,6 +246,17 @@ local Enable = function(self)
 
 			UpdateSpec(self)
 		end
+
+		-- Add additional power elements, if any
+		for i in ipairs(Power) do 
+			local power = Power[i]
+			power._owner = self
+
+			-- Enable frequent updates per extra element
+			if power.frequent then
+				self:EnableFrequentUpdates("Power", power.frequent)
+			end 
+		end 
 	end
 end 
 

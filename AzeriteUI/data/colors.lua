@@ -36,9 +36,6 @@ end
 -- General coloring
 C.General = {
 
-	-- used as an overlay vertex color for most of the artwork
-	Overlay 		= prepare( 227/255, 231/255, 216/255 ),
-
 	-- playerframe health color
 	Health 			= prepare( 191/255,   0/255,  18/255 ),
 
