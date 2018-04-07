@@ -42,9 +42,11 @@ C.General = {
 	-- playerframe health color
 	Health 			= prepare( 191/255,   0/255,  18/255 ),
 
-
-
-
+	-- spec gems
+	Spec1 			= prepare(   0/255, 215/255,  59/255 ),
+	Spec2 			= prepare( 217/255,  33/255,   0/255 ),
+	Spec3 			= prepare( 218/255,  30/255, 255/255 ),
+	Spec4 			= prepare(  48/255, 156/255, 255/255 ),
 
 	Normal 			= prepare( 229/255, 178/255,  38/255 ),
 	Highlight 		= prepare( 250/255, 250/255, 250/255 ),
@@ -116,6 +118,7 @@ C.Power = {
 	-- Primary Resources
 	ENERGY 					= prepare(  0/255, 255/255, 141/255), -- Rogues, Druids, Monks
 	RAGE 					= prepare(255/255,  22/255,   0/255), -- Druids, Warriors
+	MAELSTROM 				= prepare(  0/255, 188/255, 255/255), -- Shamans
 	MANA 					= prepare(  0/255, 116/255, 255/255), -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
 
 
@@ -126,7 +129,6 @@ C.Power = {
 	HOLY_POWER 				= prepare(245/255, 254/255, 145/255), -- Paladins (All in Cata, only Retribution in Legion)
 	INSANITY 				= prepare(102/255,  64/255, 204/255), -- Shadow Priests (Legion)
 	LUNAR_POWER 			= prepare(121/255, 152/255, 192/255), -- Balance Druid Astral Power in (Legion)
-	MAELSTROM 				= prepare( 96/255, 160/255, 255/255), -- Shamans (Legion)
 	PAIN 					= prepare(217/255, 105/255,   0/255), -- Havoc Demon Hunter (Legion)
 	RUNIC_POWER 			= prepare(  0/255, 209/255, 255/255), -- Death Knights
 

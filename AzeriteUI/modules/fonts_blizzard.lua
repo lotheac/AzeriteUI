@@ -70,7 +70,9 @@ BlizzardFonts.SetGameEngineFonts = function(self)
 	--_G.UNIT_NAME_FONT_CHINESE = boldCondensed -- unsupported in our fonts
 
 	_G.STANDARD_TEXT_FONT = condensed
-	_G.DAMAGE_TEXT_FONT = boldCondensed 
+
+	-- Let's leave the damage font as it is. 
+	--_G.DAMAGE_TEXT_FONT = boldCondensed 
 
 	-- Fonts inherited by the nameplates.
 	-- This changed to being names of font objects instead of font objects in Legion 

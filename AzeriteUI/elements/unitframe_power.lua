@@ -90,14 +90,24 @@ local Update = function(self, event, ...)
 	local Power = self.Power
 	
 	local powerID, powerType = UnitPowerType(unit)
-	if (Power.HideMana) and (powerType == "MANA") then 
-		Power.powerType = powerType
-		Power:Clear()
-		Power:Hide()
-		return 
-	elseif (Power.powerType == "MANA") then 
-		Power.powerType = powerType
-		Power:Show()
+
+	-- Check if the module has chosen to 
+	-- hide the power element for the powertype "MANA".
+	if (Power.HideMana) then 
+		-- If the new powertype is "MANA", 
+		-- we hide the power element.
+		if (powerType == "MANA") then 
+			Power.powerType = powerType
+			Power:Clear()
+			Power:Hide()
+			return
+
+		-- If the previous powertype was "MANA", 
+		-- but the current is something else, 
+		-- we need to show the power element again. 
+		elseif (Power.powerType == "MANA") then 
+			Power:Show()
+		end  
 	end 
 
 	local dead = UnitIsDeadOrGhost(unit)
@@ -111,7 +121,6 @@ local Update = function(self, event, ...)
 		powermax = 0
 	end
 
-	local color = powerType and self.colors.Power[powerType] or self.colors.Power.UNUSED
 	if (Power.powerType ~= powerType) then
 		Power:Clear()
 		Power.powerType = powerType
@@ -120,7 +129,9 @@ local Update = function(self, event, ...)
 	Power:SetMinMaxValues(0, powermax)
 	Power:SetValue(power)
 	
+	local color = powerType and self.colors.Power[powerType] or self.colors.Power.UNUSED
 	local r, g, b
+
 	if (not connected )then
 		r, g, b = unpack(self.colors.Status.Disconnected)
 	elseif dead then
@@ -176,7 +187,7 @@ local Update = function(self, event, ...)
 	end
 			
 	if Power.PostUpdate then
-		Power:PostUpdate(power, powermax)
+		Power:PostUpdate(unit, power, powermax)
 	end		
 
 end 

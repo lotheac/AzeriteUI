@@ -13,12 +13,16 @@ local _G = _G
 local unpack = unpack
 
 -- WoW API
+local GetExpansionLevel = _G.GetExpansionLevel
 local GetQuestGreenRange = _G.GetQuestGreenRange
+local IsXPUserDisabled = _G.IsXPUserDisabled
 local UnitLevel = _G.UnitLevel
+
+-- WoW Objects
+local MAX_PLAYER_LEVEL_TABLE = _G.MAX_PLAYER_LEVEL_TABLE
 
 -- Current player level
 local LEVEL = UnitLevel("player") 
-
 
 -- Health Bar Map
 -- (Texture Size 512x64, Growth: RIGHT)
@@ -93,7 +97,37 @@ local OverrideValue = function(fontString, unit, min, max)
 	end 
 end 
 
+local PostUpdateSpec = function(spec, unit, specID)
+end 
 
+local PlayerAtLevelCap = function(self)
+	-- Expansion level is also stored in the constant LE_EXPANSION_LEVEL_CURRENT
+	-- *I thought about showing XP disabled twinks as max level too, 
+	--  but I actually don't think that would be a logical decision.  
+	--  A twink is a user choice, and having a permanent low/mid level bar should be part of that.  
+	return (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) --  or (IsXPUserDisabled())
+end 
+
+-- Style Post Updates
+-- Styling function applying sizes and textures 
+-- based on what kind of target we have, and its level. 
+local PostUpdateTextures = function(self)
+	-- War Seasoned
+	if (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
+		self.Health:SetStatusBarTexture(getPath("hp_cap_bar"))
+		self.HealthBG:SetTexture(getPath("hp_cap_case"))
+
+	-- Battle Hardened
+	elseif (LEVEL >= 40) then 
+		self.Health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+		self.HealthBG:SetTexture(getPath("hp_mid_case"))
+
+	-- Novice
+	else 
+		self.Health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+		self.HealthBG:SetTexture(getPath("hp_low_case"))
+	end 
+end 
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
@@ -135,31 +169,23 @@ local Style = function(self, unit, id, ...)
 	health:SetFrameLevel(health:GetFrameLevel() + 3) -- raise it above the power/mana frames
 	health:SetSize(289, 30)
 	health:Place("BOTTOMLEFT", 20, 20)
-	health:SetStatusBarTexture(getPath("hp_cap_bar"))
-	health:SetStatusBarColor(self.colors.General.Health[1], self.colors.General.Health[2], self.colors.General.Health[3], .85)
-	health:SetSparkColor( 255/255,  27/255,   0/255 )
+	health:SetStatusBarColor(1,1,1,.85)
+	health:SetStatusBarColor(unpack(self.colors.General.Health))
 	health:SetSparkMap(barMap)
 	health.frequent = 1/120
 	self.Health = health
 
-	-- health case 
+	-- health backdrop 
 	local healthBg = health:CreateTexture()
 	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetSize(329, 70)
+	healthBg:SetSize(329, 68)
 	healthBg:SetPoint("CENTER", 0, 0)
-	healthBg:SetTexture(getPath("hp_cap_case"))
 	healthBg:SetVertexColor(unpack(self.colors.General.Overlay)) --assume global artwork color?
 	self.HealthBG = healthBg
 
-	-- health bar backdrop
-	local healthBg = health:CreateTexture()
-	healthBg:SetDrawLayer("BACKGROUND", -2)
-	healthBg:SetSize(289, 30)
-	healthBg:SetPoint("CENTER", 0, 0)
-	healthBg:SetTexture(getPath("hp_cap_bar"))
-	healthBg:SetVertexColor( 0, 0, 0, .25 ) 
-	self.HealthBG = healthBg
-	
+	-- Update textures according to player level
+	PostUpdateTextures(self)
+
 	-- health value text
 	local healthVal = health:CreateFontString()
 	healthVal:SetPoint("LEFT", 20, 3)
@@ -228,6 +254,7 @@ local Style = function(self, unit, id, ...)
 	power:SetSize(90, 105)
 	power:Place("RIGHT", health, "LEFT", -6, 47)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
+	power:SetStatusBarColor(1,1,1,.92) -- only the alpha changes should prevail here
 	power:SetOrientation("UP")
 	power:SetSparkMap(crystalMap2)
 	power.HideMana = true 
@@ -236,20 +263,11 @@ local Style = function(self, unit, id, ...)
 	-- power backdrop
 	local powerBg = power:CreateTexture()
 	powerBg:SetDrawLayer("BACKGROUND", -2)
-	powerBg:SetSize(100, 115)
+	powerBg:SetSize(98, 115)
 	powerBg:SetPoint("CENTER", 0, 0)
 	powerBg:SetTexture(getPath("pw_crystal_back"))
 	powerBg:SetVertexColor(1, 1, 1, .85) 
 	self.PowerBG = powerBg
-
-	-- power bar backdrop
-	local powerBg2 = power:CreateTexture()
-	powerBg2:SetDrawLayer("BACKGROUND", -1)
-	powerBg2:SetSize(90, 105)
-	powerBg2:SetPoint("CENTER", 0, 0)
-	powerBg2:SetTexture(getPath("pw_crystal_back"))
-	powerBg2:SetVertexColor(0, 0, 0, .25) 
-	self.PowerBG2 = powerBg2
 
 	-- power overlay art
 	local powerFg = power:CreateTexture()
@@ -274,6 +292,17 @@ local Style = function(self, unit, id, ...)
 	self.Power.Value = powerVal
 	self.Power.Value.Override = OverrideValue
 
+
+	-- Widgets
+	-----------------------------------------------------------
+
+	-- spec
+	local spec = overlay:CreateTexture()
+	spec:SetDrawLayer("ARTWORK")
+
+	self.Spec = spec
+	self.Spec.PostUpdate = PostUpdateSpec
+
 	
 end 
 
@@ -288,6 +317,11 @@ UnitFramePlayer.OnEvent = function(self, event, ...)
 				LEVEL = level
 			end
 		end
+
+		-- Update textures according to player level
+		if self.frame then 
+			PostUpdateTextures(self.frame)
+		end 
 	end
 end
 
