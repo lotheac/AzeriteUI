@@ -4,7 +4,7 @@
 <Script file='modules\castbar_player.lua'/>
 <Script file='modules\chat_bubbles.lua'/>
 <Script file='modules\chat_windows.lua'/>
-<Script file='modules\fonts_blizzard.lua'/>
+<Script file='modules\font_replacements.lua'/>
 <Script file='modules\hud_orderhall.lua'/>
 <Script file='modules\hud_warnings.lua'/>
 <Script file='modules\hud_worldstate.lua'/>

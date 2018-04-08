@@ -89,7 +89,7 @@ local Update = function(self, event, ...)
 			maxHealth = 0
 			isUnavailable = UnitIsGhost(unit) and "ghost" or "dead"
 		end 
-	elseif UnitIsDead(unit) then
+	elseif UnitIsDeadOrGhost(unit) then
 		curHealth = 0
 		maxHealth = 0
 		isUnavailable = "dead"

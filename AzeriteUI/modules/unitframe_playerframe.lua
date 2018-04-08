@@ -97,6 +97,14 @@ local OverrideValue = function(fontString, unit, min, max)
 	end 
 end 
 
+local OverrideHealthValue = function(fontString, unit, min, max)
+	if UnitIsDeadOrGhost(unit) then 
+		return fontString:SetText(DEAD)
+	else 
+		return OverrideValue(fontString, unit, min, max)
+	end 
+end 
+
 -- Style Post Updates
 -- Styling function applying sizes and textures 
 -- based on what kind of target we have, and its level. 
@@ -209,7 +217,7 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetShadowColor(0, 0, 0, 0)
 	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
 	self.Health.Value = healthVal
-	self.Health.Value.Override = OverrideValue
+	self.Health.Value.Override = OverrideHealthValue
 
 
 	-- power

@@ -13,12 +13,20 @@ local _G = _G
 local unpack = unpack
 
 -- WoW API
+local GetExpansionLevel = _G.GetExpansionLevel
 local GetQuestGreenRange = _G.GetQuestGreenRange
 local UnitExists = _G.UnitExists
+local UnitIsConnected = _G.UnitIsConnected
+local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
 local UnitIsEnemy = _G.UnitIsEnemy
 local UnitIsFriend = _G.UnitIsFriend
 local UnitIsTrivial = _G.UnitIsTrivial
 local UnitLevel = _G.UnitLevel
+
+-- WoW Constants & Objects
+local DEAD = _G.DEAD
+local MAX_PLAYER_LEVEL_TABLE = _G.MAX_PLAYER_LEVEL_TABLE
+local PLAYER_OFFLINE = _G.PLAYER_OFFLINE
 
 -- Current player level
 -- We use this to decide how dangerous enemies are 
@@ -103,6 +111,16 @@ local OverrideValue = function(fontString, unit, min, max)
 	elseif (min >= 1e3) then 	fontString:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
 	elseif (min > 0) then 		fontString:SetText(min) 						-- 1 - 999
 	else 						fontString:SetText("")
+	end 
+end 
+
+local OverrideHealthValue = function(fontString, unit, min, max)
+	if (UnitIsPlayer(unit) and (not UnitIsConnected(unit))) then 
+		return fontString:SetText(PLAYER_OFFLINE)
+	elseif UnitIsDeadOrGhost(unit) then 
+		return fontString:SetText(DEAD)
+	else 
+		return OverrideValue(fontString, unit, min, max)
 	end 
 end 
 
@@ -320,16 +338,16 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
 
 	self.Health.Value = healthVal
-	self.Health.Value.Override = OverrideValue
+	self.Health.Value.Override = OverrideHealthValue
 
 
 	-- Portrait
 	-----------------------------------------------------------
 
 	local portrait = backdrop:CreateFrame("PlayerModel")
-	portrait:SetPoint("TOPRIGHT", 92 -(140-60)/2 , 46 -(140-60)/2 )
-	portrait:SetSize(60, 60) 
-	portrait.type = "3D"
+	portrait:SetPoint("TOPRIGHT", 55, 6)
+	portrait:SetSize(64, 64) 
+	portrait:SetAlpha(.85)
 	self.Portrait = portrait
 	
 	-- To allow the backdrop and overlay to remain 
@@ -341,14 +359,20 @@ local Style = function(self, unit, id, ...)
 	portraitBg:SetPoint("TOPRIGHT", 87, 41)
 	portraitBg:SetSize(130, 130)
 	portraitBg:SetTexture(getPath("p_potraitback"))
-	--portraitBg:Hide()
+	portraitBg:SetVertexColor(247/255 *1/3, 255/255 *1/3, 239/255 *1/3)
 	self.Portrait.Bg = portraitBg
+
+	local portraitShade = content:CreateTexture()
+	portraitShade:SetDrawLayer("BACKGROUND", -1)
+	portraitShade:SetPoint("TOPRIGHT", 62, 16)
+	portraitShade:SetSize(80, 80) 
+	portraitShade:SetTexture(getPath("shade_circle"))
+	self.Portrait.Shade = portraitShade
 
 	local portraitFg = content:CreateTexture()
 	portraitFg:SetDrawLayer("BACKGROUND", 0)
 	portraitFg:SetPoint("TOPRIGHT", 92, 46)
 	portraitFg:SetSize(140, 140)
-	--portraitFg:Hide()
 	self.Portrait.Fg = portraitFg
 
 
@@ -356,18 +380,94 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------
 	-- level 
 	local level = overlay:CreateFontString()
+	level:SetPoint("CENTER", self, "TOPRIGHT", 60, -47)
+	level:SetDrawLayer("BORDER")
+	level:SetFontObject(GameFontWhite)
+	level:SetFont(GameFontWhite:GetFont(), 10, "OUTLINE")
+	level:SetJustifyH("CENTER")
+	level:SetJustifyV("MIDDLE")
+	level:SetShadowOffset(0, 0)
+	level:SetShadowColor(0, 0, 0, 0)
+
+	-- Hide the level of capped (or higher) players and NPcs 
+	-- Doesn't affect high/unreadable level (??) creatures, as they will still get a skull.
+	level.hideCapped = true 
+
+	-- Set the default level coloring when nothing special is happening
+	level.defaultColor = { 251/255, 255/255, 255/255 } 
+	level.alpha = .7
+
+	-- pretty level badge backdrop
+	local levelBg = overlay:CreateTexture()
+	levelBg:SetDrawLayer("BACKGROUND")
+	levelBg:SetPoint("TOPRIGHT", 74, -31)
+	levelBg:SetSize(30, 30)
+	levelBg:SetTexture(getPath("point_plate"))
+	levelBg:SetVertexColor(182/255, 183/255, 181/255)
+	level.Bg = levelBg
+
+	-- skull indicating a ?? bosslevel
+	local skull = overlay:CreateTexture()
+	skull:SetDrawLayer("BORDER")
+	skull:SetPoint("TOPRIGHT", 74, -31)
+	skull:SetSize(30, 30)
+	skull:SetTexture(getPath("icon_skull"))
+	level.Skull = skull
+
 	self.Level = level
 
-	local bossIcon = overlay:CreateTexture()
-	self.BossIcon = bossIcon
+	-- classifications
+	-- Not redundant even though we have a skull icon above, 
+	-- since NPCs can be bosses without having a boss level.  
+	-- We need to indicate their boss status regardless of level. 
+	local isBoss = overlay:CreateTexture()
+	isBoss:SetTexture(getPath("icon_boss_red"))
+	isBoss:SetSize(42,42)
+	isBoss:SetPoint("TOPRIGHT", 45, -50)
+	isBoss:SetVertexColor(182/255, 183/255, 181/255)
 
-	-- rarity
-	local classification = overlay:CreateTexture()
-	self.Classification = Classification
+	local isElite = overlay:CreateTexture()
+	isElite:SetTexture(getPath("icon_elite_gold"))
+	isElite:SetSize(42,42)
+	isElite:SetPoint("TOPRIGHT", 45, -50)
+	isElite:SetVertexColor(182/255, 183/255, 181/255)
+
+	local isRare = overlay:CreateTexture()
+	isRare:SetTexture(getPath("icon_rare_blue"))
+	isRare:SetSize(42,42)
+	isRare:SetPoint("TOPRIGHT", 45, -50)
+	isRare:SetVertexColor(182/255, 183/255, 181/255)
+
+	self.Classification = {
+		Elite = isElite, 
+		Boss = isBoss,
+		Rare = isRare 
+	}
 
 	-- who your target is targeting
-	local targeted = overlay:CreateTexture()
-	self.Targeted = targeted
+	local youByFriend = overlay:CreateTexture()
+	youByFriend:SetTexture(getPath("icon_stoneye"))
+	youByFriend:SetSize(50,50)
+	youByFriend:SetPoint("TOPRIGHT", 22, 32)
+	youByFriend:SetVertexColor(174/255, 191/255, 182/255)
+
+	local youByEnemy = overlay:CreateTexture()
+	youByEnemy:SetTexture(getPath("icon_stoneye2"))
+	youByEnemy:SetSize(50,50)
+	youByEnemy:SetPoint("TOPRIGHT", 22, 32)
+	youByEnemy:SetVertexColor(255/255, 141/255, 102/255)
+
+	local petByEnemy = overlay:CreateTexture()
+	petByEnemy:SetTexture(getPath("icon_stoneye2"))
+	petByEnemy:SetSize(50,50)
+	petByEnemy:SetPoint("TOPRIGHT", 22, 32)
+	petByEnemy:SetVertexColor(117/255, 191/255, 54/255)
+
+	self.Targeted = {
+		PetByEnemy = petByEnemy,
+		YouByEnemy = youByEnemy,
+		YouByFriend = youByFriend
+	}
 
 
 	-- Update target frame textures
