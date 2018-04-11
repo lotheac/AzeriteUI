@@ -24,36 +24,39 @@ local MAX_PLAYER_LEVEL_TABLE = _G.MAX_PLAYER_LEVEL_TABLE
 -- Current player level
 local LEVEL = UnitLevel("player") 
 
--- Health Bar Map
--- (Texture Size 512x64, Growth: RIGHT)
-local barMap = {
-	{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
-	{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
-	{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
-	{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, -- #4: bottom peak, now starts shrinking from the bottom
-	{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, -- #4: bottom peak, now starts shrinking from the bottom
-	{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, -- #5: starts shrinking from the top
-	{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
-}
+local map = {
 
--- Power Crystal Map
--- (Texture Size 256, 256, Growth: UP)
--- (topOffset = left - bottomOffset = right)
-local crystalMap2 = {
-	top = {
-		{ keyPercent =   0/256, offset =  -65/256 }, -- #1: 
-		{ keyPercent =  72/256, offset =    0/256 }, -- #2: 
-		{ keyPercent = 116/256, offset =  -16/256 }, -- #3: 
-		{ keyPercent = 128/256, offset =  -28/256 }, -- #4: 
-		{ keyPercent = 256/256, offset =  -84/256 }, -- #5: 
+	-- Health Bar Map
+	-- (Texture Size 512x64, Growth: RIGHT)
+	bar = {
+		{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
+		{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
+		{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
+		{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, -- #4: bottom peak, now starts shrinking from the bottom
+		{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, -- #4: bottom peak, now starts shrinking from the bottom
+		{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, -- #5: starts shrinking from the top
+		{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
 	},
-	bottom = {
-		{ keyPercent =   0/256, offset =  -47/256 }, -- #1: 
-		{ keyPercent =  84/256, offset =    0/256 }, -- #2: 
-		{ keyPercent = 135/256, offset =  -24/256 }, -- #3: 
-		{ keyPercent = 142/256, offset =  -32/256 }, -- #4: 
-		{ keyPercent = 225/256, offset =  -79/256 }, -- #5: 
-		{ keyPercent = 256/256, offset = -168/256 }, -- #6: 
+
+	-- Power Crystal Map
+	-- (Texture Size 256, 256, Growth: UP)
+	-- (topOffset = left - bottomOffset = right)
+	crystal = {
+		top = {
+			{ keyPercent =   0/256, offset =  -65/256 }, -- #1: 
+			{ keyPercent =  72/256, offset =    0/256 }, -- #2: 
+			{ keyPercent = 116/256, offset =  -16/256 }, -- #3: 
+			{ keyPercent = 128/256, offset =  -28/256 }, -- #4: 
+			{ keyPercent = 256/256, offset =  -84/256 }, -- #5: 
+		},
+		bottom = {
+			{ keyPercent =   0/256, offset =  -47/256 }, -- #1: 
+			{ keyPercent =  84/256, offset =    0/256 }, -- #2: 
+			{ keyPercent = 135/256, offset =  -24/256 }, -- #3: 
+			{ keyPercent = 142/256, offset =  -32/256 }, -- #4: 
+			{ keyPercent = 225/256, offset =  -79/256 }, -- #5: 
+			{ keyPercent = 256/256, offset = -168/256 }, -- #6: 
+		}
 	}
 }
 
@@ -65,15 +68,15 @@ local crystalMap2 = {
 local getDifficultyColorByLevel = function(level)
 	level = level - LEVEL
 	if (level > 4) then
-		return C.General.DimRed.colorCode
+		return Colors.quest.red.colorCode
 	elseif (level > 2) then
-		return C.General.Orange.colorCode
+		return Colors.quest.orange.colorCode
 	elseif (level >= -2) then
-		return C.General.Normal.colorCode
+		return Colors.quest.yellow.colorCode
 	elseif (level >= -GetQuestGreenRange()) then
-		return C.General.OffGreen.colorCode
+		return Colors.quest.green.colorCode
 	else
-		return C.General.Gray.colorCode
+		return Colors.quest.gray.colorCode
 	end
 end
 
@@ -87,22 +90,31 @@ end
 -----------------------------------------------------------------
 
 -- Number abbreviations
-local OverrideValue = function(fontString, unit, min, max)
-	if (min >= 1e8) then 		fontString:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
-	elseif (min >= 1e6) then 	fontString:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	fontString:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
-	elseif (min >= 1e3) then 	fontString:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
-	elseif (min > 0) then 		fontString:SetText(min) 						-- 1 - 999
-	else 						fontString:SetText("")
+local OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
+	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
+	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
+	elseif (min > 0) then 		element.Value:SetText(min) 						-- 1 - 999
+	else 						element.Value:SetText("")
 	end 
 end 
 
-local OverrideHealthValue = function(fontString, unit, min, max)
-	if UnitIsDeadOrGhost(unit) then 
-		return fontString:SetText(DEAD)
+local OverrideHealthValue = function(element, unit, min, max, disconnected, dead, tapped)
+	if dead then 
+		return element.Value:SetText(DEAD)
 	else 
-		return OverrideValue(fontString, unit, min, max)
+		return OverrideValue(element, unit, min, max, disconnected, dead, tapped)
 	end 
+end 
+
+local UpdatePowerValue = function(element, unit, min, max, powerType, powerID)
+end 
+
+local UpdateHealthColor = function(element, unit, min, max)
+end 
+
+local UpdategHealthValue = function(element, unit, min, max)
 end 
 
 -- Style Post Updates
@@ -114,8 +126,8 @@ local PostUpdateTextures = function(self)
 		local health = self.Health
 		health:SetSize(289, 30)
 		health:SetStatusBarTexture(getPath("hp_cap_bar"))
-		health:SetStatusBarColor(unpack(self.colors.General.Health))
-		health:SetSparkMap(barMap)
+		health:SetStatusBarColor(unpack(self.colors.health))
+		health:SetSparkMap(map.bar)
 
 		local healthBg = self.Health.Bg
 		healthBg:SetSize(329, 68)
@@ -128,8 +140,8 @@ local PostUpdateTextures = function(self)
 		local health = self.Health
 		health:SetSize(289, 28)
 		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-		health:SetStatusBarColor(unpack(self.colors.General.Health))
-		health:SetSparkMap(barMap)
+		health:SetStatusBarColor(unpack(self.colors.health))
+		health:SetSparkMap(map.bar)
 
 		local healthBg = self.Health.Bg
 		healthBg:SetSize(329, 68)
@@ -142,13 +154,17 @@ local PostUpdateTextures = function(self)
 		local health = self.Health
 		health:SetSize(289, 28)
 		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-		health:SetStatusBarColor(unpack(self.colors.General.Health))
+		health:SetStatusBarColor(unpack(self.colors.health))
 
 		local healthBg = self.Health.Bg
 		healthBg:SetSize(329, 70)
 		healthBg:SetPoint("CENTER", 0, -1)
 		healthBg:SetTexture(getPath("hp_low_case"))
 		healthBg:SetVertexColor(225/255 *2/3, 220/255 *2/3, 205/255 *2/3)
+
+		local absorb = self.Absorb
+		absorb:SetSize(289, 28)
+		absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 	end 
 end 
 
@@ -159,8 +175,8 @@ local Style = function(self, unit, id, ...)
 	-- Frame
 	-----------------------------------------------------------
 
-	self:SetSize(329, 70)
-	self:Place("BOTTOMLEFT", 145, 85)
+	self:SetSize(329, 70) 
+	self:Place("BOTTOMLEFT", 125, 75) 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -192,9 +208,10 @@ local Style = function(self, unit, id, ...)
 	local health = content:CreateStatusBar()
 	health:SetSize(289, 30)
 	health:Place("BOTTOMLEFT", 20, 20)
+	health:SetOrientation("RIGHT") -- set the bar to grow towards the right
 	health:SetStatusBarColor(1,1,1,.85)
-	health:SetStatusBarColor(unpack(self.colors.General.Health))
-	health:SetSparkMap(barMap)
+	health:SetStatusBarColor(unpack(self.colors.health))
+	health:SetSparkMap(map.bar)
 	health.frequent = 1/120
 	self.Health = health
 
@@ -217,8 +234,32 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetShadowColor(0, 0, 0, 0)
 	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
 	self.Health.Value = healthVal
-	self.Health.Value.Override = OverrideHealthValue
+	self.Health.UpdateValue = OverrideHealthValue
 
+	-- absorbs
+	local absorb = content:CreateStatusBar()
+	absorb:SetFrameLevel(health:GetFrameLevel() + 1)
+	absorb:Place("BOTTOMLEFT", 20, 20)
+	absorb:SetOrientation("LEFT") -- grow the bar towards the left (grows from the end of the health)
+	absorb:SetSparkMap(map.bar)
+	absorb:SetStatusBarColor(1,1,1, .25)
+	self.Absorb = absorb
+
+	-- health value text
+	local absorbVal = health:CreateFontString()
+	absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 10, 0)
+	absorbVal:SetDrawLayer("OVERLAY")
+	absorbVal:SetFontObject(GameFontNormal)
+	absorbVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	absorbVal:SetJustifyH("CENTER")
+	absorbVal:SetJustifyV("MIDDLE")
+	absorbVal:SetShadowOffset(0, 0)
+	absorbVal:SetShadowColor(0, 0, 0, 0)
+	absorbVal:SetTextColor( 240/255, 240/255, 240/255, .5)
+
+	self.Absorb.Value = absorbVal 
+	self.Absorb.UpdateValue = OverrideValue
+	
 
 	-- power
 	local power = backdrop:CreateStatusBar()
@@ -227,8 +268,8 @@ local Style = function(self, unit, id, ...)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
 	power:SetStatusBarColor(1,1,1,.92) -- only the alpha changes should prevail here
 	power:SetOrientation("UP")
-	power:SetSparkMap(crystalMap2)
-	power.hideResource = "MANA"
+	power:SetSparkMap(map.crystal)
+	power.ignoredResource = "MANA"
 	self.Power = power
 
 	-- power backdrop
@@ -261,58 +302,55 @@ local Style = function(self, unit, id, ...)
 	powerVal:SetShadowColor(0, 0, 0, 0)
 	powerVal:SetTextColor( 240/255, 240/255, 240/255, .4)
 	self.Power.Value = powerVal
-	self.Power.Value.Override = OverrideValue
+	self.Power.UpdateValue = OverrideValue
 
 
 	-- mana orb 
-	local mana = backdrop:CreateOrb()
-	mana:SetSize(85, 85)
-	mana:Place("BOTTOMLEFT", -73, 19) 
-	mana:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3"))
-	mana:SetStatusBarColor(unpack(self.colors.Power.MANA))
-	mana.showResource = "MANA"
-	power[1] = mana
+	local extraPower = backdrop:CreateOrb()
+	extraPower:SetSize(85, 85)
+	extraPower:Place("BOTTOMLEFT", -73, 19) 
+	extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3"))
+	extraPower.exclusiveResource = "MANA"
+	self.ExtraPower = extraPower
 
-	-- mana backdrop
-	local manaBg = mana:CreateTexture()
-	manaBg:SetDrawLayer("BACKGROUND", -2)
-	manaBg:SetSize(85, 85)
-	manaBg:SetPoint("CENTER", 0, 0)
-	manaBg:SetTexture(getPath("pw_orb_bar3"))
-	manaBg:SetVertexColor(  22/255,  26/255, 22/255, .82) 
-	--self.ManaBG = manaBg
+	-- extraPower backdrop
+	local extraPowerBg = extraPower:CreateTexture()
+	extraPowerBg:SetDrawLayer("BACKGROUND", -2)
+	extraPowerBg:SetSize(85, 85)
+	extraPowerBg:SetPoint("CENTER", 0, 0)
+	extraPowerBg:SetTexture(getPath("pw_orb_bar3"))
+	extraPowerBg:SetVertexColor(  22/255,  26/255, 22/255, .82) 
 
-	-- mana shade
-	local manaFg2 = mana:GetOverlay():CreateTexture()
-	manaFg2:SetDrawLayer("BORDER", -1)
-	manaFg2:SetSize(85, 85)
-	manaFg2:SetPoint("CENTER", 0, 0)
-	manaFg2:SetTexture(getPath("shade_circle"))
-	manaFg2:SetVertexColor(  0, 0, 0, 1) 
-	--self.ManaFG2 = manaFg2
+	-- extraPower shade
+	local extraPowerFg2 = extraPower:GetOverlay():CreateTexture()
+	extraPowerFg2:SetDrawLayer("BORDER", -1)
+	extraPowerFg2:SetSize(85 +10, 85 +10) 
+	extraPowerFg2:SetPoint("CENTER", 0, 0)
+	extraPowerFg2:SetTexture(getPath("shade_circle"))
+	extraPowerFg2:SetVertexColor(0, 0, 0, 1) 
 	
-	-- mana overlay case
-	local manaFg = mana:GetOverlay():CreateTexture()
-	manaFg:SetDrawLayer("BORDER")
-	manaFg:SetSize(150, 150)
-	manaFg:SetPoint("CENTER", 0, 0)
-	manaFg:SetTexture(getPath("pw_orb_case"))
-	manaFg:SetVertexColor( 188/255, 205/255, 188/255, 1) 
+	-- extraPower overlay case
+	local extraPowerFg = extraPower:GetOverlay():CreateTexture()
+	extraPowerFg:SetDrawLayer("BORDER")
+	extraPowerFg:SetSize(150, 150)
+	extraPowerFg:SetPoint("CENTER", 0, 0)
+	extraPowerFg:SetTexture(getPath("pw_orb_case"))
+	extraPowerFg:SetVertexColor( 188/255, 205/255, 188/255, 1) 
 	
-	-- mana value text
-	local manaVal = mana:GetOverlay():CreateFontString()
-	manaVal:SetPoint("CENTER", 2, 0)
-	manaVal:SetDrawLayer("OVERLAY")
-	manaVal:SetFontObject(GameFontNormal)
-	manaVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
-	manaVal:SetJustifyH("CENTER")
-	manaVal:SetJustifyV("MIDDLE")
-	manaVal:SetShadowOffset(0, 0)
-	manaVal:SetShadowColor(0, 0, 0, 0)
-	manaVal:SetTextColor( 240/255, 240/255, 240/255, .4)
+	-- extraPower value text
+	local extraPowerVal = extraPower:GetOverlay():CreateFontString()
+	extraPowerVal:SetPoint("CENTER", 2, 0)
+	extraPowerVal:SetDrawLayer("OVERLAY")
+	extraPowerVal:SetFontObject(GameFontNormal)
+	extraPowerVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	extraPowerVal:SetJustifyH("CENTER")
+	extraPowerVal:SetJustifyV("MIDDLE")
+	extraPowerVal:SetShadowOffset(0, 0)
+	extraPowerVal:SetShadowColor(0, 0, 0, 0)
+	extraPowerVal:SetTextColor( 240/255, 240/255, 240/255, .4)
 
-	power[1].Value = manaVal
-	power[1].Value.Override = OverrideValue
+	self.ExtraPower.Value = extraPowerVal
+	self.ExtraPower.UpdateValue = OverrideValue
 
 
 
@@ -337,7 +375,7 @@ local Style = function(self, unit, id, ...)
 		specTexture:SetPoint("CENTER", 0, 1)
 		specTexture:SetSize(23,18)
 		specTexture:SetTexture(getPath("triangle_gem"))
-		specTexture:SetVertexColor(unpack(self.colors.General["Spec"..i]))
+		specTexture:SetVertexColor(unpack(self.colors.specialization[i]))
 		specTexture:Hide()
 		spec[i] = specTexture
 	end 

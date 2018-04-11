@@ -82,15 +82,15 @@ local barMapBoss = {
 local getDifficultyColorByLevel = function(level)
 	level = level - LEVEL
 	if (level > 4) then
-		return C.General.DimRed.colorCode
+		return Colors.quest.red.colorCode
 	elseif (level > 2) then
-		return C.General.Orange.colorCode
+		return Colors.quest.orange.colorCode
 	elseif (level >= -2) then
-		return C.General.Normal.colorCode
+		return Colors.quest.yellow.colorCode
 	elseif (level >= -GetQuestGreenRange()) then
-		return C.General.OffGreen.colorCode
+		return Colors.quest.green.colorCode
 	else
-		return C.General.Gray.colorCode
+		return Colors.quest.gray.colorCode
 	end
 end
 
@@ -104,25 +104,26 @@ end
 -----------------------------------------------------------------
 
 -- Number abbreviations
-local OverrideValue = function(fontString, unit, min, max)
-	if (min >= 1e8) then 		fontString:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
-	elseif (min >= 1e6) then 	fontString:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	fontString:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
-	elseif (min >= 1e3) then 	fontString:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
-	elseif (min > 0) then 		fontString:SetText(min) 						-- 1 - 999
-	else 						fontString:SetText("")
+local OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
+	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
+	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
+	elseif (min > 0) then 		element.Value:SetText(min) 						-- 1 - 999
+	else 						element.Value:SetText("")
 	end 
 end 
 
-local OverrideHealthValue = function(fontString, unit, min, max)
-	if (UnitIsPlayer(unit) and (not UnitIsConnected(unit))) then 
-		return fontString:SetText(PLAYER_OFFLINE)
-	elseif UnitIsDeadOrGhost(unit) then 
-		return fontString:SetText(DEAD)
+local OverrideHealthValue = function(element, unit, min, max, disconnected, dead, tapped)
+	if disconnected then 
+		return element.Value:SetText(PLAYER_OFFLINE)
+	elseif dead then 
+		return element.Value:SetText(DEAD)
 	else 
-		return OverrideValue(fontString, unit, min, max)
+		return OverrideValue(element, unit, min, max, disconnected, dead, tapped)
 	end 
 end 
+
 
 -- Style Post Updates
 -- Styling function applying sizes and textures 
@@ -132,146 +133,147 @@ local PostUpdateTextures = function(self)
 	-- Figure out if the various artwork and bar textures need to be updated
 	-- We could put this into element post updates, 
 	-- but to avoid needless checks we limit this to actual target updates. 
-	--local guid = UnitGUID("target")
-	--if (guid ~= TARGET_GUID) then 
-		local unitLevel = UnitLevel("target")
-		local unitClassification = UnitClassification("target")
+	local unitLevel = UnitLevel("target")
+	local unitClassification = UnitClassification("target")
 
-		if ((unitClassification == "worldboss") or (unitLevel and (unitLevel < 1))) then 
-			if (TARGET_STYLE ~= "BOSS") then 
-				TARGET_STYLE = "BOSS"
+	if ((unitClassification == "worldboss") or (unitLevel and (unitLevel < 1))) then 
+		if (TARGET_STYLE ~= "BOSS") then 
+			TARGET_STYLE = "BOSS"
 
-				local health = self.Health
-				health:SetSize(400, 30)
-				health:Place("TOPRIGHT", -20, -20)
-				health:SetStatusBarTexture(getPath("hp_boss_bar"))
-				health:SetStatusBarColor(unpack(self.colors.General.Health))
-				health:SetSparkMap(barMapBoss)
-		
-				local healthBg = self.Health.Bg
-				healthBg:SetSize(441, 68)
-				healthBg:SetPoint("CENTER", 1, 0)
-				healthBg:SetTexture(getPath("hp_boss_case"))
-				healthBg:SetVertexColor(227/255, 231/255, 216/255)
+			local health = self.Health
+			health:SetSize(400, 30)
+			health:Place("TOPRIGHT", -20, -20)
+			health:SetStatusBarTexture(getPath("hp_boss_bar"))
+			health:SetStatusBarColor(unpack(self.colors.health))
+			health:SetSparkMap(barMapBoss)
+	
+			local healthBg = self.Health.Bg
+			healthBg:SetSize(441, 68)
+			healthBg:SetPoint("CENTER", 1, 0)
+			healthBg:SetTexture(getPath("hp_boss_case"))
+			healthBg:SetVertexColor(227/255, 231/255, 216/255)
 
-				local healthVal = self.Health.Value
-				healthVal:Show()
+			local healthVal = self.Health.Value
+			healthVal:Show()
 
-				local portraitFg = self.Portrait.Fg
-				portraitFg:SetTexture(getPath("portrait_frame_hi"))
-				portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
-			end
+			local portraitFg = self.Portrait.Fg
+			portraitFg:SetTexture(getPath("portrait_frame_hi"))
+			portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
+		end
 
-		-- War Seasoned / Capped  
-		elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
-			if (TARGET_STYLE ~= "CAP") then 
-				TARGET_STYLE = "CAP"
+	-- War Seasoned / Capped  
+	elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
+		if (TARGET_STYLE ~= "CAP") then 
+			TARGET_STYLE = "CAP"
 
-				local health = self.Health
-				health:SetSize(289, 30)
-				health:Place("TOPRIGHT", -20, -20)
-				health:SetStatusBarTexture(getPath("hp_cap_bar"))
-				health:SetStatusBarColor(unpack(self.colors.General.Health))
-				health:SetSparkMap(barMap)
-		
-				local healthBg = self.Health.Bg
-				healthBg:SetSize(329, 68)
-				healthBg:SetPoint("CENTER", 0, 0)
-				healthBg:SetTexture(getPath("hp_cap_case"))
-				healthBg:SetVertexColor(227/255, 231/255, 216/255)
+			local health = self.Health
+			health:SetSize(289, 30)
+			health:Place("TOPRIGHT", -20, -20)
+			health:SetStatusBarTexture(getPath("hp_cap_bar"))
+			health:SetStatusBarColor(unpack(self.colors.health))
+			health:SetSparkMap(barMap)
+	
+			local healthBg = self.Health.Bg
+			healthBg:SetSize(329, 68)
+			healthBg:SetPoint("CENTER", 0, 0)
+			healthBg:SetTexture(getPath("hp_cap_case"))
+			healthBg:SetVertexColor(227/255, 231/255, 216/255)
 
-				local healthVal = self.Health.Value
-				healthVal:Show()
+			local healthVal = self.Health.Value
+			healthVal:Show()
 
-				local portraitFg = self.Portrait.Fg
-				portraitFg:SetTexture(getPath("portrait_frame_hi"))
-				portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
-			end 
-
-		-- Battle Hardened / Mid level
-		elseif (unitLevel >= 40) then 
-			if (TARGET_STYLE ~= "MID") then 
-				TARGET_STYLE = "MID"
-
-				local health = self.Health
-				health:SetSize(289, 28)
-				health:Place("TOPRIGHT", -20, -20)
-				health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-				health:SetStatusBarColor(unpack(self.colors.General.Health))
-				health:SetSparkMap(barMap)
-		
-				local healthBg = self.Health.Bg
-				healthBg:SetSize(329, 68)
-				healthBg:SetPoint("CENTER", 0, -1)
-				healthBg:SetTexture(getPath("hp_mid_case"))
-				healthBg:SetVertexColor(227/255, 231/255, 216/255)
-		
-				local healthVal = self.Health.Value
-				healthVal:Show()
-
-				local portraitFg = self.Portrait.Fg
-				portraitFg:SetTexture(getPath("portrait_frame_hi"))
-				portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
-			end 
-
-		-- Trivial / Critter
-		elseif ((unitLevel == 1) and (not UnitIsPlayer("target"))) then 
-			if (TARGET_STYLE ~= "CRITTER") then 
-				TARGET_STYLE = "CRITTER"
-
-				local health = self.Health
-				health:SetSize(30, 27)
-				health:Place("TOPRIGHT", -18, -18)
-				health:SetStatusBarTexture(getPath("hp_critter_bar"))
-				health:SetStatusBarColor(unpack(self.colors.General.Health))
-				health:SetSparkMap(barMap)
-		
-				local healthBg = self.Health.Bg
-				healthBg:SetSize(56, 53)
-				healthBg:SetPoint("CENTER", 0, -1)
-				healthBg:SetTexture(getPath("hp_critter_case"))
-				healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
-
-				local healthVal = self.Health.Value
-				healthVal:Hide()
-
-				local portraitFg = self.Portrait.Fg
-				portraitFg:SetTexture(getPath("portrait_frame_lo"))
-				portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3)
-			end
-
-			-- Novice / Low Level
-		elseif (unitLevel > 1) or UnitIsPlayer("target") then 
-
-			if (TARGET_STYLE ~= "LOW") then 
-				TARGET_STYLE = "LOW" 
-
-				local health = self.Health
-				health:SetSize(289, 28)
-				health:Place("TOPRIGHT", -20, -20)
-				health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-				health:SetStatusBarColor(unpack(self.colors.General.Health))
-				health:SetSparkMap(barMap)
-
-				local healthVal = self.Health.Value
-				healthVal:Show()
-
-				local healthBg = self.Health.Bg
-				healthBg:SetSize(329, 70)
-				healthBg:SetPoint("CENTER", 0, -1)
-				healthBg:SetTexture(getPath("hp_low_case"))
-				healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
-
-				local portraitFg = self.Portrait.Fg
-				portraitFg:SetTexture(getPath("portrait_frame_lo"))
-				portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3) -- 225/255, 220/255, 205/255
-			end 
-
+			local portraitFg = self.Portrait.Fg
+			portraitFg:SetTexture(getPath("portrait_frame_hi"))
+			portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
 		end 
-		
-		-- Update stored values to avoid unneeded updates
-		--TARGET_GUID = guid
-	--end 
+
+	-- Battle Hardened / Mid level
+	elseif (unitLevel >= 40) then 
+		if (TARGET_STYLE ~= "MID") then 
+			TARGET_STYLE = "MID"
+
+			local health = self.Health
+			health:SetSize(289, 28)
+			health:Place("TOPRIGHT", -20, -20)
+			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+			health:SetStatusBarColor(unpack(self.colors.health))
+			health:SetSparkMap(barMap)
+	
+			local healthBg = self.Health.Bg
+			healthBg:SetSize(329, 68)
+			healthBg:SetPoint("CENTER", 0, -1)
+			healthBg:SetTexture(getPath("hp_mid_case"))
+			healthBg:SetVertexColor(227/255, 231/255, 216/255)
+	
+			local healthVal = self.Health.Value
+			healthVal:Show()
+
+			local portraitFg = self.Portrait.Fg
+			portraitFg:SetTexture(getPath("portrait_frame_hi"))
+			portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
+		end 
+
+	-- Trivial / Critter
+	elseif ((unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+		if (TARGET_STYLE ~= "CRITTER") then 
+			TARGET_STYLE = "CRITTER"
+
+			local health = self.Health
+			health:SetSize(30, 27)
+			health:Place("TOPRIGHT", -18, -18)
+			health:SetStatusBarTexture(getPath("hp_critter_bar"))
+			health:SetStatusBarColor(unpack(self.colors.health))
+			health:SetSparkMap(barMap)
+	
+			local healthBg = self.Health.Bg
+			healthBg:SetSize(56, 53)
+			healthBg:SetPoint("CENTER", 0, -1)
+			healthBg:SetTexture(getPath("hp_critter_case"))
+			healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
+
+			local healthVal = self.Health.Value
+			healthVal:Hide()
+
+			local portraitFg = self.Portrait.Fg
+			portraitFg:SetTexture(getPath("portrait_frame_lo"))
+			portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3)
+		end
+
+		-- Novice / Low Level
+	elseif (unitLevel > 1) or UnitIsPlayer("target") then 
+
+		if (TARGET_STYLE ~= "LOW") then 
+			TARGET_STYLE = "LOW" 
+
+			local health = self.Health
+			health:SetSize(289, 28)
+			health:Place("TOPRIGHT", -20, -20)
+			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+			health:SetStatusBarColor(unpack(self.colors.health))
+			health:SetSparkMap(barMap)
+
+			local healthVal = self.Health.Value
+			healthVal:Show()
+
+			local healthBg = self.Health.Bg
+			healthBg:SetSize(329, 70)
+			healthBg:SetPoint("CENTER", 0, -1)
+			healthBg:SetTexture(getPath("hp_low_case"))
+			healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
+
+			local absorb = self.Absorb
+			absorb:SetSize(289, 28)
+			absorb:Place("TOPRIGHT", -20, -20)
+			absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+			absorb:SetSparkMap(barMap)
+
+			local portraitFg = self.Portrait.Fg
+			portraitFg:SetTexture(getPath("portrait_frame_lo"))
+			portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3) -- 225/255, 220/255, 205/255
+		end 
+
+	end 
+	
 end 
 
 -- Main Styling Function
@@ -282,7 +284,7 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------
 
 	self:SetSize(329, 70)
-	self:Place("TOPRIGHT", -135, -79)
+	self:Place("TOPRIGHT", -115, -59) 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -313,9 +315,9 @@ local Style = function(self, unit, id, ...)
 	-- health
 	local health = content:CreateStatusBar()
 	health:Place("TOPRIGHT", -20, -20)
-	health:SetOrientation("LEFT")
+	health:SetOrientation("LEFT") -- set the bar to grow towards the left
+	health:SetFlippedHorizontally(true) -- flips the bar texture horizontally
 	health:SetStatusBarColor(1,1,1,.85)
-	health:SetFlippedHorizontally(true)
 	health.frequent = 1/120
 	self.Health = health
 
@@ -338,8 +340,32 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
 
 	self.Health.Value = healthVal
-	self.Health.Value.Override = OverrideHealthValue
+	self.Health.UpdateValue = OverrideHealthValue
 
+	-- absorbs
+	local absorb = content:CreateStatusBar()
+	absorb:SetFrameLevel(health:GetFrameLevel() + 1)
+	absorb:Place("TOPRIGHT", -20, -20)
+	absorb:SetOrientation("RIGHT") -- grow the bar towards the right (grows from the end of the health)
+	absorb:SetFlippedHorizontally(true) -- flips the bar texture horizontally
+	absorb:SetStatusBarColor(1,1,1,.25)
+	self.Absorb = absorb
+
+	-- health value text
+	local absorbVal = health:CreateFontString()
+	absorbVal:SetPoint("RIGHT", healthVal, "LEFT", -10, 0)
+	absorbVal:SetDrawLayer("OVERLAY")
+	absorbVal:SetFontObject(GameFontNormal)
+	absorbVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	absorbVal:SetJustifyH("CENTER")
+	absorbVal:SetJustifyV("MIDDLE")
+	absorbVal:SetShadowOffset(0, 0)
+	absorbVal:SetShadowColor(0, 0, 0, 0)
+	absorbVal:SetTextColor( 240/255, 240/255, 240/255, .5)
+
+	self.Absorb.Value = absorbVal 
+	self.Absorb.UpdateValue = OverrideValue
+	
 
 	-- Portrait
 	-----------------------------------------------------------
@@ -348,6 +374,11 @@ local Style = function(self, unit, id, ...)
 	portrait:SetPoint("TOPRIGHT", 55, 6)
 	portrait:SetSize(64, 64) 
 	portrait:SetAlpha(.85)
+	portrait.distanceScale = 1
+	portrait.positionX = 0
+	portrait.positionY = 0
+	portrait.positionZ = 0
+	portrait.rotation = 0 -- in degrees
 	self.Portrait = portrait
 	
 	-- To allow the backdrop and overlay to remain 
@@ -398,21 +429,21 @@ local Style = function(self, unit, id, ...)
 	level.alpha = .7
 
 	-- pretty level badge backdrop
-	local levelBg = overlay:CreateTexture()
-	levelBg:SetDrawLayer("BACKGROUND")
-	levelBg:SetPoint("TOPRIGHT", 74, -31)
-	levelBg:SetSize(30, 30)
-	levelBg:SetTexture(getPath("point_plate"))
-	levelBg:SetVertexColor(182/255, 183/255, 181/255)
-	level.Bg = levelBg
+	local levelBadge = overlay:CreateTexture()
+	levelBadge:SetDrawLayer("BACKGROUND")
+	levelBadge:SetPoint("TOPRIGHT", 74, -31)
+	levelBadge:SetSize(30, 30)
+	levelBadge:SetTexture(getPath("point_plate"))
+	levelBadge:SetVertexColor(182/255, 183/255, 181/255)
+	level.Badge = levelBadge
 
 	-- skull indicating a ?? bosslevel
-	local skull = overlay:CreateTexture()
-	skull:SetDrawLayer("BORDER")
-	skull:SetPoint("TOPRIGHT", 74, -31)
-	skull:SetSize(30, 30)
-	skull:SetTexture(getPath("icon_skull"))
-	level.Skull = skull
+	local levelSkull = overlay:CreateTexture()
+	levelSkull:SetDrawLayer("BORDER")
+	levelSkull:SetPoint("TOPRIGHT", 74, -31)
+	levelSkull:SetSize(30, 30)
+	levelSkull:SetTexture(getPath("icon_skull"))
+	level.Skull = levelSkull
 
 	self.Level = level
 
@@ -449,25 +480,42 @@ local Style = function(self, unit, id, ...)
 	youByFriend:SetTexture(getPath("icon_stoneye"))
 	youByFriend:SetSize(50,50)
 	youByFriend:SetPoint("TOPRIGHT", 22, 32)
-	youByFriend:SetVertexColor(174/255, 191/255, 182/255)
+	youByFriend:SetVertexColor(227/255, 231/255, 216/255)
+	--youByFriend:SetVertexColor(174/255, 191/255, 182/255)
 
 	local youByEnemy = overlay:CreateTexture()
 	youByEnemy:SetTexture(getPath("icon_stoneye2"))
 	youByEnemy:SetSize(50,50)
 	youByEnemy:SetPoint("TOPRIGHT", 22, 32)
-	youByEnemy:SetVertexColor(255/255, 141/255, 102/255)
+	youByEnemy:SetVertexColor(227/255, 231/255, 216/255)
+	--youByEnemy:SetVertexColor(255/255, 141/255, 102/255)
 
 	local petByEnemy = overlay:CreateTexture()
 	petByEnemy:SetTexture(getPath("icon_stoneye2"))
 	petByEnemy:SetSize(50,50)
 	petByEnemy:SetPoint("TOPRIGHT", 22, 32)
-	petByEnemy:SetVertexColor(117/255, 191/255, 54/255)
+	petByEnemy:SetVertexColor(227/255, 231/255, 216/255)
+	--petByEnemy:SetVertexColor(117/255, 191/255, 54/255)
 
 	self.Targeted = {
 		PetByEnemy = petByEnemy,
 		YouByEnemy = youByEnemy,
 		YouByFriend = youByFriend
 	}
+
+
+	-- name 
+	local name = overlay:CreateFontString()
+	name:SetPoint("TOPRIGHT", -40, 10)
+	name:SetDrawLayer("OVERLAY")
+	name:SetFontObject(GameFontNormal)
+	name:SetFont(GameFontNormal:GetFont(), 12, "OUTLINE")
+	name:SetJustifyH("CENTER")
+	name:SetJustifyV("TOP")
+	name:SetShadowOffset(0, 0)
+	name:SetShadowColor(0, 0, 0, 0)
+	name:SetTextColor( 240/255, 240/255, 240/255, .75)
+	self.Name = name
 
 
 	-- Update target frame textures

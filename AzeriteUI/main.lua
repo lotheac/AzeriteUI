@@ -1,10 +1,11 @@
 local ADDON = ...
 
+-- Wooh! 
 local AzeriteUI = CogWheel("CogModule"):NewModule("AzeriteUI", "CogDB", "CogEvent", "CogBlizzard")
+
+-- Tell the back-end what addon to look for before 
+-- initializing this module and all its submodules. 
 AzeriteUI:SetAddon(ADDON) 
-
-CogWheel("CogFrame"):SetDefaultScale( 1920/1440 )
-
 
 -- Tell the backend where our saved variables are found.
 -- *it's important that we're doing this here, before any configs are created at all.
@@ -18,19 +19,20 @@ local ipairs = ipairs
 local EnableAddOn = _G.EnableAddOn
 local LoadAddOn = _G.LoadAddOn
 
-
 AzeriteUI.OnInit = function(self)
-
-	-- In case some other jokers have disabled these, we add them back to avoid a World of Bugs
+	-- In case some other jokers have disabled these, we add them back to avoid a World of Bugs.
+	-- RothUI used to remove the two first, and a lot of people missed his documentation on how to get them back. 
+	-- I personally removed the objective's tracker for a while in DiabolicUI, which led to pain. Lots of pain.
 	for _,v in ipairs({ "Blizzard_CUFProfiles", "Blizzard_CompactRaidFrames", "Blizzard_ObjectiveTracker" }) do
 		EnableAddOn(v)
 		LoadAddOn(v)
 	end
-
 end 
 
 AzeriteUI.OnEnable = function(self)
 
+	-- Disable most of the BlizzardUI, to give room for our own!
+	------------------------------------------------------------------------------------
 	self:DisableUIWidget("ActionBars")
 	self:DisableUIWidget("Alerts")
 	self:DisableUIWidget("Auras")
@@ -48,9 +50,15 @@ AzeriteUI.OnEnable = function(self)
 	self:DisableUIWidget("WorldState")
 	self:DisableUIWidget("ZoneText")
 	
+
+	-- Disable complete interface options menu pages we don't need
+	------------------------------------------------------------------------------------
 	self:DisableUIMenuPage(5, "InterfaceOptionsActionBarsPanel")
 	self:DisableUIMenuPage(11, "InterfaceOptionsBuffsPanel")
 	
+
+	-- Disable select interface options we don't need
+	------------------------------------------------------------------------------------
 	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelBottomLeft") -- Actionbars
 	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelBottomRight") -- Actionbars
 	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelRight") -- Actionbars
@@ -71,11 +79,23 @@ AzeriteUI.OnEnable = function(self)
 	self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelEnemyCastBarsOnPortrait") -- UnitFrames
 	--self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelEnemyCastBarsOnNameplates") -- UnitFrames
 
+
+	-- Working around Blizzard bugs and issues I've discovered
+	------------------------------------------------------------------------------------
+
 	-- In theory this shouldn't have any effect since we're not using the Blizzard bars. 
 	-- But by removing the menu panels above we're preventing the blizzard UI from calling it, 
 	-- and for some reason it is required to be called at least once, 
 	-- or the game won't fire off the events that tell the UI that the player has an active pet out. 
 	-- In other words: without it both the pet bar and pet unitframe will fail after a /reload
 	SetActionBarToggles(nil, nil, nil, nil, nil)
-	
+
+
+	-- Setup some global options in the back-end
+	------------------------------------------------------------------------------------
+
+	-- Setting this makes it "perfect" even through window size changes?
+	-- Appears that CogFrame multiples this with the effective UI scale? ( Why don't I know, I wrote it, rofl!?! )
+	--local screenWidth, screenHeight = CogFrame:GetScreenSize()
+	CogWheel("CogFrame"):SetTargetScale( 1920/1440 )
 end 

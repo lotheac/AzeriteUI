@@ -31,15 +31,15 @@ local LEVEL = UnitLevel("player")
 local getDifficultyColorByLevel = function(level)
 	level = level - LEVEL
 	if (level > 4) then
-		return C.General.DimRed.colorCode
+		return Colors.quest.red.colorCode
 	elseif (level > 2) then
-		return C.General.Orange.colorCode
+		return Colors.quest.orange.colorCode
 	elseif (level >= -2) then
-		return C.General.Normal.colorCode
+		return Colors.quest.yellow.colorCode
 	elseif (level >= -GetQuestGreenRange()) then
-		return C.General.OffGreen.colorCode
+		return Colors.quest.green.colorCode
 	else
-		return C.General.Gray.colorCode
+		return Colors.quest.gray.colorCode
 	end
 end
 

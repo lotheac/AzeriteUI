@@ -12,6 +12,7 @@
 ### Back-end
 core\CogWheel\!CogWheel\CogWheel.lua
 core\CogWheel\!CogWheel\Cogs.xml
+core\CogWheel\!CogWheel\Wheels.xml
 
 ### Fontobjects and fontstyles
 fonts.xml
@@ -24,9 +25,6 @@ main.lua
 
 ### XML defined media objects
 media.xml
-
-### Unitframe widgets etc
-elements.xml
 
 ### Front-end modules, styling, etc
 modules.xml

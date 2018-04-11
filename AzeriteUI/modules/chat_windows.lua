@@ -9,6 +9,7 @@ local ChatWindows = AzeriteUI:NewModule("ChatWindows", "CogEvent", "CogDB", "Cog
 
 -- Lua API
 local _G = _G
+local math_floor = math.floor
 local string_len = string.len
 local string_sub = string.sub 
 
@@ -56,7 +57,30 @@ ChatWindows.PostCreateTemporaryChatWindow = function(self, frame, ...)
 	self:PostCreateChatWindow(frame)
 end 
 
+ChatWindows.UpdateChatWindowScales = function(self)
+	local scale = UIParent:GetEffectiveScale() / self:GetFrame("UICenter"):GetEffectiveScale()
+
+	for _,frameName in self:GetAllChatWindows() do 
+		local frame = _G[frameName]
+		if frame then 
+			local parent = frame:GetParent()
+			local w,h = parent:GetSize()
+			local point, anchor, rpoint, x, y = parent:GetPoint()
+
+			frame:SetScale(scale)
+			frame:SetSize(w, h)
+			frame:ClearAllPoints()
+			frame:SetPoint(point, anchor, rpoint, x/scale, y/scale)
+		end 
+	end 
+end 
+
+ChatWindows.UpdateChatWindowPositions = function(self)
+
+end 
+
 local alphaLocks = {}
+local scaffolds = {}
 ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	-- Window
@@ -72,6 +96,16 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	FCF_SetWindowColor(frame, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(frame, 0, 1)
 	FCF_UpdateButtonSide(frame)
+
+	--if (frame:GetParent() == UIParent) then
+	--	frame:SetParent(self:GetFrame("UICenter"))
+	--end
+
+	--hooksecurefunc(frame, "SetParent", function(editBox, parent) 
+	--	if (parent == UIParent) then
+	--		frame:SetParent(self:GetFrame("UICenter"))
+	--	end
+	--end)
 
 
 	-- Tabs
@@ -91,6 +125,27 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	local tabText = self:GetChatWindowTabText(frame) 
 	tabText:Hide()
+
+	-- Hook all tab sizes to slightly smaller than ChatFrame1's chat
+	hooksecurefunc(tabText, "Show", function() 
+		-- Make it 2px smaller (before scaling), 
+		-- but make 10px the minimum size.
+		local font, size, style = ChatFrame1:GetFontObject():GetFont()
+		size = math_floor(((size*10) + .5)/10)
+		if (size + 2 >= 10) then 
+			size = size - 2
+		end 
+
+		-- Stupid blizzard changing sizes by 0.0000001 and similar
+		local ourFont, ourSize, ourStyle = tabText:GetFont()
+		ourSize = math_floor(((ourSize*10) + .5)/10)
+
+		-- Make sure the tabs keeps the same font as the frame, 
+		-- and not some completely different size as it does by default. 
+		if (ourFont ~= font) or (ourSize ~= size) or (style ~= ourStyle) then 
+			tabText:SetFont(font, size, style)
+		end 
+	end)
 
 	-- Toggle tab text visibility on hover
 	tab:HookScript("OnEnter", function() tabText:Show() end)
@@ -172,13 +227,17 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 		end
 	end)
 
-	if (editBox:GetParent() == UIParent) then
-		editBox:SetParent(self:GetFrame("UICenter"))
+	--if (editBox:GetParent() == UIParent) then
+	if (editBox:GetParent() ~= frame) then
+		editBox:SetParent(frame)
+			--editBox:SetParent(self:GetFrame("UICenter"))
 	end
 
 	hooksecurefunc(editBox, "SetParent", function(editBox, parent) 
-		if (parent == UIParent) then
-			editBox:SetParent(self:GetFrame("UICenter"))
+		--if (parent == UIParent) then
+		if (parent ~= frame) then
+			editBox:SetParent(frame)
+			--editBox:SetParent(self:GetFrame("UICenter"))
 		end
 	end)
 
@@ -207,6 +266,27 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 				end 
 			end
 			self:UpdateWindowAlpha(frame)
+
+			-- Hook all editbox chat sizes to the same as ChatFrame1
+			local font, size, style = ChatFrame1:GetFontObject():GetFont()
+			local ourFont, ourSize, ourStyle = editBox:GetFont()
+
+			-- Stupid blizzard changing sizes by 0.0000001 and similar
+			size = math_floor(((size*10) + .5)/10)
+			ourSize = math_floor(((ourSize*10) + .5)/10)
+
+			-- Make sure the editbox keeps the same font as the frame, 
+			-- and not some completely different size as it does by default. 
+			if (ourFont ~= font) or (ourSize ~= size) or (style ~= ourStyle) then 
+				editBox:SetFont(font, size, style)
+			end 
+
+			local ourFont, ourSize, ourStyle = editBox.header:GetFont()
+			ourSize = math_floor(((ourSize*10) + .5)/10)
+
+			if (ourFont ~= font) or (ourSize ~= size) or (style ~= ourStyle) then 
+				editBox.header:SetFont(font, size, style)
+			end 
 		end
 	end)
 
@@ -290,6 +370,8 @@ ChatWindows.OnInit = function(self)
 
 	self:HandleAllChatWindows()
 	self:SetChatWindowAsSlaveTo(ChatFrame1, frame)
+	--self:SetChatWindowSize(389, 147)
+	--self:SetChatWindowPosition("LEFT", 64, 0)
 
 	FCF_SetWindowColor(ChatFrame1, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(ChatFrame1, 0, 1)
@@ -314,17 +396,14 @@ ChatWindows.OnInit = function(self)
 		end
 	end)
 
-	if (menuButton:GetParent() == UIParent) then
-		menuButton:SetParent(self:GetFrame("UICenter"))
-	end
+	--if (menuButton:GetParent() == UIParent) then
+	--	menuButton:SetParent(self:GetFrame("UICenter"))
+	--end
 
-	hooksecurefunc(menuButton, "SetParent", function(menuButton, parent) 
-		if (parent == UIParent) then
-			menuButton:SetParent(self:GetFrame("UICenter"))
-		end
-	end)
+	--hooksecurefunc(menuButton, "SetParent", function(menuButton, parent) 
+	--	if (parent == UIParent) then
+	--		menuButton:SetParent(self:GetFrame("UICenter"))
+	--	end
+	--end)
 
-end 
-
-ChatWindows.OnEnable = function(self)
 end 
