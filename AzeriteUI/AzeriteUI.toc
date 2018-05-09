@@ -6,25 +6,24 @@
 ## Version: 1.0
 ## DefaultState: Enabled
 ## SavedVariables: AzeriteUI_DB
+## X-Website: https://www.patreon.com/AzeriteUI
 ## X-Donate: PayPal:azerite@cogwerkz.org
 ## X-Category: Interface Enhancements
 
-### Back-end
-core\CogWheel\!CogWheel\CogWheel.lua
-core\CogWheel\!CogWheel\Cogs.xml
-core\CogWheel\!CogWheel\Wheels.xml
+# back-end libraries
+libs.xml
 
-### Fontobjects and fontstyles
-fonts.xml
-
-### Databases, colors, etc
+# databases
 data.xml
 
-### Main
+# localization
+locale.xml
+
+# main module
 main.lua
 
-### XML defined media objects
+# media templates
 media.xml
 
-### Front-end modules, styling, etc
+# front-end modules
 modules.xml

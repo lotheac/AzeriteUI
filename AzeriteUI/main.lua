@@ -8,7 +8,7 @@ local AzeriteUI = CogWheel("CogModule"):NewModule("AzeriteUI", "CogDB", "CogEven
 AzeriteUI:SetAddon(ADDON) 
 
 -- Tell the backend where our saved variables are found.
--- *it's important that we're doing this here, before any configs are created at all.
+-- *it's important that we're doing this here, before any module configs are created.
 AzeriteUI:RegisterSavedVariablesGlobal("AzeriteUI_DB")
 
 -- Lua API
@@ -20,6 +20,8 @@ local EnableAddOn = _G.EnableAddOn
 local LoadAddOn = _G.LoadAddOn
 
 AzeriteUI.OnInit = function(self)
+
+
 	-- In case some other jokers have disabled these, we add them back to avoid a World of Bugs.
 	-- RothUI used to remove the two first, and a lot of people missed his documentation on how to get them back. 
 	-- I personally removed the objective's tracker for a while in DiabolicUI, which led to pain. Lots of pain.
@@ -97,5 +99,6 @@ AzeriteUI.OnEnable = function(self)
 	-- Setting this makes it "perfect" even through window size changes?
 	-- Appears that CogFrame multiples this with the effective UI scale? ( Why don't I know, I wrote it, rofl!?! )
 	--local screenWidth, screenHeight = CogFrame:GetScreenSize()
-	CogWheel("CogFrame"):SetTargetScale( 1920/1440 )
+	--CogWheel("CogFrame"):SetTargetScale( 1920/1440 )
+	CogWheel("CogFrame"):SetTargetScale( 1 )
 end 

@@ -1,4 +1,4 @@
-
+local ADDON = ...
 local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 

@@ -1,6 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 
 <Script file='modules\actionbar_main.lua'/>
+<Script file='modules\blizzard_interface_styling.lua'/>
+<Script file='modules\blizzard_popups_styling.lua'/>
+<Script file='modules\blizzard_tooltips_styling.lua'/>
 <Script file='modules\castbar_player.lua'/>
 <Script file='modules\chat_bubbles.lua'/>
 <Script file='modules\chat_windows.lua'/>
@@ -10,10 +13,12 @@
 <Script file='modules\hud_worldstate.lua'/>
 <Script file='modules\map_minimap.lua'/>
 <Script file='modules\nameplates_main.lua'/>
+<Script file='modules\tooltip_styling.lua'/>
 <Script file='modules\tracker_quests.lua'/>
 <Script file='modules\tracker_mythics.lua'/>
 <Script file='modules\unitframe_arenaframes.lua'/>
 <Script file='modules\unitframe_bossframes.lua'/>
+<Script file='modules\unitframe_classpower.lua'/>
 <Script file='modules\unitframe_partyframes.lua'/>
 <Script file='modules\unitframe_playerframe.lua'/>
 <Script file='modules\unitframe_raidframes.lua'/>

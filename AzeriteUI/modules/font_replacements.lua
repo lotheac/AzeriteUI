@@ -102,14 +102,14 @@ BlizzardFonts.SetFontObjects = function(self)
 	self:SetFont("MailFont_Large", normal, nil, "", 0, 0, 0) -- 15
 
 	-- Dropdown menus
-	self:SetFont("GameFontNormalSmallLeft", normal, 14, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
-	self:SetFont("GameFontHighlightSmall", normal, 14, "", -.75, -.75, 1, .9, .9, .9, 0, 0, 0)
-	self:SetFont("GameFontHighlightSmallLeft", normal, 14, "", -.75, -.75, 1, .9, .9, .9, 0, 0, 0)
-	self:SetFont("GameFontDisableSmallLeft", normal, 14, "", -.75, -.75, 1, .6, .6, .6, 0, 0, 0)
+	self:SetFont("GameFontNormalSmallLeft", normal, nil, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
+	self:SetFont("GameFontHighlightSmall", normal, nil, "", -.75, -.75, 1, .9, .9, .9, 0, 0, 0)
+	self:SetFont("GameFontHighlightSmallLeft", normal, nil, "", -.75, -.75, 1, .9, .9, .9, 0, 0, 0)
+	self:SetFont("GameFontDisableSmallLeft", normal, nil, "", -.75, -.75, 1, .6, .6, .6, 0, 0, 0)
 
 	for i = 1, 2 do
-		local fontObject = 
-		self:SetFont("DropDownList"..i.."Button1NormalText", normal, 14, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
+		self:SetFont("DropDownList"..i.."Button1NormalText", normal, nil, "", -.75, -.75, 1, nil, nil, nil, 0, 0, 0)
+	--	self:SetFont("DropDownList"..i.."Button1NormalText", normal, nil, "", -.75, -.75, 1, 1, .82, .1, 0, 0, 0)
 	end 
 
 	_G.UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT = 14

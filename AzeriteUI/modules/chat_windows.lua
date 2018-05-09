@@ -126,6 +126,8 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	local tabText = self:GetChatWindowTabText(frame) 
 	tabText:Hide()
 
+	-- Create our own text replacement
+
 	-- Hook all tab sizes to slightly smaller than ChatFrame1's chat
 	hooksecurefunc(tabText, "Show", function() 
 		-- Make it 2px smaller (before scaling), 
@@ -192,10 +194,10 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	local editBox = self:GetChatWindowEditBox(frame)
 	editBox:Hide()
 	editBox:SetAltArrowKeyMode(false) 
-	editBox:SetHeight(34)
+	editBox:SetHeight(45)
 	editBox:ClearAllPoints()
-	editBox:SetPoint("LEFT", frame, "LEFT", -11, 0)
-	editBox:SetPoint("RIGHT", frame, "RIGHT", 11, 0)
+	editBox:SetPoint("LEFT", frame, "LEFT", -15, 0)
+	editBox:SetPoint("RIGHT", frame, "RIGHT", 15, 0)
 	editBox:SetPoint("TOP", frame, "BOTTOM", 0, -1)
 
 	-- do any editBox backdrop styling here
@@ -365,13 +367,11 @@ ChatWindows.OnInit = function(self)
 	-- and any scaling later on is applied to that pixel font, 
 	-- not to the original vector font. 
 	local frame = self:CreateFrame("Frame")
-	frame:SetPoint("LEFT", 64, 0)
-	frame:SetSize(389, 147)
+	frame:SetPoint("LEFT", 85, 0)
+	frame:SetSize(519, 196)
 
 	self:HandleAllChatWindows()
 	self:SetChatWindowAsSlaveTo(ChatFrame1, frame)
-	--self:SetChatWindowSize(389, 147)
-	--self:SetChatWindowPosition("LEFT", 64, 0)
 
 	FCF_SetWindowColor(ChatFrame1, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(ChatFrame1, 0, 1)

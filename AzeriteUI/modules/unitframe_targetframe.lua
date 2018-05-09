@@ -105,11 +105,11 @@ end
 
 -- Number abbreviations
 local OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 	-- 100m, 1000m, 2300m, etc
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 		-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 	-- 100k - 999k
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 		-- 100k - 999k
 	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
-	elseif (min > 0) then 		element.Value:SetText(min) 						-- 1 - 999
+	elseif (min > 0) then 		element.Value:SetText(min) 							-- 1 - 999
 	else 						element.Value:SetText("")
 	end 
 end 
@@ -141,14 +141,14 @@ local PostUpdateTextures = function(self)
 			TARGET_STYLE = "BOSS"
 
 			local health = self.Health
-			health:SetSize(400, 30)
-			health:Place("TOPRIGHT", -20, -20)
+			health:SetSize(533, 40)
+			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_boss_bar"))
-			health:SetStatusBarColor(unpack(self.colors.health))
+			--health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMapBoss)
 	
 			local healthBg = self.Health.Bg
-			healthBg:SetSize(441, 68)
+			healthBg:SetSize(588, 91)
 			healthBg:SetPoint("CENTER", 1, 0)
 			healthBg:SetTexture(getPath("hp_boss_case"))
 			healthBg:SetVertexColor(227/255, 231/255, 216/255)
@@ -167,14 +167,13 @@ local PostUpdateTextures = function(self)
 			TARGET_STYLE = "CAP"
 
 			local health = self.Health
-			health:SetSize(289, 30)
-			health:Place("TOPRIGHT", -20, -20)
+			health:SetSize(385, 40)
+			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_cap_bar"))
-			health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMap)
 	
 			local healthBg = self.Health.Bg
-			healthBg:SetSize(329, 68)
+			healthBg:SetSize(439, 91)
 			healthBg:SetPoint("CENTER", 0, 0)
 			healthBg:SetTexture(getPath("hp_cap_case"))
 			healthBg:SetVertexColor(227/255, 231/255, 216/255)
@@ -193,14 +192,13 @@ local PostUpdateTextures = function(self)
 			TARGET_STYLE = "MID"
 
 			local health = self.Health
-			health:SetSize(289, 28)
-			health:Place("TOPRIGHT", -20, -20)
+			health:SetSize(385, 37)
+			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMap)
 	
 			local healthBg = self.Health.Bg
-			healthBg:SetSize(329, 68)
+			healthBg:SetSize(439, 91)
 			healthBg:SetPoint("CENTER", 0, -1)
 			healthBg:SetTexture(getPath("hp_mid_case"))
 			healthBg:SetVertexColor(227/255, 231/255, 216/255)
@@ -219,14 +217,13 @@ local PostUpdateTextures = function(self)
 			TARGET_STYLE = "CRITTER"
 
 			local health = self.Health
-			health:SetSize(30, 27)
-			health:Place("TOPRIGHT", -18, -18)
+			health:SetSize(40, 36)
+			health:Place("TOPRIGHT", -24, -24)
 			health:SetStatusBarTexture(getPath("hp_critter_bar"))
-			health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMap)
 	
 			local healthBg = self.Health.Bg
-			healthBg:SetSize(56, 53)
+			healthBg:SetSize(75, 71)
 			healthBg:SetPoint("CENTER", 0, -1)
 			healthBg:SetTexture(getPath("hp_critter_case"))
 			healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
@@ -246,30 +243,30 @@ local PostUpdateTextures = function(self)
 			TARGET_STYLE = "LOW" 
 
 			local health = self.Health
-			health:SetSize(289, 28)
-			health:Place("TOPRIGHT", -20, -20)
+			health:SetSize(385, 37)
+			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			health:SetStatusBarColor(unpack(self.colors.health))
+			--health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMap)
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
 
 			local healthBg = self.Health.Bg
-			healthBg:SetSize(329, 70)
+			healthBg:SetSize(439, 93)
 			healthBg:SetPoint("CENTER", 0, -1)
 			healthBg:SetTexture(getPath("hp_low_case"))
-			healthBg:SetVertexColor(225/255 *3/4, 220/255 *3/4, 205/255 *3/4)
+			healthBg:SetVertexColor(225/255 *3/4, 200/255 *3/4, 205/255 *3/4)
 
 			local absorb = self.Absorb
-			absorb:SetSize(289, 28)
-			absorb:Place("TOPRIGHT", -20, -20)
+			absorb:SetSize(385, 37)
+			absorb:Place("TOPRIGHT", -27, -27)
 			absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 			absorb:SetSparkMap(barMap)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_lo"))
-			portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3) -- 225/255, 220/255, 205/255
+			portraitFg:SetVertexColor(245/255 *2/4, 230/255 *2/4, 195/255 *2/4) -- 225/255, 220/255, 205/255
 		end 
 
 	end 
@@ -283,8 +280,8 @@ local Style = function(self, unit, id, ...)
 	-- Frame
 	-----------------------------------------------------------
 
-	self:SetSize(329, 70)
-	self:Place("TOPRIGHT", -115, -59) 
+	self:SetSize(439, 93) 
+	self:Place("TOPRIGHT", -153, -79) 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -309,54 +306,58 @@ local Style = function(self, unit, id, ...)
 	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
 
 
-	-- Bars
+	-- Health Bar
 	-----------------------------------------------------------
 
-	-- health
 	local health = content:CreateStatusBar()
-	health:Place("TOPRIGHT", -20, -20)
+	health:Place("TOPRIGHT", -27, -27)
 	health:SetOrientation("LEFT") -- set the bar to grow towards the left
 	health:SetFlippedHorizontally(true) -- flips the bar texture horizontally
 	health:SetStatusBarColor(1,1,1,.85)
+	health.colorTapped = true
+	health.colorDisconnected = true
+	health.colorClass = true
+	health.colorReaction = true
+	health.colorHealth = true
 	health.frequent = 1/120
 	self.Health = health
 
-	-- health backdrop 
 	local healthBg = health:CreateTexture()
 	healthBg:SetDrawLayer("BACKGROUND")
 	healthBg:SetTexCoord(1,0,0,1)
 	self.Health.Bg = healthBg
 
-	-- health value text
 	local healthVal = health:CreateFontString()
-	healthVal:SetPoint("RIGHT", -20, 3)
+	healthVal:SetPoint("RIGHT", -27, 4)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetFontObject(GameFontNormal)
-	healthVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	healthVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
 	healthVal:SetShadowOffset(0, 0)
 	healthVal:SetShadowColor(0, 0, 0, 0)
-	healthVal:SetTextColor( 240/255, 240/255, 240/255, .5)
+	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
 
 	self.Health.Value = healthVal
-	self.Health.UpdateValue = OverrideHealthValue
+	self.Health.OverrideValue = OverrideHealthValue
 
-	-- absorbs
+
+	-- Absorb Bar
+	-----------------------------------------------------------	
+
 	local absorb = content:CreateStatusBar()
 	absorb:SetFrameLevel(health:GetFrameLevel() + 1)
-	absorb:Place("TOPRIGHT", -20, -20)
+	absorb:Place("TOPRIGHT", -27, -27)
 	absorb:SetOrientation("RIGHT") -- grow the bar towards the right (grows from the end of the health)
 	absorb:SetFlippedHorizontally(true) -- flips the bar texture horizontally
-	absorb:SetStatusBarColor(1,1,1,.25)
+	absorb:SetStatusBarColor(1,1,1,.5)
 	self.Absorb = absorb
 
-	-- health value text
 	local absorbVal = health:CreateFontString()
-	absorbVal:SetPoint("RIGHT", healthVal, "LEFT", -10, 0)
+	absorbVal:SetPoint("RIGHT", healthVal, "LEFT", -13, 0)
 	absorbVal:SetDrawLayer("OVERLAY")
 	absorbVal:SetFontObject(GameFontNormal)
-	absorbVal:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
+	absorbVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
 	absorbVal:SetJustifyH("CENTER")
 	absorbVal:SetJustifyV("MIDDLE")
 	absorbVal:SetShadowOffset(0, 0)
@@ -364,21 +365,22 @@ local Style = function(self, unit, id, ...)
 	absorbVal:SetTextColor( 240/255, 240/255, 240/255, .5)
 
 	self.Absorb.Value = absorbVal 
-	self.Absorb.UpdateValue = OverrideValue
+	self.Absorb.OverrideValue = OverrideValue
 	
 
 	-- Portrait
 	-----------------------------------------------------------
 
 	local portrait = backdrop:CreateFrame("PlayerModel")
-	portrait:SetPoint("TOPRIGHT", 55, 6)
-	portrait:SetSize(64, 64) 
+	portrait:SetPoint("TOPRIGHT", 73, 8)
+	portrait:SetSize(85, 85) 
 	portrait:SetAlpha(.85)
 	portrait.distanceScale = 1
 	portrait.positionX = 0
 	portrait.positionY = 0
 	portrait.positionZ = 0
 	portrait.rotation = 0 -- in degrees
+	portrait.showFallback2D = true -- display 2D portraits when unit is out of range of 3D models
 	self.Portrait = portrait
 	
 	-- To allow the backdrop and overlay to remain 
@@ -387,34 +389,34 @@ local Style = function(self, unit, id, ...)
 	-- not to the portrait frame itself.  
 	local portraitBg = backdrop:CreateTexture()
 	portraitBg:SetDrawLayer("BACKGROUND", 0)
-	portraitBg:SetPoint("TOPRIGHT", 87, 41)
-	portraitBg:SetSize(130, 130)
+	portraitBg:SetPoint("TOPRIGHT", 116, 55)
+	portraitBg:SetSize(173, 173)
 	portraitBg:SetTexture(getPath("p_potraitback"))
 	portraitBg:SetVertexColor(247/255 *1/3, 255/255 *1/3, 239/255 *1/3)
 	self.Portrait.Bg = portraitBg
 
 	local portraitShade = content:CreateTexture()
 	portraitShade:SetDrawLayer("BACKGROUND", -1)
-	portraitShade:SetPoint("TOPRIGHT", 62, 16)
-	portraitShade:SetSize(80, 80) 
+	portraitShade:SetPoint("TOPRIGHT", 83, 21)
+	portraitShade:SetSize(107, 107) 
 	portraitShade:SetTexture(getPath("shade_circle"))
 	self.Portrait.Shade = portraitShade
 
 	local portraitFg = content:CreateTexture()
 	portraitFg:SetDrawLayer("BACKGROUND", 0)
-	portraitFg:SetPoint("TOPRIGHT", 92, 46)
-	portraitFg:SetSize(140, 140)
+	portraitFg:SetPoint("TOPRIGHT", 123, 61)
+	portraitFg:SetSize(187, 187)
 	self.Portrait.Fg = portraitFg
 
 
-	-- Widgets
-	-----------------------------------------------------------
-	-- level 
+	-- Level
+	-----------------------------------------------------------	
+
 	local level = overlay:CreateFontString()
-	level:SetPoint("CENTER", self, "TOPRIGHT", 60, -47)
+	level:SetPoint("CENTER", self, "TOPRIGHT", 80, -63)
 	level:SetDrawLayer("BORDER")
 	level:SetFontObject(GameFontWhite)
-	level:SetFont(GameFontWhite:GetFont(), 10, "OUTLINE")
+	level:SetFont(GameFontWhite:GetFont(), 13, "OUTLINE")
 	level:SetJustifyH("CENTER")
 	level:SetJustifyV("MIDDLE")
 	level:SetShadowOffset(0, 0)
@@ -424,49 +426,53 @@ local Style = function(self, unit, id, ...)
 	-- Doesn't affect high/unreadable level (??) creatures, as they will still get a skull.
 	level.hideCapped = true 
 
+	-- Hide the level of level 1's
+	level.hideFloored = true
+
 	-- Set the default level coloring when nothing special is happening
 	level.defaultColor = { 251/255, 255/255, 255/255 } 
 	level.alpha = .7
 
-	-- pretty level badge backdrop
 	local levelBadge = overlay:CreateTexture()
 	levelBadge:SetDrawLayer("BACKGROUND")
-	levelBadge:SetPoint("TOPRIGHT", 74, -31)
-	levelBadge:SetSize(30, 30)
+	levelBadge:SetPoint("TOPRIGHT", 99, -41)
+	levelBadge:SetSize(40, 40)
 	levelBadge:SetTexture(getPath("point_plate"))
 	levelBadge:SetVertexColor(182/255, 183/255, 181/255)
 	level.Badge = levelBadge
 
-	-- skull indicating a ?? bosslevel
 	local levelSkull = overlay:CreateTexture()
 	levelSkull:SetDrawLayer("BORDER")
-	levelSkull:SetPoint("TOPRIGHT", 74, -31)
-	levelSkull:SetSize(30, 30)
+	levelSkull:SetPoint("TOPRIGHT", 99, -41)
+	levelSkull:SetSize(40, 40)
 	levelSkull:SetTexture(getPath("icon_skull"))
 	level.Skull = levelSkull
 
 	self.Level = level
 
-	-- classifications
+
+	-- Unit Classification (boss, elite, rare)
+	-----------------------------------------------------------	
 	-- Not redundant even though we have a skull icon above, 
 	-- since NPCs can be bosses without having a boss level.  
 	-- We need to indicate their boss status regardless of level. 
+
 	local isBoss = overlay:CreateTexture()
 	isBoss:SetTexture(getPath("icon_boss_red"))
-	isBoss:SetSize(42,42)
-	isBoss:SetPoint("TOPRIGHT", 45, -50)
+	isBoss:SetSize(56, 56)
+	isBoss:SetPoint("TOPRIGHT", 60, -67)
 	isBoss:SetVertexColor(182/255, 183/255, 181/255)
 
 	local isElite = overlay:CreateTexture()
 	isElite:SetTexture(getPath("icon_elite_gold"))
-	isElite:SetSize(42,42)
-	isElite:SetPoint("TOPRIGHT", 45, -50)
+	isElite:SetSize(56, 56)
+	isElite:SetPoint("TOPRIGHT", 60, -67)
 	isElite:SetVertexColor(182/255, 183/255, 181/255)
 
 	local isRare = overlay:CreateTexture()
 	isRare:SetTexture(getPath("icon_rare_blue"))
-	isRare:SetSize(42,42)
-	isRare:SetPoint("TOPRIGHT", 45, -50)
+	isRare:SetSize(56, 56)
+	isRare:SetPoint("TOPRIGHT", 60, -67)
 	isRare:SetVertexColor(182/255, 183/255, 181/255)
 
 	self.Classification = {
@@ -475,27 +481,28 @@ local Style = function(self, unit, id, ...)
 		Rare = isRare 
 	}
 
-	-- who your target is targeting
+
+	-- Targeting
+	-----------------------------------------------------------	
+	-- Indicates who your target is targeting
+
 	local youByFriend = overlay:CreateTexture()
 	youByFriend:SetTexture(getPath("icon_stoneye"))
-	youByFriend:SetSize(50,50)
-	youByFriend:SetPoint("TOPRIGHT", 22, 32)
+	youByFriend:SetSize(67, 67)
+	youByFriend:SetPoint("TOPRIGHT", 29, 43)
 	youByFriend:SetVertexColor(227/255, 231/255, 216/255)
-	--youByFriend:SetVertexColor(174/255, 191/255, 182/255)
 
 	local youByEnemy = overlay:CreateTexture()
 	youByEnemy:SetTexture(getPath("icon_stoneye2"))
-	youByEnemy:SetSize(50,50)
-	youByEnemy:SetPoint("TOPRIGHT", 22, 32)
+	youByEnemy:SetSize(67, 67)
+	youByEnemy:SetPoint("TOPRIGHT", 29, 43)
 	youByEnemy:SetVertexColor(227/255, 231/255, 216/255)
-	--youByEnemy:SetVertexColor(255/255, 141/255, 102/255)
 
 	local petByEnemy = overlay:CreateTexture()
 	petByEnemy:SetTexture(getPath("icon_stoneye2"))
-	petByEnemy:SetSize(50,50)
-	petByEnemy:SetPoint("TOPRIGHT", 22, 32)
+	petByEnemy:SetSize(67, 67)
+	petByEnemy:SetPoint("TOPRIGHT", 29, 43)
 	petByEnemy:SetVertexColor(227/255, 231/255, 216/255)
-	--petByEnemy:SetVertexColor(117/255, 191/255, 54/255)
 
 	self.Targeted = {
 		PetByEnemy = petByEnemy,
@@ -504,17 +511,19 @@ local Style = function(self, unit, id, ...)
 	}
 
 
-	-- name 
+	-- Name
+	-----------------------------------------------------------	
+
 	local name = overlay:CreateFontString()
-	name:SetPoint("TOPRIGHT", -40, 10)
+	name:SetPoint("TOPRIGHT", -53, 16)
 	name:SetDrawLayer("OVERLAY")
 	name:SetFontObject(GameFontNormal)
-	name:SetFont(GameFontNormal:GetFont(), 12, "OUTLINE")
+	name:SetFont(GameFontNormal:GetFont(), 16, "OUTLINE")
 	name:SetJustifyH("CENTER")
 	name:SetJustifyV("TOP")
 	name:SetShadowOffset(0, 0)
 	name:SetShadowColor(0, 0, 0, 0)
-	name:SetTextColor( 240/255, 240/255, 240/255, .75)
+	name:SetTextColor(240/255, 240/255, 240/255, .75)
 	self.Name = name
 
 
