@@ -1,9 +1,6 @@
 [submodule "core/CogWheel"]
 	path = core/CogWheel
 	url = https://github.com/cogwerkz/CogWheel.git
-[submodule "AzeriteUIcoreCogWheel"]
-	path = AzeriteUIcoreCogWheel
-	url = https://github.com/cogwerkz/CogWheel.git
 [submodule "AzeriteUI/core/CogWheel"]
 	path = AzeriteUI/core/CogWheel
 	url = https://github.com/cogwerkz/CogWheel.git
