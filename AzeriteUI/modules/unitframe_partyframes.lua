@@ -180,7 +180,7 @@ local Style = function(self, unit, id, ...)
 	local absorb = content:CreateStatusBar()
 	absorb:SetSize(75, 13)
 	absorb:SetStatusBarTexture(getPath("cast_bar"))
-	absorb:SetFrameLevel(health:GetFrameLevel() + 1)
+	absorb:SetFrameLevel(health:GetFrameLevel() + 2)
 	absorb:Place("BOTTOM", 0, 0)
 	absorb:SetOrientation("LEFT") -- grow the bar towards the left (grows from the end of the health)
 	absorb:SetStatusBarColor(1, 1, 1, .25) -- make the bar fairly transparent, it's just an overlay after all. 
@@ -246,8 +246,38 @@ local Style = function(self, unit, id, ...)
 
 	-- Cast Bar
 	-----------------------------------------------------------
+	local cast = content:CreateStatusBar()
+	cast:SetSize(75, 13)
+	cast:SetStatusBarTexture(getPath("cast_bar"))
+	cast:SetFrameLevel(health:GetFrameLevel() + 1)
+	cast:Place("BOTTOM", 0, 0)
+	cast:SetOrientation("RIGHT") 
+	cast:SetStatusBarColor(1, 1, 1, .5) 
+	self.Cast = Cast
 
 
+	-- Group Role
+	-----------------------------------------------------------
+	local roleHealer = overlay:CreateTexture()
+	roleHealer:SetTexture(getPath("partyrole_heal"))
+	roleHealer:SetSize(37, 37)
+	roleHealer:SetPoint("TOP", 0, 0)
+
+	local roleTank = overlay:CreateTexture()
+	roleTank:SetTexture(getPath("partyrole_tank"))
+	roleTank:SetSize(37, 37)
+	roleTank:SetPoint("TOP", 0, 0)
+
+	local roleDPS = overlay:CreateTexture()
+	roleDPS:SetTexture(getPath("partyrole_dps"))
+	roleDPS:SetSize(37, 37)
+	roleDPS:SetPoint("TOP", 0, 0)
+
+	self.GroupRole = {
+		Healer = roleHealer, 
+		Tank = roleTank,
+		Damager = roleDPS		
+	}
 
 end 
 
