@@ -252,8 +252,9 @@ local Style = function(self, unit, id, ...)
 	cast:SetFrameLevel(health:GetFrameLevel() + 1)
 	cast:Place("BOTTOM", 0, 0)
 	cast:SetOrientation("RIGHT") 
-	cast:SetStatusBarColor(1, 1, 1, .5) 
-	self.Cast = Cast
+	cast:SetStatusBarColor(1, 1, 1, .15) 
+	cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
+	self.Cast = cast
 
 
 	-- Group Role
@@ -298,8 +299,8 @@ end
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
-		--self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
-		self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
+		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
+		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
 	end 
 end 
 

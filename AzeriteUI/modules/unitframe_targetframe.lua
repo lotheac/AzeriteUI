@@ -144,7 +144,6 @@ local PostUpdateTextures = function(self)
 			health:SetSize(533, 40)
 			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_boss_bar"))
-			--health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMapBoss)
 	
 			local healthBg = self.Health.Bg
@@ -155,6 +154,12 @@ local PostUpdateTextures = function(self)
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
+
+			local cast = self.Cast
+			cast:SetSize(533, 40)
+			cast:Place("TOPRIGHT", -27, -27)
+			cast:SetStatusBarTexture(getPath("hp_boss_bar"))
+			cast:SetSparkMap(barMapBoss)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
@@ -181,6 +186,12 @@ local PostUpdateTextures = function(self)
 			local healthVal = self.Health.Value
 			healthVal:Show()
 
+			local cast = self.Cast
+			cast:SetSize(385, 40)
+			cast:Place("TOPRIGHT", -27, -27)
+			cast:SetStatusBarTexture(getPath("hp_cap_bar"))
+			cast:SetSparkMap(barMap)
+
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
 			portraitFg:SetVertexColor(227/255 *4/5, 231/255 *4/5, 216/255 *4/5)
@@ -205,6 +216,12 @@ local PostUpdateTextures = function(self)
 	
 			local healthVal = self.Health.Value
 			healthVal:Show()
+
+			local cast = self.Cast
+			cast:SetSize(385, 37)
+			cast:Place("TOPRIGHT", -27, -27)
+			cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+			cast:SetSparkMap(barMap)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
@@ -231,6 +248,12 @@ local PostUpdateTextures = function(self)
 			local healthVal = self.Health.Value
 			healthVal:Hide()
 
+			local cast = self.Cast
+			cast:SetSize(40, 36)
+			cast:Place("TOPRIGHT", -24, -24)
+			cast:SetStatusBarTexture(getPath("hp_critter_bar"))
+			cast:SetSparkMap(barMap)
+
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_lo"))
 			portraitFg:SetVertexColor(245/255 *2/3, 230/255 *2/3, 195/255 *2/3)
@@ -246,7 +269,6 @@ local PostUpdateTextures = function(self)
 			health:SetSize(385, 37)
 			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			--health:SetStatusBarColor(unpack(self.colors.health))
 			health:SetSparkMap(barMap)
 
 			local healthVal = self.Health.Value
@@ -257,6 +279,12 @@ local PostUpdateTextures = function(self)
 			healthBg:SetPoint("CENTER", 0, -1)
 			healthBg:SetTexture(getPath("hp_low_case"))
 			healthBg:SetVertexColor(225/255 *3/4, 200/255 *3/4, 205/255 *3/4)
+
+			local cast = self.Cast
+			cast:SetSize(385, 37)
+			cast:Place("TOPRIGHT", -27, -27)
+			cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+			cast:SetSparkMap(barMap)
 
 			local absorb = self.Absorb
 			absorb:SetSize(385, 37)
@@ -367,6 +395,20 @@ local Style = function(self, unit, id, ...)
 	self.Absorb.Value = absorbVal 
 	self.Absorb.OverrideValue = OverrideValue
 	
+
+	-- Cast Bar
+	-----------------------------------------------------------
+	local cast = content:CreateStatusBar()
+	cast:Place("TOPRIGHT", -27, -27)
+	cast:SetOrientation("LEFT") -- set the bar to grow towards the left
+	cast:SetFlippedHorizontally(true) -- flips the bar texture horizontally
+	cast:SetFrameLevel(health:GetFrameLevel() + 1)
+	cast:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
+	cast:SetSmoothingFrequency(.15)
+	cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
+
+	self.Cast = cast
+
 
 	-- Portrait
 	-----------------------------------------------------------

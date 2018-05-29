@@ -33,34 +33,40 @@ local map = {
 	-- Health Bar Map
 	-- (Texture Size 512x64, Growth: RIGHT)
 	bar = {
-		{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
-		{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
-		{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
-		{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, -- #4: bottom peak, now starts shrinking from the bottom
-		{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, -- #4: bottom peak, now starts shrinking from the bottom
-		{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, -- #5: starts shrinking from the top
-		{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
+		{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
+		{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
+		{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, 
+		{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, 
+		{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, 
+		{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
+		{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 	},
 
 	-- Power Crystal Map
-	-- (Texture Size 256, 256, Growth: UP)
+	-- (Texture Size 256x256, Growth: UP)
 	-- (topOffset = left - bottomOffset = right)
 	crystal = {
 		top = {
-			{ keyPercent =   0/256, offset =  -65/256 }, -- #1: 
-			{ keyPercent =  72/256, offset =    0/256 }, -- #2: 
-			{ keyPercent = 116/256, offset =  -16/256 }, -- #3: 
-			{ keyPercent = 128/256, offset =  -28/256 }, -- #4: 
-			{ keyPercent = 256/256, offset =  -84/256 }, -- #5: 
+			{ keyPercent =   0/256, offset =  -65/256 }, 
+			{ keyPercent =  72/256, offset =    0/256 }, 
+			{ keyPercent = 116/256, offset =  -16/256 }, 
+			{ keyPercent = 128/256, offset =  -28/256 }, 
+			{ keyPercent = 256/256, offset =  -84/256 }, 
 		},
 		bottom = {
-			{ keyPercent =   0/256, offset =  -47/256 }, -- #1: 
-			{ keyPercent =  84/256, offset =    0/256 }, -- #2: 
-			{ keyPercent = 135/256, offset =  -24/256 }, -- #3: 
-			{ keyPercent = 142/256, offset =  -32/256 }, -- #4: 
-			{ keyPercent = 225/256, offset =  -79/256 }, -- #5: 
-			{ keyPercent = 256/256, offset = -168/256 }, -- #6: 
+			{ keyPercent =   0/256, offset =  -47/256 }, 
+			{ keyPercent =  84/256, offset =    0/256 }, 
+			{ keyPercent = 135/256, offset =  -24/256 }, 
+			{ keyPercent = 142/256, offset =  -32/256 }, 
+			{ keyPercent = 225/256, offset =  -79/256 }, 
+			{ keyPercent = 256/256, offset = -168/256 }, 
 		}
+	},
+
+	-- Cast Bar Map
+	-- (Texture Size 128x32, Growth: Right)
+	cast = {
+
 	}
 }
 
@@ -166,6 +172,10 @@ local PostUpdateTextures = function(self)
 		absorb:SetSize(385, 40)
 		absorb:SetStatusBarTexture(getPath("hp_cap_bar"))
 
+		local cast = self.Cast
+		cast:SetSize(385, 40)
+		cast:SetStatusBarTexture(getPath("hp_cap_bar"))
+
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
@@ -198,6 +208,10 @@ local PostUpdateTextures = function(self)
 		absorb:SetSize(385, 37)
 		absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 
+		local cast = self.Cast
+		cast:SetSize(385, 37)
+		cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
@@ -229,6 +243,10 @@ local PostUpdateTextures = function(self)
 		local absorb = self.Absorb
 		absorb:SetSize(385, 37)
 		absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
+
+		local cast = self.Cast
+		cast:SetSize(385, 37)
+		cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
@@ -428,9 +446,21 @@ local Style = function(self, unit, id, ...)
 		self.ExtraPower.UpdateValue = OverrideValue
 	end 
 
+
 	-- Cast Bar
 	-----------------------------------------------------------
-	
+	local cast = content:CreateStatusBar()
+	cast:SetSize(385, 40)
+	cast:SetFrameLevel(health:GetFrameLevel() + 1)
+	cast:Place("BOTTOMLEFT", 27, 27)
+	cast:SetOrientation("RIGHT") -- set the bar to grow towards the right.
+	cast:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
+	cast:SetSmoothingFrequency(.15)
+	cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
+	cast:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
+	--cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
+
+	self.Cast = cast
 
 
 	-- Widgets

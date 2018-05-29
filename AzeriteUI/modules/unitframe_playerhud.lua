@@ -5,7 +5,7 @@ if (not AzeriteUI) then
 	return 
 end
 
-local UnitFrameClassPower = AzeriteUI:NewModule("UnitFrameClassPower", "CogDB", "CogEvent", "CogFrame", "CogUnitFrame", "CogStatusBar")
+local UnitFramePlayerHUD = AzeriteUI:NewModule("UnitFramePlayerHUD", "CogDB", "CogEvent", "CogFrame", "CogUnitFrame", "CogStatusBar")
 local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
@@ -397,10 +397,74 @@ local Style = function(self, unit, id, ...)
 	self.colors = Colors
 
 
-	-- Widgets
+	-- Scaffolds
 	-----------------------------------------------------------
 
-	local classPower = self:CreateFrame("Frame")
+	-- frame to contain art backdrops, shadows, etc
+	local backdrop = self:CreateFrame("Frame")
+	backdrop:SetAllPoints()
+	backdrop:SetFrameLevel(self:GetFrameLevel())
+	
+	-- frame to contain bars, icons, etc
+	local content = self:CreateFrame("Frame")
+	content:SetAllPoints()
+	content:SetFrameLevel(self:GetFrameLevel() + 5)
+
+	-- frame to contain art overlays, texts, etc
+	local overlay = self:CreateFrame("Frame")
+	overlay:SetAllPoints()
+	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+
+
+	-- Cast Bar
+	-----------------------------------------------------------
+	local cast = backdrop:CreateStatusBar()
+	cast:SetSize(87, 10)
+	cast:Place("CENTER", "UICenter", "CENTER", 0, -133)
+	cast:SetStatusBarTexture(getPath("cast_bar"))
+	cast:SetStatusBarColor(70/255, 255/255, 131/255, .69) 
+	cast:SetOrientation("RIGHT") -- set the bar to grow towards the top.
+	cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
+	--cast:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
+
+	local castBg = cast:CreateTexture()
+	castBg:SetDrawLayer("BACKGROUND")
+	castBg:SetSize(111, 34)
+	castBg:SetPoint("CENTER", 0, 0)
+	castBg:SetTexture(getPath("cast_back"))
+
+	local castValue = cast:CreateFontString()
+	castValue:SetPoint("CENTER", 0, 0)
+	castValue:SetDrawLayer("OVERLAY")
+	castValue:SetFontObject(GameFontNormal)
+	castValue:SetFont(GameFontNormal:GetFont(), 10, "OUTLINE")
+	castValue:SetJustifyH("CENTER")
+	castValue:SetJustifyV("MIDDLE")
+	castValue:SetShadowOffset(0, 0)
+	castValue:SetShadowColor(0, 0, 0, 0)
+	castValue:SetTextColor(240/255, 240/255, 240/255, .7)
+
+	local castName 
+	local castName = cast:CreateFontString()
+	castName:SetPoint("TOP", cast, "BOTTOM", 0, -10)
+	castName:SetDrawLayer("BORDER")
+	castName:SetFontObject(GameFontNormal)
+	castName:SetFont(GameFontNormal:GetFont(), 12, "OUTLINE")
+	castName:SetJustifyH("CENTER")
+	castName:SetJustifyV("MIDDLE")
+	castName:SetShadowOffset(0, 0)
+	castName:SetShadowColor(0, 0, 0, 0)
+	castName:SetTextColor(240/255, 240/255, 240/255, .5)
+
+	self.Cast = cast
+	self.Cast.Name = castName
+	self.Cast.Value = castValue
+
+
+	-- Class Power
+	-----------------------------------------------------------
+
+	local classPower = backdrop:CreateFrame("Frame")
 	classPower:SetSize(2,2) -- minimum size, this is really just an anchor
 	classPower:SetPoint("CENTER", 0, 0) -- center it smack in the middle of the screen
 
@@ -458,7 +522,7 @@ local Style = function(self, unit, id, ...)
 	self.ClassPower.PostUpdate = PostUpdateTextures
 end
 
-UnitFrameClassPower.OnInit = function(self)
-	local classPowerFrame = self:SpawnUnitFrame("player", "UICenter", Style)
-	self.frame = classPowerFrame
+UnitFramePlayerHUD.OnInit = function(self)
+	local playerHUDFrame = self:SpawnUnitFrame("player", "UICenter", Style)
+	self.frame = playerHUDFrame
 end 

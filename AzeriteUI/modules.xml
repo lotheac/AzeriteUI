@@ -18,9 +18,9 @@
 <Script file='modules\tracker_mythics.lua'/>
 <Script file='modules\unitframe_arenaframes.lua'/>
 <Script file='modules\unitframe_bossframes.lua'/>
-<Script file='modules\unitframe_classpower.lua'/>
 <Script file='modules\unitframe_partyframes.lua'/>
 <Script file='modules\unitframe_playerframe.lua'/>
+<Script file='modules\unitframe_playerhud.lua'/>
 <Script file='modules\unitframe_raidframes.lua'/>
 <Script file='modules\unitframe_targetframe.lua'/>
 
