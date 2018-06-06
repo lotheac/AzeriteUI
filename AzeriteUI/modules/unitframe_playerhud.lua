@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local UnitFramePlayerHUD = AzeriteUI:NewModule("UnitFramePlayerHUD", "CogDB", "CogEvent", "CogFrame", "CogUnitFrame", "CogStatusBar")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
+local UnitFramePlayerHUD = AzeriteUI:NewModule("UnitFramePlayerHUD", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -19,6 +19,27 @@ local unpack = unpack
 
 -- Player Class
 local _, PlayerClass = UnitClass("player")
+
+local map = {
+
+	-- Cast Bar Map
+	-- (Texture Size 128x32, Growth: RIGHT)
+	cast = {
+		top = {
+			{ keyPercent =   0/128, offset = -16/32 }, 
+			{ keyPercent =  10/128, offset =   0/32 }, 
+			{ keyPercent = 119/128, offset =   0/32 }, 
+			{ keyPercent = 128/128, offset = -16/32 }
+		},
+		bottom = {
+			{ keyPercent =   0/128, offset = -16/32 }, 
+			{ keyPercent =  10/128, offset =   0/32 }, 
+			{ keyPercent = 119/128, offset =   0/32 }, 
+			{ keyPercent = 128/128, offset = -16/32 }
+		}
+	}
+
+}
 
 
 -- Utility Functions
@@ -492,7 +513,7 @@ local Style = function(self, unit, id, ...)
 	for i = 1,6 do 
 
 		-- Main point object
-		local point = classPower:CreateStatusBar() -- the widget require cogwheel statusbars
+		local point = classPower:CreateStatusBar() -- the widget require CogWheel statusbars
 		point:SetSmoothingFrequency(.15) -- keep bar transitions very fast
 		point:SetOrientation("UP") -- set the bars to grow from bottom to top.
 

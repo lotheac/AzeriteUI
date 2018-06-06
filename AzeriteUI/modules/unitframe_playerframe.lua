@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local UnitFramePlayer = AzeriteUI:NewModule("UnitFramePlayer", "CogDB", "CogEvent", "CogUnitFrame", "CogStatusBar")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
+local UnitFramePlayer = AzeriteUI:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -398,6 +398,7 @@ local Style = function(self, unit, id, ...)
 
 	-- Mana Orb
 	-----------------------------------------------------------
+	
 	-- Only create this for actual mana classes
 	if (PlayerClass == "DRUID") or (PlayerClass == "MONK")  or (PlayerClass == "PALADIN")
 	or (PlayerClass == "SHAMAN") or (PlayerClass == "PRIEST")
@@ -458,7 +459,6 @@ local Style = function(self, unit, id, ...)
 	cast:SetSmoothingFrequency(.15)
 	cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
 	cast:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
-	--cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
 
 	self.Cast = cast
 

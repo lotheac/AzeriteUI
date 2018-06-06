@@ -1,11 +1,11 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local ActionBarMain = AzeriteUI:NewModule("ActionBarMain", "CogEvent")
+local ActionBarMain = AzeriteUI:NewModule("ActionBarMain", "LibEvent")
 
 ActionBarMain.OnInit = function(self)
 end 

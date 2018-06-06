@@ -1,12 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local Minimap = AzeriteUI:NewModule("Minimap", "CogEvent", "CogDB", "CogMinimap", "CogTooltip")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
-local L = CogWheel("CogLocale"):GetLocale("AzeriteUI")
+local Minimap = AzeriteUI:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local L = CogWheel("LibLocale"):GetLocale("AzeriteUI")
 
 -- Lua API
 local _G = _G
@@ -244,6 +244,7 @@ Minimap.SetUpMinimap = function(self)
 	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-725"), "7.2.5")
 	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-730"), "7.3.0")
 	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-735"), "7.3.5")
+	--self:SetMinimapBlips(getPath("minimap_blips_nandini_new-801"), "8.0.1")
 
 
 	-- Blob & Ring Textures

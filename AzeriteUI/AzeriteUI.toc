@@ -1,4 +1,4 @@
-## Interface: 70300
+## Interface: 80100
 ## Name: AzeriteUI
 ## Title: |cff7284abAzerite|r|cffffffffUI|r
 ## Author: Daniel Troconis, Lars "Goldpaw" Norberg
@@ -10,20 +10,111 @@
 ## X-Donate: PayPal:azerite@cogwerkz.org
 ## X-Category: Interface Enhancements
 
-# back-end libraries
-libs.xml
 
-# databases
-data.xml
+#########################################################
+#   Do NOT change the order of anything in this file!   #
+#########################################################
 
-# localization
-locale.xml
+core\wheel.lua
 
-# main module
-main.lua
+core\libraries\clientbuild.lua
+core\libraries\locale.lua
+core\libraries\hook.lua
+core\libraries\securehook.lua
+core\libraries\message.lua
+core\libraries\event.lua
+core\libraries\db.lua
+core\libraries\module.lua
+core\libraries\frame.lua
+core\libraries\orb.lua
+core\libraries\statusbar.lua
+core\libraries\sound.lua
+core\libraries\tooltip.xml
+core\libraries\tooltip.lua
+core\libraries\fader.lua
+core\libraries\mover.lua
+core\libraries\bagbutton.lua
+core\libraries\actionbutton.lua
+core\libraries\actionbar.lua
+core\libraries\unitframe.lua
+core\libraries\blizzard.lua
+core\libraries\slash.lua
+core\libraries\quest.lua
+core\libraries\bonusquest.lua
+core\libraries\chatbubble.lua
+core\libraries\chatframe.lua
+core\libraries\minimap.lua
+core\libraries\nameplates.lua
 
-# media templates
-media.xml
+core\plugins\customevents.lua
 
-# front-end modules
-modules.xml
+core\plugins\unitframe\absorb.lua
+core\plugins\unitframe\auras.lua
+core\plugins\unitframe\cast.lua
+core\plugins\unitframe\classification.lua
+core\plugins\unitframe\classpower.lua
+core\plugins\unitframe\extrapower.lua
+core\plugins\unitframe\grouprole.lua
+core\plugins\unitframe\health.lua
+core\plugins\unitframe\level.lua
+core\plugins\unitframe\name.lua
+core\plugins\unitframe\portrait.lua
+core\plugins\unitframe\power.lua
+core\plugins\unitframe\raidrole.lua
+core\plugins\unitframe\spec.lua
+core\plugins\unitframe\targeted.lua
+
+core\plugins\minimap\artifactpower.lua
+core\plugins\minimap\clock.lua
+core\plugins\minimap\coordinates.lua
+core\plugins\minimap\framerate.lua
+core\plugins\minimap\groupfinder.lua
+core\plugins\minimap\honor.lua
+core\plugins\minimap\latency.lua
+core\plugins\minimap\mail.lua
+core\plugins\minimap\reputation.lua
+core\plugins\minimap\zone.lua
+core\plugins\minimap\xp.lua
+
+core\colors.lua
+
+locale\enUS.lua
+locale\deDE.lua
+locale\esES.lua
+locale\esMX.lua
+locale\frFR.lua
+locale\koKR.lua
+locale\ptBR.lua
+locale\ptPT.lua
+locale\ruRU.lua
+locale\zhCN.lua
+locale\zhTW.lua
+
+core\main.lua
+
+modules\actionbar_main.lua
+modules\blizzard_interface_styling.lua
+modules\blizzard_popups_styling.lua
+modules\blizzard_tooltips_styling.lua
+modules\chat_bubbles.lua
+modules\chat_windows.lua
+modules\font_replacements.lua
+modules\hud_orderhall.lua
+modules\hud_warnings.lua
+modules\hud_worldstate.lua
+modules\map_minimap.lua
+modules\nameplates_main.lua
+modules\tooltip_styling.lua
+modules\tracker_quests.lua
+modules\tracker_mythics.lua
+modules\unitframe_arenaframes.lua
+modules\unitframe_bossframes.lua
+modules\unitframe_focusframe.lua
+modules\unitframe_partyframes.lua
+modules\unitframe_petframe.lua
+modules\unitframe_playerframe.lua
+modules\unitframe_playerhud.lua
+modules\unitframe_raidframes.lua
+modules\unitframe_targetframe.lua
+modules\unitframe_totframe.lua
+

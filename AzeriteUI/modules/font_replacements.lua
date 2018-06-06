@@ -1,11 +1,11 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local BlizzardFonts = AzeriteUI:NewModule("BlizzardFonts", "CogEvent")
+local BlizzardFonts = AzeriteUI:NewModule("BlizzardFonts", "LibEvent")
 
 -- Lua API
 local _G = _G

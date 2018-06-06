@@ -1,4 +1,4 @@
-local L = CogWheel("CogLocale"):NewLocale("AzeriteUI", "enUS", true)
+local L = CogWheel("LibLocale"):NewLocale("AzeriteUI", "enUS", true)
 
 
 -- General Stuff
@@ -101,8 +101,8 @@ L["Delete"] = "Del"
 L["End"] = "En"
 L["Home"] = "HM"
 L["Insert"] = "Ins"
-L["Mouse Wheel Down"] = "WD"
-L["Mouse Wheel Up"] = "WU"
+L["Mouse CogWheel Down"] = "WD"
+L["Mouse CogWheel Up"] = "WU"
 L["Num Lock"] = "NL"
 L["Page Down"] = "PD"
 L["Page Up"] = "PU"

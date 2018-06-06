@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local UnitFrameParty = AzeriteUI:NewModule("UnitFrameParty", "CogDB", "CogEvent", "CogUnitFrame", "CogStatusBar")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
+local UnitFrameParty = AzeriteUI:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -134,7 +134,6 @@ local Style = function(self, unit, id, ...)
 	-- Health Bar
 	-----------------------------------------------------------	
 
-
 	local health = content:CreateStatusBar()
 	health:SetSize(75, 13)
 	health:Place("BOTTOM", 0, 0)
@@ -185,21 +184,6 @@ local Style = function(self, unit, id, ...)
 	absorb:SetOrientation("LEFT") -- grow the bar towards the left (grows from the end of the health)
 	absorb:SetStatusBarColor(1, 1, 1, .25) -- make the bar fairly transparent, it's just an overlay after all. 
 	self.Absorb = absorb
-
-	--[[
-	local absorbVal = health:CreateFontString()
-	absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 13, 0)
-	absorbVal:SetDrawLayer("OVERLAY")
-	absorbVal:SetFontObject(GameFontNormal)
-	absorbVal:SetFont(GameFontNormal:GetFont(), 11, "OUTLINE")
-	absorbVal:SetJustifyH("CENTER")
-	absorbVal:SetJustifyV("MIDDLE")
-	absorbVal:SetShadowOffset(0, 0)
-	absorbVal:SetShadowColor(0, 0, 0, 0)
-	absorbVal:SetTextColor(240/255, 240/255, 240/255, .5)
-	self.Absorb.Value = absorbVal 
-	self.Absorb.OverrideValue = OverrideValue
-	]]
 
 
 	-- Portrait
@@ -253,32 +237,32 @@ local Style = function(self, unit, id, ...)
 	cast:Place("BOTTOM", 0, 0)
 	cast:SetOrientation("RIGHT") 
 	cast:SetStatusBarColor(1, 1, 1, .15) 
-	cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
+	cast:DisableSmoothing(true) 
 	self.Cast = cast
 
 
 	-- Group Role
 	-----------------------------------------------------------
+	self.GroupRole = {}
+
 	local roleHealer = overlay:CreateTexture()
 	roleHealer:SetTexture(getPath("partyrole_heal"))
 	roleHealer:SetSize(37, 37)
 	roleHealer:SetPoint("TOP", 0, 0)
+	self.GroupRole.Healer = roleHealer 
 
 	local roleTank = overlay:CreateTexture()
 	roleTank:SetTexture(getPath("partyrole_tank"))
 	roleTank:SetSize(37, 37)
 	roleTank:SetPoint("TOP", 0, 0)
+	self.GroupRole.Tank = roleTank
 
 	local roleDPS = overlay:CreateTexture()
 	roleDPS:SetTexture(getPath("partyrole_dps"))
 	roleDPS:SetSize(37, 37)
 	roleDPS:SetPoint("TOP", 0, 0)
+	self.GroupRole.Damager = roleDPS
 
-	self.GroupRole = {
-		Healer = roleHealer, 
-		Tank = roleTank,
-		Damager = roleDPS		
-	}
 
 end 
 

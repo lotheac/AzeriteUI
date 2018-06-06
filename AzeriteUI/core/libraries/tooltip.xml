@@ -1,0 +1,384 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+	<GameTooltip name="CG_GameTooltipTemplate" frameStrata="TOOLTIP" clampedToScreen="true" hidden="true" virtual="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTextLeft1" parentKey="TextLeft1" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="10" y="-10"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight1" parentKey="TextRight1" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft1" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft2" parentKey="TextLeft2" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft1" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight2" parentKey="TextRight2" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft2" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft3" parentKey="TextLeft3" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft2" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight3" parentKey="TextRight3" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft3" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft4" parentKey="TextLeft4" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft3" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight4" parentKey="TextRight4" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft4" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft5" parentKey="TextLeft5" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft4" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight5" parentKey="TextRight5" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft5" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft6" parentKey="TextLeft6" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft5" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight6" parentKey="TextRight6" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft6" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft7" parentKey="TextLeft7" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft6" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight7" parentKey="TextRight7" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft7" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextLeft8" parentKey="TextLeft8" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft7" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<FontString name="$parentTextRight8" parentKey="TextRight8" inherits="GameTooltipText" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft8" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="0.9" g="0.9" b="0.9"/>
+				</FontString>
+				<Texture name="$parentTexture1" parentKey="Texture1" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture2" parentKey="Texture2" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture3" parentKey="Texture3" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture4" parentKey="Texture4" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture5" parentKey="Texture5" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture6" parentKey="Texture6" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture7" parentKey="Texture7" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture8" parentKey="Texture8" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture9" parentKey="Texture9" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture10" parentKey="Texture10" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="$parentBackdrop" parentKey="Backdrop" drawLayer="BACKGROUND">
+				<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+					<EdgeSize val="16"/>
+					<TileSize val="16"/>
+					<BackgroundInsets left="2.5" right="2.5" top="2.5" bottom="2.5"/>
+				</Backdrop>
+				<Anchors>
+					<Anchor point="TOP" x="0" y="0"/>
+					<Anchor point="LEFT" x="0" y="0"/>
+					<Anchor point="RIGHT" x="0" y="0"/>
+					<Anchor point="BOTTOM" x="0" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						self:SetFrameLevel(self:GetParent():GetFrameLevel()-1)
+					</OnLoad>
+					<OnShow>
+						self:SetFrameLevel(self:GetParent():GetFrameLevel()-1)
+					</OnShow>
+					<OnHide>
+						self:SetFrameLevel(self:GetParent():GetFrameLevel()-1)
+					</OnHide>
+				</Scripts>
+			</Frame>
+		</Frames>
+	</GameTooltip>
+
+	<GameTooltip name="CG_ShoppingTooltipTemplate" frameStrata="TOOLTIP" hidden="true" virtual="true">
+		<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+			<EdgeSize>
+				<AbsValue val="16"/>
+			</EdgeSize>
+			<TileSize>
+				<AbsValue val="16"/>
+			</TileSize>
+			<BackgroundInsets>
+				<AbsInset left="2.5" right="2.5" top="2.5" bottom="2.5"/>
+			</BackgroundInsets>
+		</Backdrop>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTextLeft1" inherits="GameFontNormalSmall" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="10" y="-10"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextRight1" inherits="GameFontNormal" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft1" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextLeft2" inherits="GameFontNormal" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft1" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextRight2" inherits="GameFontHighlightSmall" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft2" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextLeft3" inherits="GameFontHighlightSmall" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft2" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextRight3" inherits="GameFontHighlightSmall" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft3" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextLeft4" inherits="GameTooltipTextSmall" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTextLeft3" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-2"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTextRight4" inherits="GameFontHighlightSmall" hidden="true">
+					<Anchors>
+						<Anchor point="RIGHT" relativeTo="$parentTextLeft4" relativePoint="LEFT">
+							<Offset>
+								<AbsDimension x="40" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<Texture name="$parentTexture1" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture2" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+				<Texture name="$parentTexture3" hidden="true">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+				</Texture>
+			</Layer>
+		</Layers>
+	</GameTooltip>
+	
+	<Frame name="CG_TooltipMoneyFrameTemplate" inherits="SmallMoneyFrameTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="128" y="13"/>
+		</Size>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentPrefixText" parentKey="PrefixText" inherits="GameFontHighlight">
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="-4" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentSuffixText" parentKey="SuffixText" inherits="GameFontHighlight">
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				SmallMoneyFrame_OnLoad(self);
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+</Ui>

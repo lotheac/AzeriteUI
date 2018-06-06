@@ -1,11 +1,11 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local WorldMap = AzeriteUI:NewModule("WorldMap", "CogDB", "CogEvent")
+local WorldMap = AzeriteUI:NewModule("WorldMap", "LibDB", "LibEvent")
 
 WorldMap.OnInit = function(self)
 end 

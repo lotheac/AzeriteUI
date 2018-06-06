@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local UnitFrameTarget = AzeriteUI:NewModule("UnitFrameTarget", "CogEvent", "CogUnitFrame", "CogSound")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
+local UnitFrameTarget = AzeriteUI:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -39,39 +39,57 @@ local TARGET_GUID
 local TARGET_STYLE
 
 
--- Health Bar Map (Low, Mid, Cap)
--- (Texture Size 512x64, Growth: RIGHT)
-local barMap = {
-	{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, -- #1: begins growing from zero height
-	{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #2: normal size begins
-	{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, -- #3: starts growing from the bottom
-	{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, -- #4: bottom peak, now starts shrinking from the bottom
-	{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, -- #4: bottom peak, now starts shrinking from the bottom
-	{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, -- #5: starts shrinking from the top
-	{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  -- #6: ends at zero height
-}
+local map = {
 
--- Health Bar Map (Critter)
-local barMapCritter = {
-
-}
-
--- Health Bar Map (Boss)
-local barMapBoss = {
-	top = {
-		{ keyPercent =   0/1024, offset =  -24/64 }, 
-		{ keyPercent =  13/1024, offset =    0/64 }, 
-		{ keyPercent = 1018/1024, offset =   0/64 }, 
-		{ keyPercent = 1024/1024, offset = -10/64 }, 
+	-- Health Bar Map (Normal)
+	-- (Texture Size 512x64, Growth: RIGHT)
+	normal = {
+		{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
+		{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
+		{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, 
+		{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, 
+		{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, 
+		{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
+		{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 	},
-	bottom = {
-		{ keyPercent =    0/1024, offset =  -39/64 }, 
-		{ keyPercent =   13/1024, offset =  -16/64 }, 
-		{ keyPercent =  949/1024, offset =  -16/64 }, 
-		{ keyPercent =  977/1024, offset =   -1/64 }, 
-		{ keyPercent =  984/1024, offset =   -2/64 }, 
-		{ keyPercent = 1024/1024, offset =  -52/64 }, 
+
+	-- Health Bar Map (Boss)
+	-- (Texture Size 1024x64, Growth: RIGHT)
+	boss = {
+		top = {
+			{ keyPercent =    0/1024, offset = -24/64 }, 
+			{ keyPercent =   13/1024, offset =   0/64 }, 
+			{ keyPercent = 1018/1024, offset =   0/64 }, 
+			{ keyPercent = 1024/1024, offset = -10/64 }
+		},
+		bottom = {
+			{ keyPercent =    0/1024, offset = -39/64 }, 
+			{ keyPercent =   13/1024, offset = -16/64 }, 
+			{ keyPercent =  949/1024, offset = -16/64 }, 
+			{ keyPercent =  977/1024, offset =  -1/64 }, 
+			{ keyPercent =  984/1024, offset =  -2/64 }, 
+			{ keyPercent = 1024/1024, offset = -52/64 }
+		}
+	},
+
+	-- Health Bar Map (Critter)
+	-- (Texture Size 64x64, Growth: RIGHT)
+	critter = {
+		top = {
+			{ keyPercent =  0/64, offset = -30/64 }, 
+			{ keyPercent = 14/64, offset =  -1/64 }, 
+			{ keyPercent = 49/64, offset =  -1/64 }, 
+			{ keyPercent = 64/64, offset = -34/64 }
+		},
+		bottom = {
+			{ keyPercent =  0/64, offset = -30/64 }, 
+			{ keyPercent = 15/64, offset =   0/64 }, 
+			{ keyPercent = 32/64, offset =  -1/64 }, 
+			{ keyPercent = 50/64, offset =  -4/64 }, 
+			{ keyPercent = 64/64, offset = -27/64 }
+		}
 	}
+
 }
 
 
@@ -144,7 +162,7 @@ local PostUpdateTextures = function(self)
 			health:SetSize(533, 40)
 			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_boss_bar"))
-			health:SetSparkMap(barMapBoss)
+			health:SetSparkMap(map.boss)
 	
 			local healthBg = self.Health.Bg
 			healthBg:SetSize(588, 91)
@@ -159,7 +177,7 @@ local PostUpdateTextures = function(self)
 			cast:SetSize(533, 40)
 			cast:Place("TOPRIGHT", -27, -27)
 			cast:SetStatusBarTexture(getPath("hp_boss_bar"))
-			cast:SetSparkMap(barMapBoss)
+			cast:SetSparkMap(map.boss)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
@@ -175,7 +193,7 @@ local PostUpdateTextures = function(self)
 			health:SetSize(385, 40)
 			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_cap_bar"))
-			health:SetSparkMap(barMap)
+			health:SetSparkMap(map.normal)
 	
 			local healthBg = self.Health.Bg
 			healthBg:SetSize(439, 91)
@@ -190,7 +208,7 @@ local PostUpdateTextures = function(self)
 			cast:SetSize(385, 40)
 			cast:Place("TOPRIGHT", -27, -27)
 			cast:SetStatusBarTexture(getPath("hp_cap_bar"))
-			cast:SetSparkMap(barMap)
+			cast:SetSparkMap(map.normal)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
@@ -206,7 +224,7 @@ local PostUpdateTextures = function(self)
 			health:SetSize(385, 37)
 			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			health:SetSparkMap(barMap)
+			health:SetSparkMap(map.normal)
 	
 			local healthBg = self.Health.Bg
 			healthBg:SetSize(439, 91)
@@ -221,7 +239,7 @@ local PostUpdateTextures = function(self)
 			cast:SetSize(385, 37)
 			cast:Place("TOPRIGHT", -27, -27)
 			cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			cast:SetSparkMap(barMap)
+			cast:SetSparkMap(map.normal)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
@@ -237,7 +255,7 @@ local PostUpdateTextures = function(self)
 			health:SetSize(40, 36)
 			health:Place("TOPRIGHT", -24, -24)
 			health:SetStatusBarTexture(getPath("hp_critter_bar"))
-			health:SetSparkMap(barMap)
+			health:SetSparkMap(map.critter)
 	
 			local healthBg = self.Health.Bg
 			healthBg:SetSize(75, 71)
@@ -252,7 +270,7 @@ local PostUpdateTextures = function(self)
 			cast:SetSize(40, 36)
 			cast:Place("TOPRIGHT", -24, -24)
 			cast:SetStatusBarTexture(getPath("hp_critter_bar"))
-			cast:SetSparkMap(barMap)
+			cast:SetSparkMap(map.critter)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_lo"))
@@ -269,7 +287,7 @@ local PostUpdateTextures = function(self)
 			health:SetSize(385, 37)
 			health:Place("TOPRIGHT", -27, -27)
 			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			health:SetSparkMap(barMap)
+			health:SetSparkMap(map.normal)
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
@@ -284,13 +302,13 @@ local PostUpdateTextures = function(self)
 			cast:SetSize(385, 37)
 			cast:Place("TOPRIGHT", -27, -27)
 			cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			cast:SetSparkMap(barMap)
+			cast:SetSparkMap(map.normal)
 
 			local absorb = self.Absorb
 			absorb:SetSize(385, 37)
 			absorb:Place("TOPRIGHT", -27, -27)
 			absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			absorb:SetSparkMap(barMap)
+			absorb:SetSparkMap(map.normal)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_lo"))
@@ -495,62 +513,57 @@ local Style = function(self, unit, id, ...)
 
 	-- Unit Classification (boss, elite, rare)
 	-----------------------------------------------------------	
-	-- Not redundant even though we have a skull icon above, 
-	-- since NPCs can be bosses without having a boss level.  
-	-- We need to indicate their boss status regardless of level. 
+
+	self.Classification = {}
 
 	local isBoss = overlay:CreateTexture()
 	isBoss:SetTexture(getPath("icon_boss_red"))
 	isBoss:SetSize(56, 56)
 	isBoss:SetPoint("TOPRIGHT", 60, -67)
 	isBoss:SetVertexColor(182/255, 183/255, 181/255)
+	self.Classification.Boss = isBoss
 
 	local isElite = overlay:CreateTexture()
 	isElite:SetTexture(getPath("icon_elite_gold"))
 	isElite:SetSize(56, 56)
 	isElite:SetPoint("TOPRIGHT", 60, -67)
 	isElite:SetVertexColor(182/255, 183/255, 181/255)
+	self.Classification.Elite = isElite
 
 	local isRare = overlay:CreateTexture()
 	isRare:SetTexture(getPath("icon_rare_blue"))
 	isRare:SetSize(56, 56)
 	isRare:SetPoint("TOPRIGHT", 60, -67)
 	isRare:SetVertexColor(182/255, 183/255, 181/255)
-
-	self.Classification = {
-		Elite = isElite, 
-		Boss = isBoss,
-		Rare = isRare 
-	}
+	self.Classification.Rare = isRare
 
 
 	-- Targeting
 	-----------------------------------------------------------	
 	-- Indicates who your target is targeting
 
+	self.Targeted = {}
+
 	local youByFriend = overlay:CreateTexture()
 	youByFriend:SetTexture(getPath("icon_stoneye"))
 	youByFriend:SetSize(67, 67)
 	youByFriend:SetPoint("TOPRIGHT", 29, 43)
 	youByFriend:SetVertexColor(227/255, 231/255, 216/255)
+	self.Targeted.YouByFriend = youByFriend
 
 	local youByEnemy = overlay:CreateTexture()
 	youByEnemy:SetTexture(getPath("icon_stoneye2"))
 	youByEnemy:SetSize(67, 67)
 	youByEnemy:SetPoint("TOPRIGHT", 29, 43)
 	youByEnemy:SetVertexColor(227/255, 231/255, 216/255)
+	self.Targeted.YouByEnemy = youByEnemy
 
 	local petByEnemy = overlay:CreateTexture()
 	petByEnemy:SetTexture(getPath("icon_stoneye2"))
 	petByEnemy:SetSize(67, 67)
 	petByEnemy:SetPoint("TOPRIGHT", 29, 43)
 	petByEnemy:SetVertexColor(227/255, 231/255, 216/255)
-
-	self.Targeted = {
-		PetByEnemy = petByEnemy,
-		YouByEnemy = youByEnemy,
-		YouByFriend = youByFriend
-	}
+	self.Targeted.PetByEnemy = petByEnemy
 
 
 	-- Name

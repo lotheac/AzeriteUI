@@ -1,0 +1,68 @@
+local LibMinimap = CogWheel("LibMinimap")
+if (not LibMinimap) then 
+	return
+end 
+
+-- Lua API
+local _G = _G
+
+-- WoW API
+local C_Map = _G.C_Map
+
+-- WoW Frames
+local WorldMapFrame = _G.WorldMapFrame
+
+local UpdateValue = function(element, x, y)
+	if element.OverrideValue then 
+		return element:OverrideValue(x, y)
+	end 
+	element:SetFormattedText("%.1f %.1f", x*100, y*100) 
+end 
+
+local Update = function(self, elapsed)
+	local element = self.Coordinates
+	if element.PreUpdate then
+		element:PreUpdate()
+	end
+
+	local mapID = C_Map.GetBestMapForUnit("player")
+	local x, y = C_Map.GetPlayerMapPosition(mapID, "player"):GetXY()
+	x = x or 0
+	y = y or 0
+
+	element:SetShown(x + y > 0)
+	element:UpdateValue(x, y)
+
+	if element.PostUpdate then 
+		element:PostUpdate(x,y)
+	end 
+
+end 
+
+local Proxy = function(self, ...)
+	return (self.Coordinates.Override or Update)(self, ...)
+end 
+
+local ForceUpdate = function(element, ...)
+	return Proxy(element._owner, "Forced", ...)
+end
+
+local Enable = function(self)
+	local element = self.Coordinates
+	if element then
+		element._owner = self
+		element.ForceUpdate = ForceUpdate
+		element.UpdateValue = UpdateValue
+		self:RegisterUpdate(Proxy, 1/10)
+		return true
+	end
+end 
+
+local Disable = function(self)
+	local element = self.Coordinates
+	if element then
+		self:UnregisterUpdate(Proxy)
+	end
+end 
+
+LibMinimap:RegisterElement("Coordinates", Enable, Disable, Proxy, 5)

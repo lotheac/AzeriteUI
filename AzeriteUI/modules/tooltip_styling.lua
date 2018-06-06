@@ -1,11 +1,11 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local TooltipStyling = AzeriteUI:NewModule("TooltipStyling", "CogEvent", "CogDB", "CogTooltip")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
+local TooltipStyling = AzeriteUI:NewModule("TooltipStyling", "LibEvent", "LibDB", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G

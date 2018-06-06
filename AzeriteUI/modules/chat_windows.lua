@@ -1,11 +1,11 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local ChatWindows = AzeriteUI:NewModule("ChatWindows", "CogEvent", "CogDB", "CogFrame", "CogChatWindow")
+local ChatWindows = AzeriteUI:NewModule("ChatWindows", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
 
 -- Lua API
 local _G = _G

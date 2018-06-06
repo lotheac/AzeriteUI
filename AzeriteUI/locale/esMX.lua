@@ -1,2 +1,2 @@
-local L = CogWheel("CogLocale"):NewLocale("AzeriteUI", "esMX")
+local L = CogWheel("LibLocale"):NewLocale("AzeriteUI", "esMX")
 

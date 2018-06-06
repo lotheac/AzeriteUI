@@ -1,4 +1,4 @@
-local Colors = CogWheel("CogDB"):NewDatabase("AzeriteUI: Colors")
+local Colors = CogWheel("LibDB"):NewDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local math_floor = math.floor

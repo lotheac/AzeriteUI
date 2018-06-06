@@ -1,11 +1,11 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local QuestTracker = AzeriteUI:NewModule("QuestTracker", "CogDB", "CogEvent")
+local QuestTracker = AzeriteUI:NewModule("QuestTracker", "LibDB", "LibEvent")
 
 QuestTracker.OnInit = function(self)
 end 

@@ -1,7 +1,7 @@
 local ADDON = ...
 
 -- Wooh! 
-local AzeriteUI = CogWheel("CogModule"):NewModule("AzeriteUI", "CogDB", "CogEvent", "CogBlizzard")
+local AzeriteUI = CogWheel("LibModule"):NewModule("AzeriteUI", "LibDB", "LibEvent", "LibBlizzard")
 
 -- Tell the back-end what addon to look for before 
 -- initializing this module and all its submodules. 
@@ -20,8 +20,6 @@ local EnableAddOn = _G.EnableAddOn
 local LoadAddOn = _G.LoadAddOn
 
 AzeriteUI.OnInit = function(self)
-
-
 	-- In case some other jokers have disabled these, we add them back to avoid a World of Bugs.
 	-- RothUI used to remove the two first, and a lot of people missed his documentation on how to get them back. 
 	-- I personally removed the objective's tracker for a while in DiabolicUI, which led to pain. Lots of pain.
@@ -97,8 +95,8 @@ AzeriteUI.OnEnable = function(self)
 	------------------------------------------------------------------------------------
 
 	-- Setting this makes it "perfect" even through window size changes?
-	-- Appears that CogFrame multiples this with the effective UI scale? ( Why don't I know, I wrote it, rofl!?! )
-	--local screenWidth, screenHeight = CogFrame:GetScreenSize()
-	--CogWheel("CogFrame"):SetTargetScale( 1920/1440 )
-	CogWheel("CogFrame"):SetTargetScale( 1 )
+	-- Appears that LibFrame multiples this with the effective UI scale? ( Why don't I know, I wrote it, rofl!?! )
+	--local screenWidth, screenHeight = LibFrame:GetScreenSize()
+	--CogWheel("LibFrame"):SetTargetScale( 1920/1440 )
+	CogWheel("LibFrame"):SetTargetScale( 1 )
 end 

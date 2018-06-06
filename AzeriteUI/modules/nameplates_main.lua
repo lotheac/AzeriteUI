@@ -1,11 +1,11 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("CogModule"):GetModule("AzeriteUI")
+local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
 if (not AzeriteUI) then 
 	return 
 end
 
-local NamePlates = AzeriteUI:NewModule("NamePlates", "CogEvent", "CogNamePlate", "CogDB")
-local Colors = CogWheel("CogDB"):GetDatabase("AzeriteUI: Colors")
+local NamePlates = AzeriteUI:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -22,6 +22,26 @@ local WEAKAURAS
 
 -- Current player level
 local LEVEL = UnitLevel("player") 
+
+local map = {
+	-- Nameplate Bar Map
+	-- (Texture Size 256x32, Growth: RIGHT)
+	plate = {
+		top = {
+			{ keyPercent =   0/256, offset = -16/32 }, 
+			{ keyPercent =  19/256, offset =   0/32 }, 
+			{ keyPercent = 236/256, offset =   0/32 }, 
+			{ keyPercent = 256/256, offset = -16/32 }
+		},
+		bottom = {
+			{ keyPercent =   0/256, offset = -16/32 }, 
+			{ keyPercent =  19/256, offset =   0/32 }, 
+			{ keyPercent = 236/256, offset =   0/32 }, 
+			{ keyPercent = 256/256, offset = -16/32 }
+		}
+	}
+}
+
 
 
 -- Utility Functions
@@ -95,15 +115,15 @@ local UpdateLevel = function(plate, unit)
 			local levelstring
 			if (level and (level > 0)) then
 				if UnitIsFriend("player", unit) then
-					levelstring = plate.colors.General.OffWhite.colorCode .. level .. "|r"
+					levelstring = plate.colors.highlight.colorCode .. level .. "|r"
 				else
 					levelstring = (getDifficultyColorByLevel(level)) .. level .. "|r"
 				end
 				if (classificiation == "elite") or (classificiation == "rareelite") then
-					levelstring = levelstring .. plate.colors.Reaction[UnitReaction(unit, "player")].colorCode .. "+|r"
+					levelstring = levelstring .. plate.colors.reaction[UnitReaction(unit, "player")].colorCode .. "+|r"
 				end
 				if (classificiation == "rareelite") or (classificiation == "rare") then
-					levelstring = levelstring .. plate.colors.General.DimRed.colorCode .. " (rare)|r"
+					levelstring = levelstring .. plate.colors.quest.red.colorCode .. " (rare)|r"
 				end
 			end
 			Level:SetText(levelstring)
@@ -152,19 +172,26 @@ end
 
 
 
--- Library Post Updates
+-- Library Updates
 -- *will be called by the library at certain times
 -----------------------------------------------------------------
 
--- Called when certain bindable blizzard settings change, 
--- or when the VARIABLES_LOADED event fires. 
-NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
+-- Called on PLAYER_ENTERING_WORLD by the library, 
+-- but before the library calls its own updates.
+NamePlates.PreUpdateNamePlateOptions = function(self)
 
-	-- Because we want friendly NPC nameplates
-	-- We're toning them down a lot as it is, 
-	-- but we still prefer to have them visible, 
-	-- and not the fugly super sized names we get otherwise.
-	SetCVar("nameplateShowFriendlyNPCs", 1)
+	local _, instanceType = IsInInstance()
+	if (instanceType == "none") then
+		SetCVar("nameplateShowFriendlyNPCs", 1)
+		SetCVar("nameplateMaxDistance", 30)
+	else
+		if ENGINE_LEGION_720 then 
+			SetCVar("nameplateShowFriendlyNPCs", 0)
+		else 
+			SetCVar("nameplateShowFriendlyNPCs", 1)
+		end
+		SetCVar("nameplateMaxDistance", 45)
+	end
 
 	-- If these are enabled the GameTooltip will become protected, 
 	-- and all sort of taints and bugs will occur.
@@ -174,14 +201,29 @@ NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
 		SetCVar("nameplateShowDebuffsOnFriendly", 0) 
 	end
 		
+end 
+
+-- Called when certain bindable blizzard settings change, 
+-- or when the VARIABLES_LOADED event fires. 
+NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
+
+	-- Make an extra call to the preupdate
+	self:PreUpdateNamePlateOptions()
+
+	-- Because we want friendly NPC nameplates
+	-- We're toning them down a lot as it is, 
+	-- but we still prefer to have them visible, 
+	-- and not the fugly super sized names we get otherwise.
+	--SetCVar("nameplateShowFriendlyNPCs", 1)
+
 	-- Insets at the top and bottom of the screen 
 	-- which the target nameplate will be kept away from. 
 	-- Used to avoid the target plate being overlapped 
 	-- by the target frame or actionbars and keep it in view.
-	SetCVar("nameplateLargeTopInset", .22) -- default .1
-	SetCVar("nameplateOtherTopInset", .22) -- default .08
-	SetCVar("nameplateLargeBottomInset", .22) -- default .15
-	SetCVar("nameplateOtherBottomInset", .22) -- default .1
+	SetCVar("nameplateLargeTopInset", .05) -- default .1
+	SetCVar("nameplateOtherTopInset", .05) -- default .08
+	SetCVar("nameplateLargeBottomInset", .02) -- default .15
+	SetCVar("nameplateOtherBottomInset", .02) -- default .1
 	
 	SetCVar("nameplateClassResourceTopInset", 0)
 	SetCVar("nameplateGlobalScale", 1)
@@ -217,14 +259,11 @@ NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
 
 	-- Setting the base size involves changing the size of secure unit buttons, 
 	-- but since we're using our out of combat wrapper, we should be safe.
-	local width, height = config.size[1], config.size[2]
-
-	C_NamePlate.SetNamePlateFriendlySize(width, height)
-	C_NamePlate.SetNamePlateEnemySize(width, height)
+	C_NamePlate.SetNamePlateFriendlySize(80,10)
+	C_NamePlate.SetNamePlateEnemySize(80,10)
 
 	NamePlateDriverFrame.UpdateNamePlateOptions = function() end
-
-	--NamePlateDriverMixin:SetBaseNamePlateSize(unpack(config.size))
+	--NamePlateDriverMixin:SetBaseNamePlateSize(80,10)
 
 	--[[
 		7.1 new methods in C_NamePlate:
@@ -252,36 +291,59 @@ NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
 	]]
 end
 
--- Called when a nameplate is created, or when entering or leaving an instance.
-NamePlates.PostUpdateNamePlateMaxDistance = function(self, isInInstace)
-	if isInInstace then
-		SetCVar("nameplateMaxDistance", 45)
-	else
-		SetCVar("nameplateMaxDistance", 30)
-	end
-end 
-
 -- Called after a nameplate is created.
 -- This is where we create our own custom elements.
 NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 
-	plate.colors = Colors -- use our global addon color table
+	plate:SetSize(80,10)
+	plate.colors = Colors 
+
+	-- Health bar
+	local health = plate:CreateStatusBar()
+	health:SetSize(80,10)
+	health:SetPoint("TOP", 0, 0)
+	health:SetStatusBarTexture(getPath("nameplate_bar"))
+	health:SetOrientation("LEFT")
+	health:SetSmoothingFrequency(.1)
+	health:SetSparkMap(map.plate)
+	health:SetAlpha(.85)
+	health:Hide()
+	plate.Health = health
+
+	local healthBg = health:CreateTexture()
+	healthBg:SetDrawLayer("BACKGROUND", 0)
+	healthBg:SetSize(80,10)
+	healthBg:SetPoint("CENTER", 0, 0)
+	healthBg:SetTexture(getPath("nameplate_bar"))
+	healthBg:SetVertexColor(.15, .15, .15, .82)
+
+	local healthBorder = health:CreateTexture()
+	healthBorder:SetDrawLayer("BACKGROUND", -1)
+	healthBorder:SetSize(84,14)
+	healthBorder:SetPoint("CENTER", 0, 0)
+	healthBorder:SetTexture(getPath("nameplate_solid"))
+	healthBorder:SetVertexColor(0, 0, 0, .82)
+
+	local healthGlow = health:CreateTexture()
+	healthGlow:SetDrawLayer("BACKGROUND", -2)
+	healthGlow:SetSize(88,18)
+	healthGlow:SetPoint("CENTER", 0, 0)
+	healthGlow:SetTexture(getPath("nameplate_solid"))
+	healthGlow:SetVertexColor(0, 0, 0, .25)
+	
+
+	--local healthGlow = health:CreateTexture()
+	--healthGlow:SetDrawLayer("BACKGROUND", -2)
+	--healthGlow:SetSize(84,14)
+	--healthGlow:SetPoint("CENTER", 0, 0)
+	--healthGlow:SetTexture(getPath("nameplate_solid"))
+	--healthGlow:SetVertexColor(0, 0, 0, .75)
 
 	do 
 		return 
 	end 
 
 	-- Embed our own stuff
-
-
-	
-	-- Create our custom regions and objects
-	local config = self.config
-	local widgetConfig = config.widgets
-	local textureConfig = config.textures
-
-	plate:SetSize(unpack(config.size))
-	plate.config = config
 
 	-- Support for WeakAuras personal resource display attachment! :) 
 	-- (We're pretty much faking it, pretending to be KUINamePlates)
@@ -297,155 +359,6 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 		baseFrame.kui.bg = anchor
 	end
 
-
-	-- Health bar
-	local Health = plate:CreateStatusBar()
-	Health:SetSize(unpack(widgetConfig.health.size))
-	Health:SetPoint(unpack(widgetConfig.health.place))
-	Health:SetStatusBarTexture(textureConfig.bar_texture.path)
-	Health:Hide()
-
-	local HealthShadow = Health:CreateTexture()
-	HealthShadow:SetDrawLayer("BACKGROUND")
-	HealthShadow:SetSize(unpack(textureConfig.bar_glow.size))
-	HealthShadow:SetPoint(unpack(textureConfig.bar_glow.position))
-	HealthShadow:SetTexture(textureConfig.bar_glow.path)
-	HealthShadow:SetVertexColor(0, 0, 0, 1)
-	Health.Shadow = HealthShadow
-
-	local HealthBackdrop = Health:CreateTexture()
-	HealthBackdrop:SetDrawLayer("BACKGROUND")
-	HealthBackdrop:SetSize(unpack(textureConfig.bar_backdrop.size))
-	HealthBackdrop:SetPoint(unpack(textureConfig.bar_backdrop.position))
-	HealthBackdrop:SetTexture(textureConfig.bar_backdrop.path)
-	HealthBackdrop:SetVertexColor(.15, .15, .15, .85)
-	Health.Backdrop = HealthBackdrop
-	
-	local HealthGlow = Health:CreateTexture()
-	HealthGlow:SetDrawLayer("OVERLAY")
-	HealthGlow:SetSize(unpack(textureConfig.bar_glow.size))
-	HealthGlow:SetPoint(unpack(textureConfig.bar_glow.position))
-	HealthGlow:SetTexture(textureConfig.bar_glow.path)
-	HealthGlow:SetVertexColor(0, 0, 0, .75)
-	Health.Glow = HealthGlow
-
-	local HealthOverlay = Health:CreateTexture()
-	HealthOverlay:SetDrawLayer("ARTWORK")
-	HealthOverlay:SetSize(unpack(textureConfig.bar_overlay.size))
-	HealthOverlay:SetPoint(unpack(textureConfig.bar_overlay.position))
-	HealthOverlay:SetTexture(textureConfig.bar_overlay.path)
-	HealthOverlay:SetAlpha(.5)
-	Health.Overlay = HealthOverlay
-
-	local HealthValue = Health:CreateFontString()
-	HealthValue:SetDrawLayer("OVERLAY")
-	HealthValue:SetPoint(unpack(widgetConfig.health.value.place))
-	HealthValue:SetFontObject(widgetConfig.health.value.fontObject)
-	HealthValue:SetTextColor(unpack(widgetConfig.health.value.color))
-	Health.Value = HealthValue
-
-
-	-- Cast bar
-	local CastHolder = plate:CreateFrame("Frame")
-	CastHolder:SetSize(unpack(widgetConfig.cast.size))
-	CastHolder:SetPoint(unpack(widgetConfig.cast.place))
-
-	local Cast = CastHolder:CreateStatusBar()
-	Cast:Hide()
-	Cast:SetAllPoints()
-	Cast:SetStatusBarTexture(textureConfig.bar_texture.path)
-	Cast:SetStatusBarColor(unpack(widgetConfig.cast.color))
-
-	local CastShadow = Cast:CreateTexture()
-	CastShadow:Hide()
-	CastShadow:SetDrawLayer("BACKGROUND")
-	CastShadow:SetSize(unpack(textureConfig.bar_glow.size))
-	CastShadow:SetPoint(unpack(textureConfig.bar_glow.position))
-	CastShadow:SetTexture(textureConfig.bar_glow.path)
-	CastShadow:SetVertexColor(0, 0, 0, 1)
-	--CastShadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-	Cast.Shadow = CastShadow
-
-	local CastBackdrop = Cast:CreateTexture()
-	CastBackdrop:SetDrawLayer("BACKGROUND")
-	CastBackdrop:SetSize(unpack(textureConfig.bar_backdrop.size))
-	CastBackdrop:SetPoint(unpack(textureConfig.bar_backdrop.position))
-	CastBackdrop:SetTexture(textureConfig.bar_backdrop.path)
-	CastBackdrop:SetVertexColor(0, 0, 0, 1)
-	Cast.Backdrop = CastBackdrop
-	
-	local CastGlow = Cast:CreateTexture()
-	CastGlow:SetDrawLayer("OVERLAY")
-	CastGlow:SetSize(unpack(textureConfig.bar_glow.size))
-	CastGlow:SetPoint(unpack(textureConfig.bar_glow.position))
-	CastGlow:SetTexture(textureConfig.bar_glow.path)
-	CastGlow:SetVertexColor(0, 0, 0, .75)
-	--CastGlow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-	Cast.Glow = CastGlow
-
-	local CastOverlay = Cast:CreateTexture()
-	CastOverlay:SetDrawLayer("ARTWORK")
-	CastOverlay:SetSize(unpack(textureConfig.bar_overlay.size))
-	CastOverlay:SetPoint(unpack(textureConfig.bar_overlay.position))
-	CastOverlay:SetTexture(textureConfig.bar_overlay.path)
-	CastOverlay:SetAlpha(.5)
-	Cast.Overlay = CastOverlay
-
-	local CastValue = Cast:CreateFontString()
-	CastValue:SetDrawLayer("OVERLAY")
-	CastValue:SetJustifyV("TOP")
-	CastValue:SetHeight(10)
-	--CastValue:SetPoint("BOTTOM", Cast, "TOP", 0, 6)
-	CastValue:SetPoint("TOPLEFT", Cast, "TOPRIGHT", 4, -(Cast:GetHeight() - Cast:GetHeight())/2)
-	CastValue:SetFontObject(DiabolicFont_SansBold10)
-	CastValue:SetTextColor(plate.colors.General.Prefix[1], plate.colors.General.Prefix[2], plate.colors.General.Prefix[3])
-	CastValue:Hide()
-	Cast.Value = CastValue
-
-	-- Cast Name
-	local CastName = Cast:CreateFontString()
-	CastName:SetDrawLayer("OVERLAY")
-	CastName:SetPoint(unpack(widgetConfig.cast.name.place))
-	CastName:SetFontObject(widgetConfig.cast.name.fontObject)
-	CastName:SetTextColor(unpack(widgetConfig.cast.name.color))
-	Cast.Name = CastName
-
-	-- This is a total copout, but it does what we want, 
-	-- which is to replace the health value text with spell name.
-	Cast:HookScript("OnShow", function() 
-		HealthValue:SetAlpha(0) 
-		CastShadow:Show()
-		CastGlow:Show()
-	end)
-	Cast:HookScript("OnHide", function() 
-		HealthValue:SetAlpha(1) 
-		CastShadow:Hide()
-		CastGlow:Hide()
-	end)
-
-
-	-- Cast Name
-	--local Spell = Cast:CreateFrame()
-	--SpellName = Spell:CreateFontString()
-	--SpellName:SetDrawLayer("OVERLAY")
-	--SpellName:SetPoint("BOTTOM", Health, "TOP", 0, 6)
-	--SpellName:SetFontObject(DiabolicFont_SansBold10)
-	--SpellName:SetTextColor(plate.colors.General.Prefix[1], plate.colors.General.Prefix[2], plate.colors.General.Prefix[3])
-	--Spell.Name = SpellName
-
-	-- Cast Icon
-	--SpellIcon = Spell:CreateTexture()
-	--Spell.Icon = SpellIcon
-
-	--SpellIconBorder = Spell:CreateTexture()
-	--Spell.Icon.Border = SpellIconBorder
-
-	--SpellIconShield = Spell:CreateTexture()
-	--Spell.Icon.Shield = SpellIconShield
-
-	--SpellIconShade = Spell:CreateTexture()
-	--Spell.Icon.Shade = SpellIconShade
-
 	-- Mouse hover highlight
 	local Highlight = Health:CreateTexture()
 	Highlight:Hide()
@@ -458,7 +371,7 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	local Level = Health:CreateFontString()
 	Level:SetDrawLayer("OVERLAY")
 	Level:SetFontObject(DiabolicFont_SansBold10)
-	Level:SetTextColor(plate.colors.General.OffWhite[1], plate.colors.General.OffWhite[2], plate.colors.General.OffWhite[3])
+	Level:SetTextColor(plate.colors.highlight[1], plate.colors.highlight[2], plate.colors.highlight[3])
 	Level:SetJustifyV("TOP")
 	Level:SetHeight(10)
 	Level:SetPoint("TOPLEFT", Health, "TOPRIGHT", 4, -(Health:GetHeight() - Level:GetHeight())/2)
@@ -576,7 +489,7 @@ NamePlates.OnEvent = function(self, event, ...)
 		else
 			local level = UnitLevel("player")
 			if (level ~= LEVEL) then
-				LEVEL = levelW
+				LEVEL = level
 			end
 		end
 	end
@@ -587,4 +500,5 @@ NamePlates.OnInit = function(self)
 end 
 
 NamePlates.OnEnable = function(self)
+	self:StartNamePlateEngine()
 end 
