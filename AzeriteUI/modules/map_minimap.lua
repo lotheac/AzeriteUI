@@ -244,7 +244,7 @@ Minimap.SetUpMinimap = function(self)
 	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-725"), "7.2.5")
 	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-730"), "7.3.0")
 	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-735"), "7.3.5")
-	--self:SetMinimapBlips(getPath("minimap_blips_nandini_new-801"), "8.0.1")
+	self:SetMinimapBlips(getPath("minimap_blips_nandini_new-801"), "8.0.1")
 
 
 	-- Blob & Ring Textures
@@ -270,7 +270,7 @@ Minimap.SetUpMinimap = function(self)
 	local icon = mail:CreateTexture()
 	icon:SetDrawLayer("ARTWORK")
 	icon:SetPoint("CENTER", 0, 0)
-	icon:SetSize(93, 93) 
+	icon:SetSize(66, 66) 
 	icon:SetRotation(degreesToRadians(8.25))
 	icon:SetTexture(getPath("icon_mail"))
 

@@ -55,56 +55,6 @@ local rotateDeg = function(degrees)
 	return degrees*(2*math_pi)/180
 end 
 
--- Upsize a rotated set of values, 
--- since WoW shrinks rotated textures down.
-local r = function(...)
-	local numValues = select("#", ...)
-	local maxValue, maxIndex
-	local t = {}
-	for i = 1, numValues do
-		local value = select(i, ...)
-		if maxValue then 
-			if maxValue > value then 
-				maxValue = value 
-				maxIndex = i
-			end 
-		else 
-			maxValue = value
-			maxIndex = i
-		end 
-	end 
-	for i = 1, numValues do 
-		local value = select(i, ...)
-		t[i] = math.ceil(math.sqrt(2*value^2)) 
-	end 
-	return unpack(t)
-end 
-
--- Downsize a rotated value
-local d = function(...)
-	local numValues = select("#", ...)
-	local maxValue, maxIndex
-	local t = {}
-	for i = 1, numValues do
-		local value = select(i, ...)
-		if maxValue then 
-			if maxValue > value then 
-				maxValue = value 
-				maxIndex = i
-			end 
-		else 
-			maxValue = value
-			maxIndex = i
-		end 
-	end 
-	for i = 1, numValues do 
-		local value = select(i, ...)
-		local newValue = math.ceil(math.sqrt(2*value^2)) 
-		t[i] = value / (newValue / value) 
-	end 
-	return unpack(t)
-end 
-
 -- Scale function
 -- just a personal temporary function 
 -- to recalculate values from a different resolution.
@@ -115,7 +65,6 @@ local s = function(...)
 	end 
 	return unpack(t)
 end 
-	
 
 -- Decide the pill- and case textures
 -- based on class, resource and vehicle.
@@ -164,7 +113,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point1:SetStatusBarTexture(getPath("point_crystal"))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(r(s(25,25)))
+			point1.case:SetSize(s(25,25))
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
@@ -173,7 +122,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point2:SetStatusBarTexture(getPath("point_crystal"))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(r(s(25,25)))
+			point2.case:SetSize(s(25,25))
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 
@@ -182,7 +131,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point3:SetStatusBarTexture(getPath("point_crystal"))
 			point3.slotTexture:SetTexture(getPath("point_crystal"))
 			point3.case:SetPoint("CENTER", 0,0)
-			point3.case:SetSize(r(s(25,25)))
+			point3.case:SetSize(s(25,25))
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 		
@@ -191,16 +140,16 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point4:SetStatusBarTexture(getPath("point_crystal"))
 			point4.slotTexture:SetTexture(getPath("point_crystal"))
 			point4.case:SetPoint("CENTER", 0, 0)
-			point4.case:SetSize(r(s(26,26)))
+			point4.case:SetSize(s(26,26))
 			point4.case:SetRotation(rotateDeg(0))
 			point4.case:SetTexture(getPath("point_plate"))
 		
 			point5:SetPoint("CENTER", s(-152,-8))
-			point5:SetSize(d(s(17,22)))
+			point5:SetSize(s(17,22))
 			point5:SetStatusBarTexture(getPath("point_crystal"))
 			point5.slotTexture:SetTexture(getPath("point_crystal"))
 			point5.case:SetPoint("CENTER",0, 0)
-			point5.case:SetSize(r(s(39,43)))
+			point5.case:SetSize(s(39,43))
 			point5.case:SetRotation(rotateDeg(0))
 			point5.case:SetTexture(getPath("point_case"))
 
@@ -208,47 +157,47 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 
 			point1:SetPoint("CENTER", s(-152,-103))
-			point1:SetSize(d(s(14,14)))
+			point1:SetSize(s(14,14))
 			point1:SetStatusBarTexture(getPath("point_crystal"))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(r(s(25,25)))
+			point1.case:SetSize(s(25,25))
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
 			point2:SetPoint("CENTER", s(-170,-86))
-			point2:SetSize(d(s(14,14)))
+			point2:SetSize(s(14,14))
 			point2:SetStatusBarTexture(getPath("point_crystal"))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(r(s(25,25)))
+			point2.case:SetSize(s(25,25))
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 
 			point3:SetPoint("CENTER", s(-174,-57))
-			point3:SetSize(d(s(50,53)))
+			point3:SetSize(s(50,53))
 			point3:SetStatusBarTexture(getPath("point_hearth"))
 			point3.slotTexture:SetTexture(getPath("point_hearth"))
 			point3.case:SetPoint("CENTER", 0,0)
-			point3.case:SetSize(r(s(35,35)))
+			point3.case:SetSize(s(35,35))
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 		
 			point4:SetPoint("CENTER", s(-169,-27))
-			point4:SetSize(d(s(14,14)))
+			point4:SetSize(s(14,14))
 			point4:SetStatusBarTexture(getPath("point_crystal"))
 			point4.slotTexture:SetTexture(getPath("point_crystal"))
 			point4.case:SetPoint("CENTER", 0, 0)
-			point4.case:SetSize(r(s(26,26)))
+			point4.case:SetSize(s(26,26))
 			point4.case:SetRotation(rotateDeg(0))
 			point4.case:SetTexture(getPath("point_plate"))
 		
 			point5:SetPoint("CENTER", s(-152,-7))
-			point5:SetSize(d(s(14,14)))
+			point5:SetSize(s(14,14))
 			point5:SetStatusBarTexture(getPath("point_crystal"))
 			point5.slotTexture:SetTexture(getPath("point_crystal"))
 			point5.case:SetPoint("CENTER",0, 0)
-			point5.case:SetSize(r(s(26,26)))
+			point5.case:SetSize(s(26,26))
 			point5.case:SetRotation(rotateDeg(0))
 			point5.case:SetTexture(getPath("point_plate"))
 
@@ -256,25 +205,25 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 
 			point1:SetPoint("CENTER", s(-152,-103))
-			point1:SetSize(d(s(10,10)))
+			point1:SetSize(s(10,10))
 			point1:SetStatusBarTexture(getPath("point_crystal"))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(r(s(20,20)))
+			point1.case:SetSize(s(20,20))
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
 			point2:SetPoint("CENTER", s(-165,-84))
-			point2:SetSize(d(s(12,12)))
+			point2:SetSize(s(12,12))
 			point2:SetStatusBarTexture(getPath("point_crystal"))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(r(s(23,23)))
+			point2.case:SetSize(s(23,23))
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 
 			point3:SetPoint("CENTER", s(-176,-60))
-			point3:SetSize(d(s(12,16)))
+			point3:SetSize(s(12,16))
 			point3:SetStatusBarTexture(getPath("point_crystal"))
 			point3.slotTexture:SetTexture(getPath("point_crystal"))
 			point3.case:SetPoint("CENTER",1,0)
@@ -283,7 +232,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point3.case:SetTexture(getPath("point_case"))
 		
 			point4:SetPoint("CENTER", s(-170,-33))
-			point4:SetSize(d(s(15,19)))
+			point4:SetSize(s(15,19))
 			point4:SetStatusBarTexture(getPath("point_crystal"))
 			point4.slotTexture:SetTexture(getPath("point_crystal"))
 			point4.case:SetPoint("CENTER",1, 0)
@@ -292,11 +241,11 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point4.case:SetTexture(getPath("point_case"))
 		
 			point5:SetPoint("CENTER", s(-152,-8))
-			point5:SetSize(d(s(15,22)))
+			point5:SetSize(s(15,22))
 			point5:SetStatusBarTexture(getPath("point_crystal"))
 			point5.slotTexture:SetTexture(getPath("point_crystal"))
 			point5.case:SetPoint("CENTER",1, 0)
-			point5.case:SetSize(r(s(39,43)))
+			point5.case:SetSize(s(39,43))
 			point5.case:SetRotation(rotateDeg(0))
 			point5.case:SetTexture(getPath("point_case"))
 
@@ -305,29 +254,29 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			local point1, point2, point3 = element[1], element[2], element[3]
 
 			point1:SetPoint("CENTER", s(-170,-86))
-			point1:SetSize(d(s(14,14)))
+			point1:SetSize(s(14,14))
 			point1:SetStatusBarTexture(getPath("point_crystal"))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(r(s(25,25)))
+			point1.case:SetSize(s(25,25))
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
 			point2:SetPoint("CENTER", s(-174,-57))
-			point2:SetSize(d(s(15,22)))
+			point2:SetSize(s(15,22))
 			point2:SetStatusBarTexture(getPath("point_crystal"))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
 			point2.case:SetPoint("CENTER", 0,0)
-			point2.case:SetSize(r(s(35,35)))
+			point2.case:SetSize(s(35,35))
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 		
 			point3:SetPoint("CENTER", s(-169,-27))
-			point3:SetSize(d(s(14,14)))
+			point3:SetSize(s(14,14))
 			point3:SetStatusBarTexture(getPath("point_crystal"))
 			point3.slotTexture:SetTexture(getPath("point_crystal"))
 			point3.case:SetPoint("CENTER", 0, 0)
-			point3.case:SetSize(r(s(26,26)))
+			point3.case:SetSize(s(26,26))
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 
@@ -339,7 +288,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point1:SetStatusBarTexture(getPath("point_hearth"))
 			point1.slotTexture:SetTexture(getPath("point_hearth"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(r(s(25,25)))
+			point1.case:SetSize(s(25,25))
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
@@ -348,7 +297,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point2:SetStatusBarTexture(getPath("point_hearth"))
 			point2.slotTexture:SetTexture(getPath("point_hearth"))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(r(s(25,25)))
+			point2.case:SetSize(s(25,25))
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 
@@ -357,7 +306,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point3:SetStatusBarTexture(getPath("point_hearth"))
 			point3.slotTexture:SetTexture(getPath("point_hearth"))
 			point3.case:SetPoint("CENTER", 0,0)
-			point3.case:SetSize(r(s(25,25)))
+			point3.case:SetSize(s(25,25))
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 		
@@ -366,7 +315,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point4:SetStatusBarTexture(getPath("point_hearth"))
 			point4.slotTexture:SetTexture(getPath("point_hearth"))
 			point4.case:SetPoint("CENTER", 0, 0)
-			point4.case:SetSize(r(s(25,25)))
+			point4.case:SetSize(s(25,25))
 			point4.case:SetRotation(rotateDeg(0))
 			point4.case:SetTexture(getPath("point_plate"))
 		
@@ -375,7 +324,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point5:SetStatusBarTexture(getPath("point_hearth"))
 			point5.slotTexture:SetTexture(getPath("point_hearth"))
 			point5.case:SetPoint("CENTER", 0, 0)
-			point5.case:SetSize(r(s(25,25)))
+			point5.case:SetSize(s(25,25))
 			point5.case:SetRotation(rotateDeg(0))
 			point5.case:SetTexture(getPath("point_plate"))
 
@@ -384,7 +333,7 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 			point6:SetStatusBarTexture(getPath("point_hearth"))
 			point6.slotTexture:SetTexture(getPath("point_hearth"))
 			point6.case:SetPoint("CENTER", 0, 0)
-			point6.case:SetSize(r(s(25,25)))
+			point6.case:SetSize(s(25,25))
 			point6.case:SetRotation(rotateDeg(0))
 			point6.case:SetTexture(getPath("point_plate"))
 
