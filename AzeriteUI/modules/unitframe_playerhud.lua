@@ -55,17 +55,6 @@ local rotateDeg = function(degrees)
 	return degrees*(2*math_pi)/180
 end 
 
--- Scale function
--- just a personal temporary function 
--- to recalculate values from a different resolution.
-local s = function(...)
-	local t = {}
-	for i = 1, select("#", ...) do 
-		t[i] = select(i, ...) * 1920/1440
-	end 
-	return unpack(t)
-end 
-
 -- Decide the pill- and case textures
 -- based on class, resource and vehicle.
 local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
@@ -103,237 +92,266 @@ local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 		style = "Runes"
 	end 
 
+	-- For my own reference, these are properly sized and aligned so far:
+	-- yes 	ComboPoints 
+	-- no 	Chi
+	-- yes 	SoulShards (also ArcaneCharges, HolyPower)
+	-- no 	Stagger
+	-- no 	Runes
+
 	-- Do we need to set or update the textures?
 	if (style ~= element.powerStyle) then 
 		if (style == "ComboPoints") then
 			local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 
-			point1:SetPoint("CENTER", s(-152,-103))
-			point1:SetSize(s(12,12))
+			point1:SetPoint("CENTER", -203,-137)
+			point1:SetSize(13,13)
 			point1:SetStatusBarTexture(getPath("point_crystal"))
+			point1:GetStatusBarTexture():SetRotation(rotateDeg(6))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
+			point1.slotTexture:SetRotation(rotateDeg(6))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(s(25,25))
-			point1.case:SetRotation(rotateDeg(0))
+			point1.case:SetSize(32,32)
+			point1.case:SetRotation(rotateDeg(6))
 			point1.case:SetTexture(getPath("point_plate"))
 
-			point2:SetPoint("CENTER", s(-167,-83))
-			point2:SetSize(s(12,12))
+			point2:SetPoint("CENTER", -221,-111)
+			point2:SetSize(13,13)
 			point2:SetStatusBarTexture(getPath("point_crystal"))
+			point2:GetStatusBarTexture():SetRotation(rotateDeg(5))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
+			point2.slotTexture:SetRotation(rotateDeg(5))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(s(25,25))
-			point2.case:SetRotation(rotateDeg(0))
+			point2.case:SetSize(33,33)
+			point2.case:SetRotation(rotateDeg(5))
 			point2.case:SetTexture(getPath("point_plate"))
 
-			point3:SetPoint("CENTER", s(-173,-59))
-			point3:SetSize(s(12,12))
+			point3:SetPoint("CENTER", -231,-79)
+			point3:SetSize(13,13)
 			point3:SetStatusBarTexture(getPath("point_crystal"))
+			point3:GetStatusBarTexture():SetRotation(rotateDeg(4))
 			point3.slotTexture:SetTexture(getPath("point_crystal"))
+			point3.slotTexture:SetRotation(rotateDeg(4))
 			point3.case:SetPoint("CENTER", 0,0)
-			point3.case:SetSize(s(25,25))
-			point3.case:SetRotation(rotateDeg(0))
+			point3.case:SetSize(33,33)
+			point3.case:SetRotation(rotateDeg(4))
 			point3.case:SetTexture(getPath("point_plate"))
 		
-			point4:SetPoint("CENTER", s(-169,-33))
-			point4:SetSize(s(12,12))
+			point4:SetPoint("CENTER", -225,-44)
+			point4:SetSize(13,13)
 			point4:SetStatusBarTexture(getPath("point_crystal"))
+			point4:GetStatusBarTexture():SetRotation(rotateDeg(3))
 			point4.slotTexture:SetTexture(getPath("point_crystal"))
+			point4.slotTexture:SetRotation(rotateDeg(3))
 			point4.case:SetPoint("CENTER", 0, 0)
-			point4.case:SetSize(s(26,26))
+			point4.case:SetSize(34,34)
 			point4.case:SetRotation(rotateDeg(0))
 			point4.case:SetTexture(getPath("point_plate"))
 		
-			point5:SetPoint("CENTER", s(-152,-8))
-			point5:SetSize(s(17,22))
+			point5:SetPoint("CENTER", -203,-11)
+			point5:SetSize(14,21)
 			point5:SetStatusBarTexture(getPath("point_crystal"))
+			point5:GetStatusBarTexture():SetRotation(rotateDeg(1))
 			point5.slotTexture:SetTexture(getPath("point_crystal"))
-			point5.case:SetPoint("CENTER",0, 0)
-			point5.case:SetSize(s(39,43))
-			point5.case:SetRotation(rotateDeg(0))
+			point5.slotTexture:SetRotation(rotateDeg(1))
+			point5.case:SetRotation(rotateDeg(1))
+			point5.case:SetPoint("CENTER",1, 0)
+			point5.case:SetSize(52,57)
+			point5.case:SetRotation(rotateDeg(1))
 			point5.case:SetTexture(getPath("point_case"))
 
 		elseif (style == "Chi") then
 			local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 
-			point1:SetPoint("CENTER", s(-152,-103))
-			point1:SetSize(s(14,14))
+			point1:SetPoint("CENTER", -203,-137)
+			point1:SetSize(15,15)
 			point1:SetStatusBarTexture(getPath("point_crystal"))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(s(25,25))
+			point1.case:SetSize(33,33)
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
-			point2:SetPoint("CENTER", s(-170,-86))
-			point2:SetSize(s(14,14))
+			point2:SetPoint("CENTER", -227,-115)
+			point2:SetSize(15,15)
 			point2:SetStatusBarTexture(getPath("point_crystal"))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(s(25,25))
+			point2.case:SetSize(33,33)
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 
-			point3:SetPoint("CENTER", s(-174,-57))
-			point3:SetSize(s(50,53))
+			point3:SetPoint("CENTER", -232,-76)
+			point3:SetSize(66 / 1.414213562,70 / 1.414213562)
 			point3:SetStatusBarTexture(getPath("point_hearth"))
 			point3.slotTexture:SetTexture(getPath("point_hearth"))
 			point3.case:SetPoint("CENTER", 0,0)
-			point3.case:SetSize(s(35,35))
+			point3.case:SetSize(-46,-46)
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 		
-			point4:SetPoint("CENTER", s(-169,-27))
-			point4:SetSize(s(14,14))
+			point4:SetPoint("CENTER", -225,-36)
+			point4:SetSize(15,15)
 			point4:SetStatusBarTexture(getPath("point_crystal"))
 			point4.slotTexture:SetTexture(getPath("point_crystal"))
 			point4.case:SetPoint("CENTER", 0, 0)
-			point4.case:SetSize(s(26,26))
+			point4.case:SetSize(34,34)
 			point4.case:SetRotation(rotateDeg(0))
 			point4.case:SetTexture(getPath("point_plate"))
 		
-			point5:SetPoint("CENTER", s(-152,-7))
-			point5:SetSize(s(14,14))
+			point5:SetPoint("CENTER", -203,-9)
+			point5:SetSize(15,15)
 			point5:SetStatusBarTexture(getPath("point_crystal"))
 			point5.slotTexture:SetTexture(getPath("point_crystal"))
 			point5.case:SetPoint("CENTER",0, 0)
-			point5.case:SetSize(s(26,26))
+			point5.case:SetSize(34,34)
 			point5.case:SetRotation(rotateDeg(0))
 			point5.case:SetTexture(getPath("point_plate"))
 
 		elseif (style == "SoulShards") then 
 			local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 
-			point1:SetPoint("CENTER", s(-152,-103))
-			point1:SetSize(s(10,10))
+			point1:SetPoint("CENTER", -203,-137)
+			point1:SetSize(11,11)
 			point1:SetStatusBarTexture(getPath("point_crystal"))
+			point1:GetStatusBarTexture():SetRotation(rotateDeg(3))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
+			point1.slotTexture:SetRotation(rotateDeg(3))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(s(20,20))
-			point1.case:SetRotation(rotateDeg(0))
+			point1.case:SetSize(27,27)
+			point1.case:SetRotation(rotateDeg(3))
 			point1.case:SetTexture(getPath("point_plate"))
 
-			point2:SetPoint("CENTER", s(-165,-84))
-			point2:SetSize(s(12,12))
+			point2:SetPoint("CENTER", -220,-112)
+			point2:SetSize(13,13)
 			point2:SetStatusBarTexture(getPath("point_crystal"))
+			point2:GetStatusBarTexture():SetRotation(rotateDeg(4))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
+			point2.slotTexture:SetRotation(rotateDeg(4))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(s(23,23))
-			point2.case:SetRotation(rotateDeg(0))
+			point2.case:SetSize(31,31)
+			point2.case:SetRotation(rotateDeg(4))
 			point2.case:SetTexture(getPath("point_plate"))
 
-			point3:SetPoint("CENTER", s(-176,-60))
-			point3:SetSize(s(12,16))
+			point3:SetPoint("CENTER", -235,-80)
+			point3:SetSize(11,15)
 			point3:SetStatusBarTexture(getPath("point_crystal"))
+			point3:GetStatusBarTexture():SetRotation(rotateDeg(3))
 			point3.slotTexture:SetTexture(getPath("point_crystal"))
+			point3.slotTexture:SetRotation(rotateDeg(3))
 			point3.case:SetPoint("CENTER",1,0)
-			point3.case:SetSize(s(46,41))
+			point3.case:SetSize(43,39)
 			point3.case:SetRotation(rotateDeg(3))
 			point3.case:SetTexture(getPath("point_case"))
 		
-			point4:SetPoint("CENTER", s(-170,-33))
-			point4:SetSize(s(15,19))
+			point4:SetPoint("CENTER", -227,-44)
+			point4:SetSize(15,20)
 			point4:SetStatusBarTexture(getPath("point_crystal"))
+			point4:GetStatusBarTexture():SetRotation(rotateDeg(3))
 			point4.slotTexture:SetTexture(getPath("point_crystal"))
+			point4.slotTexture:SetRotation(rotateDeg(3))
 			point4.case:SetPoint("CENTER",1, 0)
-			point4.case:SetSize(s(50,49))
+			point4.case:SetSize(50,49)
 			point4.case:SetRotation(rotateDeg(3))
 			point4.case:SetTexture(getPath("point_case"))
 		
-			point5:SetPoint("CENTER", s(-152,-8))
-			point5:SetSize(s(15,22))
+			point5:SetPoint("CENTER", -203,-11)
+			point5:SetSize(16,23)
 			point5:SetStatusBarTexture(getPath("point_crystal"))
+			point5:GetStatusBarTexture():SetRotation(rotateDeg(1))
 			point5.slotTexture:SetTexture(getPath("point_crystal"))
+			point5.slotTexture:SetRotation(rotateDeg(1))
+			point5.case:SetRotation(rotateDeg(1))
 			point5.case:SetPoint("CENTER",1, 0)
-			point5.case:SetSize(s(39,43))
-			point5.case:SetRotation(rotateDeg(0))
+			point5.case:SetSize(52,57)
+			point5.case:SetRotation(rotateDeg(1))
 			point5.case:SetTexture(getPath("point_case"))
 
-
+			-- 1.414213562
 		elseif (style == "Stagger") then 
 			local point1, point2, point3 = element[1], element[2], element[3]
 
-			point1:SetPoint("CENTER", s(-170,-86))
-			point1:SetSize(s(14,14))
+			point1:SetPoint("CENTER", -227,-115)
+			point1:SetSize(15,15)
 			point1:SetStatusBarTexture(getPath("point_crystal"))
 			point1.slotTexture:SetTexture(getPath("point_crystal"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(s(25,25))
+			point1.case:SetSize(33,33)
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
-			point2:SetPoint("CENTER", s(-174,-57))
-			point2:SetSize(s(15,22))
+			point2:SetPoint("CENTER", -232,-76)
+			point2:SetSize(20,29)
 			point2:SetStatusBarTexture(getPath("point_crystal"))
 			point2.slotTexture:SetTexture(getPath("point_crystal"))
 			point2.case:SetPoint("CENTER", 0,0)
-			point2.case:SetSize(s(35,35))
+			point2.case:SetSize(-46,-46)
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 		
-			point3:SetPoint("CENTER", s(-169,-27))
-			point3:SetSize(s(14,14))
+			point3:SetPoint("CENTER", -225,-36)
+			point3:SetSize(15,15)
 			point3:SetStatusBarTexture(getPath("point_crystal"))
 			point3.slotTexture:SetTexture(getPath("point_crystal"))
 			point3.case:SetPoint("CENTER", 0, 0)
-			point3.case:SetSize(s(26,26))
+			point3.case:SetSize(34,34)
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 
 		elseif (style == "Runes") then 
 			local point1, point2, point3, point4, point5, point6 = element[1], element[2], element[3], element[4], element[5], element[6]
 
-			point1:SetPoint("CENTER", s(-152,-103))
-			point1:SetSize(s(12,12))
+			point1:SetPoint("CENTER", -203,-137)
+			point1:SetSize(16,16)
 			point1:SetStatusBarTexture(getPath("point_hearth"))
 			point1.slotTexture:SetTexture(getPath("point_hearth"))
 			point1.case:SetPoint("CENTER", 0, 0)
-			point1.case:SetSize(s(25,25))
+			point1.case:SetSize(33,33)
 			point1.case:SetRotation(rotateDeg(0))
 			point1.case:SetTexture(getPath("point_plate"))
 
-			point2:SetPoint("CENTER", s(-167,-83))
-			point2:SetSize(s(12,12))
+			point2:SetPoint("CENTER", -223,-111)
+			point2:SetSize(16,16)
 			point2:SetStatusBarTexture(getPath("point_hearth"))
 			point2.slotTexture:SetTexture(getPath("point_hearth"))
 			point2.case:SetPoint("CENTER", 0, 0)
-			point2.case:SetSize(s(25,25))
+			point2.case:SetSize(33,33)
 			point2.case:SetRotation(rotateDeg(0))
 			point2.case:SetTexture(getPath("point_plate"))
 
-			point3:SetPoint("CENTER", s(-173,-59))
-			point3:SetSize(s(12,12))
+			point3:SetPoint("CENTER", -231,-79)
+			point3:SetSize(16,16)
 			point3:SetStatusBarTexture(getPath("point_hearth"))
 			point3.slotTexture:SetTexture(getPath("point_hearth"))
 			point3.case:SetPoint("CENTER", 0,0)
-			point3.case:SetSize(s(25,25))
+			point3.case:SetSize(33,33)
 			point3.case:SetRotation(rotateDeg(0))
 			point3.case:SetTexture(getPath("point_plate"))
 		
-			point4:SetPoint("CENTER", s(-173,-33))
-			point4:SetSize(s(12,12))
+			point4:SetPoint("CENTER", -231,-44)
+			point4:SetSize(16,16)
 			point4:SetStatusBarTexture(getPath("point_hearth"))
 			point4.slotTexture:SetTexture(getPath("point_hearth"))
 			point4.case:SetPoint("CENTER", 0, 0)
-			point4.case:SetSize(s(25,25))
+			point4.case:SetSize(33,33)
 			point4.case:SetRotation(rotateDeg(0))
 			point4.case:SetTexture(getPath("point_plate"))
 		
-			point5:SetPoint("CENTER", s(-167,-8))
-			point5:SetSize(s(12,12))
+			point5:SetPoint("CENTER", -223,-11)
+			point5:SetSize(16,16)
 			point5:SetStatusBarTexture(getPath("point_hearth"))
 			point5.slotTexture:SetTexture(getPath("point_hearth"))
 			point5.case:SetPoint("CENTER", 0, 0)
-			point5.case:SetSize(s(25,25))
+			point5.case:SetSize(33,33)
 			point5.case:SetRotation(rotateDeg(0))
 			point5.case:SetTexture(getPath("point_plate"))
 
-			point6:SetPoint("CENTER", s(-152, 18))
-			point6:SetSize(s(12,12))
+			point6:SetPoint("CENTER", -203,24)
+			point6:SetSize(16,16)
 			point6:SetStatusBarTexture(getPath("point_hearth"))
 			point6.slotTexture:SetTexture(getPath("point_hearth"))
 			point6.case:SetPoint("CENTER", 0, 0)
-			point6.case:SetSize(s(25,25))
+			point6.case:SetSize(33,33)
 			point6.case:SetRotation(rotateDeg(0))
 			point6.case:SetTexture(getPath("point_plate"))
 
@@ -463,19 +481,20 @@ local Style = function(self, unit, id, ...)
 
 		-- Main point object
 		local point = classPower:CreateStatusBar() -- the widget require CogWheel statusbars
-		point:SetSmoothingFrequency(.15) -- keep bar transitions very fast
+		point:SetSmoothingFrequency(.25) -- keep bar transitions fairly fast
 		point:SetOrientation("UP") -- set the bars to grow from bottom to top.
+		point:SetSparkTexture(getPath("blank")) -- this will be too tricky to rotate and map
 
 		-- Backdrop, aligned to the full point
 		point.case = point:CreateTexture()
-		point.case:SetDrawLayer("BACKGROUND", 1)
+		point.case:SetDrawLayer("BACKGROUND", -2)
 		point.case:SetVertexColor(211/255, 200/255, 169/255)
 
 		-- Empty slot texture
 		-- Make it slightly larger than the point textures, 
 		-- to give a nice darker edge around the points. 
 		point.slotTexture = point:CreateTexture()
-		point.slotTexture:SetDrawLayer("BACKGROUND", 2)
+		point.slotTexture:SetDrawLayer("BACKGROUND", -1)
 		point.slotTexture:SetPoint("TOPLEFT", -1.5, 1.5)
 		point.slotTexture:SetPoint("BOTTOMRIGHT", 1.5, -1.5)
 		point.slotTexture:SetVertexColor(130/255 *.3, 133/255 *.3, 130/255 *.3, 2/3)

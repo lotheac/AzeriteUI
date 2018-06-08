@@ -89,6 +89,8 @@ BlizzardFonts.SetFontObjects = function(self)
 	local bold = getPath('Myriad Pro Bold')
 	local boldCondensed = getPath('Myriad Pro Bold Condensed')
 	
+	self:SetFont("GameFontNormal", normal) 
+
 	self:SetFont("FriendsFont_Large", normal)
 	self:SetFont("GameFont_Gigantic", normal) 
 	self:SetFont("FriendsFont_UserText", normal)

@@ -25,8 +25,15 @@ local Update = function(self, elapsed)
 		element:PreUpdate()
 	end
 
+	local x, y
 	local mapID = C_Map.GetBestMapForUnit("player")
-	local x, y = C_Map.GetPlayerMapPosition(mapID, "player"):GetXY()
+	if mapID then 
+		local mapPosObject = C_Map.GetPlayerMapPosition(mapID, "player")
+		if mapPosObject then 
+			x, y = mapPosObject:GetXY()
+		end 
+	end 
+
 	x = x or 0
 	y = y or 0
 

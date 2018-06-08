@@ -28,6 +28,9 @@ local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 
+-- Define it here so it can call itself later on
+local Update
+
 
 -- Utility Functions
 -----------------------------------------------------------
@@ -71,19 +74,19 @@ local short = function(value)
 	elseif value >= 1e3 or value <= -1e3 then
 		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([kmb])$", "%1")
 	else
-		return tostring(math_floor(value))
+		return tostring(value - value%1)
 	end	
 end
 
 local formatTime = function(time)
 	if time > DAY then -- more than a day
-		return ("%1d%s"):format(math_floor(time / DAY), "d")
+		return ("%1d%s"):format((time / DAY) - (time / DAY)%1, "d")
 	elseif time > HOUR then -- more than an hour
-		return ("%1d%s"):format(math_floor(time / HOUR), "h")
+		return ("%1d%s"):format((time / HOUR) - (time / HOUR)%1, "h")
 	elseif time > MINUTE then -- more than a minute
-		return ("%1d%s %d%s"):format(math_floor(time / MINUTE), "m", math_floor(time%MINUTE), "s")
+		return ("%1d%s %d%s"):format((time / MINUTE) - (time / MINUTE)%1, "m", (time%MINUTE) - (time%MINUTE)%1, "s")
 	elseif time > 10 then -- more than 10 seconds
-		return ("%d%s"):format(math_floor(time), "s")
+		return ("%d%s"):format((time) - (time)%1, "s")
 	elseif time > 0 then
 		return ("%.1f"):format(time)
 	else
@@ -102,7 +105,7 @@ if (gameLocale == "zhCN") then
 		elseif value >= 1e4 or value <= -1e3 then
 			return ("%.1f万"):format(value / 1e4):gsub("%.?0+([km])$", "%1")
 		else
-			return tostring(math_floor(value))
+			return tostring((value) - (value)%1)
 		end 
 	end
 end 
@@ -111,7 +114,7 @@ local OnUpdate = function(element, elapsed)
 	local unit = element._owner.unit
 	if (not unit) or (not UnitExists(unit)) then 
 		element.casting = nil
-		element.castGUID = nil
+		element.castID = nil
 		element.channeling = nil
 		element:SetValue(0, true)
 		element:Hide()
@@ -170,7 +173,7 @@ local OnUpdate = function(element, elapsed)
 		
 	else
 		element.casting = nil
-		element.castGUID = nil
+		element.castID = nil
 		element.channeling = nil
 		element:SetValue(0, true)
 		element:Hide()
@@ -178,7 +181,7 @@ local OnUpdate = function(element, elapsed)
 	end
 end 
 
-local Update = function(self, event, unit, ...)
+Update = function(self, event, unit, ...)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
 	end 
@@ -202,7 +205,7 @@ local Update = function(self, event, unit, ...)
 		local now = GetTime()
 		local max = endTime - startTime
 
-		element.castGUID = castGUID
+		element.castID = castID
 		element.duration = now - startTime
 		element.max = max
 		element.delay = 0
@@ -233,7 +236,8 @@ local Update = function(self, event, unit, ...)
 		element:Show()
 		
 	elseif (event == "UNIT_SPELLCAST_FAILED") then
-		if (element.castGUID ~= castGUID) then
+		local castID, spellID = ...
+		if (element.castID ~= castID) then
 			return
 		end
 
@@ -246,7 +250,8 @@ local Update = function(self, event, unit, ...)
 		element:Hide()
 		
 	elseif (event == "UNIT_SPELLCAST_STOP") then
-		if (element.castGUID ~= castGUID) then
+		local castID, spellID = ...
+		if (element.castID ~= castID) then
 			return
 		end
 
@@ -259,7 +264,8 @@ local Update = function(self, event, unit, ...)
 		element:Hide()
 		
 	elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
-		if (element.castGUID ~= castGUID) then
+		local castID, spellID = ...
+		if (element.castID ~= castID) then
 			return
 		end
 
@@ -356,7 +362,7 @@ local Update = function(self, event, unit, ...)
 		element.interrupt = notInterruptable
 
 		element.casting = nil
-		element.castGUID = nil
+		element.castID = nil
 
 		element:SetMinMaxValues(0, max)
 		element:SetValue(duration)
@@ -406,7 +412,7 @@ local Update = function(self, event, unit, ...)
 		if UnitCastingInfo(unit) then
 			return Update(self, "UNIT_SPELLCAST_START", unit)
 		end
-		if UnitChannelInfo(self.unit) then
+		if UnitChannelInfo(unit) then
 			return Update(self, "UNIT_SPELLCAST_CHANNEL_START", unit)
 		end
 
@@ -425,6 +431,8 @@ local Update = function(self, event, unit, ...)
 end 
 
 -- Override for Legion clients
+-- Not strictly needed anymore, but it doesn't slow down the code, 
+-- so we're leaving it here to simplify possible future backports.
 if (not ENGINE_801) then 
 	Update = function(self, event, unit, ...)
 		if (not unit) or (unit ~= self.unit) then 
@@ -437,7 +445,7 @@ if (not ENGINE_801) then
 		end
 	
 		if (event == "UNIT_SPELLCAST_START") then
-			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castGUID, notInterruptable = UnitCastingInfo(unit)
+			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptable = UnitCastingInfo(unit)
 			if (not name) then
 				element:Hide()
 				element:SetValue(0, true)
@@ -450,7 +458,7 @@ if (not ENGINE_801) then
 			local now = GetTime()
 			local max = endTime - startTime
 	
-			element.castGUID = castGUID
+			element.castID = castID
 			element.duration = now - startTime
 			element.max = max
 			element.delay = 0
@@ -481,8 +489,8 @@ if (not ENGINE_801) then
 			element:Show()
 	
 		elseif (event == "UNIT_SPELLCAST_FAILED") then
-			local _, _, castGUID = ...
-			if (element.castGUID ~= castGUID) then
+			local _, _, castID = ...
+			if (element.castID ~= castID) then
 				return
 			end
 	
@@ -495,8 +503,8 @@ if (not ENGINE_801) then
 			element:Hide()
 			
 		elseif (event == "UNIT_SPELLCAST_STOP") then
-			local _, _, castGUID = ...
-			if (element.castGUID ~= castGUID) then
+			local _, _, castID = ...
+			if (element.castID ~= castID) then
 				return
 			end
 	
@@ -509,8 +517,8 @@ if (not ENGINE_801) then
 			element:Hide()
 			
 		elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
-			local _, _, castGUID = ...
-			if (element.castGUID ~= castGUID) then
+			local _, _, castID = ...
+			if (element.castID ~= castID) then
 				return
 			end
 	
@@ -524,7 +532,7 @@ if (not ENGINE_801) then
 			
 		elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then	
 			if element.casting then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castGUID, notInterruptable = UnitCastingInfo(unit)
+				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptable = UnitCastingInfo(unit)
 				if name then
 					element.interrupt = notInterruptable
 				end
@@ -550,7 +558,7 @@ if (not ENGINE_801) then
 		
 		elseif (event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
 			if element.casting then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castGUID, notInterruptable = UnitCastingInfo(unit)
+				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptable = UnitCastingInfo(unit)
 				if name then
 					element.interrupt = notInterruptable
 				end
@@ -611,7 +619,7 @@ if (not ENGINE_801) then
 			element.interrupt = notInterruptable
 	
 			element.casting = nil
-			element.castGUID = nil
+			element.castID = nil
 	
 			element:SetMinMaxValues(0, max)
 			element:SetValue(duration)
@@ -734,4 +742,4 @@ local Disable = function(self)
 	end
 end 
 
-LibUnitFrame:RegisterElement("Cast", Enable, Disable, Proxy, 5)
+LibUnitFrame:RegisterElement("Cast", Enable, Disable, Proxy, 6)

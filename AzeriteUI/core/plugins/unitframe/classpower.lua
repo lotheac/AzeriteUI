@@ -1,5 +1,9 @@
 --[[
 
+	Class Powers available in Battel for Azeroth:
+	* Combo Points: 	Fast generated points. 5 cap, 6 if talented, 0 baseline.
+
+
 	Class Powers available in Legion: 
 	* Arcane Charge: 	Generated points. 4 cap. 0 baseline.
 	* Chi: 				Generated points. 4 cap, 5 if talented, 0 baseline.
@@ -10,6 +14,7 @@
 	* Stagger: 			Generated points. 3 cap. 3 baseline. 
 
 ]]--
+
 local LibUnitFrame = CogWheel("LibUnitFrame")
 if (not LibUnitFrame) then 
 	return
@@ -52,19 +57,19 @@ local SPEC_PALADIN_RETRIBUTION = _G.SPEC_PALADIN_RETRIBUTION or 3
 local SPEC_MAGE_ARCANE = _G.SPEC_MAGE_ARCANE or 1
 local SPEC_SHAMAN_RESTORATION = _G.SPEC_SHAMAN_RESTORATION or 3
 
--- Sourced from BlizzardInterfaceResources/Resources/Numbers.lua
-local SPELL_POWER_ARCANE_CHARGES = _G.SPELL_POWER_ARCANE_CHARGES or 16
-local SPELL_POWER_CHI = _G.SPELL_POWER_CHI or 12
-local SPELL_POWER_COMBO_POINTS = _G.SPELL_POWER_COMBO_POINTS or 4
-local SPELL_POWER_ENERGY = _G.SPELL_POWER_ENERGY or 3
-local SPELL_POWER_HOLY_POWER = _G.SPELL_POWER_HOLY_POWER or 9
-local SPELL_POWER_RUNES = _G.SPELL_POWER_RUNES or 5
-local SPELL_POWER_SOUL_SHARDS = _G.SPELL_POWER_SOUL_SHARDS or 7
+-- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
+local SPELL_POWER_ARCANE_CHARGES = Enum.PowerType.ArcaneCharges or 16
+local SPELL_POWER_CHI = Enum.PowerType.Chi or 12
+local SPELL_POWER_COMBO_POINTS = Enum.PowerType.ComboPoints or 4 
+local SPELL_POWER_ENERGY = Enum.PowerType.Energy or 3 
+local SPELL_POWER_HOLY_POWER = Enum.PowerType.HolyPower or 9
+local SPELL_POWER_RUNES = Enum.PowerType.Runes or 5
+local SPELL_POWER_SOUL_SHARDS = Enum.PowerType.SoulShards or 7
 
 -- Sourced from BlizzardInterfaceCode/Interface/FrameXML/MonkStaggerBar.lua
 -- percentages at which bar should change color
-local STAGGER_YELLOW_TRANSITION = _G.STAGGER_YELLOW_TRANSITION or .30
-local STAGGER_RED_TRANSITION = _G.STAGGER_RED_TRANSITION or .60
+local STAGGER_YELLOW_TRANSITION = _G.STAGGER_YELLOW_TRANSITION or .3
+local STAGGER_RED_TRANSITION = _G.STAGGER_RED_TRANSITION or .6
 
 -- table indices of bar colors
 local STAGGER_GREEN_INDEX = _G.STAGGER_GREEN_INDEX or 1
@@ -122,7 +127,7 @@ local Generic = setmetatable({
 	end, 
 	UpdatePower = function(self, event, unit, ...)
 		local element = self.ClassPower
-		if not element.isEnabled then 
+		if (not element.isEnabled) then 
 			element:Hide()
 			return 
 		end 
@@ -135,16 +140,17 @@ local Generic = setmetatable({
 
 		local maxDisplayed = element.maxDisplayed or element.max or max
 
+
 		for i = 1, maxDisplayed do 
-			if not element[i]:IsShown() then 
+			if (not element[i]:IsShown()) then 
 				element[i]:Show()
-				element[i]:SetValue(min >= i and 1 or 0)
 			end 
+			element[i]:SetValue(min >= i and 1 or 0)
 		end 
 
 		for i = maxDisplayed+1, #element do 
+			element[i]:SetValue(0)
 			if element[i]:IsShown() then 
-				element[i]:SetValue(0)
 				element[i]:Hide()
 			end 
 		end 
@@ -390,7 +396,7 @@ ClassPower.Runes = setmetatable({
 				rune.max = duration
 				rune:SetValue(0, true)
 				rune:SetMinMaxValues(0, duration)
-				rune:SetScript("OnUpdate", elment.OnUpdateRune)
+				rune:SetScript("OnUpdate", element.OnUpdateRune)
 			end 
 		end
 		if (not rune:IsShown()) then 
@@ -454,8 +460,8 @@ ClassPower.Runes = setmetatable({
 		end 
 
 		for i = maxDisplayed+1, #element do 
+			element[i]:SetValue(0)
 			if element[i]:IsShown() then 
-				element[i]:SetValue(0)
 				element[i]:Hide()
 			end 
 		end 
@@ -527,19 +533,190 @@ ClassPower.SoulShards = setmetatable({
 		self:UnregisterEvent("UNIT_MAXPOWER", Proxy)
 
 		Generic.DisablePower(self)
-	end 
+	end,
+	UpdatePower = function(self, event, unit, ...)
+		local element = self.ClassPower
+		if not element.isEnabled then 
+			element:Hide()
+			return 
+		end 
+
+		local powerType = element.powerType
+		local powerID = element.powerID 
+
+		local min = UnitPower("player", powerID, true) or 0
+		local max = UnitPowerMax("player", powerID) or 0
+		local mod = UnitPowerDisplayMod(powerID)
+
+		-- mod should never be 0, but according to Blizz code it can actually happen
+		min = mod == 0 and 0 or min / mod
+
+		-- BUG: Destruction is supposed to show partial soulshards, but Affliction and Demonology should only show full ones
+		if (GetSpecialization() ~= SPEC_WARLOCK_DESTRUCTION) then
+			min = min - min % 1 -- because math operators are faster than functions
+		end
+
+		local numActive = min + 0.9
+		local maxDisplayed = element.maxDisplayed or element.max or max
+		
+		for i = 1, maxDisplayed do 
+			if not element[i]:IsShown() then 
+				element[i]:Show()
+			end 
+			if (i > numActive) then 
+				element[i]:SetValue(0)
+			else 
+				element[i]:SetValue(min - i + 1)
+			end 
+		end 
+
+		for i = maxDisplayed+1, #element do 
+			element[i]:SetValue(0)
+			if element[i]:IsShown() then 
+				element[i]:Hide()
+			end 
+		end 
+
+		return min, max, powerType
+	end
 }, Generic_MT)
 
 ClassPower.Stagger = setmetatable({ 
 	EnablePower = function(self)
 		local element = self.ClassPower
 		element.powerType = "STAGGER"
+		element.maxDisplayed = 3
+		element.isEnabled = true
 
+		self:RegisterEvent("UNIT_AURA", Proxy)
+
+		Generic.EnablePower(self)
 	end,
 	DisablePower = function(self)
+		self:UnregisterEvent("UNIT_AURA", Proxy)
+
 		Generic.DisablePower(self)
 	end, 
 	UpdatePower = function(self, event, unit, ...)
+		local element = self.ClassPower
+		if (not element.isEnabled) then 
+			element:Hide()
+			return 
+		end 
+
+		local powerType = element.powerType
+		local powerID = element.powerID 
+
+		-- Blizzard code has nil checks for UnitStagger return
+		local min = UnitStagger("player") or 0
+		local max = UnitHealthMax("player")
+
+		local perc = min / max
+		local color
+		if (perc >= STAGGER_RED_TRANSITION) then
+			min = 3
+		elseif (perc > STAGGER_YELLOW_TRANSITION) then
+			min = 2
+		elseif (perc > 0) then
+			min = 1
+		else 
+			min = 0
+		end
+
+		local maxDisplayed = element.maxDisplayed or element.max or max
+
+		for i = 1, maxDisplayed do 
+			if (not element[i]:IsShown()) then 
+				element[i]:Show()
+			end 
+			element[i]:SetValue(min >= i and 1 or 0)
+		end 
+
+		for i = maxDisplayed+1, #element do 
+			element[i]:SetValue(0)
+			if element[i]:IsShown() then 
+				element[i]:Hide()
+			end 
+		end 
+
+		return min, max, powerType
+	end,
+	UpdateColor = function(element, unit, min, max, powerType)
+		local self = element._owner
+
+		local perc = min / max
+		local color
+		if (perc >= STAGGER_RED_TRANSITION) then
+			color = self.colors.power[powerType][STAGGER_RED_INDEX]
+		elseif (perc > STAGGER_YELLOW_TRANSITION) then
+			color = self.colors.power[powerType][STAGGER_YELLOW_INDEX]
+		else
+			color = self.colors.power[powerType][STAGGER_GREEN_INDEX]
+		end
+
+		local r, g, b = color[1], color[2], color[3]
+		local maxDisplayed = element.maxDisplayed or element.max or max
+	
+		-- Has the module chosen to only show this with an active target,
+		-- or has the module chosen to hide all when empty?
+		if (element.hideWhenNoTarget and (not UnitExists("target"))) 
+		or (element.hideWhenEmpty and (min == 0)) then 
+			for i = 1, maxDisplayed do
+				local point = element[i]
+				if point then
+					point:SetAlpha(0)
+				end 
+			end 
+		else 
+			-- In case there are more points active 
+			-- then the currently allowed maximum. 
+			-- Meant to give an easy system to handle 
+			-- the Rogue Anticipation talent without 
+			-- the need for the module to write extra code. 
+			local overflow
+			if min > maxDisplayed then 
+				overflow = min % maxDisplayed
+			end 
+			for i = 1, maxDisplayed do
+
+				-- upvalue to preserve the original colors for the next point
+				local r, g, b = r, g, b 
+
+				-- Handle overflow coloring
+				if overflow then
+					if (i > overflow) then
+						-- tone down "old" points
+						r, g, b = r*1/3, g*1/3, b*1/3 
+					else 
+						-- brighten the overflow points
+						r = (1-r)*1/3 + r
+						g = (1-g)*1/4 + g -- always brighten the green slightly less
+						b = (1-b)*1/3 + b
+					end 
+				end 
+
+				local point = element[i]
+				if element.alphaNoCombat then 
+					point:SetStatusBarColor(r, g, b)
+					if point.bg then 
+						point.bg:SetVertexColor(r*1/3, g*1/3, b*1/3)
+					end 
+					local alpha = UnitAffectingCombat(unit) and 1 or element.alphaNoCombat
+					if (i > min) and (element.alphaEmpty) then
+						point:SetAlpha(element.alphaEmpty * alpha)
+					else 
+						point:SetAlpha(alpha)
+					end 
+				else 
+					point:SetStatusBarColor(r, g, b, 1)
+					if element.alphaEmpty then 
+						point:SetAlpha(min > i and element.alphaEmpty or 1)
+					else 
+						point:SetAlpha(1)
+					end 
+				end 
+			end
+		end 
 	end
 }, Generic_MT)
 
@@ -704,4 +881,4 @@ local Disable = function(self)
 	end
 end 
 
-LibUnitFrame:RegisterElement("ClassPower", Enable, Disable, Proxy, 8)
+LibUnitFrame:RegisterElement("ClassPower", Enable, Disable, Proxy, 9)

@@ -8,5 +8,6 @@ license-output: LICENSE.txt
 
 ignore:
     - CHANGELOG.md
-    - README.md
+    - CODE_OF_CONDUCT.md
     - LICENSE.md
+    - README.md

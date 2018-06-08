@@ -182,14 +182,8 @@ NamePlates.PreUpdateNamePlateOptions = function(self)
 
 	local _, instanceType = IsInInstance()
 	if (instanceType == "none") then
-		SetCVar("nameplateShowFriendlyNPCs", 1)
 		SetCVar("nameplateMaxDistance", 30)
 	else
-		if ENGINE_LEGION_720 then 
-			SetCVar("nameplateShowFriendlyNPCs", 0)
-		else 
-			SetCVar("nameplateShowFriendlyNPCs", 1)
-		end
 		SetCVar("nameplateMaxDistance", 45)
 	end
 
@@ -197,9 +191,7 @@ NamePlates.PreUpdateNamePlateOptions = function(self)
 	-- and all sort of taints and bugs will occur.
 	-- This happens on specs that can dispel when hovering over nameplate auras.
 	-- We create our own auras anyway, so we don't need these. 
-	if ENGINE_LEGION_730 then
-		SetCVar("nameplateShowDebuffsOnFriendly", 0) 
-	end
+	SetCVar("nameplateShowDebuffsOnFriendly", 0) 
 		
 end 
 
@@ -259,49 +251,25 @@ NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
 
 	-- Setting the base size involves changing the size of secure unit buttons, 
 	-- but since we're using our out of combat wrapper, we should be safe.
-	C_NamePlate.SetNamePlateFriendlySize(80,10)
-	C_NamePlate.SetNamePlateEnemySize(80,10)
+	-- Default size 110, 45
+	C_NamePlate.SetNamePlateFriendlySize(80,32)
+	C_NamePlate.SetNamePlateEnemySize(80,32)
 
 	NamePlateDriverFrame.UpdateNamePlateOptions = function() end
-	--NamePlateDriverMixin:SetBaseNamePlateSize(80,10)
 
-	--[[
-		7.1 new methods in C_NamePlate:
-
-		Added:
-		SetNamePlateFriendlySize,
-		GetNamePlateFriendlySize,
-		SetNamePlateEnemySize,
-		GetNamePlateEnemySize,
-		SetNamePlateSelfClickThrough,
-		GetNamePlateSelfClickThrough,
-		SetNameplateFriendlyClickThrough,
-		GetNameplateFriendlyClickThrough,
-		SetNamePlateEnemyClickThrough,
-		GetNamePlateEnemyClickThrough
-
-		These functions allow a specific area on the nameplate to be marked as a preferred click area such that if the nameplate position query results in two overlapping nameplates, the nameplate with the position inside its preferred area will be returned:
-
-		SetNamePlateSelfPreferredClickInsets,
-		GetNamePlateSelfPreferredClickInsets,
-		SetNamePlateFriendlyPreferredClickInsets,
-		GetNamePlateFriendlyPreferredClickInsets,
-		SetNamePlateEnemyPreferredClickInsets,
-		GetNamePlateEnemyPreferredClickInsets,
-	]]
 end
 
 -- Called after a nameplate is created.
 -- This is where we create our own custom elements.
 NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 
-	plate:SetSize(80,10)
+	plate:SetSize(80,32)
 	plate.colors = Colors 
 
 	-- Health bar
 	local health = plate:CreateStatusBar()
 	health:SetSize(80,10)
-	health:SetPoint("TOP", 0, 0)
+	health:SetPoint("TOP", 0, -2)
 	health:SetStatusBarTexture(getPath("nameplate_bar"))
 	health:SetOrientation("LEFT")
 	health:SetSmoothingFrequency(.1)
