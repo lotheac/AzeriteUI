@@ -507,10 +507,6 @@ local Style = function(self, unit, id, ...)
 	-- This is applied on top of the inactive modifier above
 	classPower.alphaNoCombat = 1
 
-	-- If this is true, runes will be ordered by when they are ready, instead of the default old indexed system. 
-	-- This gives it a more combo point feeling, and probably suits the Legion and BfA rune system better.  
-	classPower.orderRunesByReady = true
-
 	-- Creating 6 frames since runes require it
 	for i = 1,6 do 
 
