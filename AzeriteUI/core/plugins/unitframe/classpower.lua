@@ -29,6 +29,7 @@ assert(LibFrame, "LibUnitFrame_ClassPower requires LibFrame to be loaded.")
 -- Lua API
 local _G = _G
 local setmetatable = setmetatable
+local table_sort = table.sort
 
 -- WoW API
 local GetComboPoints = _G.GetComboPoints
@@ -95,6 +96,7 @@ local Proxy, ForceUpdate, Update
 local Generic = setmetatable({
 	EnablePower = function(self)
 		local element = self.ClassPower
+		element.maxDisplayed = MAX_COMBO_POINTS
 
 		for i = 1, #element do 
 			element[i]:Hide()
@@ -236,6 +238,7 @@ ClassPower.ArcaneCharges = setmetatable({
 		element.powerID = SPELL_POWER_ARCANE_CHARGES
 		element.powerType = "ARCANE_CHARGES"
 		element.isEnabled = true
+		element.maxDisplayed = element.maxComboPoints or 5
 
 		self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		self:RegisterEvent("UNIT_MAXPOWER", Proxy)
@@ -256,6 +259,7 @@ ClassPower.Chi = setmetatable({
 		element.powerID = SPELL_POWER_CHI
 		element.powerType = "CHI"
 		element.isEnabled = true
+		element.maxDisplayed = element.maxComboPoints or 5
 
 		self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		self:RegisterEvent("UNIT_MAXPOWER", Proxy)
@@ -286,7 +290,7 @@ ClassPower.ComboPoints = setmetatable({
 		local element = self.ClassPower
 		element.powerID = SPELL_POWER_COMBO_POINTS
 		element.powerType = "COMBO_POINTS"
-		element.maxDisplayed = element.maxComboPoints or MAX_COMBO_POINTS
+		element.maxDisplayed = element.maxComboPoints or MAX_COMBO_POINTS or 5
 
 		if (PLAYERCLASS == "DRUID") then 
 			element.isEnabled = element.ShouldEnable(self)
@@ -332,7 +336,7 @@ ClassPower.ComboPoints = setmetatable({
 			min = UnitPower("player", element.powerID, true) or 0
 			max = UnitPowerMax("player", element.powerID) or 0
 		end 
-		if not element.isEnabled then 
+		if (not element.isEnabled) then 
 			element:Hide()
 			return 
 		end 
@@ -363,6 +367,7 @@ ClassPower.HolyPower = setmetatable({
 		element.powerID = SPELL_POWER_HOLY_POWER
 		element.powerType = "HOLY_POWER"
 		element.isEnabled = true
+		element.maxDisplayed = element.maxComboPoints or 5
 
 		self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		self:RegisterEvent("UNIT_MAXPOWER", Proxy)
@@ -379,23 +384,33 @@ ClassPower.HolyPower = setmetatable({
 
 ClassPower.Runes = setmetatable({ 
 	OnUpdateRune = function(rune, elapsed)
-		local duration = (rune.duration or 0) + elapsed
-		rune.duration = duration
-		rune:SetValue(duration)
+		local runeData = rune._owner.runeData[rune.runeID]
+		local duration = runeData.duration + elapsed
+		if (duration < runeData.max) then 
+			runeData.duration = duration
+			rune:SetValue(duration, true)
+		else 
+			runeData.min = 0
+			runeData.max = 1
+			runeData.value = 1
+			runeData.duration = nil
+			runeData.start = nil
+			rune:SetMinMaxValues(0, 1)
+			rune:SetValue(1, true)
+			rune:SetScript("OnUpdate", nil)
+		end 
 	end,
-	UpdateRune = function(element, runeID, energized)
+	UpdateRuneDisplay = function(element, runeID)
 		local rune = element[runeID]
-		local start, duration, runeReady = GetRuneCooldown(runeID)
-		if (energized or runeReady) then
+		local runeData = element.runeData[rune.runeID]
+		if (runeData.energized or runeData.runeReady) then
 			rune:SetMinMaxValues(0, 1)
 			rune:SetValue(1, true)
 			rune:SetScript("OnUpdate", nil)
 		else
-			if start then 
-				rune.duration = GetTime() - start
-				rune.max = duration
-				rune:SetValue(0, true)
-				rune:SetMinMaxValues(0, duration)
+			if runeData.duration then 
+				rune:SetValue(runeData.duration, true)
+				rune:SetMinMaxValues(0, runeData.max)
 				rune:SetScript("OnUpdate", element.OnUpdateRune)
 			end 
 		end
@@ -403,12 +418,72 @@ ClassPower.Runes = setmetatable({
 			rune:Show()
 		end 
 	end, 
+	UpdateRuneDisplays = function(element)
+		-- Sort the display according to cooldowns
+		table_sort(element.runeOrder, element.SortByCooldown)
+
+		-- Give the displayed runes correct IDs
+		local readyCount = 0
+		for i = 1,#element.runeOrder do 
+			local runeData = element.runeOrder[i]
+			if (runeData.runeReady or runeData.energized) then 
+				readyCount = readyCount + 1
+			end 
+			element[i].runeID = runeData.runeID
+			element:UpdateRuneDisplay(i)
+		end 
+		return readyCount
+	end,
+	UpdateRuneData = function(element, runeID, energized)
+		local runeData = element.runeData[runeID]
+		local start, duration, runeReady = GetRuneCooldown(runeID)
+		if (energized or runeReady) then
+			runeData.min = 0
+			runeData.max = 1
+			runeData.value = 1
+			runeData.duration = nil
+			runeData.start = nil
+		else
+			if start then 
+				runeData.start = start
+				runeData.duration = GetTime() - start
+				runeData.max = duration
+			end 
+		end
+		runeData.energized = energized
+		runeData.runeReady = runeReady
+
+		-- Update the displayed elements
+		return element:UpdateRuneDisplays()
+	end,
+	SortByCooldown = function(a,b)
+		if (not b) then 
+			return true 
+		end
+		if a.duration or b.duration then 
+			if a.duration and b.duration then 
+				return (a.max - a.duration) < (b.max - b.duration) 
+			else 
+				return b.duration and true or false
+			end 
+		else
+			return a.runeID < b.runeID
+		end
+	end,
 	EnablePower = function(self)
 		local element = self.ClassPower
 		element.powerID = SPELL_POWER_RUNES
 		element.powerType = "RUNES"
 		element.max = 6
+		element.maxDisplayed = nil
 		element.isEnabled = true
+
+		element.runeData = {}
+		element.runeOrder = {}
+		for i = 1,6 do 
+			element.runeData[i] = { runeID = i }
+			element.runeOrder[i] = element.runeData[i]
+		end
 
 		self:RegisterEvent("RUNE_POWER_UPDATE", Proxy, true)
 
@@ -416,6 +491,8 @@ ClassPower.Runes = setmetatable({
 	end,
 	DisablePower = function(self)
 		local element = self.ClassPower
+		element.runeData = nil
+		element.runeOrder = nil
 		for i = 1, #element do 
 			element[i]:SetScript("OnUpdate", nil)
 		end 
@@ -423,33 +500,40 @@ ClassPower.Runes = setmetatable({
 	end, 
 	UpdatePower = function(self, event, unit, ...)
 		local element = self.ClassPower
-		if not element.isEnabled then 
+		if (not element.isEnabled) then 
 			element:Hide()
 			return 
 		end 
 
 		if (event == "RUNE_POWER_UPDATE") then 
 			local runeID, energized = ...
-			element:UpdateRune(runeID, energized)
+
+			local min = element:UpdateRuneData(runeID, energized)
+			--element:UpdateRune(runeID, energized)
 
 			local powerType = element.powerType
 			local powerID = element.powerID 
-			local min = UnitPower("player", powerID, true) or 0
+			--local min = UnitPower("player", powerID, true) or 0
 			local max = UnitPowerMax("player", powerID) or 0
-			local maxDisplayed = element.max or max
+
+			--local runeData = element.runeData[runeID]
+			--runeData.value = min
+			--runeData.max = max
 			
 			return min, max, powerType
 		end 
 
 		-- Can I check here if they are energized?
+		local min = 0
 		for runeID = 1, element.max do 
-			element:UpdateRune(runeID)
+			min = element:UpdateRuneData(runeID, energized)
+			--element:UpdateRune(runeID)
 		end 
 
 		local powerType = element.powerType
 		local powerID = element.powerID 
 
-		local min = UnitPower("player", powerID, true) or 0
+		--local min = UnitPower("player", powerID, true) or 0
 		local max = UnitPowerMax("player", powerID) or 0
 		local maxDisplayed = element.max or max
 
@@ -473,11 +557,7 @@ ClassPower.Runes = setmetatable({
 		local color = self.colors.power[powerType]
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.max or max
-	
-		-- Has the module chosen to only show this with an active target,
-		-- or has the module chosen to hide all when empty?
 		if (element.hideWhenNoTarget and (not UnitExists("target"))) then
-		--or (element.hideWhenEmpty and (min == 0)) then 
 			for i = 1, maxDisplayed do
 				local point = element[i]
 				if point then
@@ -485,11 +565,6 @@ ClassPower.Runes = setmetatable({
 				end 
 			end 
 		else 
-			-- In case there are more points active 
-			-- then the currently allowed maximum. 
-			-- Meant to give an easy system to handle 
-			-- the Rogue Anticipation talent without 
-			-- the need for the module to write extra code. 
 			for i = 1, maxDisplayed do
 				local point = element[i]
 				if element.alphaNoCombat then 
@@ -521,6 +596,7 @@ ClassPower.SoulShards = setmetatable({
 		local element = self.ClassPower
 		element.powerID = SPELL_POWER_SOUL_SHARDS
 		element.powerType = "SOUL_SHARDS"
+		element.maxDisplayed = element.maxComboPoints or 5
 		element.isEnabled = true
 
 		self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
@@ -536,7 +612,7 @@ ClassPower.SoulShards = setmetatable({
 	end,
 	UpdatePower = function(self, event, unit, ...)
 		local element = self.ClassPower
-		if not element.isEnabled then 
+		if (not element.isEnabled) then 
 			element:Hide()
 			return 
 		end 
@@ -839,6 +915,12 @@ local Enable = function(self)
 	if element then
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
+
+		-- Give points access to their owner element, 
+		-- regardless of whether that element is their direct parent or not. 
+		for i = 1,#element do
+			element[i]._owner = element
+		end
 
 		-- All must check for vehicles
 		-- *Also of importance that none 

@@ -153,20 +153,12 @@ local PostUpdateTextures = function(self)
 		health:SetStatusBarTexture(getPath("hp_cap_bar"))
 
 		local healthBg = self.Health.Bg
-		healthBg:SetSize(439, 91)
-		healthBg:SetPoint("CENTER", 0, 0)
 		healthBg:SetTexture(getPath("hp_cap_case"))
-		healthBg:SetVertexColor(227/255, 231/255, 216/255)
-
-		local power = self.Power
-		power:Place("BOTTOMLEFT", -101,  40)
+		healthBg:SetVertexColor(unpack(Colors.ui.stone))
 
 		local powerFg = self.Power.Fg
-		powerFg:SetSize(157, 76)
-		powerFg:SetPoint("BOTTOM", 8, -32)
-		powerFg:SetDrawLayer("ARTWORK")
 		powerFg:SetTexture(getPath("pw_crystal_case"))
-		powerFg:SetVertexColor(227/255, 231/255, 216/255)
+		powerFg:SetVertexColor(unpack(Colors.ui.stone))
 
 		local absorb = self.Absorb
 		absorb:SetSize(385, 40)
@@ -179,7 +171,7 @@ local PostUpdateTextures = function(self)
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
-			manaOrb.Border:SetVertexColor(227/255, 231/255, 216/255) 
+			manaOrb.Border:SetVertexColor(unpack(Colors.ui.stone)) 
 		end 
 
 	-- Battle Hardened
@@ -189,20 +181,12 @@ local PostUpdateTextures = function(self)
 		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 
 		local healthBg = self.Health.Bg
-		healthBg:SetSize(439, 91)
-		healthBg:SetPoint("CENTER", 0, -1)
 		healthBg:SetTexture(getPath("hp_mid_case"))
-		healthBg:SetVertexColor(227/255, 231/255, 216/255)
-
-		local power = self.Power
-		power:Place("BOTTOMLEFT", -101,  40)
+		healthBg:SetVertexColor(unpack(Colors.ui.stone))
 
 		local powerFg = self.Power.Fg
-		powerFg:SetSize(157, 76)
-		powerFg:SetPoint("BOTTOM", 8, -32)
-		powerFg:SetDrawLayer("ARTWORK")
 		powerFg:SetTexture(getPath("pw_crystal_case"))
-		powerFg:SetVertexColor(227/255, 231/255, 216/255)
+		powerFg:SetVertexColor(unpack(Colors.ui.stone))
 
 		local absorb = self.Absorb
 		absorb:SetSize(385, 37)
@@ -215,7 +199,7 @@ local PostUpdateTextures = function(self)
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
-			manaOrb.Border:SetVertexColor(227/255, 231/255, 216/255) 
+			manaOrb.Border:SetVertexColor(unpack(Colors.ui.stone)) 
 		end 
 
 	-- Novice
@@ -225,20 +209,12 @@ local PostUpdateTextures = function(self)
 		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
 
 		local healthBg = self.Health.Bg
-		healthBg:SetSize(439, 93)
-		healthBg:SetPoint("CENTER", 0, -1)
 		healthBg:SetTexture(getPath("hp_low_case"))
-		healthBg:SetVertexColor(225/255 *2/4, 200/255 *2/4, 205/255 *2/4)
-
-		local power = self.Power
-		power:Place("BOTTOMLEFT", -101,  36)
+		healthBg:SetVertexColor(unpack(Colors.ui.wood))
 
 		local powerFg = self.Power.Fg
-		powerFg:SetSize(157, 76)
-		powerFg:SetPoint("BOTTOM", 8, -32)
-		powerFg:SetDrawLayer("ARTWORK")
 		powerFg:SetTexture(getPath("pw_crystal_case_low"))
-		powerFg:SetVertexColor(225/255 *2/4, 220/255 *2/4, 205/255 *2/4)
+		powerFg:SetVertexColor(unpack(Colors.ui.wood))
 
 		local absorb = self.Absorb
 		absorb:SetSize(385, 37)
@@ -251,7 +227,7 @@ local PostUpdateTextures = function(self)
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_low"))
-			manaOrb.Border:SetVertexColor(225/255 *2/4, 220/255 *2/4, 205/255 *2/4) 
+			manaOrb.Border:SetVertexColor(unpack(Colors.ui.wood)) 
 		end 
 	end 
 end 
@@ -310,8 +286,8 @@ local Style = function(self, unit, id, ...)
 
 	local healthBg = health:CreateTexture()
 	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetSize(439, 91)
-	healthBg:SetPoint("CENTER", 0, 0)
+	healthBg:SetSize(716, 188)
+	healthBg:SetPoint("CENTER", 1, -.5)
 	self.Health.Bg = healthBg
 
 	local healthVal = health:CreateFontString()
@@ -358,7 +334,7 @@ local Style = function(self, unit, id, ...)
 
 	local power = backdrop:CreateStatusBar()
 	power:SetSize(120, 140)
-	power:Place("BOTTOMLEFT", -101,  40)
+	power:Place("BOTTOMLEFT", -101,  38)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
 	power:SetStatusBarColor(1, 1, 1, .85) -- only the alpha changes should prevail here. 
 	power:SetOrientation("UP") -- set the bar to grow towards the top.
@@ -375,11 +351,10 @@ local Style = function(self, unit, id, ...)
 	powerBg:SetVertexColor(1, 1, 1, .85) 
 
 	local powerFg = power:CreateTexture()
-	powerFg:SetSize(157, 76)
-	powerFg:SetPoint("BOTTOM", 8, -32)
+	powerFg:SetSize(198,98)
+	powerFg:SetPoint("BOTTOM", 7, -51)
 	powerFg:SetDrawLayer("ARTWORK")
 	powerFg:SetTexture(getPath("pw_crystal_case"))
-	powerFg:SetVertexColor(227/255, 231/255, 216/255)
 	self.Power.Fg = powerFg
 
 	local powerVal = power:CreateFontString()
@@ -406,7 +381,7 @@ local Style = function(self, unit, id, ...)
 
 		local extraPower = backdrop:CreateOrb()
 		extraPower:SetSize(113, 113)
-		extraPower:Place("BOTTOMLEFT", -97, 20) 
+		extraPower:Place("BOTTOMLEFT", -97, 22) 
 		extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3")) -- define the textures used in the orb. 
 		extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
 		self.ExtraPower = extraPower
@@ -427,9 +402,8 @@ local Style = function(self, unit, id, ...)
 		
 		local extraPowerFg = extraPower:GetOverlay():CreateTexture()
 		extraPowerFg:SetDrawLayer("BORDER")
-		extraPowerFg:SetSize(200, 200)
+		extraPowerFg:SetSize(188, 188)
 		extraPowerFg:SetPoint("CENTER", 0, 0)
-		extraPowerFg:SetTexture(getPath("pw_orb_hi"))
 		
 		local extraPowerVal = extraPower:GetOverlay():CreateFontString()
 		extraPowerVal:SetPoint("CENTER", 3, 0)

@@ -130,8 +130,8 @@ local builds = {
 		["7.3.2"] 	= 25549, -- 25326
 		["7.3.5"] 	= 26654, -- 25860  
 
-	["Battle for Azeroth"] = 26766, ["BfA"] = 26766, -- current interface version on the BfA beta
-		["8.0.1"] 	= 26766  
+	["Battle for Azeroth"] = 26806, ["BfA"] = 26806, -- current interface version on the BfA beta
+		["8.0.1"] 	= 26806  
 
 }
 

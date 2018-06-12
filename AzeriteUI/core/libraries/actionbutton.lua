@@ -35,13 +35,40 @@ LibActionButton.buttons = LibActionButton.buttons or {}
 -- as we need it to run even if the user has hidden the UI.
 LibActionButton.frame = LibActionButton.frame or CreateFrame("Frame", nil, WorldFrame)
 
+local nameFormatHelper = function()
+end
+
+-- Spawn a new button
+LibActionButton.CreateActionButton = function(self, parent, buttonType, buttonID, buttonTemplate, ...)
+
+	
 
 
+	-- Add any methods from the optional template.
+	-- This is a good place to add styling.
+	if buttonTemplate then
+		for name, method in pairs(buttonTemplate) do
+			-- Do not allow this to overwrite existing methods,
+			-- also make sure it's only actual functions we inherit.
+			if (type(method) == "function") and (not button[name]) then
+				button[name] = method
+			end
+		end
+	end
+	
+	-- Call the post create method if it exists, 
+	-- and pass along any remaining arguments.
+	if button.PostCreate then
+		button:PostCreate(...)
+	end
+
+end
 
 
 
 -- Module embedding
 local embedMethods = {
+	CreateActionButton = true
 }
 
 LibActionButton.Embed = function(self, target)

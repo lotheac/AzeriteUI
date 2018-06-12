@@ -152,9 +152,10 @@ local Style = function(self, unit, id, ...)
 
 	local healthBg = health:CreateTexture()
 	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetSize(100, 40)
-	healthBg:SetPoint("CENTER", -1, -1)
+	healthBg:SetSize(130, 84)
+	healthBg:SetPoint("CENTER", 0, -2)
 	healthBg:SetTexture(getPath("cast_back"))
+	healthBg:SetVertexColor(unpack(Colors.ui.stone))
 	self.Health.Bg = healthBg
 
 	local healthVal = overlay:CreateFontString()
@@ -208,23 +209,24 @@ local Style = function(self, unit, id, ...)
 	local portraitBg = backdrop:CreateTexture()
 	portraitBg:SetDrawLayer("BACKGROUND", 0)
 	portraitBg:SetPoint("CENTER", portrait, "CENTER", 0, 0)
-	portraitBg:SetSize(120, 120)
-	portraitBg:SetTexture(getPath("p_potraitback"))
-	portraitBg:SetVertexColor(247/255 *1/3, 255/255 *1/3, 239/255 *1/3)
+	portraitBg:SetSize(120,120)
+	portraitBg:SetTexture(getPath("party_portrait_back"))
+	portraitBg:SetVertexColor(.5, .5, .5)
 	self.Portrait.Bg = portraitBg
 
 	local portraitShade = content:CreateTexture()
 	portraitShade:SetDrawLayer("BACKGROUND", -1)
 	portraitShade:SetPoint("CENTER", portrait, "CENTER", 0, 0)
-	portraitShade:SetSize(107, 107) 
+	portraitShade:SetSize(80, 80) 
 	portraitShade:SetTexture(getPath("shade_circle"))
 	self.Portrait.Shade = portraitShade
 
 	local portraitFg = content:CreateTexture()
 	portraitFg:SetDrawLayer("BACKGROUND", 0)
 	portraitFg:SetPoint("CENTER", portrait, "CENTER", 0, 0)
-	portraitFg:SetSize(120, 120)
-	portraitFg:SetTexture(getPath("p_potraitframe"))
+	portraitFg:SetSize(180,180)
+	portraitFg:SetTexture(getPath("party_portrait_border"))
+	portraitFg:SetVertexColor(unpack(Colors.ui.stone))
 	self.Portrait.Fg = portraitFg
 
 
@@ -284,6 +286,8 @@ UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
 		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
+		
+		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
 	end 
 end 

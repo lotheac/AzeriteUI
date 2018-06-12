@@ -13,10 +13,14 @@ assert(LibFrame, "LibActionBar requires LibFrame to be loaded.")
 local LibSound = CogWheel("LibSound")
 assert(LibSound, "LibActionBar requires LibSound to be loaded.")
 
+local LibActionButton = CogWheel("LibActionButton")
+assert(LibActionButton, "LibActionBar requires LibActionButton to be loaded.")
+
 -- Embed event functionality into this
 LibEvent:Embed(LibActionBar)
 LibFrame:Embed(LibActionBar)
 LibSound:Embed(LibActionBar)
+LibActionButton:Embed(LibActionBar)
 
 -- Lua API
 local _G = _G
@@ -88,15 +92,14 @@ Bar.GetAll = function(self)
 	return ipairs(self.buttons)
 end
 
-Bar.NewButton = function(self, button_type, button_id, ...)
-	local Button = ActionButton:New(button_type, button_id, self, ...)
-	Button:SetFrameStrata("MEDIUM")
+Bar.CreateActionButton = function(self, buttonType, buttonID, ...)
+	local button = LibActionBar:CreateActionButton(self, buttonType, buttonID, ...)
 	
 	-- Increase the bar's local button count
 	local num = #self.buttons + 1
 
 	-- Add a secure reference to the button
-	self:SetFrameRef("Button"..num, Button)
+	self:SetFrameRef("Button"..num, button)
 
 	-- Update the secure button count
 	self:SetAttribute("num_buttons", num)

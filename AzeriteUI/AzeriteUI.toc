@@ -34,6 +34,7 @@ core\libraries\tooltip.lua
 core\libraries\fader.lua
 core\libraries\mover.lua
 core\libraries\bagbutton.lua
+core\libraries\actionbutton.xml
 core\libraries\actionbutton.lua
 core\libraries\actionbar.lua
 core\libraries\unitframe.lua

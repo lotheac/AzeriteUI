@@ -58,6 +58,12 @@ Colors.disconnected = prepare(120/255, 120/255, 120/255)
 Colors.tapped = prepare(161/255, 141/255, 120/255)
 Colors.dead = prepare(73/255, 25/255, 9/255)
 
+-- Global UI vertex coloring
+Colors.ui = {
+	stone = prepare(192/255, 192/255, 192/255),
+	wood = prepare(160/255, 160/255, 160/255)
+}
+
 -- quest difficulty coloring 
 Colors.quest = {}
 Colors.quest.red = prepare(204/255, 26/255, 26/255)
@@ -180,7 +186,8 @@ Colors.reaction = {}
 Colors.reaction[1] = prepare(205/255, 46/255, 36/255) -- hated
 Colors.reaction[2] = prepare(205/255, 46/255, 36/255) -- hostile
 Colors.reaction[3] = prepare(192/255, 68/255, 0/255) -- unfriendly
-Colors.reaction[4] = prepare(249/255, 158/255, 35/255) -- neutral 
+--Colors.reaction[4] = prepare(249/255, 158/255, 35/255) -- neutral 
+Colors.reaction[4] = prepare(255/255, 214/255, 137/255) -- neutral 
 Colors.reaction[5] = prepare(64/255, 131/255, 38/255) -- friendly
 Colors.reaction[6] = prepare(64/255, 131/255, 69/255) -- honored
 Colors.reaction[7] = prepare(64/255, 131/255, 104/255) -- revered

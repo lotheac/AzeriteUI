@@ -293,9 +293,10 @@ Minimap.SetUpMinimap = function(self)
 	-- Border
 	local border = Handler:CreateBorderTexture()
 	border:SetDrawLayer("BACKGROUND")
-	border:SetPoint("TOPLEFT", -13, 13)
-	border:SetPoint("BOTTOMRIGHT", 13, -13)
-	border:SetTexture(getPath("border-blizzard-round"))
+	border:SetTexture(getPath("border_blizzard_round"))
+	border:SetSize(419,419)
+	border:SetVertexColor(unpack(Colors.ui.stone))
+	border:SetPoint("CENTER", 0, 0)
 
 	Handler.Border = border
 
