@@ -1,4 +1,4 @@
-local LibClientBuild = CogWheel:Set("LibClientBuild", 10)
+local LibClientBuild = CogWheel:Set("LibClientBuild", 11)
 if (not LibClientBuild) then
 	return
 end
@@ -12,7 +12,9 @@ local tostring = tostring
 
 LibClientBuild.embeds = LibClientBuild.embeds or {}
 
-local clientBuild = tonumber((select(2, _G.GetBuildInfo()))) 
+local clientPatch, clientBuild = _G.GetBuildInfo() 
+clientBuild = tonumber(clientBuild)
+
 local clientIsAtLeast = {}
 local builds = {
 	["The Burning Crusade"] = 8606, ["TBC"] = 8606, 
@@ -128,11 +130,16 @@ local builds = {
 		["7.2.5"] 	= 24742, -- 24330
 		["7.3.0"] 	= 25195, -- 24920
 		["7.3.2"] 	= 25549, -- 25326
-		["7.3.5"] 	= 26654, -- 25860  
+		["7.3.5"] 	= 26822, -- 25860  
 
-	["Battle for Azeroth"] = 26806, ["BfA"] = 26806, -- current interface version on the BfA beta
-		["8.0.1"] 	= 26806  
+	["Battle for Azeroth"] = 26812, ["BfA"] = 26812, -- current interface version on the BfA beta
+		["8.0.1"] 	= 26812  
 
+}
+
+local patchExceptions = {
+	["Battle for Azeroth"] = "8.0.1", ["BfA"] = "8.0.1", 
+		["8.0.1"] 	= "8.0.1"  
 }
 
 for version, build in pairs(builds) do
@@ -156,7 +163,12 @@ end
 -- Check if the current client is 
 -- at least the requested version.
 LibClientBuild.IsBuild = function(self, version)
-	return clientIsAtLeast[version]
+	local patchException = patchExceptions[version]
+	if patchException then 
+		return (patchException == clientPatch) and clientIsAtLeast[version]
+	else 
+		return clientIsAtLeast[version]
+	end 
 end
 
 -- Module embedding
