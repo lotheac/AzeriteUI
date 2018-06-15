@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 6)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 7)
 if (not LibBlizzard) then	
 	return
 end
@@ -139,95 +139,75 @@ end
 
 UIWidgets["ActionBars"] = function(self)
 
-	local ExtraActionBarFrame = _G.ExtraActionBarFrame
-	local MainMenuBar = _G.MainMenuBar
-	local MainMenuBarArtFrame = _G.MainMenuBarArtFrame
-	local MainMenuBarMaxLevelBar = _G.MainMenuBarMaxLevelBar
-	local MainMenuExpBar = _G.MainMenuExpBar
-	local MultiBarBottomLeft = _G.MultiBarBottomLeft
-	local MultiBarBottomRight = _G.MultiBarBottomRight
-	local MultiBarLeft = _G.MultiBarLeft
-	local MultiBarRight = _G.MultiBarRight
-	local PetActionBarFrame = _G.PetActionBarFrame
-	local PossessBarFrame = _G.PossessBarFrame
-	local ReputationWatchBar = _G.ReputationWatchBar
-	local StreamingIcon = _G.StreamingIcon
-	local TutorialFrameAlertButton = _G.TutorialFrameAlertButton
-	local UIPARENT_MANAGED_FRAME_POSITIONS = _G.UIPARENT_MANAGED_FRAME_POSITIONS
-
 	MainMenuBar:EnableMouse(false)
-	MainMenuBar:UnregisterAllEvents()
-	MainMenuBar:SetAlpha(0)
-	MainMenuBar:SetScale(0.001)
+	MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
+	MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
+	MainMenuBar.slideOut:GetAnimations():SetOffset(0,0)
 
-	MainMenuBarArtFrame:UnregisterAllEvents()
-	MainMenuBarArtFrame:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 	MainMenuBarArtFrame:Hide()
-	MainMenuBarArtFrame:SetAlpha(0)
 	MainMenuBarArtFrame:SetParent(UIHider)
 
-	-- Not strictly certain when they added this, 
-	-- so we're going with the most recent expansion only. 
-	-- Chances are this is the only place starter edition accounts exist.
-	SetCVar("xpBarText", 0)
+	StatusTrackingBarManager:Hide()
 
-	PossessBarFrame:UnregisterAllEvents()
-	PossessBarFrame:Hide()
-	PossessBarFrame:SetAlpha(0)
-	PossessBarFrame:SetParent(UIHider)
-
-	PetActionBarFrame:EnableMouse(false)
-	PetActionBarFrame:UnregisterAllEvents()
-	PetActionBarFrame:SetParent(UIHider)
-	PetActionBarFrame:Hide()
-	PetActionBarFrame:SetAlpha(0)
+	OverrideActionBar.slideOut:GetAnimations():SetOffset(0,0)
 
 	MultiBarBottomLeft:SetParent(UIHider)
 	MultiBarBottomRight:SetParent(UIHider)
 	MultiBarLeft:SetParent(UIHider)
 	MultiBarRight:SetParent(UIHider)
 	
-	TutorialFrameAlertButton:UnregisterAllEvents()
-	TutorialFrameAlertButton:Hide()
+	for i = 1,12 do
+		local ActionButton = _G["ActionButton" .. i]
+		ActionButton:Hide()
+		ActionButton:UnregisterAllEvents()
+		ActionButton:SetAttribute("statehidden", true)
 
-	StreamingIcon:SetParent(UIHider)
-	FramerateLabel:SetParent(UIHider)
-	FramerateText:SetParent(UIHider)
+		local MultiBarBottomLeftButton = _G["MultiBarBottomLeftButton" .. i]
+		MultiBarBottomLeftButton:Hide()
+		MultiBarBottomLeftButton:UnregisterAllEvents()
+		MultiBarBottomLeftButton:SetAttribute("statehidden", true)
 
-	local TalentMicroButtonAlert = _G.TalentMicroButtonAlert
-	TalentMicroButtonAlert:UnregisterAllEvents()
-	TalentMicroButtonAlert:SetParent(UIHider)
+		local MultiBarBottomRightButton = _G["MultiBarBottomRightButton" .. i]
+		MultiBarBottomRightButton:Hide()
+		MultiBarBottomRightButton:UnregisterAllEvents()
+		MultiBarBottomRightButton:SetAttribute("statehidden", true)
 
-	local StanceBarFrame = _G.StanceBarFrame
-	local StanceBarLeft = _G.StanceBarLeft
-	local StanceBarMiddle = _G.StanceBarMiddle
-	local StanceBarRight = _G.StanceBarRight
-	local OverrideActionBar = _G.OverrideActionBar
+		local MultiBarRightButton = _G["MultiBarRightButton" .. i]
+		MultiBarRightButton:Hide()
+		MultiBarRightButton:UnregisterAllEvents()
+		MultiBarRightButton:SetAttribute("statehidden", true)
 
-	StanceBarFrame:EnableMouse(false)
+		local MultiBarLeftButton = _G["MultiBarLeftButton" .. i]
+		MultiBarLeftButton:Hide()
+		MultiBarLeftButton:UnregisterAllEvents()
+		MultiBarLeftButton:SetAttribute("statehidden", true)
+	end
+	
+	UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil
+
+
 	StanceBarFrame:UnregisterAllEvents()
 	StanceBarFrame:Hide()
-	StanceBarFrame:SetAlpha(0)
+	StanceBarFrame:SetParent(UIHider)
 
-	StanceBarLeft:Hide()
-	StanceBarLeft:SetAlpha(0)
+	PossessBarFrame:Hide()
+	PossessBarFrame:SetParent(UIHider)
 
-	StanceBarMiddle:Hide()
-	StanceBarMiddle:SetAlpha(0)
+	PetActionBarFrame:UnregisterAllEvents()
+	PetActionBarFrame:SetParent(UIHider)
+	PetActionBarFrame:Hide()
 
-	StanceBarRight:Hide()
-	StanceBarRight:SetAlpha(0)
-	
+
 	-- If I'm not hiding this, it will become visible (though transparent)
 	-- and cover our own custom vehicle/possess action bar. 
 	OverrideActionBar:SetParent(UIHider)
 	OverrideActionBar:EnableMouse(false)
 	OverrideActionBar:UnregisterAllEvents()
-	--OverrideActionBar:Hide()
-	--OverrideActionBar:SetAlpha(0)
-
-	MainMenuBar.slideOut:GetAnimations():SetOffset(0,0)
-	OverrideActionBar.slideOut:GetAnimations():SetOffset(0,0)
+	OverrideActionBar:Hide()
+	OverrideActionBar:SetAlpha(0)
 
 	for i = 1,6 do
 		_G["OverrideActionBarButton"..i]:UnregisterAllEvents()
@@ -235,9 +215,9 @@ UIWidgets["ActionBars"] = function(self)
 		_G["OverrideActionBarButton"..i]:EnableMouse(false) -- just in case it's still there
 	end
 	
-	local CollectionsMicroButtonAlert = _G.CollectionsMicroButtonAlert
-	local EJMicroButtonAlert = _G.EJMicroButtonAlert
-	local LFDMicroButtonAlert = _G.LFDMicroButtonAlert
+
+	MicroButtonAndBagsBar:Hide()
+	MicroButtonAndBagsBar:SetParent(UIHider)
 
 	CollectionsMicroButtonAlert:UnregisterAllEvents()
 	CollectionsMicroButtonAlert:SetParent(UIHider)
@@ -251,45 +231,23 @@ UIWidgets["ActionBars"] = function(self)
 	LFDMicroButtonAlert:SetParent(UIHider)
 	LFDMicroButtonAlert:Hide()
 
-	for i = 1,12 do
-		local ActionButton = _G["ActionButton" .. i]
-		local MultiBarBottomLeftButton = _G["MultiBarBottomLeftButton" .. i]
-		local MultiBarBottomRightButton = _G["MultiBarBottomRightButton" .. i]
-		local MultiBarRightButton = _G["MultiBarRightButton" .. i]
-		local MultiBarLeftButton = _G["MultiBarLeftButton" .. i]
+	TutorialFrameAlertButton:UnregisterAllEvents()
+	TutorialFrameAlertButton:Hide()
 
-		ActionButton:Hide()
-		ActionButton:UnregisterAllEvents()
-		ActionButton:SetAttribute("statehidden", true)
+	TalentMicroButtonAlert:UnregisterAllEvents()
+	TalentMicroButtonAlert:SetParent(UIHider)
 
-		MultiBarBottomLeftButton:Hide()
-		MultiBarBottomLeftButton:UnregisterAllEvents()
-		MultiBarBottomLeftButton:SetAttribute("statehidden", true)
-
-		MultiBarBottomRightButton:Hide()
-		MultiBarBottomRightButton:UnregisterAllEvents()
-		MultiBarBottomRightButton:SetAttribute("statehidden", true)
-
-		MultiBarRightButton:Hide()
-		MultiBarRightButton:UnregisterAllEvents()
-		MultiBarRightButton:SetAttribute("statehidden", true)
-
-		MultiBarLeftButton:Hide()
-		MultiBarLeftButton:UnregisterAllEvents()
-		MultiBarLeftButton:SetAttribute("statehidden", true)
-	end
-	
-	UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarRight"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarLeft"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomLeft"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomRight"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["ShapeshiftBarFrame"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarRight"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarLeft"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomLeft"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomRight"] = nil
 	UIPARENT_MANAGED_FRAME_POSITIONS["MultiCastActionBarFrame"] = nil
 	UIPARENT_MANAGED_FRAME_POSITIONS["MULTICASTACTIONBAR_YPOS"] = nil
 	
+	StreamingIcon:SetParent(UIHider)
+	FramerateLabel:SetParent(UIHider)
+	FramerateText:SetParent(UIHider)
+
 	if _G.PlayerTalentFrame then
 		_G.PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	else
