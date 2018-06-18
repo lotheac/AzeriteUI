@@ -1,7 +1,16 @@
-local LibMover = CogWheel:Set("LibMover", -1)
+local LibMover = CogWheel:Set("LibMover", 3)
 if (not LibMover) then	
 	return
 end
+
+local LibFrame = CogWheel("LibFrame")
+assert(LibFrame, "LibMover requires LibFrame to be loaded.")
+
+local LibEvent = CogWheel("LibEvent")
+assert(LibEvent, "LibMover requires LibEvent to be loaded.")
+
+LibFrame:Embed(LibMover)
+LibEvent:Embed(LibMover)
 
 -- Lua API
 local _G = _G
@@ -18,7 +27,31 @@ local type = type
 
 -- Library registries
 LibMover.embeds = LibMover.embeds or {}
+LibMover.movers = LibMover.movers or {}
+LibMover.defaults = LibMover.defaults or {}
+LibMover.template = LibMover.template or LibMover:CreateFrame("Button")
 
+-- Create the secure master frame
+if (not LibMover.frame) then
+	LibMover.frame = LibMover:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+else 
+	LibMover.frame:ClearAllPoints()
+	UnregisterAttributeDriver(LibMover.frame, "state-visibility")
+end 
+
+-- Keep it and all its children hidden during combat. 
+-- *note that being a child of the UICenter frame, it's also hidden during pet-battles.
+RegisterAttributeDriver(LibMover.frame, "state-visibility", "[combat] hide; show")
+
+-- Speedcuts
+local Frame = LibMover.frame
+local Mover = LibMover.template
+local Movers = LibMover.movers
+
+
+---------------------------------------------------
+-- Utility Functions
+---------------------------------------------------
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -34,7 +67,92 @@ local check = function(value, num, ...)
 end
 
 
+---------------------------------------------------
+-- Mover Template
+---------------------------------------------------
+
+Mover.OnShow = function(self)
+	if self.PreUpdate then 
+		self:PreUpdate()
+	end
+
+
+
+	if self.PostUpdate then 
+		return self:PostUpdate()
+	end
+end
+
+Mover.OnDragStart = function(self)
+end
+
+Mover.OnDragStop = function(self)
+end
+
+Mover.OnClick = function(self, button)
+end
+
+-- Sets the default position of the mover
+Mover.SetDefaultPosition = function(self, ...)
+end
+
+-- Saves the current position of the mover
+Mover.SavePosition = function(self)
+end
+
+-- Restores the saved position of the mover
+Mover.RestorePosition = function(self)
+end
+
+-- Returns the mover to its default position
+Mover.RestoreDefaultPosition = function(self)
+end
+
+---------------------------------------------------
+-- 
+---------------------------------------------------
+
+LibMover.OnEvent = function(self, event, ...)
+end
+
+-- This happens when combat or a pet battle starts
+LibMover.OnHide = function(self)
+	-- Hide any movers that were visible before this
+	
+end
+
+-- This happens after a pet battle or after combat
+LibMover.OnShow = function(self)
+	-- Hide any movers that weren't hidden prior to combat/pet battle, 
+	-- because we don't want them popping up in people's faces. 
+	
+end
+
+LibMover.RegisterMovableFrame = function(self, frame)
+
+	local mover = LibMover:CreateFrame("Button", nil, "UICenter", Frame)
+	mover:RegisterForDrag("LeftButton")
+	mover:RegisterForClicks("RightButtonUp", "MiddleButtonUp") 
+	mover:SetScript("OnShow", Mover.OnShow)
+	mover:SetScript("OnClick", Mover.OnClick)
+	mover:SetScript("OnDragStart", Mover.OnDragStart) 
+	mover:SetScript("OnDragStop", Mover.OnDragStop) 
+	mover.frame = frame
+
+	-- Assign this before parsing the arguments, 
+	-- to allow argument functions to retrieve the mover
+	Movers[frame] = mover
+
+end
+
+-- Just in case this is a library upgrade, we upgrade events & scripts.
+LibMover:UnregisterAllEvents()
+LibMover:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent")
+Frame:SetScript("OnHide", LibMover.OnHide)
+Frame:SetScript("OnShow", LibMover.OnShow)
+
 local embedMethods = {
+	RegisterMovableFrame = true
 }
 
 LibMover.Embed = function(self, target)

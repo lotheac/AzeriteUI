@@ -59,7 +59,7 @@ end
 -- based on class, resource and vehicle.
 local PostUpdateTextures = function(element, unit, min, max, newMax, powerType)
 
-	--	Class Powers available in Legion: 
+	--	Class Powers available in Legion/BfA: 
 	--------------------------------------------------------------------------------- 
 	-- 	* Arcane Charges 	Generated points. 5 cap. 0 baseline.
 	--	* Chi: 				Generated points. 5 cap, 6 if talented, 0 baseline.

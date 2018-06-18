@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 24)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 28)
 if (not LibStatusBar) then	
 	return
 end
@@ -26,11 +26,12 @@ local GetTime = _G.GetTime
 
 -- Library registries
 LibStatusBar.bars = LibStatusBar.bars or {}
-LibStatusBar.data = LibStatusBar.data or {}
+LibStatusBar.textures = LibStatusBar.textures or {}
 LibStatusBar.embeds = LibStatusBar.embeds or {}
 
 -- Speed shortcuts
 local Bars = LibStatusBar.bars
+local Textures = LibStatusBar.textures
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -45,11 +46,48 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
+
 ----------------------------------------------------------------
 -- Statusbar template
 ----------------------------------------------------------------
 local StatusBar = LibStatusBar:CreateFrame("Frame")
 local StatusBar_MT = { __index = StatusBar }
+
+-- Need to borrow some methods here
+local Texture = StatusBar:CreateTexture() 
+local Texture_MT = { __index = Texture }
+
+-- Grab some of the original methods before we change them
+local blizzardSetTexCoord = getmetatable(Texture).__index.SetTexCoord
+local blizzardGetTexCoord = getmetatable(Texture).__index.GetTexCoord
+
+-- Mad scientist stuff.
+-- What we basically do is to apply texcoords to texcoords, 
+-- to get an inner fraction of the already cropped texture. Awesome! :)
+local SetTexCoord = function(self, ...)
+
+	-- The displayed fraction of the full texture
+	local fractionLeft, fractionRight, fractionTop, fractionBottom = ...
+
+	local fullCoords = Textures[self] -- "full" / original texcoords
+	local fullWidth = fullCoords[2] - fullCoords[1] -- full width of the original texcoord area
+	local fullHeight = fullCoords[4] - fullCoords[3] -- full height of the original texcoord area
+
+	local displayedLeft = fullCoords[1] + fractionLeft*fullWidth
+	local displayedRight = fullCoords[2] - (1-fractionRight)*fullWidth
+	local displayedTop = fullCoords[3] + fractionTop*fullHeight
+	local displayedBottom = fullCoords[4] - (1-fractionBottom)*fullHeight
+
+	-- Store the real coords (re-use old table, as this is called very often)
+	local texCoords = Bars[self].texCoords
+	texCoords[1] = displayedLeft
+	texCoords[2] = displayedRight
+	texCoords[3] = displayedTop
+	texCoords[4] = displayedBottom
+
+	-- Calculate the new area and apply it with the real blizzard method
+	blizzardSetTexCoord(self, displayedLeft, displayedRight, displayedTop, displayedBottom)
+end 
 
 -- Will move this into the main update function later, 
 -- just keeping it here for now while developing.
@@ -63,11 +101,11 @@ local UpdateByGrowthDirection = {
 			-- bar grows from the left to right
 			-- and the bar is also flipped horizontally 
 			-- (e.g. AzeriteUI target absorbbar)
-			bar:SetTexCoord(1, 1-percentage, 0, 1) 
+			SetTexCoord(bar, 1, 1-percentage, 0, 1) 
 		else 
 			-- bar grows from the left to right
 			-- (e.g. AzeriteUI player healthbar)
-			bar:SetTexCoord(0, percentage, 0, 1) 
+			SetTexCoord(bar, 0, percentage, 0, 1) 
 		end 
 
 		bar:ClearAllPoints()
@@ -91,11 +129,11 @@ local UpdateByGrowthDirection = {
 			-- bar grows from the right to left
 			-- and the bar is also flipped horizontally 
 			-- (e.g. AzeriteUI target healthbar)
-			bar:SetTexCoord(percentage, 0, 0, 1) 
+			SetTexCoord(bar, percentage, 0, 0, 1) 
 		else 
 			-- bar grows from the right to left
 			-- (e.g. AzeriteUI player absorbbar)
-			bar:SetTexCoord(1-percentage, 1, 0, 1)
+			SetTexCoord(bar, 1-percentage, 1, 0, 1)
 		end 
 
 		bar:ClearAllPoints()
@@ -116,10 +154,10 @@ local UpdateByGrowthDirection = {
 		local spark = data.spark
 
 		if data.reversed then 
-			bar:SetTexCoord(1, 0, 1-percentage, 1)
+			SetTexCoord(bar, 1, 0, 1-percentage, 1)
 			sparkBefore, sparkAfter = sparkAfter, sparkBefore
 		else 
-			bar:SetTexCoord(0, 1, 1-percentage, 1)
+			SetTexCoord(bar, 0, 1, 1-percentage, 1)
 		end 
 
 		bar:ClearAllPoints()
@@ -140,13 +178,12 @@ local UpdateByGrowthDirection = {
 		local spark = data.spark
 
 		if data.reversed then 
-			bar:SetTexCoord(1, 0, 0, percentage)
+			SetTexCoord(bar, 1, 0, 0, percentage)
 			sparkBefore, sparkAfter = sparkAfter, sparkBefore
 		else 
-			bar:SetTexCoord(0, 1, 0, percentage)
+			SetTexCoord(bar, 0, 1, 0, percentage)
 		end 
 
-		bar:SetTexCoord(0, 1, 0, percentage)
 		bar:ClearAllPoints()
 		bar:SetPoint("LEFT")
 		bar:SetPoint("RIGHT")
@@ -281,6 +318,7 @@ local Update = function(self, elapsed)
 		-- Hashed tables are just such a nice way to get post updates done faster :) 
 		UpdateByGrowthDirection[orientation](self, mult, displaySize, width, height, sparkOffsetTop, sparkOffsetBottom)
 
+
 		if elapsed then
 			local currentAlpha = spark:GetAlpha()
 			local range = data.sparkMaxAlpha - data.sparkMinAlpha
@@ -343,6 +381,12 @@ local Update = function(self, elapsed)
 			spark:Show()
 		end
 	end
+
+	-- Allow modules to add their postupdates here
+	if (self.PostUpdate) then 
+		self:PostUpdate(value, min, max)
+	end
+
 end
 
 local smoothingMinValue = .3 -- if a value is lower than this, we won't smoothe
@@ -413,6 +457,33 @@ local OnUpdate = function(self, elapsed)
 	data.elapsed = 0
 end
 
+Texture.SetTexCoord = function(self, ...)
+	local tex = Textures[self]
+	tex[1], tex[2], tex[3], tex[4] = ...
+	Update(tex._owner)
+end
+
+Texture.GetTexCoord = function(self)
+	local tex = Textures[self]
+	return tex[1], tex[2], tex[3], tex[4]
+end
+
+StatusBar.SetTexCoord = function(self, ...)
+	local tex = Textures[self]
+	tex[1], tex[2], tex[3], tex[4] = ...
+	Update(self)
+end
+
+StatusBar.GetTexCoord = function(self)
+	local tex = Textures[self]
+	return tex[1], tex[2], tex[3], tex[4]
+end
+
+StatusBar.GetRealTexCoord = function(self)
+	local texCoords = Bars[self].texCoords
+	return texCoords[1], texCoords[2], texCoords[3], texCoords[4]
+end
+
 StatusBar.SetSmoothingFrequency = function(self, smoothingFrequency)
 	Bars[self].smoothingFrequency = smoothingFrequency
 end
@@ -472,7 +543,6 @@ StatusBar.Clear = function(self)
 	data.barDisplayValue = data.barMin
 	Update(self)
 end
-
 
 StatusBar.SetMinMaxValues = function(self, min, max)
 	local data = Bars[self]
@@ -577,7 +647,6 @@ end
 StatusBar.CreateFontString = function(self, ...)
 	return Bars[self].scaffold:CreateFontString(...)
 end
-
 
 StatusBar.SetScript = function(self, ...)
 	-- can not allow the scaffold to get its scripts overwritten
@@ -735,7 +804,7 @@ LibStatusBar.CreateStatusBar = function(self, parent)
 	scaffold:SetSize(1,1)
 
 	-- the bar texture
-	local bar = scaffold:CreateTexture()
+	local bar = setmetatable(scaffold:CreateTexture(), Texture_MT)
 	bar:SetDrawLayer("BORDER", 0)
 	bar:SetPoint("TOP")
 	bar:SetPoint("BOTTOM")
@@ -783,11 +852,24 @@ LibStatusBar.CreateStatusBar = function(self, parent)
 		sparkMinAlpha = .25,
 		sparkMaxAlpha = .95,
 		sparkMinPercent = 1/100,
-		sparkMaxPercent = 99/100
+		sparkMaxPercent = 99/100,
+
+		-- The real texcoords of the bar texture
+		texCoords = {0, 1, 0, 1}
 	}
 
+	-- Give multiple objects access using their 'self' as key
 	Bars[statusbar] = data
 	Bars[scaffold] = data
+	Bars[bar] = data
+
+	-- Virtual texcoord handling 
+	local texCoords = { 0, 1, 0, 1 }
+	texCoords._owner = statusbar
+
+	-- Give both the bar texture and the virtual bar direct access
+	Textures[bar] = texCoords
+	Textures[statusbar] = texCoords
 	
 	Update(statusbar)
 

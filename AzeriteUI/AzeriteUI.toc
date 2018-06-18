@@ -29,7 +29,6 @@ core\libraries\frame.lua
 core\libraries\orb.lua
 core\libraries\statusbar.lua
 core\libraries\sound.lua
-core\libraries\tooltip.xml
 core\libraries\tooltip.lua
 core\libraries\fader.lua
 core\libraries\mover.lua

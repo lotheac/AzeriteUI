@@ -32,6 +32,7 @@ local setmetatable = setmetatable
 local table_sort = table.sort
 
 -- WoW API
+local Enum = _G.Enum
 local GetComboPoints = _G.GetComboPoints
 local GetRuneCooldown = _G.GetRuneCooldown
 local GetSpecialization = _G.GetSpecialization
@@ -59,13 +60,13 @@ local SPEC_MAGE_ARCANE = _G.SPEC_MAGE_ARCANE or 1
 local SPEC_SHAMAN_RESTORATION = _G.SPEC_SHAMAN_RESTORATION or 3
 
 -- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
-local SPELL_POWER_ARCANE_CHARGES = Enum.PowerType.ArcaneCharges or 16
-local SPELL_POWER_CHI = Enum.PowerType.Chi or 12
-local SPELL_POWER_COMBO_POINTS = Enum.PowerType.ComboPoints or 4 
-local SPELL_POWER_ENERGY = Enum.PowerType.Energy or 3 
-local SPELL_POWER_HOLY_POWER = Enum.PowerType.HolyPower or 9
-local SPELL_POWER_RUNES = Enum.PowerType.Runes or 5
-local SPELL_POWER_SOUL_SHARDS = Enum.PowerType.SoulShards or 7
+local SPELL_POWER_ARCANE_CHARGES = Enum and Enum.PowerType.ArcaneCharges or SPELL_POWER_ARCANE_CHARGES or 16
+local SPELL_POWER_CHI = Enum and Enum.PowerType.Chi or SPELL_POWER_CHI or 12
+local SPELL_POWER_COMBO_POINTS = Enum and Enum.PowerType.ComboPoints or SPELL_POWER_COMBO_POINTS or 4 
+local SPELL_POWER_ENERGY = Enum and Enum.PowerType.Energy or SPELL_POWER_ENERGY or 3 
+local SPELL_POWER_HOLY_POWER = Enum and Enum.PowerType.HolyPower or SPELL_POWER_HOLY_POWER or 9
+local SPELL_POWER_RUNES = Enum and Enum.PowerType.Runes or SPELL_POWER_RUNES or 5
+local SPELL_POWER_SOUL_SHARDS = Enum and Enum.PowerType.SoulShards or SPELL_POWER_SOUL_SHARDS or 7
 
 -- Sourced from BlizzardInterfaceCode/Interface/FrameXML/MonkStaggerBar.lua
 -- percentages at which bar should change color
@@ -99,15 +100,17 @@ local Generic = setmetatable({
 		element.maxDisplayed = MAX_COMBO_POINTS
 
 		for i = 1, #element do 
-			element[i]:Hide()
 			element[i]:SetMinMaxValues(0,1)
 			element[i]:SetValue(0)
+			element[i]:Hide()
 		end 
 
 		if (element.alphaNoCombat) then 
 			self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)
 			self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
 		end 
+
+		
 	end,
 	DisablePower = function(self)
 		local element = self.ClassPower
@@ -963,4 +966,4 @@ local Disable = function(self)
 	end
 end 
 
-LibUnitFrame:RegisterElement("ClassPower", Enable, Disable, Proxy, 9)
+LibUnitFrame:RegisterElement("ClassPower", Enable, Disable, Proxy, 10)

@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 8)
+local LibTooltip = CogWheel:Set("LibTooltip", 10)
 if (not LibTooltip) then	
 	return
 end
@@ -70,12 +70,16 @@ LibTooltip.tooltipSettings = LibTooltip.tooltipSettings or {} -- per tooltip set
 LibTooltip.tooltipDefaults = LibTooltip.tooltipDefaults or {} -- per tooltip defaults
 LibTooltip.numTooltips = LibTooltip.numTooltips or 0 -- current number of tooltips created
 
+-- Inherit the template too, we override the older methods farther down anyway
+LibTooltip.tooltipTemplate = LibTooltip.tooltipTemplate or LibTooltip:CreateFrame("GameTooltip", "CG_TooltipTemplate", "UICenter")
+
 -- Shortcuts
 local Defaults = LibTooltip.defaults
 local Tooltips = LibTooltip.tooltips
 local TooltipsByName = LibTooltip.tooltipsByName
 local TooltipSettings = LibTooltip.tooltipSettings
 local TooltipDefaults = LibTooltip.tooltipDefaults
+local Tooltip = LibTooltip.tooltipTemplate
 
 
 -- Utility Functions
@@ -226,8 +230,6 @@ setmetatable(Defaults, { __index = LibraryDefaults } )
 
 -- Tooltip Template
 ---------------------------------------------------------
-
-local Tooltip = LibTooltip:CreateFrame("GameTooltip", "CG_GameTooltipTemplate", "UICenter", "CG_GameTooltipTemplate")
 local Tooltip_MT = { __index = Tooltip }
 
 -- Retrieve a tooltip specific setting
@@ -1215,7 +1217,50 @@ LibTooltip.CreateTooltip = function(self, name)
 	LibTooltip.numTooltips = LibTooltip.numTooltips + 1
 
 	-- Note that the global frame name is unrelated to the tooltip name requested by the modules.
-	local tooltip = setmetatable(LibTooltip:CreateFrame("GameTooltip", "CG_GameTooltip_"..LibTooltip.numTooltips, "UICenter", "CG_GameTooltipTemplate"), Tooltip_MT)	
+	local tooltipName = "CG_GameTooltip_"..LibTooltip.numTooltips
+	local tooltip = setmetatable(LibTooltip:CreateFrame("GameTooltip", tooltipName, "UICenter"), Tooltip_MT)
+
+	-- Add the custom backdrop
+	local backdrop = tooltip:CreateFrame()
+	backdrop:SetFrameLevel(tooltip:GetFrameLevel()-1)
+	backdrop:SetPoint("LEFT", 0, 0)
+	backdrop:SetPoint("RIGHT", 0, 0)
+	backdrop:SetPoint("TOP", 0, 0)
+	backdrop:SetPoint("BOTTOM", 0, 0)
+	backdrop:SetScript("OnShow", function(self) self:SetFrameLevel(self:GetParent():GetFrameLevel()-1) end)
+	backdrop:SetScript("OnHide", function(self) self:SetFrameLevel(self:GetParent():GetFrameLevel()-1) end)
+
+	-- Add lines
+	for i = 1,8 do
+		local left = tooltip:CreateFontString(tooltipName.."TextLeft"..i)
+		left:Hide()
+		left:SetDrawLayer("ARTWORK")
+		left:SetFontObject(GameTooltipText)
+		left:SetTextColor(.9, .9, .9)
+		if (i == 1) then 
+			left:SetPoint("TOPLEFT", 10, 10)
+		else
+			left:SetPoint("TOPLEFT", tooltip["TextLeft"..(i-1)], "BOTTOMLEFT", 0, -2)
+		end 
+		tooltip["TextLeft"..i] = left
+
+		local right = tooltip:CreateFontString(tooltipName.."TextRight"..i)
+		right:Hide()
+		right:SetDrawLayer("ARTWORK")
+		right:SetFontObject(GameTooltipText)
+		right:SetTextColor(.9, .9, .9)
+		right:SetPoint("RIGHT", left, "LEFT", 40, 0)
+		tooltip["TextRight"..i] = right
+	end 
+
+	-- Add textures
+	for i = 1,10 do
+		local tex = tooltip:CreateTexture(tooltipName.."Texture"..i)
+		tex:Hide()
+		tex:SetDrawLayer("ARTWORK")
+		tex:SetSize(12,12)
+		tooltip["Texture"..i] = tex
+	end
 
 	-- Embed the statusbar creation methods directly into the tooltip.
 	-- This will give modules and plugins easy access to proper bars. 
