@@ -8,6 +8,8 @@ local _G = _G
 
 -- WoW API
 local C_Map = _G.C_Map
+local GetBestMapForUnit = C_Map.GetBestMapForUnit
+local GetPlayerMapPosition = C_Map.GetPlayerMapPosition
 
 -- WoW Frames
 local WorldMapFrame = _G.WorldMapFrame
@@ -26,9 +28,9 @@ local Update = function(self, elapsed)
 	end
 
 	local x, y
-	local mapID = C_Map.GetBestMapForUnit("player")
+	local mapID = GetBestMapForUnit("player")
 	if mapID then 
-		local mapPosObject = C_Map.GetPlayerMapPosition(mapID, "player")
+		local mapPosObject = GetPlayerMapPosition(mapID, "player")
 		if mapPosObject then 
 			x, y = mapPosObject:GetXY()
 		end 
@@ -72,4 +74,4 @@ local Disable = function(self)
 	end
 end 
 
-LibMinimap:RegisterElement("Coordinates", Enable, Disable, Proxy, 5)
+LibMinimap:RegisterElement("Coordinates", Enable, Disable, Proxy, 6)

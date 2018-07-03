@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 28)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 30)
 if (not LibStatusBar) then	
 	return
 end
@@ -216,15 +216,17 @@ local Update = function(self, elapsed)
 	if (value == min) or (max == min) then
 		bar:Hide()
 	else
-		local newSize, mult
+		local displaySize, mult
 		if (max > min) then
 			mult = (value-min)/(max-min)
-			newSize = mult * ((orientation == "RIGHT" or orientation == "LEFT") and width or height)
+			displaySize = mult * ((orientation == "RIGHT" or orientation == "LEFT") and width or height)
+			if (displaySize < .01) then 
+				displaySize = .01
+			end 
 		else
-			newSize = 0.0001
-			mult = 0.0001
+			mult = .01
+			displaySize = .01
 		end
-		local displaySize = math_max(newSize, 0.0001) -- sizes can't be 0 in Legion
 
 		-- if there's a sparkmap, let's apply it!
 		local sparkPoint, sparkAnchor
@@ -544,7 +546,7 @@ StatusBar.Clear = function(self)
 	Update(self)
 end
 
-StatusBar.SetMinMaxValues = function(self, min, max)
+StatusBar.SetMinMaxValues = function(self, min, max, overrideSmoothing)
 	local data = Bars[self]
 	if (data.barMin == min) and (data.barMax == max) then 
 		return 
@@ -554,11 +556,15 @@ StatusBar.SetMinMaxValues = function(self, min, max)
 	elseif (data.barValue < min) then
 		data.barValue = min
 	end
-	if (data.barDisplayValue > max) then
-		data.barDisplayValue = max
-	elseif (data.barDisplayValue < min) then
-		data.barDisplayValue = min
-	end
+	if overrideSmoothing then 
+		data.barDisplayValue = data.barValue
+	else 
+		if (data.barDisplayValue > max) then
+			data.barDisplayValue = max
+		elseif (data.barDisplayValue < min) then
+			data.barDisplayValue = min
+		end
+	end 
 	data.barMin = min
 	data.barMax = max
 	Update(self)

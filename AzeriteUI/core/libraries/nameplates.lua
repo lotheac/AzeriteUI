@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 9)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 11)
 if (not LibNamePlate) then	
 	return
 end
@@ -71,11 +71,21 @@ local UnitThreatSituation = _G.UnitThreatSituation
 local WorldFrame = _G.WorldFrame
 
 -- Plate Registries
-LibNamePlate.AllPlates = LibNamePlate.AllPlates or {}
-LibNamePlate.VisiblePlates = LibNamePlate.VisiblePlates or {}
-LibNamePlate.CastData = LibNamePlate.CastData or {}
-LibNamePlate.CastBarPool = LibNamePlate.CastBarPool or {}
-LibNamePlate.AlphaLevel = LibNamePlate.AlphaLevel or {}
+LibNamePlate.allPlates = LibNamePlate.allPlates or {}
+LibNamePlate.visiblePlates = LibNamePlate.visiblePlates or {}
+LibNamePlate.castData = LibNamePlate.castData or {}
+LibNamePlate.castBarPool = LibNamePlate.castBarPool or {}
+LibNamePlate.alphaLevels = LibNamePlate.alphaLevels or {}
+
+LibNamePlate.elements = LibNamePlate.elements or {} -- global element registry
+LibNamePlate.callbacks = LibNamePlate.callbacks or {} -- global frame and element callback registry
+LibNamePlate.unitEvents = LibNamePlate.unitEvents or {} -- global frame unitevent registry
+LibNamePlate.frequentUpdates = LibNamePlate.frequentUpdates or {} -- global element frequent update registry
+LibNamePlate.frequentUpdateFrames = LibNamePlate.frequentUpdateFrames or {} -- global frame frequent update registry
+LibNamePlate.frameElements = LibNamePlate.frameElements or {} -- per unitframe element registry
+LibNamePlate.frameElementsEnabled = LibNamePlate.frameElementsEnabled or {} -- per unitframe element enabled registry
+LibNamePlate.scriptHandlers = LibNamePlate.scriptHandlers or {} -- tracked library script handlers
+LibNamePlate.scriptFrame = LibNamePlate.scriptFrame -- library script frame, will be created on demand later on
 
 -- Modules that embed this
 LibNamePlate.embeds = LibNamePlate.embeds or {}
@@ -100,11 +110,21 @@ LibNamePlate.SCALE = LibNamePlate.SCALE or 768/1080
 local UICenter = LibFrame:GetFrame()
 
 -- Speed shortcuts
-local AllPlates = LibNamePlate.AllPlates
-local VisiblePlates = LibNamePlate.VisiblePlates
-local CastData = LibNamePlate.CastData
-local CastBarPool = LibNamePlate.CastBarPool
-local AlphaLevel = LibNamePlate.AlphaLevel
+local allPlates = LibNamePlate.allPlates
+local visiblePlates = LibNamePlate.visiblePlates
+local castData = LibNamePlate.castData
+local castBarPool = LibNamePlate.castBarPool
+local alphaLevels = LibNamePlate.alphaLevels
+
+local elements = LibNamePlate.elements
+local callbacks = LibNamePlate.callbacks
+local unitEvents = LibNamePlate.unitEvents
+local frequentUpdates = LibNamePlate.frequentUpdates
+local frequentUpdateFrames = LibNamePlate.frequentUpdateFrames
+local frameElements = LibNamePlate.frameElements
+local frameElementsEnabled = LibNamePlate.frameElementsEnabled
+local scriptHandlers = LibNamePlate.scriptHandlers
+local scriptFrame = LibNamePlate.scriptFrame
 
 -- This will be true if forced updates are needed on all plates
 -- All plates will be updated in the next frame cycle 
@@ -117,12 +137,12 @@ local FRAMELEVEL_CURRENT, FRAMELEVEL_MIN, FRAMELEVEL_MAX, FRAMELEVEL_STEP = 21, 
 local FRAMELEVEL_TRIVAL_CURRENT, FRAMELEVEL_TRIVIAL_MIN, FRAMELEVEL_TRIVIAL_MAX, FRAMELEVEL_TRIVIAL_STEP = 1, 1, 20, 2
 
 -- Opacity Settings
-AlphaLevel[0] = 0 						-- Not visible. Not configurable by modules. 
-AlphaLevel[1] = AlphaLevel[1] or 1 		-- For the current target, if any
-AlphaLevel[2] = AlphaLevel[2] or .7 	-- For players when not having a target, also for World Bosses when not targeted
-AlphaLevel[3] = AlphaLevel[3] or .35 	-- For non-targeted players when having a target
-AlphaLevel[4] = AlphaLevel[4] or .25 	-- For non-targeted trivial mobs
-AlphaLevel[5] = AlphaLevel[5] or .15 	-- For non-targeted NPCs 
+alphaLevels[0] = 0 						-- Not visible. Not configurable by modules. 
+alphaLevels[1] = alphaLevels[1] or 1 		-- For the current target, if any
+alphaLevels[2] = alphaLevels[2] or .7 	-- For players when not having a target, also for World Bosses when not targeted
+alphaLevels[3] = alphaLevels[3] or .35 	-- For non-targeted players when having a target
+alphaLevels[4] = alphaLevels[4] or .25 	-- For non-targeted trivial mobs
+alphaLevels[5] = alphaLevels[5] or .15 	-- For non-targeted NPCs 
 
 -- Update and fading frequencies
 local THROTTLE = 1/60
@@ -151,10 +171,6 @@ local COMBAT -- whether or not the player is affected by combat
 -- Blizzard textures we use to identify plates and more 
 local ELITE_TEXTURE = [[Interface\Tooltips\EliteNameplateIcon]] -- elite/rare dragon texture
 local BOSS_TEXTURE = [[Interface\TargetingFrame\UI-TargetingFrame-Skull]] -- skull textures
-
--- Client version constants
-local ENGINE_BFA_801 = LibClientBuild:IsBuild("8.0.1") -- unit spell events changed
-local ENGINE_LEGION_720 = LibClientBuild:IsBuild("7.2.0") -- friendly npc plates protected in instances
 
 -- Color Table Utility
 local hex = function(r, g, b)
@@ -347,13 +363,22 @@ end
 local NamePlate = LibNamePlate:CreateFrame("Frame")
 local NamePlate_MT = { __index = NamePlate }
 
+-- Methods we don't wish to expose to the modules
+--------------------------------------------------------------------------
+
+local IsEventRegistered = NamePlate_MT.__index.IsEventRegistered
+local RegisterEvent = NamePlate_MT.__index.RegisterEvent
+local RegisterUnitEvent = NamePlate_MT.__index.RegisterUnitEvent
+local UnregisterEvent = NamePlate_MT.__index.UnregisterEvent
+local UnregisterAllEvents = NamePlate_MT.__index.UnregisterAllEvents
+
 NamePlate.UpdateAlpha = function(self)
 	local unit = self.unit
 	if (not UnitExists(unit)) then
 		return 
 	end
 	local alphaLevel = 0
-	if VisiblePlates[self] then
+	if visiblePlates[self] then
 		if (self.OverrideAlpha) then 
 			return self:OverrideAlpha(unit)
 		end 
@@ -391,7 +416,7 @@ NamePlate.UpdateAlpha = function(self)
 			end	
 		end
 	end
-	self.targetAlpha = AlphaLevel[alphaLevel]
+	self.targetAlpha = alphaLevels[alphaLevel]
 	if (self.PostUpdateAlpha) then 
 		self:PostUpdateAlpha(unit, self.targetAlpha, alphaLevel)
 	end 
@@ -402,7 +427,7 @@ NamePlate.UpdateFrameLevel = function(self)
 	if (not UnitExists(unit)) then
 		return
 	end
-	if VisiblePlates[self] then
+	if visiblePlates[self] then
 		if (self.OverrideFrameLevel) then 
 			return self:OverrideFrameLevel(unit)
 		end 
@@ -936,9 +961,9 @@ NamePlate.OnShow = function(self)
 	self:Show() -- make the fully transparent frame visible
 
 	-- this will trigger the fadein 
-	VisiblePlates[self] = self.baseFrame 
+	visiblePlates[self] = self.baseFrame 
 
-	-- must be called after the plate has been added to VisiblePlates
+	-- must be called after the plate has been added to visiblePlates
 	self:UpdateFrameLevel() 
 
 	if (self.PostUpdate) then 
@@ -947,7 +972,7 @@ NamePlate.OnShow = function(self)
 end
 
 NamePlate.OnHide = function(self)
-	VisiblePlates[self] = false -- this will trigger the fadeout and hiding
+	visiblePlates[self] = false -- this will trigger the fadeout and hiding
 end
 
 NamePlate.HandleBaseFrame = function(self, baseFrame)
@@ -963,7 +988,6 @@ NamePlate.HookScripts = function(self, baseFrame)
 	baseFrame:HookScript("OnHide", function(baseFrame) self:OnHide() end)
 end
 
-
 -- Create the sizer frame that handles nameplate positioning
 -- *Blizzard changed nameplate format and also anchoring points in Legion,
 --  so naturally we're using a different function for this too. Speed!
@@ -978,6 +1002,175 @@ NamePlate.CreateSizer = function(self, baseFrame)
 		plate:SetPoint("TOP", WorldFrame, "BOTTOMLEFT", width, height)
 		plate:Show()
 	end)
+end
+
+NamePlate.RegisterEvent = function(self, event, func, unitless)
+	if (frequentUpdateFrames[self] and event ~= "UNIT_PORTRAIT_UPDATE" and event ~= "UNIT_MODEL_CHANGED") then 
+		return 
+	end
+	if (not callbacks[self]) then
+		callbacks[self] = {}
+	end
+	if (not callbacks[self][event]) then
+		callbacks[self][event] = {}
+	end
+	
+	local events = callbacks[self][event]
+	if (#events > 0) then
+		for i = #events, 1, -1 do
+			if (events[i] == func) then
+				return
+			end
+		end
+	end
+
+	table_insert(events, func)
+
+	if (not IsEventRegistered(self, event)) then
+		if unitless then 
+			RegisterEvent(self, event)
+		else 
+			unitEvents[event] = true
+			RegisterUnitEvent(self, event)
+		end 
+	end
+end
+
+NamePlate.UnregisterEvent = function(self, event, func)
+	-- silently fail if the event isn't even registered
+	if not callbacks[self] or not callbacks[self][event] then
+		return
+	end
+
+	local events = callbacks[self][event]
+
+	if #events > 0 then
+		-- find the function's id 
+		for i = #events, 1, -1 do
+			if events[i] == func then
+				events[i] = nil -- remove the function from the event's registry
+				if #events == 0 then
+					UnregisterEvent(self, event) 
+				end
+			end
+		end
+	end
+end
+
+NamePlate.UnregisterAllEvents = function(self)
+	if not callbacks[self] then 
+		return
+	end
+	for event, funcs in pairs(callbacks[self]) do
+		for i = #funcs, 1, -1 do
+			funcs[i] = nil
+		end
+	end
+	UnregisterAllEvents(self)
+end
+
+NamePlate.UpdateAllElements = function(self, event, ...)
+	local unit = self.unit
+	if (not UnitExists(unit)) then 
+		return 
+	end
+	if (self.PreUpdate) then
+		self:PreUpdate(event, unit, ...)
+	end
+	if (frameElements[self]) then
+		for element in pairs(frameElementsEnabled[self]) do
+			-- Will run the registered Update function for the element, 
+			-- which isually is the "Proxy" method in my elements. 
+			-- We cannot direcly access the ForceUpdate method, 
+			-- as that is meant for in-module updates to that unique
+			-- instance of the element, and doesn't exist on the template element itself. 
+			elements[element].Update(self, "Forced", self.unit)
+		end
+	end
+	if (self.PostUpdate) then
+		self:PostUpdate(event, unit, ...)
+	end
+end
+
+NamePlate.EnableElement = function(self, element)
+	if (not frameElements[self]) then
+		frameElements[self] = {}
+		frameElementsEnabled[self] = {}
+	end
+
+	-- don't double enable
+	if frameElementsEnabled[self][element] then 
+		return 
+	end 
+
+	-- upvalues ftw
+	local frameElements = frameElements[self]
+	local frameElementsEnabled = frameElementsEnabled[self]
+	
+	-- avoid duplicates
+	local found
+	for i = 1, #frameElements do
+		if (frameElements[i] == element) then
+			found = true
+			break
+		end
+	end
+	if (not found) then
+		-- insert the element into the list
+		table_insert(frameElements, element)
+	end
+
+	-- attempt to enable the element
+	if elements[element].Enable(self, self.unit) then
+		-- success!
+		frameElementsEnabled[element] = true
+	end
+end
+
+NamePlate.DisableElement = function(self, element)
+	-- silently fail if the element hasn't been enabled for the frame
+	if ((not frameElementsEnabled[self]) or (not frameElementsEnabled[self][element])) then
+		return
+	end
+	
+	elements[element].Disable(self, self.unit)
+
+	for i = #frameElements[self], 1, -1 do
+		if (frameElements[self][i] == element) then
+			frameElements[self][i] = nil
+		end
+	end
+	
+	frameElementsEnabled[self][element] = nil
+	
+	if frequentUpdates[self][element] then
+		-- remove the element's frequent update entry
+		frequentUpdates[self][element].elapsed = nil
+		frequentUpdates[self][element].hz = nil
+		frequentUpdates[self][element] = nil
+		
+		-- Remove the frame object's frequent update entry
+		-- if no elements require it anymore.
+		local count = 0
+		for i,v in pairs(frequentUpdates[self]) do
+			count = count + 1
+		end
+		if (count == 0) then
+			frequentUpdates[self] = nil
+		end
+		
+		-- Disable the entire script handler if no elements
+		-- on any frames require frequent updates. 
+		count = 0
+		for i,v in pairs(frequentUpdates) do
+			count = count + 1
+		end
+		if (count == 0) then
+			if LibNamePlate:GetScript("OnUpdate") then
+				LibNamePlate:SetScript("OnUpdate", nil)
+			end
+		end
+	end
 end
 
 
@@ -1008,11 +1201,78 @@ LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
 		FRAMELEVEL_CURRENT = FRAMELEVEL_MIN
 	end
 
-	AllPlates[baseFrame] = plate
+	allPlates[baseFrame] = plate
 
 	self:ForAllEmbeds("PostCreateNamePlate", plate, baseFrame)
 
 	return plate
+end
+
+-- register a widget/element
+LibNamePlate.RegisterElement = function(self, elementName, enableFunc, disableFunc, updateFunc, version)
+	check(elementName, 1, "string")
+	check(enableFunc, 2, "function")
+	check(disableFunc, 3, "function")
+	check(updateFunc, 4, "function")
+	check(version, 5, "number", "nil")
+
+	-- Does an old version of the element exist?
+	local old = elements[elementName]
+	local needUpdate
+	if old then
+		if old.version then 
+			if version then 
+				if version <= old.version then 
+					return 
+				end 
+				-- A more recent version is being registered
+				needUpdate = true 
+			else 
+				return 
+			end 
+		else 
+			if version then 
+				-- A more recent version is being registered
+				needUpdate = true 
+			else 
+				-- Two unversioned. just follow first come first served, 
+				-- to allow the standalone addon to trumph. 
+				return 
+			end 
+		end  
+		return 
+	end 
+
+	-- Create our new element 
+	local new = {
+		Enable = enableFunc,
+		Disable = disableFunc,
+		Update = updateFunc,
+		version = version
+	}
+
+	-- Change the pointer to the new element
+	-- (doesn't change what table 'old' still points to)
+	elements[elementName] = new 
+
+	-- Postupdate existing frames embedding this if it exists
+	if needUpdate then 
+		-- Iterate all frames for it
+		for unitFrame, element in pairs(frameElementsEnabled) do 
+			if (element == elementName) then 
+				-- Run the old disable method, 
+				-- to get rid of old events and onupdate handlers.
+				if old.Disable then 
+					old.Disable(unitFrame)
+				end 
+
+				-- Run the new enable method
+				if new.Enable then 
+					new.Enable(unitFrame, unitFrame.unit, true)
+				end 
+			end 
+		end 
+	end 
 end
 
 
@@ -1038,7 +1298,7 @@ LibNamePlate.UpdateAllScales = function(self)
 		SCALE = scale
 	end
 	if (oldScale ~= LibNamePlate.SCALE) then
-		for baseFrame, plate in pairs(AllPlates) do
+		for baseFrame, plate in pairs(allPlates) do
 			if plate then
 				plate:SetScale(LibNamePlate.SCALE)
 			end
@@ -1058,7 +1318,7 @@ LibNamePlate.OnEvent = function(self, event, ...)
 	elseif (event == "NAME_PLATE_UNIT_ADDED") then
 		local unit = ...
 		local baseFrame = GetNamePlateForUnit(unit)
-		local plate = baseFrame and AllPlates[baseFrame] 
+		local plate = baseFrame and allPlates[baseFrame] 
 		if plate then
 			plate.unit = unit
 			plate:OnShow(unit)
@@ -1068,14 +1328,14 @@ LibNamePlate.OnEvent = function(self, event, ...)
 	elseif (event == "NAME_PLATE_UNIT_REMOVED") then
 		local unit = ...
 		local baseFrame = GetNamePlateForUnit(unit)
-		local plate = baseFrame and AllPlates[baseFrame] 
+		local plate = baseFrame and allPlates[baseFrame] 
 		if plate then
 			plate.unit = nil
 			plate:OnHide()
 		end
 
 	elseif (event == "PLAYER_TARGET_CHANGED") then
-		for baseFrame, plate in pairs(AllPlates) do
+		for baseFrame, plate in pairs(allPlates) do
 			plate:UpdateAlpha()
 			plate:UpdateFrameLevel()
 		end	
@@ -1083,7 +1343,7 @@ LibNamePlate.OnEvent = function(self, event, ...)
 	elseif (event == "UNIT_AURA") then
 		local unit = ...
 		local baseFrame = GetNamePlateForUnit(unit)
-		local plate = baseFrame and AllPlates[baseFrame]
+		local plate = baseFrame and allPlates[baseFrame]
 		if plate then
 			plate:UpdateAuras()
 		end
@@ -1100,19 +1360,19 @@ LibNamePlate.OnEvent = function(self, event, ...)
 	elseif (event == "UNIT_FACTION") then
 		local unit = ...
 		local baseFrame = GetNamePlateForUnit(unit)
-		local plate = baseFrame and AllPlates[baseFrame] 
+		local plate = baseFrame and allPlates[baseFrame] 
 		if plate then
 			plate:UpdateFaction()
 		end
 
 	elseif (event == "UNIT_THREAT_SITUATION_UPDATE") then
-		for baseFrame, plate in pairs(AllPlates) do
+		for baseFrame, plate in pairs(allPlates) do
 			plate:UpdateColor()
 			plate:UpdateThreat()
 		end	
 
 	elseif (event == "RAID_TARGET_UPDATE") then
-		for baseFrame, plate in pairs(AllPlates) do
+		for baseFrame, plate in pairs(allPlates) do
 		end
 
 	elseif (event == "PLAYER_ENTERING_WORLD") then
@@ -1168,7 +1428,7 @@ LibNamePlate.OnSpellCast = function(self, event, unit, castGUID, spellID, ...)
 	end
 
 	local baseFrame = GetNamePlateForUnit(unit)
-	local plate = baseFrame and AllPlates[baseFrame] 
+	local plate = baseFrame and allPlates[baseFrame] 
 	if (not plate) then
 		return
 	end
@@ -1177,13 +1437,13 @@ LibNamePlate.OnSpellCast = function(self, event, unit, castGUID, spellID, ...)
 	if (not castBar) then 
 		return 
 	end 
-	if (not CastData[castBar]) then
-		CastData[castBar] = {}
+	if (not castData[castBar]) then
+		castData[castBar] = {}
 	end
 
-	local castData = CastData[castBar]
-	if (not CastBarPool[plate]) then
-		CastBarPool[plate] = castBar
+	local castData = castData[castBar]
+	if (not castBarPool[plate]) then
+		castBarPool[plate] = castBar
 	end
 
 	if (event == "UNIT_SPELLCAST_START") then
@@ -1495,11 +1755,31 @@ LibNamePlate.UpdateCastBar = function(self, castBar, unit, castData, elapsed)
 	end
 end
 
+LibNamePlate.SetScript = function(self, scriptHandler, script)
+	scriptHandlers[scriptHandler] = script
+	if (scriptHandler == "OnUpdate") then
+		if (not scriptFrame) then
+			scriptFrame = CreateFrame("Frame", nil, LibFrame:GetFrame())
+		end
+		if script then 
+			scriptFrame:SetScript("OnUpdate", function(self, ...) 
+				script(LibNamePlate, ...) 
+			end)
+		else
+			scriptFrame:SetScript("OnUpdate", nil)
+		end
+	end
+end
+
+LibNamePlate.GetScript = function(self, scriptHandler)
+	return scriptHandlers[scriptHandler]
+end
+
 LibNamePlate.OnUpdate = function(self, elapsed)
 	-- Update any running castbars, before we throttle.
 	-- We need to do this on every update to make sure the values are correct.
-	for owner, castBar in pairs(CastBarPool) do
-		self:UpdateCastBar(castBar, owner.unit, CastData[castBar], elapsed)
+	for owner, castBar in pairs(castBarPool) do
+		self:UpdateCastBar(castBar, owner.unit, castData[castBar], elapsed)
 	end
 
 	-- Throttle the updates, to increase the performance. 
@@ -1508,7 +1788,7 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 		return
 	end
 
-	for plate, baseFrame in pairs(VisiblePlates) do
+	for plate, baseFrame in pairs(visiblePlates) do
 		if baseFrame then
 			plate:UpdateAlpha()
 			plate:UpdateHealth()
@@ -1546,7 +1826,7 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 		end
 
 		if ((plate.currentAlpha == 0) and (plate.targetAlpha == 0)) then
-			VisiblePlates[plate] = nil
+			visiblePlates[plate] = nil
 			plate:Hide()
 			if plate.Health then 
 				plate.Health:SetValue(0, true)

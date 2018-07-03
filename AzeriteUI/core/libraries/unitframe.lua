@@ -240,7 +240,7 @@ local EnableUnitFrameVehicle = function(frame, unit)
 		other_unit = string_gsub(unit, "(%w+)pet(%d+)", "%1%2")
 	end 
 
-	local vehicleSwitcher = CreateFrame("Frame", nil, nil, "SecureHandlerStateTemplate")
+	local vehicleSwitcher = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
 	vehicleSwitcher:SetAttribute("_real-unit", unit)
 	vehicleSwitcher:SetAttribute("_other-unit", other_unit)
 	vehicleSwitcher:SetFrameRef("_unitframe", frame)

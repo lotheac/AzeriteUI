@@ -5,6 +5,9 @@ if (not AzeriteUI) then
 	return 
 end
 
+-- Disable font changes for testing
+--do return end 
+
 local BlizzardFonts = AzeriteUI:NewModule("BlizzardFonts", "LibEvent")
 
 -- Lua API
@@ -28,7 +31,7 @@ BlizzardFonts.SetFont = function(self, fontObjectName, font, size, style, shadow
 	if (not fontObject) then
 		return print(("|cffff0000Unknown FontObject:|r %s |cffaaaaaa(please tell Goldpaw)|r"):format(fontObjectName))
 	end
-	local oldFont, oldSize, oldStyle  = fontObject:GetFont()
+	local oldFont, oldSize, oldStyle = fontObject:GetFont()
 	if (not font) then
 		font = oldFont
 	end
@@ -36,7 +39,7 @@ BlizzardFonts.SetFont = function(self, fontObjectName, font, size, style, shadow
 		size = oldSize
 	end
 	if (not style) then
-		style = (oldStyle == "OUTLINE") and "THINOUTLINE" or oldStyle 
+		style = oldStyle 
 	end
 	fontObject:SetFont(font, size, style) 
 	if (shadowX and shadowY) then
@@ -54,10 +57,10 @@ end
 -- These are the fonts rendered directly in the 3D world, 
 -- like on-screen damage (not FCT) and unit names.
 BlizzardFonts.SetGameEngineFonts = function(self)
-	local normal = getPath('Myriad Pro Regular')
-	local condensed = getPath('Myriad Pro Condensed')
-	local bold = getPath('Myriad Pro Bold')
-	local boldCondensed = getPath('Myriad Pro Bold Condensed')
+	local normal = getPath("Myriad Pro Regular")
+	local condensed = getPath("Myriad Pro Condensed")
+	local bold = getPath("Myriad Pro Bold")
+	local boldCondensed = getPath("Myriad Pro Bold Condensed")
 	
 	-- Game Engine Fonts
 	-- *These will only be updated when the user
@@ -80,6 +83,26 @@ BlizzardFonts.SetGameEngineFonts = function(self)
 	_G.NAMEPLATE_SPELLCAST_FONT = "GameFontWhiteTiny" 
 
 end
+
+
+-- Change some of the Blizzard font objects to use the fonts we've chosen.
+-- (These are the fonts rendered by the user interface's 2D engine.)
+BlizzardFonts.SetFontObjectsNew = function(self)
+
+	-- Various chat constants
+	_G.CHAT_FONT_HEIGHTS = { 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32 }
+
+	-- Chat Font
+	-- This is the cont used by chat windows and inputboxes. 
+	-- When set early enough in the loading process, all windows inherit this.
+	self:SetFont("ChatFontNormal", nil, nil, "", -.75, -.75, 1) 
+
+	-- Chat Bubble Font
+	-- This is what chat bubbles inherit from. 
+	-- We should use this in our custom bubbles too.
+	self:SetFont("ChatBubbleFont", ChatFontNormal:GetFont(), 10, "", -.75, -.75, 1) 
+end
+
 
 -- Change some of the Blizzard font objects to use the fonts we've chosen.
 -- (These are the fonts rendered by the user interface's 2D engine.)
@@ -205,9 +228,14 @@ end
 
 -- Fonts (especially game engine fonts) need to be set very early in the loading process, 
 -- so for this specific module we'll bypass the normal loading order, and just fire away!
-BlizzardFonts:SetGameEngineFonts()
-BlizzardFonts:SetFontObjects()
+--BlizzardFonts:SetGameEngineFonts()
+--BlizzardFonts:SetFontObjects()
 
+-- This new one only affects the style and shadow of the chat font, 
+-- and the size, style and shadow of the chat bubble font.  
+BlizzardFonts:SetFontObjectsNew()
+
+-- Just modifying floating combat text settings here, nothing else.
 if IsAddOnLoaded("Blizzard_CombatText") then
 	BlizzardFonts:SetCombatText()
 else

@@ -8,7 +8,9 @@ end
 local ActionBarMain = AzeriteUI:NewModule("ActionBarMain", "LibEvent")
 
 ActionBarMain.OnInit = function(self)
+
 end 
 
 ActionBarMain.OnEnable = function(self)
+
 end 

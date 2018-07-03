@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 10)
+local LibTooltip = CogWheel:Set("LibTooltip", 18)
 if (not LibTooltip) then	
 	return
 end
@@ -15,6 +15,9 @@ assert(LibSecureHook, "LibTooltip requires LibSecureHook to be loaded.")
 local LibFrame = CogWheel("LibFrame")
 assert(LibFrame, "LibTooltip requires LibFrame to be loaded.")
 
+local LibTooltipScanner = CogWheel("LibTooltipScanner")
+assert(LibTooltipScanner, "LibTooltip requires LibTooltipScanner to be loaded.")
+
 local LibStatusBar = CogWheel("LibStatusBar")
 assert(LibStatusBar, "LibTooltip requires LibStatusBar to be loaded.")
 
@@ -27,6 +30,7 @@ LibSecureHook:Embed(LibTooltip)
 local _G = _G
 local assert = assert
 local error = error
+local getmetatable = getmetatable
 local ipairs = ipairs
 local math_abs = math.abs 
 local math_floor = math.floor
@@ -40,11 +44,15 @@ local string_match = string.match
 local string_rep = string.rep
 local string_upper = string.upper
 local table_insert = table.insert
+local table_remove = table.remove
+local tonumber = tonumber
+local tostring = tostring
 local type = type
 local unpack = unpack
 
 -- WoW API 
 local GetCVarBool = _G.GetCVarBool
+local GetQuestGreenRange = _G.GetQuestGreenRange
 local hooksecurefunc = _G.hooksecurefunc
 local UnitClass = _G.UnitClass
 local UnitExists = _G.UnitExists
@@ -55,6 +63,7 @@ local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
 local UnitIsPlayer = _G.UnitIsPlayer
 local UnitIsTapDenied = _G.UnitIsTapDenied
 local UnitIsUnit = _G.UnitIsUnit
+local UnitLevel = _G.UnitLevel
 local UnitPlayerControlled = _G.UnitPlayerControlled
 local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
@@ -80,6 +89,11 @@ local TooltipsByName = LibTooltip.tooltipsByName
 local TooltipSettings = LibTooltip.tooltipSettings
 local TooltipDefaults = LibTooltip.tooltipDefaults
 local Tooltip = LibTooltip.tooltipTemplate
+
+-- Constants we might change or make variable later on
+local TEXT_INSET = 10 -- text insets from tooltip edges
+local RIGHT_PADDING= 40 -- padding between left and right messages
+local LINE_PADDING = 2 -- padding between lines of text
 
 
 -- Utility Functions
@@ -140,14 +154,114 @@ local prepareGroup = function(group)
 	return tbl
 end 
 
+-- Small utility function to anchor line based on lineIndex.
+-- Note that this expects there to be a 10px inset from edge to text, 
+-- plus a 2px padding between the lines. Makes these variable?
+local alignLine = function(tooltip, lineIndex)
 
--- Default Color Table
+	local left = tooltip.lines.left[lineIndex]
+	local right = tooltip.lines.right[lineIndex]
+	left:ClearAllPoints()
+
+	if (lineIndex == 1) then 
+		left:SetPoint("TOPLEFT", tooltip, "TOPLEFT", TEXT_INSET, -TEXT_INSET)
+	else
+		left:SetPoint("TOPLEFT", tooltip["TextLeft"..(lineIndex-1)], "BOTTOMLEFT", 0, -LINE_PADDING)
+	end 
+
+	-- If this is a single line, anchor it to the right side too, to allow wrapping.
+	if (not right:IsShown()) then 
+		left:SetPoint("RIGHT", tooltip, "RIGHT", -TEXT_INSET, 0)
+	end 
+end 
+
+-- Small utility function to create a left/right pair of lines
+local createNewLinePair = function(tooltip, lineIndex)
+
+	-- Retrieve the global tooltip name
+	local tooltipName = tooltip:GetName()
+
+	local left = tooltip:CreateFontString(tooltipName.."TextLeft"..lineIndex)
+	left:Hide()
+	left:SetDrawLayer("ARTWORK")
+	left:SetFontObject(GameTooltipText)
+	left:SetTextColor(tooltip.colors.highlight[1], tooltip.colors.highlight[2], tooltip.colors.highlight[3])
+	left:SetJustifyH("LEFT")
+	left:SetJustifyV("TOP")
+	left:SetIndentedWordWrap(false)
+	left:SetWordWrap(false)
+	left:SetNonSpaceWrap(false)
+
+	tooltip["TextLeft"..lineIndex] = left
+	tooltip.lines.left[#tooltip.lines.left + 1] = left
+
+	local right = tooltip:CreateFontString(tooltipName.."TextRight"..lineIndex)
+	right:Hide()
+	right:SetDrawLayer("ARTWORK")
+	right:SetFontObject(GameTooltipText)
+	right:SetTextColor(tooltip.colors.highlight[1], tooltip.colors.highlight[2], tooltip.colors.highlight[3])
+	right:SetJustifyH("RIGHT")
+	right:SetJustifyV("TOP") 
+	right:SetIndentedWordWrap(false)
+	right:SetWordWrap(false)
+	right:SetNonSpaceWrap(false)
+	right:SetPoint("TOP", left, "TOP", 0, 0)
+	right:SetPoint("RIGHT", tooltip, "RIGHT", -TEXT_INSET, 0)
+	tooltip["TextRight"..lineIndex] = right
+	tooltip.lines.right[#tooltip.lines.right + 1] = right
+
+	-- Align the new line
+	alignLine(tooltip, lineIndex)
+end 
+
+-- Number abbreviations
+local short = function(value)
+	value = tonumber(value)
+	if (not value) then return "" end
+	if (value >= 1e9) then
+		return ("%.1fb"):format(value / 1e9):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e6 then
+		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e3 or value <= -1e3 then
+		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([kmb])$", "%1")
+	else
+		return tostring(math_floor(value))
+	end	
+end
+
+-- zhCN exceptions
+local gameLocale = GetLocale()
+if (gameLocale == "zhCN") then 
+	short = function(value)
+		value = tonumber(value)
+		if (not value) then return "" end
+		if (value >= 1e8) then
+			return ("%.1f亿"):format(value / 1e8):gsub("%.?0+([km])$", "%1")
+		elseif value >= 1e4 or value <= -1e3 then
+			return ("%.1f万"):format(value / 1e4):gsub("%.?0+([km])$", "%1")
+		else
+			return tostring(math_floor(value))
+		end 
+	end
+end 
+
+
+-- Default Color & Texture Tables
 --------------------------------------------------------------------------
 local Colors = {
+
+	-- some basic ui colors used by all text
+	normal = prepare(229/255, 178/255, 38/255),
+	highlight = prepare(250/255, 250/255, 250/255),
+	title = prepare(255/255, 234/255, 137/255),
+
+	-- health bar coloring
 	health = prepare( 25/255, 178/255, 25/255 ),
 	disconnected = prepare( 153/255, 153/255, 153/255 ),
 	tapped = prepare( 153/255, 153/255, 153/255 ),
 	dead = prepare( 153/255, 153/255, 153/255 ),
+
+	-- difficulty coloring
 	quest = {
 		red = prepare( 204/255, 25/255, 25/255 ),
 		orange = prepare( 255/255, 128/255, 25/255 ),
@@ -155,9 +269,15 @@ local Colors = {
 		green = prepare( 25/255, 178/255, 25/255 ),
 		gray = prepare( 153/255, 153/255, 153/255 )
 	},
+
+	-- class and reaction
 	class = prepareGroup(RAID_CLASS_COLORS),
 	reaction = prepareGroup(FACTION_BAR_COLORS),
+	
+	-- magic school coloring
 	debuff = prepareGroup(DebuffTypeColor),
+
+	-- power colors, added below
 	power = {}
 }
 
@@ -201,6 +321,7 @@ end
 
 -- Library hardcoded fallbacks
 local LibraryDefaults = {
+	autoCorrectScale = true, -- automatically correct the tooltip scale when shown
 	backdrop = {
 		bgFile = [[Interface\Tooltips\UI-Tooltip-Background]],
 		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]], 
@@ -216,12 +337,12 @@ local LibraryDefaults = {
 	backdropColor = { 0, 0, 0, .85 },
 	backdropOffsets = { 0, 0, 0, 0 }, -- points the backdrop is offset from the edges of the tooltip (left, right, top, bottom)
 	barInsets = { 0, 0 }, -- points the bars are shrunk from the edges
-	barOffset = 2, -- points the bars are moved upwards towards the tooltip
-	healthBarSize = 6, -- height of the bars
-	powerBarSize = 4, -- height of the bars
 	barSpacing = 2, -- spacing between multiple bars
-	autoCorrectScale = true, -- automatically correct the tooltip scale when shown
-	defaultAnchor = function() return "BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -CONTAINER_OFFSET_X - 13, CONTAINER_OFFSET_Y end
+	barOffset = 2, -- points the bars are moved upwards towards the tooltip
+	defaultAnchor = function() return "BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -CONTAINER_OFFSET_X - 13, CONTAINER_OFFSET_Y end,
+	barHeight = 6, -- height of bars with no specific type given
+	barHeight_health = 6, -- height of bars with the "health" type
+	barHeight_power = 4 -- height of bars with the "power" type
 }
 
 -- Assign the library hardcoded defaults as fallbacks 
@@ -231,6 +352,12 @@ setmetatable(Defaults, { __index = LibraryDefaults } )
 -- Tooltip Template
 ---------------------------------------------------------
 local Tooltip_MT = { __index = Tooltip }
+
+-- Original Blizzard methods we need
+local FrameMethods = getmetatable(CreateFrame("Frame")).__index
+local Blizzard_SetScript = FrameMethods.SetScript
+local Blizzard_GetScript = FrameMethods.GetScript
+
 
 -- Retrieve a tooltip specific setting
 Tooltip.GetCValue = function(self, name)
@@ -252,26 +379,84 @@ Tooltip.SetDefaultCValue = function(self, name, value)
 	TooltipDefaults[self][name] = value
 end 
 
+-- Updates the tooltip size based on visible lines
+Tooltip.UpdateLayout = function(self)
+
+	local currentWidth = self.minimumWidth
+	local currentHeight = 0
+
+	for lineIndex in ipairs(self.lines.left) do 
+
+		-- Stop when we hit the first hidden line
+		local left = self.lines.left[lineIndex]
+		if (not left:IsShown()) then 
+			break 
+		end 
+
+		-- Width of the current line
+		local lineWidth = 0
+
+		local right = self.lines.right[lineIndex]
+		if right:IsShown() then 
+			lineWidth = left:GetStringWidth() + RIGHT_PADDING + right:GetStringWidth()
+		else 
+			lineWidth = left:GetStringWidth()
+		end 
+
+		-- Increase the width if this line was larger
+		if (lineWidth > currentWidth) then 
+			currentWidth = lineWidth 
+		end 
+	end 
+
+	-- Don't allow it past maximum
+	if (currentWidth > self.maximumWidth) then 
+		currentWidth = self.maximumWidth
+	end 
+
+	-- Set the width, add text inset to the final width
+	self:SetWidth(currentWidth + TEXT_INSET*2)
+
+	-- Second iteration to figure out heights now that text is wrapped
+	for lineIndex in ipairs(self.lines.left) do 
+		-- Stop when we hit the first hidden line
+		local left = self.lines.left[lineIndex]
+		if (not left:IsShown()) then 
+			break 
+		end 
+
+		-- Increase the height
+		if (lineIndex == 1) then 
+			currentHeight = currentHeight + left:GetStringHeight()
+		else 
+			currentHeight = currentHeight + LINE_PADDING + left:GetStringHeight()
+		end 
+	end 
+
+	-- Set the height, add text inset to the final width
+	self:SetHeight(currentHeight + TEXT_INSET*2)
+end 
+
 -- Backdrop update callback
 -- Update the size and position of the backdrop, make space for bars.
-Tooltip.UpdateBackdrop = function(self)
+Tooltip.UpdateBackdropLayout = function(self)
+
+	-- Allow modules to fully override this.
 	if self.OverrideBackdrop then 
 		return self:OverrideBackdrop()
 	end 
 
 	-- Retrieve current settings
 	local left, right, top, bottom = unpack(self:GetCValue("backdropOffsets"))
+	local barSpacing = self:GetCValue("barSpacing") 
+	local barHeight = self:GetCValue("barHeight")
 
-	-- Add space for the healthbar
-	local healthBar = self.UnitHealthBar
-	if (healthBar and healthBar:IsShown()) then 
-		bottom = bottom + self:GetCValue("barSpacing") + self:GetCValue("healthBarSize")
-	end 
-
-	-- Add space for the powerbar
-	local powerBar = self.UnitPowerBar
-	if (powerBar and powerBar:IsShown()) then 
-		bottom = bottom + self:GetCValue("barSpacing") + self:GetCValue("powerBarSize")
+	-- Make space for visible bars
+	for i,bar in ipairs(self.bars) do 
+		if bar:IsShown() then 
+			-- Figure out the size of the current bar.
+			bottom = bottom + barSpacing + (bar.barType and self:GetCValue("barHeight"..bar.barType) or barHeight)
+		end 
 	end 
 
 	-- Position the backdrop
@@ -284,6 +469,7 @@ Tooltip.UpdateBackdrop = function(self)
 	backdrop:SetBackdropBorderColor(unpack(self:GetCValue("backdropBorderColor")))
 	backdrop:SetBackdropColor(unpack(self:GetCValue("backdropColor")))
 
+	-- Call module post updates if they exist.
 	if self.PostUpdateBackdrop then 
 		return self:PostUpdateBackdrop()
 	end 	
@@ -291,41 +477,99 @@ end
 
 -- Bar update callback
 -- Update the position and size of the bars
-Tooltip.UpdateBars = function(self)
+Tooltip.UpdateBarLayout = function(self)
+
+	-- Allow modules to fully override this.
 	if (self.OverrideBars) then 
 		return self:OverrideBars()
 	end 
 
-	-- Retrieve bar data
+	-- Retrieve general bar data
 	local barLeft, barRight = unpack(self:GetCValue("barInsets"))
+	local barHeight = self:GetCValue("barHeight")
 	local barSpacing = self:GetCValue("barSpacing")
 	local barOffset = self:GetCValue("barOffset")
 
-	-- Position the healthbar
-	local healthBar = self.UnitHealthBar
-	if (healthBar and healthBar:IsShown()) then 
-		local barSize = self:GetCValue("healthBarSize")
-		healthBar:SetHeight(barSize)
-		healthBar:ClearAllPoints()
-		healthBar:SetPoint("TOPLEFT", self, "BOTTOMLEFT", barLeft, -barOffset)
-		healthBar:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT", -barRight, -barOffset)
-		barOffset = barOffset + barSize + barSpacing
+	-- Iterate through all the visible bars, 
+	-- and size and position them. 
+	for i,bar in ipairs(self.bars) do 
+		if bar:IsShown() then 
+			
+			-- Figure out the size of the current bar.
+			local barSize = bar.barType and self:GetCValue("barHeight"..bar.barType) or barHeight
+
+			-- Size and position the bar
+			bar:SetHeight(barSize)
+			bar:ClearAllPoints()
+			bar:SetPoint("TOPLEFT", self, "BOTTOMLEFT", barLeft, -barOffset)
+			bar:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT", -barRight, -barOffset)
+
+			-- Update offsets
+			barOffset = barOffset + barSize + barSpacing
+		end 
 	end 
 
-	-- Position the powerbar
-	local powerBar = self.UnitPowerBar
-	if (powerBar and powerBar:IsShown()) then 
-		local barSize = self:GetCValue("powerBarSize")
-		powerBar:SetHeight(barSize)
-		powerBar:ClearAllPoints()
-		powerBar:SetPoint("TOPLEFT", self, "BOTTOMLEFT", barLeft, -barOffset)
-		powerBar:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT", -barRight, -barOffset)
-	end 
-
+	-- Call module post updates if they exist.
 	if (self.PostUpdateBars) then 
 		return self:PostUpdateBars()
 	end 
 end 
+
+Tooltip.GetNumBars = function(self)
+	return self.numBars
+end
+
+Tooltip.GetAllBars = function(self)
+	return ipairs(self.bars)
+end
+
+Tooltip.AddBar = function(self, barType)
+	self.numBars = self.numBars + 1
+
+	-- create an additional bar if needed
+	if (self.numBars > #self.bars) then 
+		local bar = self:CreateStatusBar()
+		local barTexture = self:GetCValue("barTexture")
+		if barTexture then 
+			bar:SetStatusBarTexture(barTexture)
+		end 
+
+		-- Add a value string, but let the modules handle it.
+		local value = bar:CreateFontString()
+		value:SetFontObject(GameTooltipText)
+		value:SetFont(value:GetFont(), 12, "OUTLINE")
+		value:SetPoint("CENTER", 0, 0)
+		value:SetDrawLayer("OVERLAY")
+		value:SetJustifyH("CENTER")
+		value:SetJustifyV("MIDDLE")
+		value:SetShadowOffset(0, 0)
+		value:SetShadowColor(0, 0, 0, 0)
+		value:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3], .75)
+		value:Hide()
+		
+		bar.Value = value
+
+		-- Store the new bar
+		self.bars[self.numBars] = bar
+	end 
+
+	local bar = self.bars[self.numBars]
+	bar:SetValue(0, true)
+	bar:SetMinMaxValues(0, 1, true)
+	bar.barType = barType
+
+	return bar
+end
+
+Tooltip.GetBar = function(self, barIndex)
+	return self.bars[barIndex]
+end
+
+Tooltip.GetHealthBar = function(self, barIndex)
+end
+
+Tooltip.GetPowerBar = function(self, barIndex)
+end
 
 -- Update the color of the tooltip's current unit
 -- Returns the r, g, b value
@@ -353,6 +597,7 @@ Tooltip.GetUnitHealthColor = function(self, unit)
 	end
 	return r,g,b
 end 
+Tooltip.UnitColor = Tooltip.GetUnitHealthColor -- make the original blizz call a copy of this, for compatibility
 
 Tooltip.GetUnitPowerColor = function(self, unit)
 	if self.OverrideUnitPowerColor then
@@ -388,42 +633,21 @@ Tooltip.UpdateScale = function(self)
 	end 
 end 
 
--- Retrieve the actual unit the tooltip is over
--- Using the same method we've been using in addons for years, 
--- as the blizzard method for this is just subpar and buggy.
-Tooltip.GetTooltipUnit = function(self)
-	local _, unit = self:GetUnit()
-	if ((not unit) and UnitExists("mouseover")) then
-		unit = "mouseover"
-	end
-	if (unit and UnitIsUnit(unit, "mouseover")) then
-		unit = "mouseover"
-	end
-	return UnitExists(unit) and unit	
-end
-
-Tooltip.SetDefaultAnchor = function(self, parent)
-	-- Keyword parse the owner frame, to allow tooltips to use our custom crames. 
-	self:SetOwner(LibTooltip:GetFrame(parent), "ANCHOR_NONE")
-
-	-- Notify other listeners the tooltip is now in default position
-	self.default = 1
-
-	-- Update position
-	self:UpdatePosition()
-end 
-
 Tooltip.GetPositionOffset = function(self)
+
 	-- Add offset for any visible bars 
 	local offset = 0
-	local healthBar = self.UnitHealthBar
-	if healthBar and healthBar:IsShown() then 
-		offset = offset + self:GetCValue("barSpacing") + self:GetCValue("healthBarSize")
+
+	-- Get standard values for size and spacing
+	local barSpacing = self:GetCValue("barSpacing")
+	local barHeight = self:GetCValue("barHeight")
+
+	for barIndex,bar in ipairs(self.bars) do 
+		if bar:IsShown() then 
+			offset = offset + barSpacing + (bar.barType and self:GetCValue("barHeight"..bar.barType) or barHeight)
+		end 
 	end 
-	local powerBar = self.UnitPowerBar
-	if powerBar and powerBar:IsShown() then 
-		offset = offset + self:GetCValue("barSpacing") + self:GetCValue("powerBarSize")
-	end 
+
 	return offset
 end 
 
@@ -484,11 +708,19 @@ Tooltip.SetPosition = function(self, ...)
 	end 
 end 
 
+Tooltip.SetMinimumWidth = function(self, width)
+	self.minimumWidth = width
+end 
+
+Tooltip.SetMaximumWidth = function(self, width)
+	self.maximumWidth = width
+end 
+
 Tooltip.SetDefaultBackdrop = function(self, backdropTable)
 	check(backdropTable, 1, "table", "nil")
 	self:SetDefaultCValue("backdrop", backdropTable)
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetDefaultBackdropColor = function(self, r, g, b, a)
@@ -497,8 +729,8 @@ Tooltip.SetDefaultBackdropColor = function(self, r, g, b, a)
 	check(b, 3, "number")
 	check(a, 4, "number", "nil")
 	self:SetDefaultCValue("backdropColor", { r, g, b, a })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetDefaultBackdropBorderColor = function(self, r, g, b, a)
@@ -507,8 +739,8 @@ Tooltip.SetDefaultBackdropBorderColor = function(self, r, g, b, a)
 	check(b, 3, "number")
 	check(a, 4, "number", "nil")
 	self:SetDefaultCValue("backdropBorderColor", { r, g, b, a })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetDefaultBackdropOffset = function(self, left, right, top, bottom)
@@ -517,44 +749,42 @@ Tooltip.SetDefaultBackdropOffset = function(self, left, right, top, bottom)
 	check(top, 3, "number")
 	check(bottom, 4, "number")
 	self:SetDefaultCValue("defaultBackdropOffset", { left, right, top, bottom })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetDefaultStatusBarInset = function(self, left, right)
 	check(left, 1, "number")
 	check(right, 2, "number")
 	self:SetDefaultCValue("barInsets", { left, right })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetDefaultStatusBarOffset = function(self, barOffset)
 	check(barOffset, 1, "number")
 	self:SetDefaultCValue("barOffset", barOffset)
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
-Tooltip.SetDefaultHealthBarSize = function(self, barSize)
-	check(barSize, 1, "number")
-	self:SetDefaultCValue("healthBarSize", barSize)
-	self:UpdateBackdrop()
-	self:UpdateBars()
-end 
-
-Tooltip.SetDefaultPowerBarSize = function(self, barSize)
-	check(barSize, 1, "number")
-	self:SetDefaultCValue("powerBarSize", barSize)
-	self:UpdateBackdrop()
-	self:UpdateBars()
+Tooltip.SetDefaultBarHeight = function(self, barHeight, barType)
+	check(barHeight, 1, "number")
+	check(barType, 2, "string", "nil")
+	if barType then 
+		self:SetDefaultCValue("barHeight"..barType, barHeight)
+	else 
+		self:SetDefaultCValue("barHeight", barHeight)
+	end 
+	self:UpdateBarLayout()
+	self:UpdateBackdropLayout()
 end 
 
 Tooltip.SetBackdrop = function(self, backdrop)
 	check(backdrop, 1, "table", "nil")
 	self:SetCValue("backdrop", backdropTable)
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetBackdropBorderColor = function(self, r, g, b, a)
@@ -563,8 +793,8 @@ Tooltip.SetBackdropBorderColor = function(self, r, g, b, a)
 	check(b, 3, "number")
 	check(a, 4, "number", "nil")
 	self:SetCValue("backdropBorderColor", { r, g, b, a })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetBackdropColor = function(self, r, g, b, a)
@@ -573,8 +803,8 @@ Tooltip.SetBackdropColor = function(self, r, g, b, a)
 	check(b, 3, "number")
 	check(a, 4, "number", "nil")
 	self:SetCValue("backdropColor", { r, g, b, a })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetBackdropOffset = function(self, left, right, top, bottom)
@@ -583,56 +813,54 @@ Tooltip.SetBackdropOffset = function(self, left, right, top, bottom)
 	check(top, 3, "number")
 	check(bottom, 4, "number")
 	self:SetCValue("backdropOffset", { left, right, top, bottom })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetStatusBarInset = function(self, left, right)
 	check(left, 1, "number")
 	check(right, 2, "number")
 	self:SetCValue("barInsets", { left, right })
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
 Tooltip.SetStatusBarOffset = function(self, barOffset)
 	check(barOffset, 1, "number")
 	self:SetCValue("barOffset", barOffset)
-	self:UpdateBackdrop()
-	self:UpdateBars()
+	self:UpdateBackdropLayout()
+	self:UpdateBarLayout()
 end 
 
-Tooltip.SetStatusBarTexture = function(self, barTexture)
+Tooltip.SetStatusBarTexture = function(self, barTexture, barIndex)
 	check(barTexture, 1, "string")
-	local healthBar = self.UnitHealthBar
-	if healthBar then 
-		healthBar:SetStatusBarTexture(barTexture)
+	check(barIndex, 2, "number", "nil")
+
+	if barIndex then 
+		local bar = self.bars[barIndex]
+		if bar then 
+			bar:SetStatusBarTexture(barTexture)
+		end 
+	else
+		for barIndex,bar in ipairs(self.bars) do 
+			bar:SetStatusBarTexture(barTexture)
+		end 
 	end 
-	local powerBar = self.UnitPowerBar
-	if powerBar then 
-		powerBar:SetStatusBarTexture(barTexture)
+end 
+
+Tooltip.SetBarHeight = function(self, barHeight, barType)
+	check(barHeight, 1, "number")
+	check(barType, 2, "string", "nil")
+	if barType then 
+		self:SetCValue("barHeight"..barType, barHeight)
+	else 
+		self:SetCValue("barHeight", barHeight)
 	end 
+	self:UpdateBarLayout()
+	self:UpdateBackdropLayout()
 end 
 
-Tooltip.SetHealthBarSize = function(self, barSize)
-	check(barSize, 1, "number")
-	self:SetCValue("healthBarSize", barSize)
-	self:UpdateBackdrop()
-end 
-
-Tooltip.SetPowerBarSize = function(self, barSize)
-	check(barSize, 1, "number")
-	self:SetCValue("powerBarSize", barSize)
-	self:UpdateBackdrop()
-end 
-
-
-
--- Turning this blizz call into a proxy of our own method 
-Tooltip.UnitColor = function(self, unit)
-	return self:GetUnitHealthColor(unit)
-end 
-
+--[[
 Tooltip.ClearMoney = function(self)
 	if ( not self.shownMoneyFrames ) then
 		return;
@@ -693,21 +921,6 @@ Tooltip.SetMoney = function(self, money, type, prefixText, suffixText)
 	self.hasMoney = 1;
 end
 
-Tooltip.ClearStatusBars = function(self)
-	local healthBar = self.UnitHealthBar
-	if healthBar then 
-		healthBar:Hide()
-		healthBar:SetValue(0, true)
-		healthBar:SetMinMaxValues(0, 1)
-	end 
-	local powerBar = self.UnitPowerBar
-	if powerBar then 
-		powerBar:Hide()
-		powerBar:SetValue(0, true)
-		powerBar:SetMinMaxValues(0, 1)
-	end 
-	self:UpdateBars()
-end 
 
 Tooltip.ClearInsertedFrames = function(self)
 	if ( self.insertedFrames ) then
@@ -832,23 +1045,433 @@ Tooltip.ShowCompareItem = function(self, anchorFrame)
 	shoppingTooltip1:Show();
 
 end 
+]]--
+
+
+
+-- Rewritten Tooltip API
+-- *Blizz compatibility and personal additions
+---------------------------------------------------------
+
+Tooltip.SetOwner = function(self, owner, anchor)
+	self:Hide()
+	self:ClearAllPoints()
+	
+	self.owner = owner
+	self.anchor = anchor
+end
+
+Tooltip.GetOwner = function(self)
+	return self.owner
+end 
+
+Tooltip.SetDefaultAnchor = function(self, parent)
+	-- Keyword parse the owner frame, to allow tooltips to use our custom crames. 
+	self:SetOwner(LibTooltip:GetFrame(parent), "ANCHOR_NONE")
+
+	-- Notify other listeners the tooltip is now in default position
+	self.default = 1
+
+	-- Update position
+	self:UpdatePosition()
+end 
+
+-- Returns the correct difficulty color compared to the player.
+-- Using this as a tooltip method to access our custom colors.
+Tooltip.GetDifficultyColorByLevel = function(self, level)
+	local colors = self.colors.quest
+
+	level = level - UnitLevel("player") -- LEVEL
+	if (level > 4) then
+		return colors.red[1], colors.red[2], colors.red[3], colors.red.colorCode
+	elseif (level > 2) then
+		return colors.orange[1], colors.orange[2], colors.orange[3], colors.orange.colorCode
+	elseif (level >= -2) then
+		return colors.yellow[1], colors.yellow[2], colors.yellow[3], colors.yellow.colorCode
+	elseif (level >= -GetQuestGreenRange()) then
+		return colors.green[1], colors.green[2], colors.green[3], colors.green.colorCode
+	else
+		return colors.gray[1], colors.gray[2], colors.gray[3], colors.gray.colorCode
+	end
+end
+
+Tooltip.SetUnit = function(self, unit)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+	self.unit = unit
+	local unit = self:GetTooltipUnit()
+	if unit then 
+		local data = self:GetTooltipDataForUnit(unit, self.data)
+		if data then 
+
+			-- Because a millionth of a second matters.
+			local colors = self.colors
+
+			-- Shouldn't be any bars here, but if for some reason 
+			-- the tooltip wasn't properly hidden before this, 
+			-- we make sure the bars are reset!
+			self:ClearStatusBars(true) -- suppress layout updates
+
+			-- Add our health and power bars
+			-- These will be automatically updated thanks to 
+			-- their provided barTypes here. 
+			self:AddBar("health")
+			self:AddBar("power")
+
+			-- Add unit data
+			-- *Add support for totalRP3 if it's enabled? 
+
+			-- name 
+
+			local levelText
+			if (data.effectiveLevel and (data.effectiveLevel > 0)) then 
+				local r, g, b, colorCode = self:GetDifficultyColorByLevel(data.effectiveLevel)
+				levelText = colorCode .. data.effectiveLevel .. "|r"
+			end 
+
+			local r, g, b = self:GetUnitHealthColor(unit)
+			if levelText then 
+				self:AddLine(levelText .. colors.quest.gray.colorCode .. ": |r" .. data.name, r, g, b, true)
+			else
+				self:AddLine(data.name, r, g, b, true)
+			end 
+
+			-- titles
+			-- *add player title to a separate line, same as with npc titles?
+			if data.title then 
+				self:AddLine(data.title, colors.normal[1], colors.normal[2], colors.normal[3], true)
+			end 
+
+			-- Players
+			if data.isPlayer then 
+				if data.guild then 
+					self:AddLine(data.guild, colors.title[1], colors.title[2], colors.title[3])
+				end  
+
+				local levelLine
+
+				if data.raceDisplayName then 
+					levelLine = (levelLine and levelLine.." " or "") .. data.raceDisplayName
+				end 
+
+				if (data.classDisplayName and data.class) then 
+					levelLine = (levelLine and levelLine.." " or "") .. colors.class[data.class].colorCode .. data.classDisplayName .. "|r"
+				end 
+
+				if levelLine then 
+					self:AddLine(levelLine, colors.highlight[1], colors.highlight[2], colors.highlight[3])
+				end 
+
+				-- player faction (Horde/Alliance/Neutral)
+				if data.localizedFaction then 
+					self:AddLine(data.localizedFaction)
+				end 
+
+
+			-- Battle Pets
+			elseif data.isPet then 
+
+
+			-- All other NPCs
+			else  
+				if data.city then 
+					self:AddLine(data.city, colors.title[1], colors.title[2], colors.title[3])
+				end  
+			end 
+
+			if self:UpdateBarValues(unit, true) then 
+				self:UpdateBackdropLayout()
+				self:UpdateBarLayout()
+				self:UpdatePosition()
+			end 
+			self:Show()
+		end 
+	end 
+end
+
+Tooltip.SetUnitAura = function(self, unit, auraID, filter)
+end
+
+Tooltip.SetUnitBuff = function(self, unit, buffID, filter)
+end
+
+Tooltip.SetUnitDebuff = function(self, unit, debuffID, filter)
+end
+
+-- The same as the old Blizz call is doing. Bad. 
+Tooltip.GetUnit = function(self)
+	local unit = self.unit
+	if UnitExists(unit) then 
+		return UnitName(unit), unit
+	else
+		return nil, unit
+	end 
+end
+
+-- Retrieve the actual unit the cursor is hovering over, 
+-- as the blizzard method for this is just subpar and buggy.
+Tooltip.GetTooltipUnit = function(self)
+	local unit = self.unit
+	if (not unit) then 
+		return UnitExists("mouseover") and unit or nil 
+	elseif UnitExists(unit) then 
+		return UnitIsUnit(unit, "mouseover") and "mouseover" or unit 
+	end
+end
+
+-- Figure out if the current tooltip is a given unit,
+-- but do it properly using our own API calls.
+Tooltip.IsUnit = function(self, unit)
+	local ourUnit = self:GetTooltipUnit()
+	return ourUnit and UnitExists(unit) and UnitIsUnit(unit, ourUnit) or false
+end
+	
+Tooltip.AddLine = function(self, msg, r, g, b, wrap)
+
+	-- Increment the line counter
+	self.numLines = self.numLines + 1
+
+	-- Create new lines when needed
+	if (not self.lines.left[self.numLines]) then 
+		createNewLinePair(self, self.numLines)
+	end 
+
+	-- Always fall back to default coloring if color is not provided
+	if not (r and g and b) then 
+		r, g, b = self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3]
+	end 
+
+	local left = self.lines.left[self.numLines]
+	left:SetText(msg)
+	left:SetTextColor(r, g, b)
+	left:SetWordWrap(wrap or false) -- just wrap by default?
+	left:Show()
+
+	local right = self.lines.right[self.numLines]
+	right:Hide()
+	right:SetText("")
+	right:SetWordWrap(false)
+
+	-- Align the line
+	alignLine(self, self.numLines)
+
+end
+
+Tooltip.AddDoubleLine = function(self, leftMsg, rightMsg, r, g, b, r2, g2, b2, leftWrap, rightWrap)
+
+	-- Increment the line counter
+	self.numLines = self.numLines + 1
+
+	-- Create new lines when needed
+	if (not self.lines.left[self.numLines]) then 
+		createNewLinePair(self, self.numLines)
+	end 
+
+	-- Always fall back to default coloring if color is not provided
+	if not(r and g and b) then 
+		r, g, b = self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3]
+	end 
+	if not(r2 and g2 and b2) then 
+		r2, g2, b2 = self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3]
+	end 
+
+	local left = self.lines.left[self.numLines]
+	left:SetText(leftMsg)
+	left:SetTextColor(r, g, b)
+	left:SetWordWrap(leftWrap or false)
+	left:Show()
+
+	local right = self.lines.right[self.numLines]
+	right:SetText(rightMsg)
+	right:SetTextColor(r2, g2, b2)
+	right:SetWordWrap(rightWrap or false)
+	right:Show()
+end
+
+Tooltip.GetNumLines = function(self)
+	return self.numLines
+end
+
+Tooltip.GetLine = function(self, lineIndex)
+	return self.lines[lineIndex]
+end
+
+Tooltip.ClearLine = function(self, lineIndex, noUpdate)
+
+	-- Only clear the given line if it's visible in the first place!
+	if (self.numLines >= lineIndex) then 
+
+		-- Retrieve the fontstrings, remove them from the table
+		local left = table_remove(self.lines.left[lineIndex])
+		left:Hide()
+		left:SetText("")
+		left:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+		left:ClearAllPoints()
+
+		local right = table_remove(self.lines.right[lineIndex])
+		right:Hide()
+		right:SetText("")
+		right:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+
+		-- Reduce the number of visible lines
+		self.numLines = self.numLines - 1
+
+		-- Add the lines back into our pool. Waste not!
+		self.lines.left[#self.lines.left + 1] = left
+		self.lines.right[#self.lines.right + 1] = right
+
+		-- Anchor the line that took the removed line's place to 
+		-- the previous line (or tooltip start, if it was the first line).
+		-- The other lines are anchored to each other, so need no updates.
+		alignLine(self, lineIndex)
+
+		-- Update layout
+		if (not noUpdate) then 
+			self:UpdateLayout()
+			self:UpdateBackdropLayout()
+		end 
+		return true
+	end 
+end
+
+Tooltip.ClearAllLines = function(self, noUpdate)
+
+	-- Figure out if we should call the layout updates later
+	local needUpdate = self.numLines > 0
+
+	-- Reset the line counter
+	self.numLines = 0
+
+	-- We iterate using the number of left lines, 
+	-- but all left lines have a matching right line.
+
+	for lineIndex in ipairs(self.lines.left) do 
+		local left = self.lines.left[lineIndex]
+		left:Hide()
+		left:SetText("")
+		left:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+		left:ClearAllPoints()
+
+		local right = self.lines.right[lineIndex]
+		right:Hide()
+		right:SetText("")
+		right:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+	end 
+
+	-- Do a second pass to re-align points from start to finish.
+	for lineIndex in ipairs(self.lines.left) do 
+		alignLine(self, lineIndex)
+	end 
+	
+	-- Update layout
+	if needUpdate and (not noUpdate) then 
+		self:UpdateLayout()
+		self:UpdateBackdropLayout()
+	end 
+	return needUpdate
+end
+
+Tooltip.ClearStatusBar = function(self, barIndex, noUpdate)
+	local needUpdate
+	local bar = self.bars[barIndex]
+	if bar then 
+
+		-- Queue a layout update since we're actually hiding a bar
+		if bar:IsShown() then 
+			needUpdate = true
+			bar:Hide()
+		end 
+
+		-- Clear the bar even if it was hidden
+		bar:SetValue(0, true)
+		bar:SetMinMaxValues(0, 1, true)
+
+		-- Update the layout only if a visible bar was hidden,
+		-- and only if the noUpdate flag isn't set.
+		if needUpdate and (not noUpdate) then 
+			self:UpdateBarLayout()
+		end 
+	end 
+	return needUpdate
+end
+
+Tooltip.ClearStatusBars = function(self, noUpdate)
+
+	-- clear bar counter
+	self.numBars = 0
+
+	local needUpdate
+	for i,bar in ipairs(self.bars) do 
+
+		-- Queue a layout update since we're actually hiding a bar
+		if bar:IsShown() then 
+			needUpdate = true
+			bar:Hide()
+		end 
+
+		-- Clear the bar even if it was hidden
+		bar:SetValue(0, true)
+		bar:SetMinMaxValues(0, 1, true)
+	end
+
+	-- Update the layout only if a visible bar was hidden,
+	-- and only if the noUpdate flag isn't set.
+	if needUpdate and (not noUpdate) then 
+		self:UpdateBarLayout()
+	end 
+	return needUpdate
+end 
+
+Tooltip.ClearMoney = function(self)
+end
+
+Tooltip.SetText = function(self)
+end
+
+Tooltip.GetText = function(self)
+end
+
+Tooltip.AppendText = function(self)
+end
+
+Tooltip.GetUnitColor = function(self, unit)
+	local r, g, b = self:GetUnitHealthColor(unit)
+	local r2, g2, b2 = self:GetUnitPowerColor(unit)
+	return r, g, b, r2, g2, b2
+end 
+
+-- Special script handlers we fake
+local proxyScripts = {
+	OnTooltipAddMoney = true,
+	OnTooltipCleared = true,
+	OnTooltipSetDefaultAnchor = true,
+	OnTooltipSetItem = true,
+	OnTooltipSetUnit = true
+}
+
+Tooltip.SetScript = function(self, handle, script)
+	self.scripts[handle] = script
+	if (not proxyScripts[handle]) then 
+		Blizzard_SetScript(self, handle, script)
+	end 
+end
+
+Tooltip.GetScript = function(self, handle)
+	return self.scripts[handle]
+end
 
 
 -- Tooltip Script Handlers
 ---------------------------------------------------------
 
--- Not really called, but we have a duplicate in the XML file.
-Tooltip.OnLoad = function(self)
-	self.needsReset = true
-	self.updateTooltip = .2
-	self:UpdateBackdrop()
-	self:UpdateBars()
-end 
-
 Tooltip.OnShow = function(self)
+
 	self:UpdateScale()
-	self:UpdateBackdrop()
-	--self:UpdateBars()
+	self:UpdateLayout()
+	self:UpdateBarLayout()
+	self:UpdateBackdropLayout()
 
 	-- Get rid of the Blizzard GameTooltip if possible
 	if (not GameTooltip:IsForbidden()) and (GameTooltip:IsShown()) then 
@@ -862,21 +1485,23 @@ Tooltip.OnShow = function(self)
 end 
 
 Tooltip.OnHide = function(self)
-	self:ClearMoney()
-	self:ClearStatusBars()
-	self:UpdateBackdrop()
+	self:ClearMoney(true) -- -- suppress layout updates from this
+	self:ClearStatusBars(true) -- suppress layout updates from this
+	self:ClearAllLines(true)
+
+	-- Clear all bar types when hiding the tooltip
+	for i,bar in ipairs(self.bars) do 
+		bar.barType = nil
+	end 
+
+	-- Reset the layout
+	self:UpdateLayout()
+	self:UpdateBarLayout()
+	self:UpdateBackdropLayout()
+
 	self.needsReset = true
 	self.comparing = false
 	self.default = nil
-	--self.overrideComparisonAnchorFrame = nil
-	--self.overrideComparisonAnchorSide = nil
-	--if self.shoppingTooltips then
-	--	for _, frame in pairs(self.shoppingTooltips) do
-	--		frame:Hide()
-	--	end
-	--end
-	--ShoppingTooltip1:Hide()
-	--ShoppingTooltip2:Hide()
 end 
 
 Tooltip.OnTooltipAddMoney = function(self, cost, maxcost)
@@ -899,84 +1524,76 @@ Tooltip.OnTooltipSetDefaultAnchor = function(self)
 	self:SetDefaultAnchor("UICenter")
 end 
 
-Tooltip.UpdateBarValues = function(self, unit)
+-- This will update values for bar types handled by the library.
+-- Currently only includes unit health and unit power.
+Tooltip.UpdateBarValues = function(self, unit, noUpdate)
 	local guid = UnitGUID(unit)
 	local disconnected = not UnitIsConnected(unit)
 	local dead = UnitIsDeadOrGhost(unit)
 	local needUpdate
 
-	if (disconnected or dead) then 
-		local healthBar = self.UnitHealthBar
-		local powerBar = self.UnitPowerBar
-		if (healthBar and healthBar:IsShown()) or (powerBar and powerBar:IsShown()) then 
-			self:ClearStatusBars()
-			needUpdate = true
-		end 
-	else 
-		local min = UnitHealth(unit) or 0
-		local max = UnitHealthMax(unit) or 0
+	for i,bar in ipairs(self.bars) do
+		local isShown = bar:IsShown()
+		if (bar.barType == "health") then
+			if (disconnected or dead) then 
+				local updateNeeded = self:ClearStatusBar(i,true)
+				needUpdate = needUpdate or updateNeeded
+			else 
+				local min = UnitHealth(unit) or 0
+				local max = UnitHealthMax(unit) or 0
 
-		-- Only show units with health, hide the bar otherwise
-		if ((min > 0) and (max > 0)) then 
-			if (not self.UnitHealthBar) then 
-				needUpdate = true 
-				local bar = self:CreateStatusBar()
-				local barTexture = self:GetCValue("barTexture")
-				if barTexture then 
-					bar:SetStatusBarTexture(barTexture)
+				-- Only show units with health, hide the bar otherwise
+				if ((min > 0) and (max > 0)) then 
+					if (not isShown) then 
+						bar:Show()
+						needUpdate = true
+					end 
+					bar:SetStatusBarColor(self:GetUnitHealthColor(unit))
+					bar:SetMinMaxValues(0, max, needUpdate or (guid ~= bar.guid))
+					bar:SetValue(min, needUpdate or (guid ~= bar.guid))
+					bar.guid = guid
+				else 
+					local updateNeeded = self:ClearStatusBar(i,true)
+					needUpdate = needUpdate or updateNeeded
 				end 
-				self.UnitHealthBar = bar 
 			end 
-			local healthBar = self.UnitHealthBar
-			if (not healthBar:IsShown()) then 
-				healthBar:Show()
-				needUpdate = true
-			end 
-			healthBar:SetStatusBarColor(self:GetUnitHealthColor(unit))
-			healthBar:SetMinMaxValues(0, max)
-			healthBar:SetValue(min, needUpdate or (guid ~= healthBar.guid))
-			healthBar.guid = guid
-			self.UnitHealthBar = healthBar
-		else 
-			local healthBar = self.UnitHealthBar
-			if (healthBar and healthBar:IsShown()) then 
-				healthBar:Hide()
-				needUpdate = true
+
+		elseif (bar.barType == "power") then
+			if (disconnected or dead) then 
+				local updateNeeded = self:ClearStatusBar(i,true)
+				needUpdate = needUpdate or updateNeeded
+			else 
+				local powerID, powerType = UnitPowerType(unit)
+				local min = UnitPower(unit, powerID) or 0
+				local max = UnitPowerMax(unit, powerID) or 0
+		
+				-- Only show the power bar if there's actual power to show
+				if (powerType and (min > 0) and (max > 0)) then 
+					if (not isShown) then 
+						bar:Show()
+						needUpdate = true
+					end 
+					bar:SetStatusBarColor(self:GetUnitPowerColor(unit))
+					bar:SetMinMaxValues(0, max, needUpdate or (guid ~= bar.guid))
+					bar:SetValue(min, needUpdate or (guid ~= bar.guid))
+					bar.guid = guid
+				else
+					local updateNeeded = self:ClearStatusBar(i,true)
+					needUpdate = needUpdate or updateNeeded
+				end
 			end
 		end 
+		if (bar:IsShown() and self.PostUpdateStatusBar) then 
+			self:PostUpdateStatusBar(bar, bar:GetValue(), bar:GetMinMaxValues())
+		end 
+	end 
 
-		local powerID, powerType = UnitPowerType(unit)
-		min = UnitPower(unit, powerID) or 0
-		max = UnitPowerMax(unit, powerID) or 0
-
-		-- Only show the power bar if there's actual power to show
-		if (powerType and (min > 0) and (max > 0)) then 
-			if (not self.UnitPowerBar) then 
-				needUpdate = true 
-				local bar = self:CreateStatusBar()
-				local barTexture = self:GetCValue("barTexture")
-				if barTexture then 
-					bar:SetStatusBarTexture(barTexture)
-				end 
-				self.UnitPowerBar = bar 
-			end 
-			local powerBar = self.UnitPowerBar 
-			if (not powerBar:IsShown()) then 
-				powerBar:Show()
-				needUpdate = true
-			end 
-			powerBar:SetStatusBarColor(self:GetUnitPowerColor(unit))
-			powerBar:SetMinMaxValues(0, max)
-			powerBar:SetValue(min, needUpdate or (guid ~= powerBar.guid))
-			powerBar.guid = guid
-			self.UnitPowerBar = powerBar
-		else
-			local powerBar = self.UnitPowerBar
-			if (powerBar and powerBar:IsShown()) then 
-				powerBar:Hide()
-				needUpdate = true
-			end
-		end
+	-- Update the layout only if a visible bar was hidden,
+	-- and only if the noUpdate flag isn't set.
+	if needUpdate and (not noUpdate) then 
+		self:UpdateBackdropLayout()
+		self:UpdateBarLayout()
+		self:UpdatePosition()
 	end 
 	return needUpdate
 end 
@@ -988,13 +1605,9 @@ Tooltip.OnTooltipSetUnit = function(self)
 		return 
 	end 
 
-	local r, g, b = self:GetUnitHealthColor(unit)
-	self.TextLeft1:SetTextColor(r, g, b)
-
-	if self:UpdateBarValues(unit) then 
-		self:UpdateBackdrop()
-		self:UpdateBars()
-		self:UpdatePosition()
+	-- module post updates
+	if self.PostUpdateUnit then 
+		return self:PostUpdateUnit(unit)
 	end 
 end 
 
@@ -1019,14 +1632,14 @@ Tooltip.OnUpdate = function(self, elapsed)
 
 	local unit = self:GetTooltipUnit()
 	if unit then 
-		if self:UpdateBarValues(unit) then 
+		if self:UpdateBarValues(unit, true) then 
 			needUpdate = true 
 		end 
 	end 
 
 	if needUpdate then 
-		self:UpdateBackdrop()
-		self:UpdateBars()
+		self:UpdateBackdropLayout()
+		self:UpdateBarLayout()
 		if self.default then 
 			self:UpdatePosition()
 		end 
@@ -1083,23 +1696,8 @@ local SetDefaultAnchor = function(tooltip, parent)
 		position = { unpack(defaultAnchor) }
 	end 
 
-	-- 
-	-- TODO: Implement some feature like :StyleBlizzardAsLibs() or something
-	-- 
-	-- Add the offset only if there is one
-	--local offset = 0
-	--if (offset > 0) then 
-	--	if (type(position[#position]) == "number") then 
-	--		position[#position] = position[#position] - offset
-	--	else
-	--		position[#position + 1] = 0
-	--		position[#position + 1] = -offset
-	--	end 
-	--end 
-
 	if defaultAnchor then 
 		Tooltip.Place(tooltip, unpack(position))
-		--Tooltip.Place(tooltip, unpack(LibTooltip.defaultAnchor))
 	else 
 		Tooltip.Place(tooltip, "BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -_G.CONTAINER_OFFSET_X - 13, _G.CONTAINER_OFFSET_Y)
 	end 
@@ -1173,18 +1771,16 @@ LibTooltip.SetDefaultTooltipStatusBarOffset = function(self, barOffset)
 	LibTooltip:ForAllTooltips("UpdateBars")
 end 
 
-LibTooltip.SetDefaultTooltipHealthBarSize = function(self, barSize)
-	check(barSize, 1, "number")
-	LibTooltip:SetDefaultCValue("healthBarSize", barSize)
-	LibTooltip:ForAllTooltips("UpdateBackdrop")
+LibTooltip.SetDefaultTooltipStatusBarHeight = function(self, barHeight, barType)
+	check(barHeight, 1, "number")
+	check(barType, 2, "string", "nil")
+	if barType then 
+		LibTooltip:SetDefaultCValue("barHeight"..barType, barHeight)
+	else 
+		LibTooltip:SetDefaultCValue("barHeight", barHeight)
+	end 
 	LibTooltip:ForAllTooltips("UpdateBars")
-end 
-
-LibTooltip.SetDefaultTooltipPowerBarSize = function(self, barSize)
-	check(barSize, 1, "number")
-	LibTooltip:SetDefaultCValue("powerBarSize", barSize)
 	LibTooltip:ForAllTooltips("UpdateBackdrop")
-	LibTooltip:ForAllTooltips("UpdateBars")
 end 
 
 LibTooltip.SetDefaultTooltipStatusBarSpacing = function(self, barSpacing)
@@ -1218,7 +1814,25 @@ LibTooltip.CreateTooltip = function(self, name)
 
 	-- Note that the global frame name is unrelated to the tooltip name requested by the modules.
 	local tooltipName = "CG_GameTooltip_"..LibTooltip.numTooltips
-	local tooltip = setmetatable(LibTooltip:CreateFrame("GameTooltip", tooltipName, "UICenter"), Tooltip_MT)
+
+	local tooltip = setmetatable(LibTooltip:CreateFrame("Frame", tooltipName, "UICenter"), Tooltip_MT)
+	tooltip:Hide() -- keep it hidden while setting it up
+	tooltip:SetSize(160 + TEXT_INSET*2, TEXT_INSET*2) -- minimums
+	tooltip.needsReset = true -- flag indicating tooltip must be reset
+	tooltip.updateTooltip = .2 -- tooltip update frequency
+	tooltip.owner = nil -- current owner
+	tooltip.anchor = nil -- current anchor
+	tooltip.numLines = 0 -- current number of visible lines
+	tooltip.numBars = 0 -- current number of visible bars
+	tooltip.numTextures = 0 -- current number of visible textures
+	tooltip.minimumWidth = 160 -- current minimum display width
+	tooltip.maximumWidth = 330 -- current maximum display width
+	tooltip.colors = Colors -- assign our color table, can be replaced by modules to override colors. 
+	tooltip.lines = { left = {}, right = {} } -- pool of all text lines
+	tooltip.bars = {} -- pool of all bars
+	tooltip.textures = {} -- pool of all textures
+	tooltip.data = {} -- store data about the current item, unit, etc
+	tooltip.scripts = {} -- current script handlers
 
 	-- Add the custom backdrop
 	local backdrop = tooltip:CreateFrame()
@@ -1229,53 +1843,31 @@ LibTooltip.CreateTooltip = function(self, name)
 	backdrop:SetPoint("BOTTOM", 0, 0)
 	backdrop:SetScript("OnShow", function(self) self:SetFrameLevel(self:GetParent():GetFrameLevel()-1) end)
 	backdrop:SetScript("OnHide", function(self) self:SetFrameLevel(self:GetParent():GetFrameLevel()-1) end)
+	tooltip.Backdrop = backdrop
 
-	-- Add lines
-	for i = 1,8 do
-		local left = tooltip:CreateFontString(tooltipName.."TextLeft"..i)
-		left:Hide()
-		left:SetDrawLayer("ARTWORK")
-		left:SetFontObject(GameTooltipText)
-		left:SetTextColor(.9, .9, .9)
-		if (i == 1) then 
-			left:SetPoint("TOPLEFT", 10, 10)
-		else
-			left:SetPoint("TOPLEFT", tooltip["TextLeft"..(i-1)], "BOTTOMLEFT", 0, -2)
-		end 
-		tooltip["TextLeft"..i] = left
-
-		local right = tooltip:CreateFontString(tooltipName.."TextRight"..i)
-		right:Hide()
-		right:SetDrawLayer("ARTWORK")
-		right:SetFontObject(GameTooltipText)
-		right:SetTextColor(.9, .9, .9)
-		right:SetPoint("RIGHT", left, "LEFT", 40, 0)
-		tooltip["TextRight"..i] = right
-	end 
-
-	-- Add textures
+	-- Create initial textures
 	for i = 1,10 do
-		local tex = tooltip:CreateTexture(tooltipName.."Texture"..i)
-		tex:Hide()
-		tex:SetDrawLayer("ARTWORK")
-		tex:SetSize(12,12)
-		tooltip["Texture"..i] = tex
+		local texture = tooltip:CreateTexture(tooltipName.."Texture"..i)
+		texture:Hide()
+		texture:SetDrawLayer("ARTWORK")
+		texture:SetSize(12,12)
+		tooltip["Texture"..i] = texture
+		tooltip.textures[#tooltip.textures + 1] = texture
 	end
 
 	-- Embed the statusbar creation methods directly into the tooltip.
 	-- This will give modules and plugins easy access to proper bars. 
 	LibStatusBar:Embed(tooltip)
 
-	-- Assign our color table. 
-	-- Can be replaced by modules to override colors. 
-	tooltip.colors = Colors
+	-- Embed scanner functionality directly into the tooltip too
+	LibTooltipScanner:Embed(tooltip)
 
 	-- Create current and default settings tables.
 	TooltipDefaults[tooltip] = setmetatable({}, { __index = Defaults })
 	TooltipSettings[tooltip] = setmetatable({}, { __index = TooltipDefaults[tooltip] })
 
 	-- Initial backdrop update
-	tooltip:UpdateBackdrop()
+	tooltip:UpdateBackdropLayout()
 
 	-- Assign script handlers
 	tooltip:SetScript("OnHide", Tooltip.OnHide)
@@ -1286,7 +1878,7 @@ LibTooltip.CreateTooltip = function(self, name)
 	tooltip:SetScript("OnTooltipSetItem", Tooltip.OnTooltipSetItem)
 	tooltip:SetScript("OnTooltipSetUnit", Tooltip.OnTooltipSetUnit)
 	tooltip:SetScript("OnUpdate", Tooltip.OnUpdate)
-	
+
 	-- Store by frame handle for internal usage.
 	Tooltips[tooltip] = true
 
@@ -1294,6 +1886,8 @@ LibTooltip.CreateTooltip = function(self, name)
 	-- modules to retrieve each other's tooltips.
 	TooltipsByName[name] = tooltip
 
+	LibTooltip:ForAllEmbeds("PostCreateTooltip", tooltip)
+	
 	return tooltip
 end 
 
@@ -1334,11 +1928,26 @@ local embedMethods = {
 	SetDefaultTooltipStatusBarOffset = true, 
 	SetDefaultTooltipStatusBarTexture = true, 
 	SetDefaultTooltipStatusBarSpacing = true, 
-	SetDefaultTooltipHealthBarSize = true, 
-	SetDefaultTooltipPowerBarSize = true,
+	SetDefaultTooltipStatusBarHeight = true, 
 	ForAllTooltips = true,
 	ForAllBlizzardTooltips = true
 }
+
+-- Iterate all embedded modules for the given method name or function
+-- Silently fail if nothing exists. We don't want an error here. 
+LibTooltip.ForAllEmbeds = function(self, method, ...)
+	for target in pairs(self.embeds) do 
+		if (target) then 
+			if (type(method) == "string") then
+				if target[method] then
+					target[method](target, ...)
+				end
+			else
+				func(target, ...)
+			end
+		end 
+	end 
+end 
 
 LibTooltip.Embed = function(self, target)
 	for method in pairs(embedMethods) do
