@@ -1,5 +1,5 @@
-local Version = 17 -- This library's version 
-local MapVersion = 17 -- Minimap library version the minimap created by this is compatible with
+local Version = 18 -- This library's version 
+local MapVersion = 18 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -288,6 +288,11 @@ ElementHandler.UnregisterAllMessages = function(proxy)
 	UnregisterAllMessages(proxy)
 end
 
+ElementHandler.CreateOverlayFrame = function(proxy, frameType)
+	check(frameType, 1, "string", "nil")
+	return LibMinimap:SyncMinimap(true) and Private.MapOverlay:CreateFrame(frameType or "Frame")
+end 
+
 ElementHandler.CreateBorderFrame = function(proxy, frameType)
 	check(frameType, 1, "string", "nil")
 	return LibMinimap:SyncMinimap(true) and Private.MapBorder:CreateFrame(frameType or "Frame")
@@ -385,6 +390,12 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 	Private.MapInfo:SetFrameStrata("LOW") 
 	Private.MapInfo:SetFrameLevel(5)
 
+	-- Overlay frame for temporary elements
+	Private.MapOverlay = Private.MapOverlay or LibMinimap:CreateFrame("Frame")
+	Private.MapOverlay:SetAllPoints() -- This will by default fill the entire master frame
+	Private.MapOverlay:SetFrameStrata("MEDIUM") 
+	Private.MapOverlay:SetFrameLevel(50)
+	
 
 	-- Configure Blizzard Elements
 	-----------------------------------------------------------

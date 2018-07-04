@@ -418,8 +418,38 @@ Minimap.SetUpMinimap = function(self)
 
 
 	-- XP & Artifact Bars
+	local xpFrame = Handler:CreateOverlayFrame()
+	Handler.xpFrame = xpFrame
+
+	local xp = xpFrame:CreateFrame("Frame")
+	xp:SetAllPoints()
+
+	-- frame backdrop 
+	local xpFrameBackdrop = xpFrame:CreateTexture()
+
+	-- outer bar backdrop
+	local xpBarBackdrop = xpFrame:CreateTexture()
+
+	-- xp bar
+	local xpBar = xpFrame:CreateSpinBar()
+
+	-- honor bar
+	local honorBar = xpFrame:CreateSpinBar()
+
+	-- azerite bar 
+	local azeriteBar = xpFrame:CreateSpinBar()
+
+	-- rep bar
+	local repBar = xpFrame:CreateSpinBar()
+
+	-- outer ring (resting?)
+	local xpRing = xpFrame:CreateTexture()
 
 	
+	Handler.XP = xpBar
+	Handler.Azerite = azeriteBar
+	Handler.Honor = honorBar
+	Handler.Reputation = repBar
 
 end 
 

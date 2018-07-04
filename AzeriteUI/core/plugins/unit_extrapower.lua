@@ -1,10 +1,6 @@
-local LibUnitFrame = CogWheel("LibUnitFrame")
-if (not LibUnitFrame) then 
-	return
-end 
 
 local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "LibUnitFrame_Cast requires LibClientBuild to be loaded.")
+assert(LibClientBuild, "ExtraPower requires LibClientBuild to be loaded.")
 
 -- Lua API
 local _G = _G
@@ -25,6 +21,7 @@ local UnitPowerType = _G.UnitPowerType
 
 -- WoW Client Constants
 local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
+
 
 -- Number abbreviations
 ---------------------------------------------------------------------	
@@ -59,9 +56,6 @@ if (gameLocale == "zhCN") then
 end 
 
 local UpdateValue = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
-	if element.OverrideValue then
-		return element:OverrideValue(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
-	end
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value then
 		if (min == 0 or max == 0) and (not value.showAtZero) then
@@ -101,9 +95,6 @@ local UpdateValue = function(element, unit, min, max, powerType, powerID, discon
 end 
 
 local UpdateColor = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
-	if element.OverrideColor then
-		return element:OverrideColor(unit, min, max, powerType, powerID, disconnected, dead, tapped)
-	end
 	local self = element._owner
 	local r, g, b
 	if disconnected then
@@ -123,7 +114,7 @@ local Update = function(self, event, unit)
 		return 
 	end 
 
-	local element = self.Power
+	local element = self.ExtraPower
 	if element.PreUpdate then
 		element:PreUpdate(unit)
 	end
@@ -179,7 +170,7 @@ local Update = function(self, event, unit)
 	local tapped = (not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)
 
 	element:SetMinMaxValues(0, max)
-	element:SetValue(min, (event == "Forced"))
+	element:SetValue(min)
 	element:UpdateColor(unit, min, max, powerType, powerID, disconnected, dead, tapped)
 	element:UpdateValue(unit, min, max, powerType, powerID, disconnected, dead, tapped)
 			
@@ -189,7 +180,7 @@ local Update = function(self, event, unit)
 end 
 
 local Proxy = function(self, ...)
-	return (self.Power.Override or Update)(self, ...)
+	return (self.ExtraPower.Override or Update)(self, ...)
 end 
 
 local ForceUpdate = function(element)
@@ -197,7 +188,7 @@ local ForceUpdate = function(element)
 end
 
 local Enable = function(self)
-	local element = self.Power
+	local element = self.ExtraPower
 	if element then
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
@@ -220,15 +211,20 @@ local Enable = function(self)
 		self:RegisterEvent("UNIT_MAXPOWER", Proxy)
 		self:RegisterEvent("UNIT_FACTION", Proxy)
 
-		element.UpdateColor = UpdateColor
-		element.UpdateValue = UpdateValue
+		if (not element.UpdateColor) then 
+			element.UpdateColor = UpdateColor
+		end 
+
+		if (not element.UpdateValue) then 
+			element.UpdateValue = UpdateValue
+		end 
 
 		return true
 	end
 end 
 
 local Disable = function(self)
-	local element = self.Power
+	local element = self.ExtraPower
 	if element then
 		element:Hide()
 
@@ -245,4 +241,7 @@ local Disable = function(self)
 	end
 end 
 
-LibUnitFrame:RegisterElement("Power", Enable, Disable, Proxy, 3)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
+	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 2)
+end 

@@ -1,7 +1,3 @@
-local LibMinimap = CogWheel("LibMinimap")
-if (not LibMinimap) then 
-	return
-end 
 
 -- Lua API
 local _G = _G
@@ -95,4 +91,7 @@ local Disable = function(self)
 	end
 end 
 
-LibMinimap:RegisterElement("Clock", Enable, Disable, Proxy, 5)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
+	Lib:RegisterElement("Clock", Enable, Disable, Proxy, 6)
+end 

@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 30)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 32)
 if (not LibStatusBar) then	
 	return
 end
@@ -643,7 +643,8 @@ StatusBar.SetOrientation = function(self, orientation)
 end
 
 StatusBar.CreateFrame = function(self, type, name, ...)
-	return CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
+	return self:CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
+	--return CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
 end
 
 StatusBar.CreateTexture = function(self, ...)
@@ -835,34 +836,37 @@ LibStatusBar.CreateStatusBar = function(self, parent)
 	local statusbar = CreateFrame("Frame", nil, scaffold)
 	statusbar:SetAllPoints() -- lock down the points before we overwrite the methods
 
+	-- Embed LibFrame's frame creation and methods directly.
+	LibFrame:Embed(statusbar)
+
+	-- Change to our custom metatable and methods.
 	setmetatable(statusbar, StatusBar_MT)
 
-	local data = {
-		scaffold = scaffold,
-		bar = bar,
-		spark = spark,
-		statusbar = statusbar, 
+	local data = {}
+	data.scaffold = scaffold
+	data.bar = bar
+	data.spark = spark
+	data.statusbar = statusbar 
 
-		barMin = 0, -- min value
-		barMax = 1, -- max value
-		barValue = 0, -- real value
-		barDisplayValue = 0, -- displayed value while smoothing
-		barOrientation = "RIGHT", -- direction the bar is growing in 
-		barSmoothingMode = "bezier-fast-in-slow-out",
+	data.barMin = 0 -- min value
+	data.barMax = 1 -- max value
+	data.barValue = 0 -- real value
+	data.barDisplayValue = 0 -- displayed value while smoothing
+	data.barOrientation = "RIGHT" -- direction the bar is growing in 
+	data.barSmoothingMode = "bezier-fast-in-slow-out"
 
-		sparkThickness = 8,
-		sparkOffset = 1/32,
-		sparkDirection = "IN",
-		sparkDurationIn = .75, 
-		sparkDurationOut = .55,
-		sparkMinAlpha = .25,
-		sparkMaxAlpha = .95,
-		sparkMinPercent = 1/100,
-		sparkMaxPercent = 99/100,
+	data.sparkThickness = 8
+	data.sparkOffset = 1/32
+	data.sparkDirection = "IN"
+	data.sparkDurationIn = .75 
+	data.sparkDurationOut = .55
+	data.sparkMinAlpha = .25
+	data.sparkMaxAlpha = .95
+	data.sparkMinPercent = 1/100
+	data.sparkMaxPercent = 99/100
 
-		-- The real texcoords of the bar texture
-		texCoords = {0, 1, 0, 1}
-	}
+	-- The real texcoords of the bar texture
+	data.texCoords = {0, 1, 0, 1}
 
 	-- Give multiple objects access using their 'self' as key
 	Bars[statusbar] = data

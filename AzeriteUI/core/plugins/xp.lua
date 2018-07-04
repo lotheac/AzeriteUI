@@ -1,7 +1,3 @@
-local LibMinimap = CogWheel("LibMinimap")
-if (not LibMinimap) then 
-	return
-end 
 
 -- Lua API
 local _G = _G
@@ -20,7 +16,7 @@ local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
 	end 
-	local element = self.Honor
+	local element = self.XP
 	if element.PreUpdate then
 		element:PreUpdate(unit)
 	end
@@ -32,7 +28,7 @@ local Update = function(self, event, unit)
 end 
 
 local Proxy = function(self, ...)
-	return (self.Honor.Override or Update)(self, ...)
+	return (self.XP.Override or Update)(self, ...)
 end 
 
 local ForceUpdate = function(element, ...)
@@ -40,7 +36,7 @@ local ForceUpdate = function(element, ...)
 end
 
 local Enable = function(self)
-	local element = self.Absorb
+	local element = self.XP
 	if element then
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
@@ -52,9 +48,12 @@ local Enable = function(self)
 end 
 
 local Disable = function(self)
-	local element = self.Honor
+	local element = self.XP
 	if element then
 	end
 end 
 
-LibMinimap:RegisterElement("Honor", Enable, Disable, Proxy, 1)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 2)
+end 

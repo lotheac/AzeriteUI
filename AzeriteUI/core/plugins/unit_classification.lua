@@ -1,8 +1,3 @@
-local LibUnitFrame = CogWheel("LibUnitFrame")
-if (not LibUnitFrame) then 
-	return
-end 
-
 -- Lua API
 local _G = _G
 local pairs = pairs
@@ -91,4 +86,7 @@ local Disable = function(self)
 	end
 end 
 
-LibUnitFrame:RegisterElement("Classification", Enable, Disable, Proxy)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
+	Lib:RegisterElement("Classification", Enable, Disable, Proxy, 1)
+end 

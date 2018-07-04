@@ -15,16 +15,11 @@
 
 ]]--
 
-local LibUnitFrame = CogWheel("LibUnitFrame")
-if (not LibUnitFrame) then 
-	return
-end 
-
 local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "LibUnitFrame_ClassPower requires LibClientBuild to be loaded.")
+assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
 
 local LibFrame = CogWheel("LibFrame")
-assert(LibFrame, "LibUnitFrame_ClassPower requires LibFrame to be loaded.")
+assert(LibFrame, "ClassPower requires LibFrame to be loaded.")
 
 -- Lua API
 local _G = _G
@@ -966,4 +961,7 @@ local Disable = function(self)
 	end
 end 
 
-LibUnitFrame:RegisterElement("ClassPower", Enable, Disable, Proxy, 10)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 11)
+end 

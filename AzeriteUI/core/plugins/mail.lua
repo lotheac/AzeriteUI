@@ -1,7 +1,3 @@
-local LibMinimap = CogWheel("LibMinimap")
-if (not LibMinimap) then 
-	return
-end 
 
 -- Lua API
 local _G = _G
@@ -10,10 +6,16 @@ local _G = _G
 local GetLatestThreeSenders = _G.GetLatestThreeSenders
 local HasNewMail = _G.HasNewMail
 
+local GetTooltip = function(element)
+	return element.GetTooltip and element:GetTooltip() or element._owner.GetTooltip and element._owner:GetTooltip()
+end 
 
 local OnEnter = function(element)
+	local tooltip = GetTooltip(element)
+	if (not tooltip) then 
+		return 
+	end 
 
-	local tooltip = LibMinimap:GetMinimapTooltip()
 	tooltip:SetDefaultAnchor()
 	
 	local sender1, sender2, sender3 = GetLatestThreeSenders()
@@ -40,8 +42,11 @@ local OnEnter = function(element)
 	tooltip:Show()
 end
 
-local OnLeave = function(self)
-	local tooltip = LibMinimap:GetMinimapTooltip()
+local OnLeave = function(element)
+	local tooltip = GetTooltip(element)
+	if (not tooltip) then 
+		return 
+	end 
 	tooltip:Hide()
 end 
 
@@ -99,5 +104,7 @@ local Disable = function(self)
 	end 
 end 
 
--- Register the element for player mail updates
-LibMinimap:RegisterElement("Mail", Enable, Disable, Proxy, 4)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
+	Lib:RegisterElement("Mail", Enable, Disable, Proxy, 6)
+end 

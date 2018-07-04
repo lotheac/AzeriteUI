@@ -1,7 +1,3 @@
-local LibUnitFrame = CogWheel("LibUnitFrame")
-if (not LibUnitFrame) then 
-	return
-end 
 
 -- Lua API
 local _G = _G
@@ -15,10 +11,14 @@ local Update = function(self, event, unit)
 		return 
 	end 
 
-	local element = self.Auras
+	local element = self.Name
 	if element.PreUpdate then
 		element:PreUpdate(unit)
 	end
+
+	local name, realm = UnitName(unit)
+
+	element:SetText(name)
 
 	if element.PostUpdate then 
 		return element:PostUpdate(unit)
@@ -26,7 +26,7 @@ local Update = function(self, event, unit)
 end 
 
 local Proxy = function(self, ...)
-	return (self.Auras.Override or Update)(self, ...)
+	return (self.Name.Override or Update)(self, ...)
 end 
 
 local ForceUpdate = function(element)
@@ -34,19 +34,25 @@ local ForceUpdate = function(element)
 end
 
 local Enable = function(self)
-	local element = self.Auras
+	local element = self.Name
 	if element then
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
+
+		self:RegisterEvent("UNIT_NAME_UPDATE", Proxy)
 
 		return true
 	end
 end 
 
 local Disable = function(self)
-	local element = self.Auras
+	local element = self.Name
 	if element then
+		self:UnregisterEvent("UNIT_NAME_UPDATE", Proxy)
 	end
 end 
 
-LibUnitFrame:RegisterElement("Auras", Enable, Disable, Proxy)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
+	Lib:RegisterElement("Name", Enable, Disable, Proxy, 2)
+end 

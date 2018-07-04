@@ -1,7 +1,3 @@
-local LibMinimap = CogWheel("LibMinimap")
-if (not LibMinimap) then 
-	return
-end 
 
 -- Lua API
 local _G = _G
@@ -40,7 +36,7 @@ local ForceUpdate = function(element, ...)
 end
 
 local Enable = function(self)
-	local element = self.Absorb
+	local element = self.Reputation
 	if element then
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
@@ -57,4 +53,7 @@ local Disable = function(self)
 	end
 end 
 
-LibMinimap:RegisterElement("Reputation", Enable, Disable, Proxy, 1)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
+	Lib:RegisterElement("Reputation", Enable, Disable, Proxy, 2)
+end 

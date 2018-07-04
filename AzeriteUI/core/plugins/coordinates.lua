@@ -1,15 +1,11 @@
-local LibMinimap = CogWheel("LibMinimap")
-if (not LibMinimap) then 
-	return
-end 
 
 -- Lua API
 local _G = _G
 
 -- WoW API
 local C_Map = _G.C_Map
-local GetBestMapForUnit = C_Map.GetBestMapForUnit
-local GetPlayerMapPosition = C_Map.GetPlayerMapPosition
+local GetBestMapForUnit = C_Map and C_Map.GetBestMapForUnit
+local GetPlayerMapPosition = C_Map and C_Map.GetPlayerMapPosition
 
 -- WoW Frames
 local WorldMapFrame = _G.WorldMapFrame
@@ -74,4 +70,7 @@ local Disable = function(self)
 	end
 end 
 
-LibMinimap:RegisterElement("Coordinates", Enable, Disable, Proxy, 6)
+-- Register it with compatible libraries
+for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
+	Lib:RegisterElement("Coordinates", Enable, Disable, Proxy, 7)
+end 

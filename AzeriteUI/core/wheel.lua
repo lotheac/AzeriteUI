@@ -1,4 +1,9 @@
-local Global, Version = "CogWheel", 3
+-- Forcefully showing script errors because I need this.
+-- I also forcefully enabling the taint log. 
+SetCVar("scriptErrors", 1)
+SetCVar("taintLog", 1)
+
+local Global, Version = "CogWheel", 4
 
 local CogWheel = _G[Global]
 if (CogWheel and (CogWheel.version >= Version)) then
