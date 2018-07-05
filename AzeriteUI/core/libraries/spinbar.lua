@@ -1,7 +1,8 @@
--- Based on code written by Semlar:
--- http://www.wowinterface.com/forums/showpost.php?p=312993&postcount=37
+-- This library is inspired by code and ideas started by Zork and Semlar,
+-- though the final code went a different way and both benefits from 
+-- and relies on API changes only available in Battle for Azeroth.
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 2)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 3)
 if (not LibSpinBar) then	
 	return
 end
@@ -17,6 +18,8 @@ local assert = assert
 local debugstack = debugstack
 local error = error
 local math_cos = math.cos 
+local math_pi = math.pi
+local math_sqrt = math.sqrt
 local math_rad = math.rad
 local math_sin = math.sin 
 local pairs = pairs
@@ -39,9 +42,8 @@ local Bars = LibSpinBar.bars
 local Textures = LibSpinBar.textures
 
 -- Constants needed later on
-local PI2 = math_rad(360)
-local HALFPI = math_rad(90)
-
+local DEGS_TO_RADS = math_pi/180
+local ROOT_OF_HALF = math_sqrt(.5)
 
 ----------------------------------------------------------------
 -- Utility functions
@@ -80,6 +82,8 @@ local blizzardGetTexCoord = getmetatable(Texture).__index.GetTexCoord
 
 local Update = function(self, elapsed)
 	local data = Bars[self]
+
+	do return end
 
 	local value = data.disableSmoothing and data.barValue or data.barDisplayValue
 	local min, max = data.barMin, data.barMax
@@ -279,17 +283,99 @@ end
 -- Generally recommended to slightly overshoot the texture "edges" 
 -- to avoid textures being abruptly cut off. 
 SpinBar.SetMinMaxAngles = function(self, minAngle, maxAngle)
+	local data = Bars[self]
+	data.minAngle = minAngle
+	data.maxAngle = maxAngle
+	Update(self)
 end
 
 -- Sets the min/max-values as in any other bar.
-SpinBar.SetMinMaxValues = function(self, min, max)
+SpinBar.SetSmoothingFrequency = function(self, smoothingFrequency)
+	Bars[self].smoothingFrequency = smoothingFrequency
+end
+
+SpinBar.SetSmoothingMode = function(self, mode)
+	if (mode == "bezier-fast-in-slow-out")  
+	or (mode == "bezier-slow-in-fast-out")  
+	or (mode == "linear-fast-in-slow-out")  
+	or (mode == "linear-slow-in-fast-out") 
+	or (mode == "linear") then 
+		Bars[self].barSmoothingMode = mode
+	else 
+		print(("LibSpinBar: 'SetSmoothingMode(mode)' - Unknown 'mode': %s"):format(mode), 2)
+	end 
 end 
+
+SpinBar.DisableSmoothing = function(self, disableSmoothing)
+	Bars[self].disableSmoothing = disableSmoothing
+end
 
 -- Sets the current value of the spinbar. 
 -- This takes both min/max values and min/max angles into consideration, 
 -- meaning if you've set the min to -120 degree, a value of 0 would put the bar there. 
-SpinBar.SetValue = function(self, value)
-end 
+SpinBar.SetValue = function(self, value, overrideSmoothing)
+	local data = Bars[self]
+	local min, max = data.barMin, data.barMax
+	if (value > max) then
+		value = max
+	elseif (value < min) then
+		value = min
+	end
+	data.barValue = value
+	if overrideSmoothing then 
+		data.barDisplayValue = value
+	end 
+	if (not data.disableSmoothing) then
+		if (data.barDisplayValue > max) then
+			data.barDisplayValue = max
+		elseif (data.barDisplayValue < min) then
+			data.barDisplayValue = min
+		end
+		data.smoothingInitialValue = data.barDisplayValue
+		data.smoothingStart = GetTime()
+	end
+	if (value ~= data.barDisplayValue) then
+		data.smoothing = true
+	end
+	if (data.smoothing or (data.barDisplayValue > min) or (data.barDisplayValue < max)) then
+		if (not data.scaffold:GetScript("OnUpdate")) then
+			data.scaffold:SetScript("OnUpdate", OnUpdate)
+			data.smoothing = true
+		end
+	end
+	Update(self)
+end
+
+SpinBar.Clear = function(self)
+	local data = Bars[self]
+	data.barValue = data.barMin
+	data.barDisplayValue = data.barMin
+	Update(self)
+end
+
+SpinBar.SetMinMaxValues = function(self, min, max, overrideSmoothing)
+	local data = Bars[self]
+	if (data.barMin == min) and (data.barMax == max) then 
+		return 
+	end 
+	if (data.barValue > max) then
+		data.barValue = max
+	elseif (data.barValue < min) then
+		data.barValue = min
+	end
+	if overrideSmoothing then 
+		data.barDisplayValue = data.barValue
+	else 
+		if (data.barDisplayValue > max) then
+			data.barDisplayValue = max
+		elseif (data.barDisplayValue < min) then
+			data.barDisplayValue = min
+		end
+	end 
+	data.barMin = min
+	data.barMax = max
+	Update(self)
+end
 
 SpinBar.SetStatusBarColor = function(self, ...)
 	Bars[self].bar:SetVertexColor(...)
@@ -299,156 +385,202 @@ end
 SpinBar.SetStatusBarTexture = function(self, ...)
 	local arg = ...
 	if (type(arg) == "number") then
-		Bars[self].bar:SetColorTexture(...)
+		--Bars[self].bar:SetColorTexture(...)
 	else
-		Bars[self].bar:SetTexture(...)
+		--Bars[self].bar:SetTexture(...)
 	end
+	--Update(self)
+end
+
+SpinBar.GetStatusBarTexture = function(self)
+end
+
+SpinBar.GetParent = function(self)
+	return Bars[self].scaffold:GetParent()
+end
+
+SpinBar.GetObjectType = function(self) return "SpinBar" end
+SpinBar.IsObjectType = function(self, type) return type == "SpinBar" or type == "Frame" end
+
+SpinBar.Show = function(self) Bars[self].scaffold:Show() end
+SpinBar.Hide = function(self) Bars[self].scaffold:Hide() end
+SpinBar.IsShown = function(self) return Bars[self].scaffold:IsShown() end
+
+SpinBar.ClearAllPoints = function(self)
+	Bars[self].scaffold:ClearAllPoints()
+end
+
+SpinBar.SetPoint = function(self, ...)
+	Bars[self].scaffold:SetPoint(...)
+end
+
+SpinBar.SetAllPoints = function(self, ...)
+	Bars[self].scaffold:SetAllPoints(...)
+end
+
+SpinBar.GetPoint = function(self, ...)
+	return Bars[self].scaffold:GetPoint(...)
+end
+
+SpinBar.SetSize = function(self, ...)
+	Bars[self].scaffold:SetSize(...)
 	Update(self)
 end
+
+SpinBar.SetWidth = function(self, ...)
+	Bars[self].scaffold:SetWidth(...)
+	Update(self)
+end
+
+SpinBar.SetHeight = function(self, ...)
+	Bars[self].scaffold:SetHeight(...)
+	Update(self)
+end
+
+SpinBar.GetHeight = function(self, ...)
+	local top = self:GetTop()
+	local bottom = self:GetBottom()
+	if top and bottom then
+		return top - bottom
+	else
+		return Bars[self].scaffold:GetHeight(...)
+	end
+end
+
+SpinBar.GetWidth = function(self, ...)
+	local left = self:GetLeft()
+	local right = self:GetRight()
+	if left and right then
+		return right - left
+	else
+		return Bars[self].scaffold:GetWidth(...)
+	end
+end
+
+SpinBar.GetSize = function(self, ...)
+	local top = self:GetTop()
+	local bottom = self:GetBottom()
+	local left = self:GetLeft()
+	local right = self:GetRight()
+
+	local width, height
+	if left and right then
+		width = right - left
+	end
+	if top and bottom then
+		height = top - bottom
+	end
+
+	return width or Bars[self].scaffold:GetWidth(), height or Bars[self].scaffold:GetHeight()
+end
+
+SpinBar.SetFrameLevel = function(self, ...)
+	Bars[self].scaffold:SetFrameLevel(...)
+end
+
+SpinBar.SetFrameStrata = function(self, ...)
+	Bars[self].scaffold:SetFrameStrata(...)
+end
+
+SpinBar.SetAlpha = function(self, ...)
+	Bars[self].scaffold:SetAlpha(...)
+end
+
+SpinBar.SetParent = function(self, ...)
+	Bars[self].scaffold:SetParent()
+end
+
 
 LibSpinBar.CreateSpinBar = function(self, parent)
 
 	-- The scaffold is the top level frame object 
 	-- that will respond to SetSize, SetPoint and similar.
-	local scaffold = CreateFrame("Frame", nil, parent or self)
+	local scaffold = LibSpinBar:CreateFrame("Frame", nil, parent or self)
 	scaffold:SetSize(64,64)
 
 	-- Create the 4 segments of the bar
 	local segments = {}
 	for i = 1,4 do 
-		local segment = CreateFrame("Frame", nil, scaffold)
-		segment:SetSize(64,64)
+		local segment = scaffold:CreateFrame("Frame")
     
-		-- ScrollFrame clips the actively animating portion of the segment
-		local scrollframe = CreateFrame("ScrollFrame", nil, segment)
-		scrollframe:SetPoint("BOTTOMLEFT", segment, "CENTER")
-		scrollframe:SetPoint("TOPRIGHT")
-		segment._scrollframe = scrollframe
-		
-		local scrollchild = CreateFrame("frame", nil, scrollframe)
-		scrollframe:SetScrollChild(scrollchild)
-		scrollchild:SetAllPoints(scrollframe)
-		
-		-- Wedge thing
-		local wedge = scrollchild:CreateTexture()
-		wedge:SetPoint("BOTTOMRIGHT", segment, "CENTER")
-		segment._wedge = wedge
-		
-		-- Top Right
-		local trTexture = segment:CreateTexture()
-		trTexture:SetPoint("BOTTOMLEFT", segment, "CENTER")
-		trTexture:SetPoint("TOPRIGHT")
-		trTexture:SetTexCoord(0.5, 1, 0, 0.5)
-		
-		-- Bottom Right
-		local brTexture = segment:CreateTexture()
-		brTexture:SetPoint("TOPLEFT", segment, "CENTER")
-		brTexture:SetPoint("BOTTOMRIGHT")
-		brTexture:SetTexCoord(0.5, 1, 0.5, 1)
-		
-		-- Bottom Left
-		local blTexture = segment:CreateTexture()
-		blTexture:SetPoint("TOPRIGHT", segment, "CENTER")
-		blTexture:SetPoint("BOTTOMLEFT")
-		blTexture:SetTexCoord(0, 0.5, 0.5, 1)
-		
-		-- Top Left
-		local tlTexture = segment:CreateTexture()
-		tlTexture:SetPoint("BOTTOMRIGHT", segment, "CENTER")
-		tlTexture:SetPoint("TOPLEFT")
-		tlTexture:SetTexCoord(0, 0.5, 0, 0.5)
-		
-		-- /4|1\ -- Clockwise texture arrangement
-		-- \3|2/ --
-	 
-		segment._textures = {trTexture, brTexture, blTexture, tlTexture}
-		segment._quadrant = nil -- Current active quadrant
-		segment._clockwise = true -- fill clockwise
-		segment._reverse = false -- Treat the provided value as its inverse, eg. 75% will display as 25%
-		segment._aspect = 1 -- aspect ratio, width / height of segment frame
-		--segment:HookScript("OnSizeChanged", OnSizeChanged)
-		
-		--for method, func in pairs(TextureFunctions) do
-		--	segment[method] = func
-		--end
-		
-		segment.SetClockwise = SetClockwise
-		segment.SetReverse = SetReverse
-		segment.SetValue = SetValue
-		
-		local group = wedge:CreateAnimationGroup()
-		local rotation = group:CreateAnimation("Rotation")
-		segment._rotation = rotation
-		rotation:SetDuration(0)
-		rotation:SetEndDelay(1)
-		rotation:SetOrigin("BOTTOMRIGHT", 0, 0)
-		group:SetScript("OnPlay", OnPlay)
-		group:Play()
+		-- The scrollchild is where we put rotating texture that needs to be cropped.
+		local scrollchild = scaffold:CreateFrame("Frame")
+		scrollchild:SetFrameLevel(scaffold:GetFrameLevel() + 1)
+		scrollchild:SetSize(1,1)
 
+		-- The scrollframe defines the visible area of the segment
+		local scrollframe = scaffold:CreateFrame("ScrollFrame")
+		scrollframe:SetScrollChild(scrollchild)
+		scrollframe:SetFrameLevel(scaffold:GetFrameLevel() + 1)
+		scrollframe:SetPoint("BOTTOM")
+		scrollframe:SetSize(1,1)
+
+		-- Lock the scrollchild to the scrollframe. 
+		-- We won't be changing its value, it's just used for cropping overflow.
+		scrollchild:SetAllPoints(scrollframe)
+
+		local texture = scrollchild:CreateTexture()
+		texture:SetDrawLayer("BACKGROUND", 0)
+
+
+		
+	 
 		segments[i] = segment
 	end 
 
-	--[[
-	segments[1]:SetPoint("BOTTOMRIGHT", scaffold, "CENTER", -2, 2)
-	segments[1]:SetTexture('interface/icons/inv_mushroom_11')
-	segments[1]:SetClockwise(false)
-	segments[1]:SetReverse(false)
-	
-	segments[2]:SetPoint("BOTTOMLEFT", scaffold, "CENTER", 2, 2)
-	segments[2]:SetTexture('interface/icons/inv_mushroom_11')
-	segments[2]:SetClockwise(true)
-	segments[2]:SetReverse(false)
-	
-	segments[3]:SetPoint("TOPRIGHT", scaffold, "CENTER", -2, -2)
-	segments[3]:SetSize(64, 64)
-	segments[3]:SetTexture('interface/icons/inv_mushroom_11')
-	segments[3]:SetClockwise(true)
-	segments[3]:SetReverse(true)
-	
-	segments[4]:SetPoint("TOPLEFT", scaffold, "CENTER", 2, -2)
-	segments[4]:SetTexture('interface/icons/inv_mushroom_11')
-	segments[4]:SetClockwise(false)
-	segments[4]:SetReverse(true)
-	]]
+	-- Segment arrangement:
+	-- 
+	-- 		/4|1\  
+	-- 		\3|2/ 
+	--
+	segments[1]:SetPoint("TOPRIGHT", scaffold, "TOPRIGHT", 0, 0)
+	segments[1]:SetPoint("BOTTOMLEFT", scaffold, "CENTER", 0, 0)
+
+	segments[2]:SetPoint("BOTTOMRIGHT", scaffold, "BOTTOMRIGHT", 0, 0)
+	segments[2]:SetPoint("TOPLEFT", scaffold, "CENTER", 0, 0)
+
+	segments[3]:SetPoint("BOTTOMLEFT", scaffold, "BOTTOMLEFT", 0, 0)
+	segments[3]:SetPoint("TOPRIGHT", scaffold, "CENTER", 0, 0)
+
+	segments[4]:SetPoint("TOPLEFT", scaffold, "TOPLEFT", 0, 0)
+	segments[4]:SetPoint("BOTTOMRIGHT", scaffold, "CENTER", 0, 0)
 
 	-- The statusbar is the virtual object that we return to the user.
 	-- This contains all the methods.
 	local statusbar = CreateFrame("Frame", nil, scaffold)
 	statusbar:SetAllPoints() -- lock down the points before we overwrite the methods
 
-	setmetatable(statusbar, StatusBar_MT)
+	setmetatable(statusbar, SpinBar_MT)
 
-	local data = {
-		scaffold = scaffold,
+	local data = {}
+	data.scaffold = scaffold
+	data.statusbar = statusbar
+	data.segments = segments
 
-		statusbar = statusbar, 
+	data.barMin = 0 -- min value
+	data.barMax = 1 -- max value
+	data.barValue = 0 -- real value
+	data.barDisplayValue = 0 -- displayed value while smoothing
+	data.barOrientation = "CLOCKWISE" -- direction the bar is growing in 
+	data.barSmoothingMode = "bezier-fast-in-slow-out"
 
-		barMin = 0, -- min value
-		barMax = 1, -- max value
-		barValue = 0, -- real value
-		barDisplayValue = 0, -- displayed value while smoothing
-		barOrientation = "RIGHT", -- direction the bar is growing in 
-		barSmoothingMode = "bezier-fast-in-slow-out",
+	data.minAngle = 0 -- where the bar starts in the circle
+	data.maxAngle = 360 -- where the bar ends in the circle
 
-		sparkThickness = 8,
-		sparkOffset = 1/32,
-		sparkDirection = "IN",
-		sparkDurationIn = .75, 
-		sparkDurationOut = .55,
-		sparkMinAlpha = .25,
-		sparkMaxAlpha = .95,
-		sparkMinPercent = 1/100,
-		sparkMaxPercent = 99/100,
-
-		-- The real texcoords of the bar texture
-		texCoords = {0, 1, 0, 1}
-	}
+	data.sparkThickness = 8
+	data.sparkOffset = 1/32
+	data.sparkDirection = "IN"
+	data.sparkDurationIn = .75 
+	data.sparkDurationOut = .55
+	data.sparkMinAlpha = .25
+	data.sparkMaxAlpha = .95
+	data.sparkMinPercent = 1/100
+	data.sparkMaxPercent = 99/100
 
 	-- Give multiple objects access using their 'self' as key
 	Bars[statusbar] = data
 	Bars[scaffold] = data
 	--Bars[bar] = data
-
 
 	return statusbar
 
@@ -474,171 +606,3 @@ end
 for target in pairs(LibSpinBar.embeds) do
 	LibSpinBar:Embed(target)
 end
-
-
-do 
-	return
-end
-
--- Usage:
--- spinner = CreateSpinner(parent)
--- spinner:SetTexture('texturePath')
--- spinner:SetBlendMode('blendMode')
--- spinner:SetVertexColor(r, g, b)
--- spinner:SetClockwise(boolean) -- true to fill clockwise, false to fill counterclockwise
--- spinner:SetReverse(boolean) -- true to empty the bar instead of filling it
--- spinner:SetValue(percent) -- value between 0 and 1 to fill the bar to
- 
--- Some math stuff
-
-local Transform = function(texture, x, y, angle, aspect) 
-	
-	-- Translates texture to x, y and rotates about its center
-	local c = math_cos(angle)
-	local s = math_sin(angle)
-
-	local y = y / aspect
-	local oy = .5 / aspect
-	
-	local ULx = .5 + (x - .5) * c - (y - oy) * s
-	local ULy = (oy + (y - oy) * c + (x - .5) * s) * aspect
-
-	local LLx = .5 + (x - .5) * c - (y + oy) * s
-	local LLy = (oy + (y + oy) * c + (x - .5) * s) * aspect
-
-	local URx = .5 + (x + .5) * c - (y - oy) * s
-	local URy = (oy + (y - oy) * c + (x + .5) * s) * aspect
-
-	local LRx = .5 + (x + .5) * c - (y + oy) * s
-	local LRy = (oy + (y + oy) * c + (x + .5) * s) * aspect
-
-	texture:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
-end
- 
--- Permanently pause our rotation animation after it starts playing
-local function OnPlayUpdate(self)
-    self:SetScript('OnUpdate', nil)
-    self:Pause()
-end
- 
-local function OnPlay(self)
-    self:SetScript('OnUpdate', OnPlayUpdate)
-end
- 
-local function SetValue(self, value)
-    -- Correct invalid ranges, preferably just don't feed it invalid numbers
-    if value > 1 then value = 1
-    elseif value < 0 then value = 0 end
-    
-    -- Reverse our normal behavior
-    if self._reverse then
-        value = 1 - value
-    end
-    
-    -- Determine which quadrant we're in
-    local q, quadrant = self._clockwise and (1 - value) or value -- 4 - floor(value / 0.25)
-    if q >= 0.75 then
-        quadrant = 1
-    elseif q >= 0.5 then
-        quadrant = 2
-    elseif q >= 0.25 then
-        quadrant = 3
-    else
-        quadrant = 4
-    end
-    
-    if self._quadrant ~= quadrant then
-        self._quadrant = quadrant
-        -- Show/hide necessary textures if we need to
-        if self._clockwise then
-            for i = 1, 4 do
-                self._textures[i]:SetShown(i < quadrant)
-            end
-        else
-            for i = 1, 4 do
-                self._textures[i]:SetShown(i > quadrant)
-            end
-        end
-        -- Move scrollframe/wedge to the proper quadrant
-        self._scrollframe:SetAllPoints(self._textures[quadrant])    
-    end
- 
-    -- Rotate the things
-    local rads = value * PI2
-	if not self._clockwise then rads = -rads + HALFPI end
-	
-	-- Translates texture to x, y and rotates about its center
-	local x, y = -0.5, -0.5
-
-	local c = math_cos(rads)
-	local s = math_sin(rads)
-
-	local y = y / self._aspect
-	local oy = .5 / self._aspect
-	
-	local ULx = .5 + (x - .5) * c - (y - oy) * s
-	local ULy = (oy + (y - oy) * c + (x - .5) * s) * self._aspect
-
-	local LLx = .5 + (x - .5) * c - (y + oy) * s
-	local LLy = (oy + (y + oy) * c + (x - .5) * s) * self._aspect
-
-	local URx = .5 + (x + .5) * c - (y - oy) * s
-	local URy = (oy + (y - oy) * c + (x + .5) * s) * self._aspect
-
-	local LRx = .5 + (x + .5) * c - (y + oy) * s
-	local LRy = (oy + (y + oy) * c + (x + .5) * s) * self._aspect
-
-	self._wedge:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
-	self._rotation:SetRadians(-rads)
-end
- 
-local function SetClockwise(self, clockwise)
-    self._clockwise = clockwise
-end
- 
-local function SetReverse(self, reverse)
-    self._reverse = reverse
-end
- 
-local function OnSizeChanged(self, width, height)
-    self._wedge:SetSize(width, height) -- it's important to keep this texture sized correctly
-    self._aspect = width / height -- required to calculate the texture coordinates
-end
- 
--- Creates a function that calls a method on all textures at once
-local CreateTextureFunction = function(func, self, ...)
-    return function(self, ...)
-        for i = 1, 4 do
-            local tx = self._textures[i]
-            tx[func](tx, ...)
-        end
-        self._wedge[func](self._wedge, ...)
-    end
-end
- 
--- Pass calls to these functions on our frame to its textures
-local TextureFunctions = {
-    SetTexture = CreateTextureFunction('SetTexture'),
-    SetBlendMode = CreateTextureFunction('SetBlendMode'),
-    SetVertexColor = CreateTextureFunction('SetVertexColor')
-}
- 
-
-----------
--- Demo
-----------
-
-local f = CreateFrame('frame')
-local timespent = 0
-f:SetScript('OnUpdate', function(self, elapsed)
-    timespent = timespent + elapsed
-    if timespent >= 3 then
-        timespent = 0
-    end
-    
-    local value = timespent / 3
-    spinner1:SetValue(value)
-    spinner2:SetValue(value)
-    spinner3:SetValue(value)
-    spinner4:SetValue(value)
-end)

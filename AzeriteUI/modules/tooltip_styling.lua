@@ -124,6 +124,23 @@ end
 -- This will be called by the library upon creating new tooltips.
 TooltipStyling.PostCreateTooltip = function(self, tooltip)
 
+	-- tooltip flags are not implemented yet!
+
+	-- What items will be displayed automatically when available
+	tooltip.showHealthBar =  true
+	tooltip.showPowerBar =  true
+
+	-- Unit tooltips
+	tooltip.colorUnitClass = true -- color the unit class on the info line
+	tooltip.colorUnitNameClass = true -- color unit names by player class
+	tooltip.colorUnitNameReaction = true -- color unit names by NPC standing
+	tooltip.colorHealthClass = true -- color health bars by player class
+	tooltip.colorHealthReaction = true -- color health bars by NPC standing 
+	tooltip.colorHealthTapped = true -- color health bars if unit is tap denied
+	tooltip.colorPower = true -- color power bars by power type
+	tooltip.colorPowerTapped = true -- color power bars if unit is tap denied
+
+
 	-- Force our colors into all tooltips created so far
 	tooltip.colors = Colors
 
