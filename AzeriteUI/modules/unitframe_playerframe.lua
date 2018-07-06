@@ -386,26 +386,26 @@ local Style = function(self, unit, id, ...)
 		extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
 		self.ExtraPower = extraPower
 	
-		local extraPowerBg = extraPower:CreateTexture()
+		local extraPowerBg = extraPower:CreateBackdropTexture()
 		extraPowerBg:SetDrawLayer("BACKGROUND", -2)
 		extraPowerBg:SetSize(113, 113)
 		extraPowerBg:SetPoint("CENTER", 0, 0)
 		extraPowerBg:SetTexture(getPath("pw_orb_bar3"))
 		extraPowerBg:SetVertexColor(22/255,  26/255, 22/255, .82) 
 	
-		local extraPowerFg2 = extraPower:GetOverlay():CreateTexture()
+		local extraPowerFg2 = extraPower:CreateTexture()
 		extraPowerFg2:SetDrawLayer("BORDER", -1)
 		extraPowerFg2:SetSize(127, 127) 
 		extraPowerFg2:SetPoint("CENTER", 0, 0)
 		extraPowerFg2:SetTexture(getPath("shade_circle"))
 		extraPowerFg2:SetVertexColor(0, 0, 0, 1) 
 		
-		local extraPowerFg = extraPower:GetOverlay():CreateTexture()
+		local extraPowerFg = extraPower:CreateTexture()
 		extraPowerFg:SetDrawLayer("BORDER")
 		extraPowerFg:SetSize(188, 188)
 		extraPowerFg:SetPoint("CENTER", 0, 0)
 		
-		local extraPowerVal = extraPower:GetOverlay():CreateFontString()
+		local extraPowerVal = extraPower:CreateFontString()
 		extraPowerVal:SetPoint("CENTER", 3, 0)
 		extraPowerVal:SetDrawLayer("OVERLAY")
 		extraPowerVal:SetFontObject(GameFontNormal)

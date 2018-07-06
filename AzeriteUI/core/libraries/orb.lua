@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 10)
+local LibOrb = CogWheel:Set("LibOrb", 12)
 if (not LibOrb) then	
 	return
 end
@@ -421,12 +421,20 @@ Orb.GetParent = function(self)
 	return Orbs[self].scaffold:GetParent()
 end
 
+-- Adding a special function to create textures 
+-- parented to the backdrop frame.
+Orb.CreateBackdropTexture = function(self, ...)
+	return Orbs[self].scaffold:CreateTexture(...)
+end
+
+-- Parent newly created textures and fontstrings
+-- to the overlay frame, to better mimic normal behavior.
 Orb.CreateTexture = function(self, ...)
-	Orbs[self].scaffold:CreateTexture(...)
+	return Orbs[self].overlay:CreateTexture(...)
 end
 
 Orb.CreateFontString = function(self, ...)
-	Orbs[self].scaffold:CreateFontString(...)
+	return Orbs[self].overlay:CreateFontString(...)
 end
 
 Orb.SetScript = function(self, ...)
@@ -443,9 +451,6 @@ Orb.IsObjectType = function(self, type) return type == "Orb" or type == "Frame" 
 Orb.Show = function(self) Orbs[self].scaffold:Show() end
 Orb.Hide = function(self) Orbs[self].scaffold:Hide() end
 Orb.IsShown = function(self) return Orbs[self].scaffold:IsShown() end
-
--- proxy method to return the orbs's overlay frame, for adding texts, icons etc
-Orb.GetOverlay = function(self) return Orbs[self].overlay end
 
 -- Fancy method allowing us to crop the orb's sides
 Orb.SetCrop = function(self, leftCrop, rightCrop)
@@ -489,6 +494,9 @@ LibOrb.CreateOrb = function(self, parent, rotateClockwise, speedModifier)
 	orbTex1:SetDrawLayer("BACKGROUND", 0)
 	orbTex1:SetAllPoints()
 
+	-- TODO: Get rid of these animation layers, 
+	-- we should be able to do it ourselves in BfA
+	-- where SetRotation and SetTexCoord can be used together. 
 	local orbTex1AnimGroup = orbTex1:CreateAnimationGroup()    
 	local orbTex1Anim = orbTex1AnimGroup:CreateAnimation("Rotation")
 	orbTex1Anim:SetDegrees(rotateClockwise and -360 or 360)
@@ -545,39 +553,38 @@ LibOrb.CreateOrb = function(self, parent, rotateClockwise, speedModifier)
 
 	setmetatable(orb, Orb_MT)
 
-	local data = {
-		orb = orb, 
+	local data = {}
+	data.orb = orb
 
-		-- framework
-		scaffold = scaffold,
-		scrollchild = scrollchild,
-		scrollframe = scrollframe,
-		overlay = overlay,
+	-- framework
+	data.scaffold = scaffold
+	data.scrollchild = scrollchild
+	data.scrollframe = scrollframe
+	data.overlay = overlay
 
-		-- layers
-		layer1 = orbTex1,
-		layer2 = orbTex2,
-		layer3 = orbTex3,
-		spark = spark,
-		glow = glow,
+	-- layers
+	data.layer1 = orbTex1
+	data.layer2 = orbTex2
+	data.layer3 = orbTex3
+	data.spark = spark
+	data.glow = glow
 
-		orbMin = 0, -- min value
-		orbMax = 1, -- max value
-		orbValue = 0, -- real value
-		orbDisplayValue = 0, -- displayed value while smoothing
-		orbLeftCrop = 0, -- percentage of the orb cropped from the left
-		orbRightCrop = 0, -- percentage of the orb cropped from the right
+	data.orbMin = 0 -- min value
+	data.orbMax = 1 -- max value
+	data.orbValue = 0 -- real value
+	data.orbDisplayValue = 0 -- displayed value while smoothing
+	data.orbLeftCrop = 0 -- percentage of the orb cropped from the left
+	data.orbRightCrop = 0 -- percentage of the orb cropped from the right
 
-		sparkHeight = 8,
-		sparkOffset = 1/32,
-		sparkDirection = "IN",
-		sparkDurationIn = .75, 
-		sparkDurationOut = .55,
-		sparkMinAlpha = .25,
-		sparkMaxAlpha = .95,
-		sparkMinPercent = 1/100,
-		sparkMaxPercent = 99/100
-	}
+	data.sparkHeight = 8
+	data.sparkOffset = 1/32
+	data.sparkDirection = "IN"
+	data.sparkDurationIn = .75 
+	data.sparkDurationOut = .55
+	data.sparkMinAlpha = .25
+	data.sparkMaxAlpha = .95
+	data.sparkMinPercent = 1/100
+	data.sparkMaxPercent = 99/100
 
 	Orbs[orb] = data
 	Orbs[scaffold] = data

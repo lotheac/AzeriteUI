@@ -416,7 +416,6 @@ Minimap.SetUpMinimap = function(self)
 	performanceFrame:SetScript("OnEnter", Performance_OnEnter)
 	performanceFrame:SetScript("OnLeave", Performance_OnLeave)
 
-
 	-- XP & Artifact Bars
 	local xpFrame = Handler:CreateOverlayFrame()
 
@@ -438,7 +437,7 @@ Minimap.SetUpMinimap = function(self)
 	------------------------------------------------------------------------------
 	-- Test Start 
 	------------------------------------------------------------------------------
-
+	--[=[ 
 	local dummyBar1 = xpFrame:CreateTexture()
 	dummyBar1:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
 	dummyBar1:SetSize(211,211)
@@ -518,7 +517,7 @@ Minimap.SetUpMinimap = function(self)
 		--local CX, CY = math_cos(center) *.5, math_sin(center) *.5
 
 		-- Figure out the offset in position
-		local center = (90-degrees+45) * DEGS_TO_RADS
+		local center = (135-degrees) * DEGS_TO_RADS
 		local width, height = texture:GetSize()
 		local offsetx = (math_cos(center) * ROOT_OF_HALF - .5) * width
 		local offsety = (math_sin(center) * ROOT_OF_HALF - .5) * height
@@ -576,12 +575,17 @@ Minimap.SetUpMinimap = function(self)
 	------------------------------------------------------------------------------
 	-- Test End 
 	------------------------------------------------------------------------------
+	]=]
 
 	-- xp bar
 	local xp = xpFrame:CreateSpinBar()
 	xp:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
 	xp:SetSize(211,211)
 	xp:SetStatusBarTexture(getPath("xp_bar"))
+	xp:SetStatusBarColor(unpack(Colors.rested))
+	xp:SetClockwise(true) -- bar runs clockwise
+	xp:SetDegreeOffset(256) -- bar starts at 14 degrees out from the bottom vertical axis
+	xp:SetDegreeSpan(332) -- bar stops at the opposite side of that axis
 	xp.colors = Colors
 	xp.colorValue = true
 
@@ -593,6 +597,7 @@ Minimap.SetUpMinimap = function(self)
 	xpValue:SetJustifyV("TOP")
 	xpValue:SetShadowOffset(0, 0)
 	xpValue:SetShadowColor(0, 0, 0, 1)
+	xpValue:SetTextColor(unpack(Colors.rested))
 	xp.value = xpValue
 
 	-- honor bar
@@ -605,6 +610,10 @@ Minimap.SetUpMinimap = function(self)
 	azPower:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
 	azPower:SetSize(211,211)
 	azPower:SetStatusBarTexture(getPath("xp_artifact"))
+	azPower:SetStatusBarColor(unpack(Colors.artifact))
+	azPower:SetClockwise(true) -- bar runs clockwise
+	azPower:SetDegreeOffset(249) -- bar starts at 21 degrees out from the bottom vertical axis
+	azPower:SetDegreeSpan(318) -- bar stops at the opposite side of that axis
 	azPower.colors = Colors
 	azPower.colorValue = true
 
@@ -616,6 +625,7 @@ Minimap.SetUpMinimap = function(self)
 	azValue:SetJustifyV("TOP")
 	azValue:SetShadowOffset(0, 0)
 	azValue:SetShadowColor(0, 0, 0, 1)
+	azValue:SetTextColor(unpack(Colors.artifact))
 	azPower.value = azValue
 
 	-- rep bar

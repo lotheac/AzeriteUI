@@ -1,8 +1,10 @@
 -- This library is inspired by code and ideas started by Zork and Semlar,
 -- though the final code went a different way and both benefits from 
 -- and relies on API changes only available in Battle for Azeroth.
+-- The thread that started it: 
+-- http://www.wowinterface.com/forums/showthread.php?t=45918
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 3)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 5)
 if (not LibSpinBar) then	
 	return
 end
@@ -42,8 +44,12 @@ local Bars = LibSpinBar.bars
 local Textures = LibSpinBar.textures
 
 -- Constants needed later on
-local DEGS_TO_RADS = math_pi/180
-local ROOT_OF_HALF = math_sqrt(.5)
+local TWO_PI = math_pi*2 -- a 360 interval (full circle)
+local HALF_PI = math_pi/2 -- a 90 degree interval (full quadrant)
+local QUARTER_PI = math_pi/4 -- a 45 degree interval (center of quadrant)
+local DEGS_TO_RADS = math_pi/180 -- simple conversion multiplier
+local ROOT_OF_HALF = math_sqrt(.5) -- just something we need to calculate center offsets
+
 
 ----------------------------------------------------------------
 -- Utility functions
@@ -66,228 +72,321 @@ end
 ----------------------------------------------------------------
 -- SpinBar template
 ----------------------------------------------------------------
+
+-- The virtual bar objects that the modules can manipulate
 local SpinBar = LibSpinBar:CreateFrame("Frame")
 local SpinBar_MT = { __index = SpinBar }
 
-local Segment = SpinBar:CreateFrame("Frame") 
-local Segment_MT = { __index = Segment }
+-- Connected to the textures, not the scrollframes. 
+local Quadrant = SpinBar:CreateTexture() 
+local Quadrant_MT = { __index = Quadrant }
 
-local Texture = SpinBar:CreateTexture() 
-local Texture_MT = { __index = Texture }
+Quadrant.IsActive = function(self)
+	return self.active
+end
 
--- Grab some of the original methods before we change them
-local blizzardSetTexCoord = getmetatable(Texture).__index.SetTexCoord
-local blizzardGetTexCoord = getmetatable(Texture).__index.GetTexCoord
+-- Resets a quadrant's texture to its default (full)
+-- texcoords and removes any applied rotations. 
+-- *Does NOT toggle visibility!
+Quadrant.ResetTexture = function(self)
+	if (self.quadrantID == 1) then 
+		self:SetTexCoord(.5, 1, 0, .5)
+	else (self.quadrantID == 2) then 
+		self:SetTexCoord(.5, 1, .5, 1)
+	else (self.quadrantID == 3) then 
+		self:SetTexCoord(0, .5, .5, 1)
+	else (self.quadrantID == 4) then 
+		self:SetTexCoord(0, .5, 0, .5)
+	end 
+	self:SetRotation(0)
+end 
 
+Quadrant.RotateTexture = function(self, degrees)
+
+	local ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
+	local mod, point, offsetX, offsetY
+
+	-- Calculate where the current position is
+	local radians = degrees * DEGS_TO_RADS
+
+	-- Make sure the degree is in bounds, or just reset the texture and exit
+	if (degree < self.quadrantDegree) then 
+
+		return self:ResetTexture()
+
+	elseif (degree > self.quadrantDegree + 90) then 
+
+		return self:ResetTexture()
+
+	end
+
+	-- Simple modifier to decide which direction the box expands in
+	mod = self.clockwise and 1 or -1
+
+	-- Figure out where the points are
+	local mainX, mainY = math_cos(radians) *.5, math_sin(radians) *.5
+	local otherX, otherY = math_cos(radians + HALF_PI*mod) *.5 
+	local centerX, centerY =  math_cos(radians + QUARTER_PI*mod) *.5, math_sin(radians + QUARTER_PI*mod) *.5 
+	
+	-- Notes about quadrants and their textures:
+	-- * clockwise textures assume a full square when at the start of the quadrant
+	-- * clockwise textures extend towards the end of the quadrant
+	-- * anti-clockwise textures assume a full square when at the end of a quadrant
+	-- * anti-clockwise textures extend towards the start of the quadrant
+	if (self.quadrantID == 1) then 
+
+		LLx, LLy, point = 0, 0, "BOTTOMLEFT"
+		if self.clockwise then 
+			LRx, LRy = mainX, mainY
+			ULx, ULy = otherX, otherY
+			URx, URy = centerX, centerY
+		else 
+			ULx, ULy = mainX, mainY
+			LRx, LRy = otherX, otherY
+			URx, URy = centerX, centerY
+		end 
+
+	elseif (self.quadrantID == 2) then 
+
+		LRx, LRy, point = 0, 0, "BOTTOMRIGHT"
+		if self.clockwise then 
+			URx, URy = mainX, mainY
+			LLx, LLy = otherX, otherY
+			ULx, ULy = centerX, centerY
+		else 
+			LLx, LLy = mainX, mainY
+			URx, URy = otherX, otherY
+			ULx, ULy = centerX, centerY
+		end 
+
+	elseif (self.quadrantID == 3) then 
+
+		URx, URy, point = 0, 0, "TOPRIGHT"
+		if self.clockwise then 
+			ULx, ULy = mainX, mainY
+			LRx, LRy = otherX, otherY
+			LLx, LLy = centerX, centerY
+		else 
+			LRx, LRy = mainX, mainY
+			ULx, ULy = otherX, otherY
+			LLx, LLy = centerX, centerY
+		end 
+
+	elseif (self.quadrantID == 4) then 
+
+		ULx, ULy, point = 0, 0, "TOPLEFT"
+		if self.clockwise then 
+			LLx, LLy = mainX, mainY
+			URx, URy = otherX, otherY
+			LRx, LRy = centerX, centerY
+		else 
+			URx, URy = mainX, mainY
+			LLx, LLy = otherX, otherY
+			LRx, LRy = centerX, centerY
+		end 
+
+	end 		
+
+	-- Convert to coordinates used 
+	-- by the wow texcoord system
+	local LLx = LLx + .5
+	local LRx = LRx + .5
+	local ULx = ULx + .5
+	local URx = URx + .5
+	local LLy = 1 - (LLy + .5)
+	local LRy = 1 - (LRy + .5)
+	local ULy = 1 - (ULy + .5)
+	local URy = 1 - (URy + .5)
+
+	-- Get the angle and position of the new center
+	--local center = (90-degrees+45) * DEGS_TO_RADS
+	--local CX, CY = math_cos(center) *.5, math_sin(center) *.5
+	--local offsetX = CX*ROOT_OF_HALF*width*2 - width/2
+	--local offsetY = CY*ROOT_OF_HALF*height*2 - height/2
+
+	-- Figure out the offset in position
+	local width, height = self:GetSize()
+	local offsetX = URx*ROOT_OF_HALF*width*2 - width/2
+	local offsetY = URy*ROOT_OF_HALF*height*2 - height/2
+
+	self:SetRotation(radians * mod)
+	self:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
+	self:SetPoint("BOTTOMLEFT", offsetX, offsetY)
+
+end
 
 local Update = function(self, elapsed)
 	local data = Bars[self]
 
-	do return end
-
 	local value = data.disableSmoothing and data.barValue or data.barDisplayValue
-	local min, max = data.barMin, data.barMax
-	local orientation = data.barOrientation
+	local minValue, maxValue = data.barMin, data.barMax
 	local width, height = data.statusbar:GetSize() 
 	local bar = data.bar
-	local spark = data.spark
 	
-	if (value > max) then
-		value = max
-	elseif (value < min) then
-		value = min
+	-- Make sure the value is in the visual range
+	if (value > maxValue) then
+		value = maxValue
+	elseif (value < minValue) then
+		value = minValue
 	end
 	
-	if (value == min) or (max == min) then
-		bar:Hide()
-	else
-		local displaySize, mult
-		if (max > min) then
-			mult = (value-min)/(max-min)
-			displaySize = mult * ((orientation == "RIGHT" or orientation == "LEFT") and width or height)
-			if (displaySize < .01) then 
-				displaySize = .01
-			end 
-		else
-			mult = .01
-			displaySize = .01
-		end
-
-		-- if there's a sparkmap, let's apply it!
-		local sparkPoint, sparkAnchor
-		local sparkOffsetTop, sparkOffsetBottom = 0,0
-		local sparkMap = data.sparkMap
-		if sparkMap then 
-
-			local sparkPercentage = mult
-			if data.reversedH and ((orientation == "LEFT") or (orientation == "RIGHT")) then 
-				sparkPercentage = 1 - mult
-			end 
-			if data.reversedV and ((orientation == "UP") or (orientation == "DOWN")) then 
-				sparkPercentage = 1 - mult
-			end 
-
-			if (sparkMap.top and sparkMap.bottom) then 
-
-				-- Iterate through the map to figure out what points we are between
-				-- *There's gotta be a more elegant way to do this...
-				local topBefore, topAfter = 1, #sparkMap.top
-				local bottomBefore, bottomAfter = 1, #sparkMap.bottom
-					
-				-- Iterate backwards to find the first top point before our current bar value
-				for i = topAfter,topBefore,-1 do 
-					if sparkMap.top[i].keyPercent > sparkPercentage then 
-						topAfter = i
-					end 
-					if sparkMap.top[i].keyPercent < sparkPercentage then 
-						topBefore = i
-						break
-					end 
-				end 
-				-- Iterate backwards to find the first bottom point before our current bar value
-				for i = bottomAfter,bottomBefore,-1 do 
-					if sparkMap.bottom[i].keyPercent > sparkPercentage then 
-						bottomAfter = i
-					end 
-					if sparkMap.bottom[i].keyPercent < sparkPercentage then 
-						bottomBefore = i
-						break
-					end 
-				end 
-			
-				-- figure out the offset at our current position 
-				-- between our upper and lover points
-				local belowPercentTop = sparkMap.top[topBefore].keyPercent
-				local abovePercentTop = sparkMap.top[topAfter].keyPercent
-
-				local belowPercentBottom = sparkMap.bottom[bottomBefore].keyPercent
-				local abovePercentBottom = sparkMap.bottom[bottomAfter].keyPercent
-
-				local currentPercentTop = (sparkPercentage - belowPercentTop)/(abovePercentTop-belowPercentTop)
-				local currentPercentBottom = (sparkPercentage - belowPercentBottom)/(abovePercentBottom-belowPercentBottom)
-	
-				-- difference between the points
-				local diffTop = sparkMap.top[topAfter].offset - sparkMap.top[topBefore].offset
-				local diffBottom = sparkMap.bottom[bottomAfter].offset - sparkMap.bottom[bottomBefore].offset
-	
-				sparkOffsetTop = (sparkMap.top[topBefore].offset + diffTop*currentPercentTop) --* height
-				sparkOffsetBottom = (sparkMap.bottom[bottomBefore].offset + diffBottom*currentPercentBottom) --* height
-	
-			else 
-				-- iterate through the map to figure out what points we are between
-				-- gotta be a more elegant way to do this
-				local below, above = 1,#sparkMap
-				for i = above,below,-1 do 
-					if sparkMap[i].keyPercent > sparkPercentage then 
-						above = i
-					end 
-					if sparkMap[i].keyPercent < sparkPercentage then 
-						below = i
-						break
-					end 
-				end 
-
-				-- figure out the offset at our current position 
-				-- between our upper and lover points
-				local belowPercent = sparkMap[below].keyPercent
-				local abovePercent = sparkMap[above].keyPercent
-				local currentPercent = (sparkPercentage - belowPercent)/(abovePercent-belowPercent)
-
-				-- difference between the points
-				local diffTop = sparkMap[above].topOffset - sparkMap[below].topOffset
-				local diffBottom = sparkMap[above].bottomOffset - sparkMap[below].bottomOffset
-
-				sparkOffsetTop = (sparkMap[below].topOffset + diffTop*currentPercent) --* height
-				sparkOffsetBottom = (sparkMap[below].bottomOffset + diffBottom*currentPercent) --* height
-			end 
+	-- Hide the bar textures if the value is at 0, or if max equals min. 
+	if (value == minValue) or (maxValue == minValue) then
+		for id,bar in ipairs(data.quadrants) do 
+			bar.active = false
+			bar:Hide()
 		end 
-		
-		-- Hashed tables are just such a nice way to get post updates done faster :) 
-		UpdateByGrowthDirection[orientation](self, mult, displaySize, width, height, sparkOffsetTop, sparkOffsetBottom)
-
-
-		if elapsed then
-			local currentAlpha = spark:GetAlpha()
-			local range = data.sparkMaxAlpha - data.sparkMinAlpha
-			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
-			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range
-			if (data.sparkDirection == "IN") then
-				if (currentAlpha + alphaChange < targetAlpha) then
-					currentAlpha = currentAlpha + alphaChange
-				else
-					currentAlpha = targetAlpha
-					data.sparkDirection = "OUT"
-				end
-			elseif (data.sparkDirection == "OUT") then
-				if (currentAlpha + alphaChange > targetAlpha) then
-					currentAlpha = currentAlpha - alphaChange
-				else
-					currentAlpha = targetAlpha
-					data.sparkDirection = "IN"
-				end
-			end
-			spark:SetAlpha(currentAlpha)
-		end
-		if (not bar:IsShown()) then
-			bar:Show()
-		end
-	end
-	
-	-- Spark alpha animation
-	if (value == max) or (value == min) or (value/max >= data.sparkMaxPercent) or (value/max <= data.sparkMinPercent) then
-		if spark:IsShown() then
-			spark:Hide()
-			spark:SetAlpha(data.sparkMinAlpha)
-			data.sparkDirection = "IN"
-		end
 	else
-		if elapsed then
-			local currentAlpha = spark:GetAlpha()
-			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
-			local range = data.sparkMaxAlpha - data.sparkMinAlpha
-			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range
+
+		-- get current values
+		local degreeOffset = data.degreeOffset
+		local degreeSpan = data.degreeSpan
+
+		local percentage = value/(maxValue - minValue)
+
+		local originalAngle = degreeSpan * percentage		
 		
-			if data.sparkDirection == "IN" then
-				if currentAlpha + alphaChange < targetAlpha then
-					currentAlpha = currentAlpha + alphaChange
-				else
-					currentAlpha = targetAlpha
-					data.sparkDirection = "OUT"
-				end
-			elseif data.sparkDirection == "OUT" then
-				if currentAlpha + alphaChange > targetAlpha then
-					currentAlpha = currentAlpha - alphaChange
-				else
-					currentAlpha = targetAlpha
-					data.sparkDirection = "IN"
-				end
-			end
-			spark:SetAlpha(currentAlpha)
-		end
-		if (not spark:IsShown()) then
-			spark:Show()
+		local modifiedAngle
+		if clockwise then 
+
+		else
+
+		end 
+
+
+		-- update all quadrants with the new angle
+
+
+		for id,bar in ipairs(data.quadrants) do 
+			if bar.active and (not bar:IsShown()) then
+				bar:Show()
+			elseif (not bar.active) and bar:IsShown() then 
+				bar:Hide()
+			end 
 		end
 	end
 
 	-- Allow modules to add their postupdates here
 	if (self.PostUpdate) then 
-		self:PostUpdate(value, min, max)
+		self:PostUpdate(value, minValue, maxValue)
 	end
 
 end
 
+local smoothingMinValue = .3 -- if a value is lower than this, we won't smoothe
+local smoothingFrequency = .5 -- time for the smooth transition to complete
+local smoothingLimit = 1/120 -- max updates per second
 
+local OnUpdate = function(self, elapsed)
+	local data = Bars[self]
+	data.elapsed = (data.elapsed or 0) + elapsed
+	if (data.elapsed < smoothingLimit) then
+		return
+	end
+	if (data.disableSmoothing) then
+		if (data.barValue <= data.barMin) or (data.barValue >= data.barMax) then
+			data.scaffold:SetScript("OnUpdate", nil)
+		end
+	elseif (data.smoothing) then
+		if (math_abs(data.barDisplayValue - data.barValue) < smoothingMinValue) then 
+			data.barDisplayValue = data.barValue
+			data.smoothing = nil
+		else 
+			-- The fraction of the total bar this total animation should cover  
+			local animsize = (data.barValue - data.smoothingInitialValue)/(data.barMax - data.barMin) 
+
+			-- Points per second on average for the whole bar
+			local pps = (data.barMax - data.barMin)/(data.smoothingFrequency or smoothingFrequency)
+
+			-- Position in time relative to the length of the animation, scaled from 0 to 1
+			local position = (GetTime() - data.smoothingStart)/(data.smoothingFrequency or smoothingFrequency) 
+			if (position < 1) then 
+				-- The change needed when using average speed
+				local average = pps * animsize * data.elapsed -- can and should be negative
+
+				-- Tha change relative to point in time and distance passed
+				local change = 2*(3 * ( 1 - position )^2 * position) * average*2 --  y = 3 * (1 − t)^2 * t  -- quad bezier fast ascend + slow descend
+				--local change = 2*(3 * ( 1 - position ) * position^2) * average*2 -- y = 3 * (1 − t) * t^2 -- quad bezier slow ascend + fast descend
+				--local change = 2 * average * ((position < .7) and math_abs(position/.7) or math_abs((1-position)/.3)) -- linear slow ascend + fast descend
+				
+				--print(("time: %.3f pos: %.3f change: %.1f"):format(GetTime() - data.smoothingStart, position, change))
+
+				-- If there's room for a change in the intended direction, apply it, otherwise finish the animation
+				if ( (data.barValue > data.barDisplayValue) and (data.barValue > data.barDisplayValue + change) ) 
+				or ( (data.barValue < data.barDisplayValue) and (data.barValue < data.barDisplayValue + change) ) then 
+					data.barDisplayValue = data.barDisplayValue + change
+				else 
+					data.barDisplayValue = data.barValue
+					data.smoothing = nil
+				end 
+			else 
+				data.barDisplayValue = data.barValue
+				data.smoothing = nil
+			end 
+		end 
+	else
+		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) then
+			data.scaffold:SetScript("OnUpdate", nil)
+		end
+	end
+
+	Update(self, data.elapsed)
+
+	-- call module OnUpdate handler
+	if data.OnUpdate then 
+		data.OnUpdate(data.statusbar, data.elapsed)
+	end 
+
+	-- only reset this at the very end, as calculations above need it
+	data.elapsed = 0
+end
 
 
 -- Sets the angles where the bar starts and ends. 
 -- Generally recommended to slightly overshoot the texture "edges" 
 -- to avoid textures being abruptly cut off. 
-SpinBar.SetMinMaxAngles = function(self, minAngle, maxAngle)
+SpinBar.SetDegreeOffset = function(self, degreeOffset)
 	local data = Bars[self]
-	data.minAngle = minAngle
-	data.maxAngle = maxAngle
+
+	data.degreeOffset = degreeOffset
+
+	for i = #data.quadrants,1,-1 do
+		local bar = data.quadrants[i] 
+		if (degreeOffset >= bar.quadrantDegree) then 
+			data.startQuadrant = i
+		end 
+		if data.clockwise then 
+			if (degreeOffset - data.degreeSpan >= bar.quadrantDegree) then 
+				data.endQuadrant = i
+			end 
+		else 
+			if (degreeOffset + data.degreeSpan >= bar.quadrantDegree) then 
+				data.endQuadrant = i
+			end 
+		end 
+	end 
+
 	Update(self)
 end
+
+SpinBar.SetDegreeSpan = function(self, degreeSpan)
+	local data = Bars[self]
+
+	data.degreeSpan = degreeSpan
+
+	for i = #data.quadrants,1,-1 do
+		local bar = data.quadrants[i] 
+		if data.clockwise then 
+			if (degreeOffset - data.degreeSpan >= bar.quadrantDegree) then 
+				data.endQuadrant = i
+			end 
+		else 
+			if (degreeOffset + data.degreeSpan >= bar.quadrantDegree) then 
+				data.endQuadrant = i
+			end 
+		end 
+	end 
+end 
 
 -- Sets the min/max-values as in any other bar.
 SpinBar.SetSmoothingFrequency = function(self, smoothingFrequency)
@@ -311,8 +410,6 @@ SpinBar.DisableSmoothing = function(self, disableSmoothing)
 end
 
 -- Sets the current value of the spinbar. 
--- This takes both min/max values and min/max angles into consideration, 
--- meaning if you've set the min to -120 degree, a value of 0 would put the bar there. 
 SpinBar.SetValue = function(self, value, overrideSmoothing)
 	local data = Bars[self]
 	local min, max = data.barMin, data.barMax
@@ -337,6 +434,7 @@ SpinBar.SetValue = function(self, value, overrideSmoothing)
 	if (value ~= data.barDisplayValue) then
 		data.smoothing = true
 	end
+
 	if (data.smoothing or (data.barDisplayValue > min) or (data.barDisplayValue < max)) then
 		if (not data.scaffold:GetScript("OnUpdate")) then
 			data.scaffold:SetScript("OnUpdate", OnUpdate)
@@ -378,21 +476,37 @@ SpinBar.SetMinMaxValues = function(self, min, max, overrideSmoothing)
 end
 
 SpinBar.SetStatusBarColor = function(self, ...)
-	Bars[self].bar:SetVertexColor(...)
-	Bars[self].spark:SetVertexColor(...)
+	local data = Bars[self]
+	for id,bar in ipairs(data.quadrants) do 
+		bar:SetVertexColor(...)
+	end 
 end
 
-SpinBar.SetStatusBarTexture = function(self, ...)
-	local arg = ...
-	if (type(arg) == "number") then
-		--Bars[self].bar:SetColorTexture(...)
-	else
-		--Bars[self].bar:SetTexture(...)
-	end
+SpinBar.SetStatusBarTexture = function(self, path)
+	local data = Bars[self]
+	for id,bar in ipairs(data.quadrants) do 
+		bar:SetTexture(path)
+	end 
+	-- Don't need an update here, texture changes are instant,
+	-- and won't change applied rotations and texcoords. I think(?).
 	--Update(self)
 end
 
 SpinBar.GetStatusBarTexture = function(self)
+	return Bars[self].quadrants[1]:GetTexture()
+end
+
+StatusBar.SetClockwise = function(self, clockwise)
+	local data = Bars[self]
+	data.clockwise = true
+	for id,bar in ipairs(data.quadrants) do 
+		bar.clockwise = clockwise
+	end 
+	Update(self)
+end
+
+SpinBar.GetDirection = function(self)
+	return Bars[self].clockwise
 end
 
 SpinBar.GetParent = function(self)
@@ -422,18 +536,39 @@ SpinBar.GetPoint = function(self, ...)
 	return Bars[self].scaffold:GetPoint(...)
 end
 
-SpinBar.SetSize = function(self, ...)
-	Bars[self].scaffold:SetSize(...)
+SpinBar.SetSize = function(self, width, height)
+	local data = Bars[self]
+
+	data.scaffold:SetSize(width, height)
+
+	for id,bar in ipairs(data.quadrants) do 
+		bar:SetSize(width/2, height/2)
+	end 
+
 	Update(self)
 end
 
-SpinBar.SetWidth = function(self, ...)
-	Bars[self].scaffold:SetWidth(...)
+SpinBar.SetWidth = function(self, width)
+	local data = Bars[self]
+
+	data.scaffold:SetWidth(width)
+
+	for id,bar in ipairs(data.quadrants) do 
+		bar:SetWidth(width/2)
+	end 
+
 	Update(self)
 end
 
-SpinBar.SetHeight = function(self, ...)
-	Bars[self].scaffold:SetHeight(...)
+SpinBar.SetHeight = function(self, height)
+	local data = Bars[self]
+
+	data.scaffold:SetHeight(height)
+
+	for id,bar in ipairs(data.quadrants) do 
+		bar:SetHeight(height/2)
+	end 
+
 	Update(self)
 end
 
@@ -490,25 +625,68 @@ SpinBar.SetParent = function(self, ...)
 	Bars[self].scaffold:SetParent()
 end
 
+SpinBar.CreateFrame = function(self, type, name, ...)
+	return self:CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
+end
+
+-- Adding a special function to create textures 
+-- parented to the backdrop frame.
+SpinBar.CreateBackdropTexture = function(self, ...)
+	return Bars[self].scaffold:CreateTexture(...)
+end
+
+-- Parent newly created textures and fontstrings
+-- to the overlay frame, to better mimic normal behavior.
+SpinBar.CreateTexture = function(self, ...)
+	return Bars[self].overlay:CreateTexture(...)
+end
+
+SpinBar.CreateFontString = function(self, ...)
+	return Bars[self].overlay:CreateFontString(...)
+end
+
+SpinBar.SetScript = function(self, ...)
+	-- can not allow the scaffold to get its scripts overwritten
+	local scriptHandler, func = ... 
+	if (scriptHandler == "OnUpdate") then 
+		Bars[self].OnUpdate = func 
+	else 
+		Bars[self].scaffold:SetScript(...)
+	end 
+end
+
+SpinBar.GetScript = function(self, ...)
+	local scriptHandler, func = ... 
+	if (scriptHandler == "OnUpdate") then 
+		return Bars[self].OnUpdate
+	else 
+		return Bars[self].scaffold:GetScript(...)
+	end 
+end
 
 LibSpinBar.CreateSpinBar = function(self, parent)
 
 	-- The scaffold is the top level frame object 
 	-- that will respond to SetSize, SetPoint and similar.
 	local scaffold = LibSpinBar:CreateFrame("Frame", nil, parent or self)
-	scaffold:SetSize(64,64)
+	scaffold:SetSize(2,2)
 
-	-- Create the 4 segments of the bar
-	local segments = {}
+	-- The overlay is meant to hold overlay textures like the spark, glow, etc
+	local overlay = scaffold:CreateFrame("Frame")
+	overlay:SetFrameLevel(scaffold:GetFrameLevel() + 2)
+	overlay:SetAllPoints(scaffold)
+
+
+	-- Create the 4 quadrants of the bar
+	local quadrants = {}
 	for i = 1,4 do 
-		local segment = scaffold:CreateFrame("Frame")
     
 		-- The scrollchild is where we put rotating texture that needs to be cropped.
 		local scrollchild = scaffold:CreateFrame("Frame")
 		scrollchild:SetFrameLevel(scaffold:GetFrameLevel() + 1)
 		scrollchild:SetSize(1,1)
 
-		-- The scrollframe defines the visible area of the segment
+		-- The scrollframe defines the visible area of the quadrant
 		local scrollframe = scaffold:CreateFrame("ScrollFrame")
 		scrollframe:SetScrollChild(scrollchild)
 		scrollframe:SetFrameLevel(scaffold:GetFrameLevel() + 1)
@@ -519,31 +697,57 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 		-- We won't be changing its value, it's just used for cropping overflow.
 		scrollchild:SetAllPoints(scrollframe)
 
-		local texture = scrollchild:CreateTexture()
-		texture:SetDrawLayer("BACKGROUND", 0)
+		-- The actual bar quadrant texture
+		local bar = setmetatable(scrollchild:CreateTexture(), Quadrant_MT)
+		bar:SetSize(1,1)
+		bar:SetDrawLayer("BACKGROUND", 0)
+		bar.quadrantID = i 
+		bar.clockwise = false
+
+		-- Quadrant arrangement:
+		-- 
+		-- 		/2|1\  
+		-- 		\3|4/ 
+		-- 
+		-- Note that the quadrants are counter clockwise, 
+		-- and moving in the opposite direction of default bars. 
+
+		if (i == 1) then 
+
+			scrollframe:SetPoint("TOPRIGHT", scaffold, "TOPRIGHT", 0, 0)
+			scrollframe:SetPoint("BOTTOMLEFT", scaffold, "CENTER", 0, 0)
+
+			bar.quadrantDegree = 0 
 
 
-		
-	 
-		segments[i] = segment
+		elseif (i == 2) then
+
+			scrollframe:SetPoint("TOPLEFT", scaffold, "TOPLEFT", 0, 0)
+			scrollframe:SetPoint("BOTTOMRIGHT", scaffold, "CENTER", 0, 0)
+
+			bar.quadrantDegree = 90
+
+
+		elseif (i == 3) then
+
+			scrollframe:SetPoint("BOTTOMLEFT", scaffold, "BOTTOMLEFT", 0, 0)
+			scrollframe:SetPoint("TOPRIGHT", scaffold, "CENTER", 0, 0)
+
+			bar.quadrantDegree = 180
+
+
+		elseif (i == 4) then
+
+			scrollframe:SetPoint("BOTTOMRIGHT", scaffold, "BOTTOMRIGHT", 0, 0)
+			scrollframe:SetPoint("TOPLEFT", scaffold, "CENTER", 0, 0)
+
+			bar.quadrantDegree = 240
+
+		end	
+
+		quadrants[i] = bar
 	end 
 
-	-- Segment arrangement:
-	-- 
-	-- 		/4|1\  
-	-- 		\3|2/ 
-	--
-	segments[1]:SetPoint("TOPRIGHT", scaffold, "TOPRIGHT", 0, 0)
-	segments[1]:SetPoint("BOTTOMLEFT", scaffold, "CENTER", 0, 0)
-
-	segments[2]:SetPoint("BOTTOMRIGHT", scaffold, "BOTTOMRIGHT", 0, 0)
-	segments[2]:SetPoint("TOPLEFT", scaffold, "CENTER", 0, 0)
-
-	segments[3]:SetPoint("BOTTOMLEFT", scaffold, "BOTTOMLEFT", 0, 0)
-	segments[3]:SetPoint("TOPRIGHT", scaffold, "CENTER", 0, 0)
-
-	segments[4]:SetPoint("TOPLEFT", scaffold, "TOPLEFT", 0, 0)
-	segments[4]:SetPoint("BOTTOMRIGHT", scaffold, "CENTER", 0, 0)
 
 	-- The statusbar is the virtual object that we return to the user.
 	-- This contains all the methods.
@@ -553,29 +757,26 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 	setmetatable(statusbar, SpinBar_MT)
 
 	local data = {}
-	data.scaffold = scaffold
-	data.statusbar = statusbar
-	data.segments = segments
 
+	-- frame handles
+	data.scaffold = scaffold
+	data.overlay = overlay
+	data.statusbar = statusbar
+
+	-- bar value
 	data.barMin = 0 -- min value
 	data.barMax = 1 -- max value
 	data.barValue = 0 -- real value
 	data.barDisplayValue = 0 -- displayed value while smoothing
-	data.barOrientation = "CLOCKWISE" -- direction the bar is growing in 
 	data.barSmoothingMode = "bezier-fast-in-slow-out"
 
-	data.minAngle = 0 -- where the bar starts in the circle
-	data.maxAngle = 360 -- where the bar ends in the circle
-
-	data.sparkThickness = 8
-	data.sparkOffset = 1/32
-	data.sparkDirection = "IN"
-	data.sparkDurationIn = .75 
-	data.sparkDurationOut = .55
-	data.sparkMinAlpha = .25
-	data.sparkMaxAlpha = .95
-	data.sparkMinPercent = 1/100
-	data.sparkMaxPercent = 99/100
+	-- quadrants and degrees
+	data.quadrants = quadrants
+	data.clockwise = false 
+	data.degreeOffset = 0 -- where the bar starts in the circle
+	data.degreeSpan = 360 -- size of the bar in degrees
+	data.startQuadrant = 1 -- the quadrant it starts in
+	data.endQuadrant = 4 -- the quadrant it ends in
 
 	-- Give multiple objects access using their 'self' as key
 	Bars[statusbar] = data
