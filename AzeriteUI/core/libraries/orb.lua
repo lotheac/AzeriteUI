@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 12)
+local LibOrb = CogWheel:Set("LibOrb", 13)
 if (not LibOrb) then	
 	return
 end
@@ -31,7 +31,7 @@ local Orbs = LibOrb.orbs
 ----------------------------------------------------------------
 -- Orb template
 ----------------------------------------------------------------
-local Orb = {}
+local Orb = LibFrame:CreateFrame("Frame")
 local Orb_MT = { __index = Orb }
 
 local Update = function(self, elapsed)
@@ -469,23 +469,23 @@ LibOrb.CreateOrb = function(self, parent, rotateClockwise, speedModifier)
 
 	-- The scaffold is the top level frame object 
 	-- that will respond to SetSize, SetPoint and similar.
-	local scaffold = LibFrame:CreateFrame("Frame", nil, parent or self)
+	local scaffold = CreateFrame("Frame", nil, parent or self)
 	--scaffold:SetSize(1,1)
 
 	-- The scrollchild is where we put rotating textures that needs to be cropped.
-	local scrollchild = scaffold:CreateFrame("Frame")
-	scrollchild:SetFrameLevel(scaffold:GetFrameLevel() + 1)
+	local scrollchild = CreateFrame("Frame", nil, scaffold) --scaffold:CreateFrame("Frame")
+	--scrollchild:SetFrameLevel(scaffold:GetFrameLevel() + 1)
 	scrollchild:SetSize(1,1)
 
 	-- The scrollframe defines the height/filling of the orb.
-	local scrollframe = scaffold:CreateFrame("ScrollFrame")
+	local scrollframe = CreateFrame("ScrollFrame", nil, scaffold) -- scaffold:CreateFrame("ScrollFrame")
 	scrollframe:SetScrollChild(scrollchild)
-	scrollframe:SetFrameLevel(scaffold:GetFrameLevel() + 1)
+	--scrollframe:SetFrameLevel(scaffold:GetFrameLevel() + 1)
 	scrollframe:SetPoint("BOTTOM")
 	scrollframe:SetSize(1,1)
 
 	-- The overlay is meant to hold overlay textures like the spark, glow, etc
-	local overlay = scaffold:CreateFrame("Frame")
+	local overlay = CreateFrame("Frame", nil, scaffold) --scaffold:CreateFrame("Frame")
 	overlay:SetFrameLevel(scaffold:GetFrameLevel() + 2)
 	overlay:SetAllPoints(scaffold)
 
@@ -548,7 +548,7 @@ LibOrb.CreateOrb = function(self, parent, rotateClockwise, speedModifier)
 
 	-- The orb is the virtual object that we return to the user.
 	-- This contains all the methods.
-	local orb = scaffold:CreateFrame("Frame")
+	local orb = CreateFrame("Frame", nil, scaffold)
 	orb:SetAllPoints() -- lock down the points before we overwrite the methods
 
 	setmetatable(orb, Orb_MT)

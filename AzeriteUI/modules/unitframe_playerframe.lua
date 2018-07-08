@@ -146,6 +146,7 @@ end
 -- Styling function applying sizes and textures 
 -- based on what kind of target we have, and its level. 
 local PostUpdateTextures = function(self)
+
 	-- War Seasoned
 	if (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
 		local health = self.Health
@@ -380,8 +381,8 @@ local Style = function(self, unit, id, ...)
 	or (PlayerClass == "MAGE") or (PlayerClass == "WARLOCK") then
 
 		local extraPower = backdrop:CreateOrb()
-		extraPower:SetSize(113, 113)
-		extraPower:Place("BOTTOMLEFT", -97, 22) 
+		extraPower:SetSize(103, 103) -- 113,113
+		extraPower:Place("BOTTOMLEFT", -97 +5, 22 + 5) -- -97,22 
 		extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3")) -- define the textures used in the orb. 
 		extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
 		self.ExtraPower = extraPower

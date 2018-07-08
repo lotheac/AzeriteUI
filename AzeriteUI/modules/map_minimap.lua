@@ -584,10 +584,30 @@ Minimap.SetUpMinimap = function(self)
 	xp:SetStatusBarTexture(getPath("xp_bar"))
 	xp:SetStatusBarColor(unpack(Colors.rested))
 	xp:SetClockwise(true) -- bar runs clockwise
-	xp:SetDegreeOffset(256) -- bar starts at 14 degrees out from the bottom vertical axis
-	xp:SetDegreeSpan(332) -- bar stops at the opposite side of that axis
+	xp:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
+	xp:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
+	xp:SetMinMaxValues(0,100,true)
+	xp:SetValue(0,true)
 	xp.colors = Colors
 	xp.colorValue = true
+
+	local updater = CreateFrame("Frame")
+	updater:SetScript("OnUpdate", function(self, elapsed)
+		--do return end
+		self.elapsed = (self.elapsed or 0) + elapsed
+		if self.elapsed < 1/30 then 
+			return 
+		end 
+		self.value = (self.value or 0) + 1
+		if self.value > 100 then 
+			self.value = 0
+		end
+		--print(self.value)
+
+		xp:SetValue(self.value, true) -- need to override smoothing, our bar fill too fast for it!
+	
+		self.elapsed = 0
+	end)
 
 	local xpValue = xp:CreateFontString()
 	xpValue:SetPoint("TOP", "Minimap", "CENTER", 0, -1)
