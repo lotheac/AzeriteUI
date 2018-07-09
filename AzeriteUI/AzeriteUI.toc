@@ -51,7 +51,6 @@ core\libraries\nameplates.lua
 core\customevents.lua
 
 core\plugins\artifactpower.lua
-core\plugins\azeritepower.lua
 core\plugins\clock.lua
 core\plugins\coordinates.lua
 core\plugins\framerate.lua

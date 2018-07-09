@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 13)
+local LibOrb = CogWheel:Set("LibOrb", 14)
 if (not LibOrb) then	
 	return
 end
@@ -446,7 +446,7 @@ Orb.GetScript = function(self, ...)
 end
 
 Orb.GetObjectType = function(self) return "Orb" end
-Orb.IsObjectType = function(self, type) return type == "Orb" or type == "Frame" end
+Orb.IsObjectType = function(self, type) return type == "Orb" or type == "StatusBar" or type == "Frame" end
 
 Orb.Show = function(self) Orbs[self].scaffold:Show() end
 Orb.Hide = function(self) Orbs[self].scaffold:Hide() end

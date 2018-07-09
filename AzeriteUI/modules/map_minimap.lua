@@ -268,7 +268,7 @@ Minimap.SetUpMinimap = function(self)
 
 	-- Retrieve an unique element handler for our module
 	local Handler = self:GetMinimapHandler()
-
+	Handler.colors = Colors
 
 	-- Mail
 	local mail = Handler:CreateBorderFrame()
@@ -369,7 +369,6 @@ Minimap.SetUpMinimap = function(self)
 	zone:SetShadowColor(0, 0, 0, 1)
 	zone.colorPvP = true -- color zone names according to their PvP type 
 	zone.colorcolorDifficulty = true -- color instance names according to their difficulty
-	zone.colors = Colors
 
 	-- Strap the frame to the text
 	zoneFrame:SetAllPoints(zone)
@@ -434,180 +433,17 @@ Minimap.SetUpMinimap = function(self)
 	xpBarBackdrop:SetVertexColor(.5, .5, .5, .5)
 	xpBarBackdrop:SetDrawLayer("BACKGROUND", 2)
 
-	------------------------------------------------------------------------------
-	-- Test Start 
-	------------------------------------------------------------------------------
-	--[=[ 
-	local dummyBar1 = xpFrame:CreateTexture()
-	dummyBar1:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	dummyBar1:SetSize(211,211)
-	dummyBar1:SetTexture(getPath("xp_bar"))
-	dummyBar1:SetVertexColor(unpack(Colors.rested))
-	dummyBar1:SetDrawLayer("ARTWORK", 1)
-
-	local dummyValue1 = xpFrame:CreateFontString()
-	dummyValue1:SetPoint("TOP", "Minimap", "CENTER", 0, -1)
-	dummyValue1:SetFontObject(GameFontNormal)
-	dummyValue1:SetFont(GameFontNormal:GetFont(), fontSize + 2, fontStyle) 
-	dummyValue1:SetJustifyH("CENTER")
-	dummyValue1:SetJustifyV("TOP")
-	dummyValue1:SetShadowOffset(0, 0)
-	dummyValue1:SetShadowColor(0, 0, 0, 1)
-	dummyValue1:SetTextColor(unpack(Colors.rested))
-	dummyValue1:SetText("21.5m")
-
-	local dummyBar2 = xpFrame:CreateTexture()
-	dummyBar2:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	dummyBar2:SetSize(211,211)
-	dummyBar2:SetTexture(getPath("xp_artifact"))
-	dummyBar2:SetVertexColor(unpack(Colors.artifact))
-	dummyBar2:SetDrawLayer("ARTWORK", 1)
-
-	local dummyValue2 = xpFrame:CreateFontString()
-	dummyValue2:SetPoint("BOTTOM", "Minimap", "CENTER", 0, 1)
-	dummyValue2:SetFontObject(GameFontNormal)
-	dummyValue2:SetFont(GameFontNormal:GetFont(), fontSize + 2, fontStyle) 
-	dummyValue2:SetJustifyH("CENTER")
-	dummyValue2:SetJustifyV("BOTTOM")
-	dummyValue2:SetShadowOffset(0, 0)
-	dummyValue2:SetShadowColor(0, 0, 0, 1)
-	dummyValue2:SetTextColor(unpack(Colors.artifact))
-	dummyValue2:SetText("11.3k")
-
-
-	local dummytex1 = UIParent:CreateTexture()
-	dummytex1:SetSize(211,211)
-	dummytex1:SetPoint("CENTER")
-	dummytex1:SetTexture(getPath("xp_barbg"))
-	dummytex1:SetVertexColor(unpack(Colors.rested))
-	--dummytex1:SetColorTexture(.1,.7,.1,.5)
-
-	local dummytex0 = UIParent:CreateTexture()
-	dummytex0:SetSize(211,211)
-	dummytex0:SetPoint("CENTER")
-	dummytex0:SetTexture(getPath("xp_frame"))
-	dummytex0:SetVertexColor(1,1,1,1)
-	dummytex0:SetDrawLayer("BACKGROUND")
-
-	local RotateTexture = function(texture, degrees)
-
-		-- Get the angle of the bar value
-		local radians = (90-degrees) * DEGS_TO_RADS
-
-		-- Retrieve standard math coordinates
-		-- where the center is considered 0,0.
-		local LRx, LRy = math_cos(radians) *.5, math_sin(radians) *.5
-		local ULx, ULy = -LRy, LRx
-		local URx, URy = LRx + ULx, LRy + ULy
-		local LLx, LLy = 0, 0
-
-		-- Convert to coordinates used 
-		-- by the wow texcoord system
-		--local LLx = LLx + .5
-		--local LRx = LRx + .5
-		--local ULx = ULx + .5
-		--local URx = URx + .5
-		--local LLy = 1 - (LLy + .5)
-		--local LRy = 1 - (LRy + .5)
-		--local ULy = 1 - (ULy + .5)
-		--local URy = 1 - (URy + .5)
-
-		-- Get the angle and position of the new center
-		--local center = (90-degrees+45) * DEGS_TO_RADS
-		--local CX, CY = math_cos(center) *.5, math_sin(center) *.5
-
-		-- Figure out the offset in position
-		local center = (135-degrees) * DEGS_TO_RADS
-		local width, height = texture:GetSize()
-		local offsetx = (math_cos(center) * ROOT_OF_HALF - .5) * width
-		local offsety = (math_sin(center) * ROOT_OF_HALF - .5) * height
-		--local offsetx = CX*ROOT_OF_HALF*width*2 - width/2
-		--local offsety = CY*ROOT_OF_HALF*height*2 - height/2
-
-		-- Perform rotation, texcoord transformation and repositioning
-		texture:SetRotation(-(degrees-90) * DEGS_TO_RADS)
-		texture:SetTexCoord(ULx+.5, 1-(ULy+.5), LLx+.5, 1-(LLy+.5), URx+.5, 1-(URy+.5), LRx+.5, 1-(LRy+.5))
-		--texture:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
-		texture:SetPoint("BOTTOMLEFT", offsetx, offsety)
-
-	end 
-	--[[
-	]]
-	
-	-- The scrollchild is where we put rotating texture that needs to be cropped.
-	local scrollchild = CreateFrame("Frame", nil, UIParent)
-	scrollchild:SetSize(211/2,211/2)
-
-	-- The scrollframe defines the visible area of the segment
-	local scrollframe = CreateFrame("ScrollFrame", nil, UIParent)
-	scrollframe:SetScrollChild(scrollchild)
-	scrollframe:SetPoint("CENTER", 211/4,211/4)
-	scrollframe:SetSize(211/2,211/2)
-
-	-- Lock the scrollchild to the scrollframe. 
-	-- We won't be changing its value, it's just used for cropping overflow.
-	scrollchild:SetAllPoints(scrollframe)
-	
-	local dummytex2 = scrollchild:CreateTexture()
-	dummytex2:SetSize(211/2,211/2)
-	dummytex2:SetPoint("BOTTOMLEFT", 0, 0)
-	dummytex2:SetTexture(getPath("xp_bar"))
-	dummytex2:SetVertexColor(unpack(Colors.rested))
-	RotateTexture(dummytex2, 67)
-
-	local updater = CreateFrame("Frame")
-	updater:SetScript("OnUpdate", function(self, elapsed)
-		--do return end
-		self.elapsed = (self.elapsed or 0) + elapsed
-		if self.elapsed < 1/60 then 
-			return 
-		end 
-		self.angle = (self.angle or 0) + 1
-		if self.angle > 90 then 
-			self.angle = 0
-		end
-		RotateTexture(dummytex2, self.angle)
-	
-		self.elapsed = 0
-	end)
-
-
-	------------------------------------------------------------------------------
-	-- Test End 
-	------------------------------------------------------------------------------
-	]=]
-
 	-- xp bar
 	local xp = xpFrame:CreateSpinBar()
 	xp:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
 	xp:SetSize(211,211)
 	xp:SetStatusBarTexture(getPath("xp_bar"))
-	xp:SetStatusBarColor(unpack(Colors.rested))
 	xp:SetClockwise(true) -- bar runs clockwise
 	xp:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
 	xp:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
-	xp:SetMinMaxValues(0,100,true)
-	xp:SetValue(0,true)
-	xp.colors = Colors
-	xp.colorValue = true
-
-	local updater = CreateFrame("Frame")
-	updater:SetScript("OnUpdate", function(self, elapsed)
-		--do return end
-		self.elapsed = (self.elapsed or 0) + elapsed
-		if self.elapsed < 1/30 then 
-			return 
-		end 
-		self.value = (self.value or 0) + 1
-		if self.value > 100 then 
-			self.value = 0
-		end
-		--print(self.value)
-
-		xp:SetValue(self.value, true) -- need to override smoothing, our bar fill too fast for it!
-	
-		self.elapsed = 0
-	end)
+	xp.colorXP = true -- color the xp bar according to normal/rested state
+	xp.colorRested = true -- color the rested bonus bar
+	xp.colorValue = true -- color the value string same color as the xp bar
 
 	local xpValue = xp:CreateFontString()
 	xpValue:SetPoint("TOP", "Minimap", "CENTER", 0, -1)
@@ -617,40 +453,36 @@ Minimap.SetUpMinimap = function(self)
 	xpValue:SetJustifyV("TOP")
 	xpValue:SetShadowOffset(0, 0)
 	xpValue:SetShadowColor(0, 0, 0, 1)
-	xpValue:SetTextColor(unpack(Colors.rested))
-	xp.value = xpValue
+	xp.Value = xpValue
 
 	-- honor bar
 	local honor = xpFrame:CreateSpinBar()
-	honor.colors = Colors
 	honor.colorValue = true
 
 	-- azerite power bar 
-	local azPower = xpFrame:CreateSpinBar()
-	azPower:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	azPower:SetSize(211,211)
-	azPower:SetStatusBarTexture(getPath("xp_artifact"))
-	azPower:SetStatusBarColor(unpack(Colors.artifact))
-	azPower:SetClockwise(true) -- bar runs clockwise
-	azPower:SetDegreeOffset(249) -- bar starts at 21 degrees out from the bottom vertical axis
-	azPower:SetDegreeSpan(318) -- bar stops at the opposite side of that axis
-	azPower.colors = Colors
-	azPower.colorValue = true
+	local artifactPower = xpFrame:CreateSpinBar()
+	artifactPower:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
+	artifactPower:SetSize(211,211)
+	artifactPower:SetStatusBarTexture(getPath("xp_artifact"))
+	artifactPower:SetClockwise(true) -- bar runs clockwise
+	artifactPower:SetDegreeOffset(90*3 - 21) -- bar starts at 21 degrees out from the bottom vertical axis
+	artifactPower:SetDegreeSpan(360 - 21*2) -- bar stops at the opposite side of that axis
+	artifactPower.colorPower = true -- color the bar according to its power type 
+	artifactPower.colorValue = true -- color the value string same color as the bar
 
-	local azValue = azPower:CreateFontString()
-	azValue:SetPoint("BOTTOM", "Minimap", "CENTER", 0, 1)
-	azValue:SetFontObject(GameFontNormal)
-	azValue:SetFont(GameFontNormal:GetFont(), fontSize + 2, fontStyle) 
-	azValue:SetJustifyH("CENTER")
-	azValue:SetJustifyV("TOP")
-	azValue:SetShadowOffset(0, 0)
-	azValue:SetShadowColor(0, 0, 0, 1)
-	azValue:SetTextColor(unpack(Colors.artifact))
-	azPower.value = azValue
+	local artifactValue = artifactPower:CreateFontString()
+	artifactValue:SetPoint("BOTTOM", "Minimap", "CENTER", 0, 1)
+	artifactValue:SetFontObject(GameFontNormal)
+	artifactValue:SetFont(GameFontNormal:GetFont(), fontSize + 2, fontStyle) 
+	artifactValue:SetJustifyH("CENTER")
+	artifactValue:SetJustifyV("TOP")
+	artifactValue:SetShadowOffset(0, 0)
+	artifactValue:SetShadowColor(0, 0, 0, 1)
+	artifactValue:SetTextColor(unpack(Colors.artifact))
+	artifactPower.Value = artifactValue
 
 	-- rep bar
 	local reputation = xpFrame:CreateSpinBar()
-	reputation.colors = Colors
 	reputation.colorValue = true
 
 	-- outer ring (resting?)
@@ -662,7 +494,7 @@ Minimap.SetUpMinimap = function(self)
 	rested:Hide()
 	
 	Handler.XP = xp
-	Handler.AzeritePower = azPower
+	Handler.ArtifactPower = artifactPower
 	Handler.Honor = honor
 	Handler.Reputation = reputation
 	Handler.Rested = rested

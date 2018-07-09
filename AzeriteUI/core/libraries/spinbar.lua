@@ -4,7 +4,7 @@
 -- The thread that started it: 
 -- http://www.wowinterface.com/forums/showthread.php?t=45918
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 7)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 8)
 if (not LibSpinBar) then	
 	return
 end
@@ -571,7 +571,7 @@ SpinBar.GetParent = function(self)
 end
 
 SpinBar.GetObjectType = function(self) return "SpinBar" end
-SpinBar.IsObjectType = function(self, type) return type == "SpinBar" or type == "Frame" end
+SpinBar.IsObjectType = function(self, type) return type == "SpinBar" or type == "StatusBar" or type == "Frame" end
 
 SpinBar.Show = function(self) Bars[self].scaffold:Show() end
 SpinBar.Hide = function(self) Bars[self].scaffold:Hide() end
