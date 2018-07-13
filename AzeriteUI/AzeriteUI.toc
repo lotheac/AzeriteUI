@@ -15,8 +15,10 @@
 #   Do NOT change the order of anything in this file!   #
 #########################################################
 
+# because libstub is so last year
 core\wheel.lua
 
+# libraries running the interface
 core\libraries\clientbuild.lua
 core\libraries\locale.lua
 core\libraries\hook.lua
@@ -35,8 +37,14 @@ core\libraries\tooltip.lua
 core\libraries\fader.lua
 core\libraries\mover.lua
 core\libraries\bagbutton.lua
-core\libraries\actionbutton.xml
 core\libraries\actionbutton.lua
+core\libraries\actionbutton_action.lua
+core\libraries\actionbutton_custom.lua
+core\libraries\actionbutton_item.lua
+core\libraries\actionbutton_macro.lua
+core\libraries\actionbutton_pet.lua
+core\libraries\actionbutton_spell.lua
+core\libraries\actionbutton_stance.lua
 core\libraries\actionbar.lua
 core\libraries\unitframe.lua
 core\libraries\blizzard.lua
@@ -48,19 +56,24 @@ core\libraries\chatframe.lua
 core\libraries\minimap.lua
 core\libraries\nameplates.lua
 
+# custom addon events
 core\customevents.lua
 
-core\plugins\artifactpower.lua
-core\plugins\clock.lua
-core\plugins\coordinates.lua
-core\plugins\framerate.lua
-core\plugins\groupfinder.lua
-core\plugins\honor.lua
-core\plugins\latency.lua
-core\plugins\mail.lua
-core\plugins\reputation.lua
-core\plugins\zone.lua
-core\plugins\xp.lua
+# generic plugins
+core\plugins\generic_artifactpower.lua
+core\plugins\generic_clock.lua
+core\plugins\generic_coordinates.lua
+core\plugins\generic_difficulty.lua
+core\plugins\generic_framerate.lua
+core\plugins\generic_groupfinder.lua
+core\plugins\generic_honor.lua
+core\plugins\generic_latency.lua
+core\plugins\generic_mail.lua
+core\plugins\generic_reputation.lua
+core\plugins\generic_xp.lua
+core\plugins\generic_zone.lua
+
+# unit specific plugins
 core\plugins\unit_absorb.lua
 core\plugins\unit_auras.lua
 core\plugins\unit_cast.lua
@@ -77,8 +90,10 @@ core\plugins\unit_raidrole.lua
 core\plugins\unit_spec.lua
 core\plugins\unit_targeted.lua
 
+# custom color library
 core\colors.lua
 
+# localization
 locale\enUS.lua
 locale\deDE.lua
 locale\esES.lua
@@ -91,8 +106,10 @@ locale\ruRU.lua
 locale\zhCN.lua
 locale\zhTW.lua
 
+# interface core
 core\main.lua
 
+# interface modules
 modules\actionbar_main.lua
 modules\blizzard_interface_styling.lua
 modules\blizzard_popups_styling.lua

@@ -30,7 +30,8 @@ local ToggleCalendar = _G.ToggleCalendar
 -- Changing these does NOT change in-game settings
 local defaults = {
 	useStandardTime = true, 
-	useServerTime = false
+	useServerTime = false,
+	stickyBars = false
 }
 
 -- Utility Functions
@@ -70,6 +71,36 @@ local getTimeStrings = function(h, m, s, suffix, useStandardTime, showSeconds, a
 			return "%02d:%02d", h, m
 		end 
 	end 
+end 
+
+local short = function(value)
+	value = tonumber(value)
+	if (not value) then return "" end
+	if (value >= 1e9) then
+		return ("%.1fb"):format(value / 1e9):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e6 then
+		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e3 or value <= -1e3 then
+		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([kmb])$", "%1")
+	else
+		return tostring(math_floor(value))
+	end	
+end
+
+-- zhCN exceptions
+local gameLocale = GetLocale()
+if (gameLocale == "zhCN") then 
+	short = function(value)
+		value = tonumber(value)
+		if (not value) then return "" end
+		if (value >= 1e8) then
+			return ("%.1f亿"):format(value / 1e8):gsub("%.?0+([km])$", "%1")
+		elseif value >= 1e4 or value <= -1e3 then
+			return ("%.1f万"):format(value / 1e4):gsub("%.?0+([km])$", "%1")
+		else
+			return tostring(math_floor(value))
+		end 
+	end
 end 
 
 
@@ -125,6 +156,179 @@ local Performance_OnLeave = function(self)
 	Minimap:GetMinimapTooltip():Hide()
 	self.UpdateTooltip = nil
 end 
+
+-- Pandaren can get 300% rested bonus
+local maxRested = select(2, UnitRace("player")) == "Pandaren" and 3 or 1.5
+
+-- Various string formatting for our tooltips and bars
+local shortXPString = "%s%%"
+local longXPString = "%s / %s"
+local fullXPString = "%s / %s - %s%%"
+local restedString = " (%s%% %s)"
+local shortLevelString = "%s %d"
+
+local Toggle_UpdateTooltip = function(self)
+	local tooltip = Minimap:GetMinimapTooltip()
+
+	local NC = "|r"
+	local rt, gt, bt = unpack(Colors.title)
+	local r, g, b = unpack(Colors.normal)
+	local rh, gh, bh = unpack(Colors.highlight)
+	local rg, gg, bg = unpack(Colors.quest.green)
+	local rr, gr, br = unpack(Colors.quest.red)
+	local green = Colors.quest.green.colorCode
+	local normal = Colors.normal.colorCode
+
+	local resting = IsResting()
+	local restState, restedName, mult = GetRestState()
+	local restedLeft, restedTimeLeft = GetXPExhaustion(), GetTimeToWellRested()
+	local min, max = UnitXP("player"), UnitXPMax("player")
+
+	tooltip:SetDefaultAnchor(self)
+	--tooltip:SetMaximumWidth(280)
+
+	local rh, gh, bh = unpack(Colors.highlight)
+
+	-- use XP as the title
+	tooltip:AddLine(shortLevelString:format(LEVEL, UnitLevel("player")), rt, gt, bt)
+	tooltip:AddLine(" ")
+	tooltip:AddDoubleLine(L["Current XP: "], longXPString:format(normal..short(min)..NC, normal..short(max)..NC), rh, gh, bh, rh, gh, bh)
+
+	-- add rested bonus if it exists
+	if (restedLeft and (restedLeft > 0)) then
+		tooltip:AddDoubleLine(L["Rested Bonus: "], longXPString:format(normal..short(restedLeft)..NC, normal..short(max * maxRested)..NC), rh, gh, bh, rh, gh, bh)
+	end
+	
+	if (restState == 1) then
+		tooltip:AddLine(" ")
+		tooltip:AddLine(L["Rested"], rh, gh, bh)
+		tooltip:AddLine(L["%s of normal experience gained from monsters."]:format(shortXPString:format((mult or 1)*100)), rg, gg, bg)
+		if resting and restedTimeLeft and restedTimeLeft > 0 then
+			tooltip:AddLine(" ")
+			tooltip:AddLine(L["Resting"], rh, gh, bh)
+			if restedTimeLeft > hour*2 then
+				tooltip:AddLine(L["You must rest for %s additional hours to become fully rested."]:format(highlight..math_floor(restedTimeLeft/hour)..NC), r, g, b)
+			else
+				tooltip:AddLine(L["You must rest for %s additional minutes to become fully rested."]:format(highlight..math_floor(restedTimeLeft/minute)..NC), r, g, b)
+			end
+		end
+	elseif (restState >= 2) then
+		tooltip:AddLine(" ")
+		tooltip:AddLine(L["Normal"], rh, gh, bh)
+		tooltip:AddLine(L["%s of normal experience gained from monsters."]:format(shortXPString:format((mult or 1)*100)), rg, gg, bg)
+
+		if not(restedTimeLeft and restedTimeLeft > 0) then 
+			tooltip:AddLine(" ")
+			tooltip:AddLine(L["You should rest at an Inn."], rr, gr, br)
+		end
+	end
+
+	tooltip:AddLine(" ")
+
+	if Minimap.db.stickyBars then 
+		tooltip:AddLine(L["%s to disable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+	else 
+		tooltip:AddLine(L["%s to enable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+	end 
+
+	tooltip:Show()
+end 
+
+local Toggle_OnMouseUp = function(self, button)
+	local db = Minimap.db
+	db.stickyBars = not db.stickyBars
+
+	local frame = self.Frame
+	if (db.stickyBars and (not frame:IsShown())) then 
+
+		-- Kill off any hide countdowns
+		self:SetScript("OnUpdate", nil)
+		self.fadeDelay = nil
+		self.fadeDuration = nil
+		self.timeFading = nil
+
+		frame:SetAlpha(1)
+		frame:Show()
+
+	elseif ((not db.stickyBars) and (not frame.isMouseOver) and frame:IsShown()) then 
+
+		-- Initiate hide countdown
+		self.fadeDelay = 1.5
+		self.fadeDuration = .35
+		self.timeFading = 0
+		self:SetScript("OnUpdate", Toggle_OnUpdate)
+	end 
+
+	if self.UpdateTooltip then 
+		self:UpdateTooltip()
+	end 
+
+	if Minimap.db.stickyBars then 
+		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars enabled."].."|r")
+	else
+		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars disabled."].."|r")
+	end 	
+end
+
+local Toggle_OnEnter = function(self)
+	self.UpdateTooltip = Toggle_UpdateTooltip
+	self.isMouseOver = true
+
+	-- Kill off any hide countdowns
+	self:SetScript("OnUpdate", nil)
+	self.fadeDelay = nil
+	self.fadeDuration = nil
+	self.timeFading = nil
+
+	local frame = self.Frame
+	if (not frame:IsShown()) then 
+		frame:SetAlpha(1)
+		frame:Show()
+	end 
+
+	self:UpdateTooltip()
+end
+
+local Toggle_OnUpdate = function(self, elapsed)
+
+	self.fadeDelay = self.fadeDelay - elapsed
+	if (self.fadeDelay > 0) then 
+		return
+	end 
+
+	self.Frame:SetAlpha(1 - self.timeFading / self.fadeDuration)
+
+	if (self.timeFading >= self.fadeDuration) then 
+		self.Frame:Hide()
+		self.fadeDelay = nil
+		self.fadeDuration = nil
+		self.timeFading = nil
+		self:SetScript("OnUpdate", nil)
+		return 
+	end 
+
+	self.timeFading = self.timeFading + elapsed
+end 
+
+local Toggle_OnLeave = function(self)
+	local db = Minimap.db
+
+	local frame = self.Frame
+	if (frame:IsShown() and (not db.stickyBars)) then 
+
+		-- Initiate hide countdown
+		self.fadeDelay = 1.5
+		self.fadeDuration = .35
+		self.timeFading = 0
+		self:SetScript("OnUpdate", Toggle_OnUpdate)
+
+	end 
+
+	self.isMouseOver = nil
+	self.UpdateTooltip = nil
+
+	Minimap:GetMinimapTooltip():Hide()
+end
 
 local Time_UpdateTooltip = function(self)
 	local tooltip = Minimap:GetMinimapTooltip()
@@ -192,21 +396,33 @@ local Time_OnClick = function(self, mouseButton)
 	elseif (mouseButton == "MiddleButton") then 
 		Minimap.db.useServerTime = not Minimap.db.useServerTime
 
-		self._owner.useServerTime = Minimap.db.useServerTime
-		self._owner:ForceUpdate()
+		self.clock.useServerTime = Minimap.db.useServerTime
+		self.clock:ForceUpdate()
 
 		if self.UpdateTooltip then 
 			self:UpdateTooltip()
 		end 
 
+		if Minimap.db.useServerTime then 
+			print(self._owner.colors.title.colorCode..L["Now using standard realm time."].."|r")
+		else
+			print(self._owner.colors.title.colorCode..L["Now using standard local time."].."|r")
+		end 
+
 	elseif (mouseButton == "RightButton") then 
 		Minimap.db.useStandardTime = not Minimap.db.useStandardTime
 
-		self._owner.useStandardTime = Minimap.db.useStandardTime
-		self._owner:ForceUpdate()
+		self.clock.useStandardTime = Minimap.db.useStandardTime
+		self.clock:ForceUpdate()
 
 		if self.UpdateTooltip then 
 			self:UpdateTooltip()
+		end 
+
+		if Minimap.db.useStandardTime then 
+			print(self._owner.colors.title.colorCode..L["Now using standard (12-hour) time."].."|r")
+		else
+			print(self._owner.colors.title.colorCode..L["Now using military (24-hour) time."].."|r")
 		end 
 	end
 end
@@ -222,11 +438,13 @@ end
 
 Minimap.SetUpMinimap = function(self)
 
+	local db = self.db
+
 	local fontObject = GameFontNormal
 	local fontStyle = "OUTLINE"
 	local fontSize = 14
 
-	
+
 	-- Frame
 	----------------------------------------------------
 	-- This is needed to initialize the map to 
@@ -234,9 +452,13 @@ Minimap.SetUpMinimap = function(self)
 	-- All other calls will fail without it.
 	self:SyncMinimap() 
 
+	-- Retrieve an unique element handler for our module
+	local Handler = self:GetMinimapHandler()
+	Handler.colors = Colors
+	
 	-- Reposition minimap tooltip 
 	local tooltip = self:GetMinimapTooltip()
-	tooltip:SetDefaultPosition("BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -48, 147)
+	tooltip:SetDefaultPosition("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -48, 147)
 	
 
 	-- Blips
@@ -266,14 +488,10 @@ Minimap.SetUpMinimap = function(self)
 	-- Widgets
 	----------------------------------------------------
 
-	-- Retrieve an unique element handler for our module
-	local Handler = self:GetMinimapHandler()
-	Handler.colors = Colors
-
 	-- Mail
 	local mail = Handler:CreateBorderFrame()
 	mail:SetSize(43, 32) 
-	mail:Place("BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -25, 75) 
+	mail:Place("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -25, 75) 
 
 	local icon = mail:CreateTexture()
 	icon:SetDrawLayer("ARTWORK")
@@ -301,7 +519,7 @@ Minimap.SetUpMinimap = function(self)
 	-- Border
 	local border = Handler:CreateBorderTexture()
 	border:SetDrawLayer("BACKGROUND")
-	border:SetTexture(getPath("border_blizzard_round"))
+	border:SetTexture(getPath("minimap-border"))
 	border:SetSize(419,419)
 	border:SetVertexColor(unpack(Colors.ui.stone))
 	border:SetPoint("CENTER", 0, 0)
@@ -311,7 +529,7 @@ Minimap.SetUpMinimap = function(self)
 
 	-- Coordinates
 	local coordinates = Handler:CreateBorderText()
-	coordinates:SetPoint("BOTTOM", 3, 19) 
+	coordinates:SetPoint("BOTTOM", 3, 23) 
 	coordinates:SetDrawLayer("OVERLAY")
 	coordinates:SetFontObject(GameFontNormal)
 	coordinates:SetFont(GameFontNormal:GetFont(), fontSize - 2, fontStyle) 
@@ -330,7 +548,7 @@ Minimap.SetUpMinimap = function(self)
 	Handler.ClockFrame = clockFrame
 
 	local clock = clockFrame:CreateFontString()
-	clock:SetPoint("BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -(13 + 10), 35) 
+	clock:SetPoint("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -(13 + 10), 35) 
 	clock:SetDrawLayer("OVERLAY")
 	clock:SetFontObject(fontObject)
 	clock:SetFont(fontObject:GetFont(), fontSize, fontStyle)
@@ -350,7 +568,8 @@ Minimap.SetUpMinimap = function(self)
 	clockFrame:SetScript("OnLeave", Time_OnLeave)
 	clockFrame:SetScript("OnClick", Time_OnClick)
 	clockFrame:RegisterForClicks("RightButtonUp", "LeftButtonUp", "MiddleButtonUp")
-	clockFrame._owner = clock
+	clockFrame.clock = clock
+	clockFrame._owner = Handler
 
 	Handler.Clock = clock
 
@@ -415,89 +634,149 @@ Minimap.SetUpMinimap = function(self)
 	performanceFrame:SetScript("OnEnter", Performance_OnEnter)
 	performanceFrame:SetScript("OnLeave", Performance_OnLeave)
 
-	-- XP & Artifact Bars
-	local xpFrame = Handler:CreateOverlayFrame()
+	-- Ring frame
+	local ringFrame = Handler:CreateOverlayFrame()
+	ringFrame:SetAllPoints() -- set it to cover the map
+	ringFrame:EnableMouse(true) -- make sure minimap blips and their tooltips don't punch through
+	ringFrame:SetShown(db.stickyBars) 
 
-	-- frame backdrop 
-	local xpFrameBackdrop = xpFrame:CreateTexture()
-	xpFrameBackdrop:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	xpFrameBackdrop:SetSize(211,211)
-	xpFrameBackdrop:SetTexture(getPath("xp_frame"))
-	xpFrameBackdrop:SetDrawLayer("BACKGROUND", 1)
+	-- ring frame backdrops
+	local ringFrameBg = ringFrame:CreateTexture()
+	ringFrameBg:SetPoint("CENTER", 0, 0)
+	ringFrameBg:SetSize(419,419)
+	ringFrameBg:SetTexture(getPath("minimap-twobars-backdrop"))
+	--ringFrameBg:SetTexture(getPath("minimap-onebar-backdrop"))
+	ringFrameBg:SetDrawLayer("BACKGROUND", 1)
+	ringFrameBg:SetVertexColor(unpack(Colors.ui.stone))
 
-	-- outer bar backdrop
-	local xpBarBackdrop = xpFrame:CreateTexture()
-	xpBarBackdrop:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	xpBarBackdrop:SetSize(211,211)
-	xpBarBackdrop:SetTexture(getPath("xp_barbg"))
-	xpBarBackdrop:SetVertexColor(.5, .5, .5, .5)
-	xpBarBackdrop:SetDrawLayer("BACKGROUND", 2)
 
-	-- xp bar
-	local xp = xpFrame:CreateSpinBar()
-	xp:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	xp:SetSize(211,211)
-	xp:SetStatusBarTexture(getPath("xp_bar"))
-	xp:SetClockwise(true) -- bar runs clockwise
-	xp:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
-	xp:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
-	xp.colorXP = true -- color the xp bar according to normal/rested state
-	xp.colorRested = true -- color the rested bonus bar
-	xp.colorValue = true -- color the value string same color as the xp bar
+	-- outer ring
+	local outerRing = ringFrame:CreateSpinBar()
+	outerRing:SetPoint("CENTER", 0, 0)
+	outerRing:SetSize(211,211)
+	outerRing:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
+	--outerRing:SetStatusBarTexture(getPath("minimap-bars-single"))
+	outerRing:SetClockwise(true) -- bar runs clockwise
+	outerRing:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
+	outerRing:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
+	outerRing.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
+	outerRing.colorRested = true -- color the rested bonus bar when showing xp
+	outerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
+	outerRing.colorStanding = true -- color the bar according to your standing when tracking reputation
+	outerRing.colorValue = true -- color the value string same color as the bar
+	outerRing.backdropMultiplier = 1/3 -- color the backdrop a darker shade of the outer bar color
 
-	local xpValue = xp:CreateFontString()
-	xpValue:SetPoint("TOP", "Minimap", "CENTER", 0, -1)
-	xpValue:SetFontObject(GameFontNormal)
-	xpValue:SetFont(GameFontNormal:GetFont(), fontSize + 2, fontStyle) 
-	xpValue:SetJustifyH("CENTER")
-	xpValue:SetJustifyV("TOP")
-	xpValue:SetShadowOffset(0, 0)
-	xpValue:SetShadowColor(0, 0, 0, 1)
-	xp.Value = xpValue
+	-- outer ring backdrop
+	--local outerRingBackdrop = ringFrame:CreateTexture()
+	--outerRingBackdrop:SetPoint("CENTER", 0, 0)
+	--outerRingBackdrop:SetSize(211,211)
+	--outerRingBackdrop:SetTexture(getPath("xp_barbg"))
+	--outerRingBackdrop:SetVertexColor(.5, .5, .5, .5)
+	--outerRingBackdrop:SetDrawLayer("BACKGROUND", 2)
+	--outerRing.Background = outerRingBackdrop
 
-	-- honor bar
-	local honor = xpFrame:CreateSpinBar()
-	honor.colorValue = true
+	-- outer ring value text
+	local outerRingValue = outerRing:CreateFontString()
+	outerRingValue:SetPoint("TOP", ringFrame, "CENTER", 0, -2)
+	outerRingValue:SetFontObject(GameFontNormal)
+	outerRingValue:SetFont(GameFontNormal:GetFont(), fontSize + 1, fontStyle) 
+	outerRingValue:SetJustifyH("CENTER")
+	outerRingValue:SetJustifyV("TOP")
+	outerRingValue:SetShadowOffset(0, 0)
+	outerRingValue:SetShadowColor(0, 0, 0, 1)
+	outerRing.Value = outerRingValue
 
-	-- azerite power bar 
-	local artifactPower = xpFrame:CreateSpinBar()
-	artifactPower:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	artifactPower:SetSize(211,211)
-	artifactPower:SetStatusBarTexture(getPath("xp_artifact"))
-	artifactPower:SetClockwise(true) -- bar runs clockwise
-	artifactPower:SetDegreeOffset(90*3 - 21) -- bar starts at 21 degrees out from the bottom vertical axis
-	artifactPower:SetDegreeSpan(360 - 21*2) -- bar stops at the opposite side of that axis
-	artifactPower.colorPower = true -- color the bar according to its power type 
-	artifactPower.colorValue = true -- color the value string same color as the bar
+	-- inner ring 
+	local innerRing = ringFrame:CreateSpinBar()
+	innerRing:SetPoint("CENTER", 0, 0)
+	innerRing:SetSize(211,211)
+	innerRing:SetStatusBarTexture(getPath("minimap-bars-two-inner"))
+	--innerRing:SetClockwise(true) -- bar runs clockwise
+	innerRing:SetMinMaxValues(0,100)
+	innerRing:SetValue(45)
+	innerRing:SetDegreeOffset(90*3 - 21) -- bar starts at 21 degrees out from the bottom vertical axis
+	innerRing:SetDegreeSpan(360 - 21*2) -- bar stops at the opposite side of that axis
+	innerRing.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
+	innerRing.colorRested = true -- color the rested bonus bar when showing xp
+	innerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
+	innerRing.colorStanding = true -- color the bar according to your standing when tracking reputation
+	innerRing.colorValue = true -- color the value string same color as the bar
 
-	local artifactValue = artifactPower:CreateFontString()
-	artifactValue:SetPoint("BOTTOM", "Minimap", "CENTER", 0, 1)
-	artifactValue:SetFontObject(GameFontNormal)
-	artifactValue:SetFont(GameFontNormal:GetFont(), fontSize + 2, fontStyle) 
-	artifactValue:SetJustifyH("CENTER")
-	artifactValue:SetJustifyV("TOP")
-	artifactValue:SetShadowOffset(0, 0)
-	artifactValue:SetShadowColor(0, 0, 0, 1)
-	artifactValue:SetTextColor(unpack(Colors.artifact))
-	artifactPower.Value = artifactValue
+	-- inner ring value text
+	local innerRingValue = innerRing:CreateFontString()
+	innerRingValue:SetPoint("BOTTOM", ringFrame, "CENTER", 0, 2)
+	innerRingValue:SetFontObject(GameFontNormal)
+	innerRingValue:SetFont(GameFontNormal:GetFont(), fontSize + 1, fontStyle) 
+	innerRingValue:SetJustifyH("CENTER")
+	innerRingValue:SetJustifyV("TOP")
+	innerRingValue:SetShadowOffset(0, 0)
+	innerRingValue:SetShadowColor(0, 0, 0, 1)
+	innerRing.Value = innerRingValue
 
-	-- rep bar
-	local reputation = xpFrame:CreateSpinBar()
-	reputation.colorValue = true
-
-	-- outer ring (resting?)
-	local rested = xpFrame:CreateTexture()
-	rested:SetPoint("CENTER", "Minimap", "CENTER", 0, 0)
-	rested:SetSize(211,211)
-	rested:SetTexture(getPath("xp_ring"))
-	rested:SetDrawLayer("BACKGROUND", 3)
-	rested:Hide()
+	-- extra thin ring (for resting...?)
+	local resting = ringFrame:CreateTexture()
+	resting:SetPoint("CENTER", ringFrame, "CENTER", 0, 0)
+	resting:SetSize(211,211)
+	resting:SetTexture(getPath("xp_ring"))
+	resting:SetDrawLayer("BACKGROUND", 3)
+	resting:Hide()
 	
-	Handler.XP = xp
-	Handler.ArtifactPower = artifactPower
-	Handler.Honor = honor
-	Handler.Reputation = reputation
-	Handler.Rested = rested
+	Handler.XP = outerRing
+	Handler.ArtifactPower = innerRing
+	Handler.Resting = resting
+
+
+	-- Change bar contents with a simple; 
+	--    DisableElemet("Element") + EnableElemet("Element")  (?)
+	-- Seems like the simplest way to change bars, 
+	-- because the minimap library will handle everything then. 
+	-- Will write this into some sort of interface later on! 
+
+	--Handler.Honor = outerRing
+	--Handler.Reputation = innerRing
+
+	-- Toggle button for ring frame
+	local toggle = Handler:CreateOverlayFrame()
+	toggle:SetFrameLevel(toggle:GetFrameLevel() + 10) -- need this above the ring frame and the rings
+	toggle:SetPoint("CENTER", Handler, "BOTTOM", 0, -6)
+	toggle:SetSize(48,48)
+	toggle:EnableMouse(true)
+	toggle:SetScript("OnEnter", Toggle_OnEnter)
+	toggle:SetScript("OnLeave", Toggle_OnLeave)
+	toggle:SetScript("OnMouseUp", Toggle_OnMouseUp)
+	toggle._owner = Handler
+	toggle.Frame = ringFrame
+
+	local toggleBackdrop = toggle:CreateTexture()
+	toggleBackdrop:SetDrawLayer("BACKGROUND")
+	toggleBackdrop:SetSize(100,100)
+	toggleBackdrop:SetPoint("CENTER", 0, 0)
+	toggleBackdrop:SetTexture(getPath("point_plate"))
+	toggleBackdrop:SetVertexColor(unpack(Colors.ui.stone))
+
+	local innerPercent = ringFrame:CreateFontString()
+	innerPercent:SetDrawLayer("OVERLAY")
+	innerPercent:SetFontObject(GameFontNormal)
+	innerPercent:SetFont(GameFontNormal:GetFont(), fontSize -1, fontStyle) 
+	innerPercent:SetJustifyH("CENTER")
+	innerPercent:SetJustifyV("MIDDLE")
+	innerPercent:SetShadowOffset(0, 0)
+	innerPercent:SetShadowColor(0, 0, 0, 1)
+	innerPercent:SetPoint("CENTER", 1, -64)
+	innerRing.Value.Percent = innerPercent
+
+	local outerPercent = toggle:CreateFontString()
+	outerPercent:SetDrawLayer("OVERLAY")
+	outerPercent:SetFontObject(GameFontNormal)
+	outerPercent:SetFont(GameFontNormal:GetFont(), fontSize -2, fontStyle) 
+	outerPercent:SetJustifyH("CENTER")
+	outerPercent:SetJustifyV("MIDDLE")
+	outerPercent:SetShadowOffset(0, 0)
+	outerPercent:SetShadowColor(0, 0, 0, 1)
+	outerPercent:SetPoint("CENTER", 1, -1)
+	outerRing.Value.Percent = outerPercent
+
+	Handler.Toggle = toggle
 
 end 
 

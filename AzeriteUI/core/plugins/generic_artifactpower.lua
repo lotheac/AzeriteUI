@@ -52,9 +52,18 @@ local UpdateValue = function(element, min, max)
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	value:SetFormattedText(short(min))
 
+	local percent = value.Percent
+	if percent then 
+		percent:SetFormattedText("%d", min/max*100)
+	end 
+
 	if element.colorValue then 
 		local color = element._owner.colors.artifact
 		value:SetTextColor(color[1], color[2], color[3])
+
+		if percent then 
+			percent:SetTextColor(color[1], color[2], color[3])
+		end 
 	end 
 
 end 

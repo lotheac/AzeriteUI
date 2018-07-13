@@ -20,6 +20,11 @@ L["%s to use realm time."] = true
 L["%s to use standard (12-hour) time."] = true
 L["%s to use military (24-hour) time."] = true
 
+L["Now using standard local time."] = true
+L["Now using standard realm time."] = true
+L["Now using standard (12-hour) time."] = true
+L["Now using military (24-hour) time."] = true
+
 
 -- Network & Performance Information
 --------------------------------------------
@@ -39,12 +44,16 @@ L["Current Artifact Power: "] = true
 L["Current Honor Points: "] = true
 L["Current XP: "] = true
 L["Rested Bonus: "] = true
-L["%s of normal experience\ngained from monsters."] = true
-L["You must rest for %s additional\nhours to become fully rested."] = true
-L["You must rest for %s additional\nminutes to become fully rested."] = true
+L["%s of normal experience gained from monsters."] = true
+L["You must rest for %s additional hours to become fully rested."] = true
+L["You must rest for %s additional minutes to become fully rested."] = true
 L["You should rest at an Inn."] = true
 L["%s to toggle Artifact Window>"] = true
 L["%s to toggle Honor Talents Window>"] = true
+L["%s to disable sticky bars."] = true 
+L["%s to enable sticky bars."] = true 
+L["Sticky Minimap bars enabled."] = true
+L["Sticky Minimap bars disabled."] = true
 
 
 -- World Map Settings

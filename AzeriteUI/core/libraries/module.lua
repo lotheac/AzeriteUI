@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 11)
+local LibModule = CogWheel:Set("LibModule", 16)
 if (not LibModule) then	
 	return
 end
@@ -53,10 +53,6 @@ LibModule.parentModule = LibModule.parentModule or {}
 local PRIORITY_HASH = { HIGH = true, NORMAL = true, LOW = true } -- hashed priority table, for faster validity checks
 local PRIORITY_INDEX = { "HIGH", "NORMAL", "LOW" } -- indexed/ordered priority table
 local DEFAULT_MODULE_PRIORITY = "NORMAL" -- default load priority for new modules
-
--- Game Client Constants
-local ENGINE_WOD = LibClientBuild:IsBuild("WoD")
-local ENGINE_CATA = LibClientBuild:IsBuild("Cata")
 
 -- Speed shortcuts
 local addonDependencies = LibModule.addonDependencies
@@ -291,9 +287,14 @@ local ModuleProtoType = {
 	GetOwner = function(self)
 		local parent = parentModule[self]
 		while parent do
-			parent = parentModule[parent]
+			local newParent = parentModule[parent]
+			if newParent then 
+				parent = newParent
+			else 
+				break
+			end
 		end
-		return parent
+		return parent or self -- adding the self for top level modules(?)
 	end,
 
 	-- Return whether or not the module is a top level module, 

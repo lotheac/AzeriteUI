@@ -3,10 +3,9 @@
 local _G = _G
 
 -- WoW API
-local GetTexCoordsForRoleSmallCircle = _G.GetTexCoordsForRoleSmallCircle
 local UnitGroupRolesAssigned = _G.UnitGroupRolesAssigned
 
-local roleToObject = { TANK = "Tank", HEALER = "Healer", DAMAGER = "Damager", NONE = "None" }
+local roleToObject = { TANK = "Tank", HEALER = "Healer", DAMAGER = "Damager" }
 
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
@@ -20,20 +19,24 @@ local Update = function(self, event, unit)
 	
 	local groupRole = UnitGroupRolesAssigned(self.unit)
 
-	-- Don't assume the element is an UI widget, could be just a table
-	if (element.IsObjectType and element:IsObjectType("Texture")) then 
-		if roleToObject[groupRole] then
-			element:SetTexCoord(GetTexCoordsForRoleSmallCircle(groupRole))
-		else 
-			element:Hide()
-		end 
-	else 
+	-- Check for sub elements
+	local subElement = groupRole and roleToObject[groupRole]
+	if (subElement) and element[subElement] then
 		for role, objectName in pairs(roleToObject) do 
 			local object = element[objectName]
 			if object then 
 				object:SetShown(role == groupRole)
 			end 
 		end 
+	end 
+
+	-- Don't assume the element is an UI widget, could be just a table
+	if element:IsObjectType("Frame") then 
+		if (subElement and (not element:IsShown())) then 
+			element:Show()
+		elseif ((not subElement) and element:IsShown()) then 
+			element:Hide()
+		end
 	end 
 
 	if element.PostUpdate then 
@@ -61,11 +64,6 @@ local Enable = function(self)
 			self:RegisterEvent("GROUP_ROSTER_UPDATE", Proxy, true)
 		end
 
-		-- Don't assume the element is an UI widget, could be just a table
-		if (element.IsObjecType and element:IsObjectType("Texture") and (not GroupRole:GetTexture())) then
-			element:SetTexture([[Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES]])
-		end
-
 		return true 
 	end
 end 
@@ -80,5 +78,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 5)
 end 

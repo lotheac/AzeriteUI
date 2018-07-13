@@ -4,7 +4,7 @@
 -- The thread that started it: 
 -- http://www.wowinterface.com/forums/showthread.php?t=45918
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 8)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 9)
 if (not LibSpinBar) then	
 	return
 end
@@ -105,27 +105,23 @@ end
 
 Quadrant.RotateTexture = function(self, degrees)
 
-	if (degrees < 0) then 
-		degrees = degrees + 360
-	end 
+	-- Make sure the degree is in bounds, or just reset the texture and exit
+	local compareDegrees = degrees % 360
 
-	local ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
-	local mod, point, offsetX, offsetY
+	-- Reset texture and return if the given degree is not in our quadrant
+	if not((compareDegrees >= self.quadrantDegree) and (compareDegrees < self.quadrantDegree + 90)) then 
+		return self:ResetTexture()
+	end 
 
 	-- Calculate where the current position is
 	local radians = degrees * DEGS_TO_RADS
 
-	-- Make sure the degree is in bounds, or just reset the texture and exit
-	if not((degrees >= self.quadrantDegree) and (degrees < self.quadrantDegree + 90)) then 
-		return self:ResetTexture()
-	end 
-
 	-- Simple modifier to decide which direction the box expands in
-	mod = 1 or self.clockwise and 1 or -1
+	local mod = self.clockwise and -1 or 1
 
 	-- Figure out where the points are
 	local mainX, mainY = math_cos(radians) *.5, math_sin(radians) *.5
-	local otherX, otherY = -mainY, mainX
+	local otherX, otherY = mainY*mod, -mainX*mod
 	local centerX, centerY = mainX + otherX, mainY + otherY
 
 	-- Notes about quadrants and their textures:
@@ -133,7 +129,7 @@ Quadrant.RotateTexture = function(self, degrees)
 	-- * clockwise textures extend towards the end of the quadrant
 	-- * anti-clockwise textures assume a full square when at the end of a quadrant
 	-- * anti-clockwise textures extend towards the start of the quadrant
-	
+	local point, ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
 	if (self.quadrantID == 1) then 
 
 		LLx, LLy, point = 0, 0, "BOTTOMLEFT"
@@ -189,7 +185,30 @@ Quadrant.RotateTexture = function(self, degrees)
 
 	end 		
 
-	-- Convert to coordinates used 
+	-- Get the angle and position of the new center
+	local width, height = self:GetSize()
+	local center = (degrees-45*mod)* DEGS_TO_RADS
+	
+	-- Relative to quadrant #1
+	local CX, CY = math_cos(center) *.5, math_sin(center) *.5
+	local offsetX = CX*ROOT_OF_HALF*width*2 - width/2
+	local offsetY = CY*ROOT_OF_HALF*height*2 - height/2
+
+	-- Correct offsets
+	if (self.quadrantID == 2) then 
+		offsetX = offsetX + width
+	end 	
+
+	if (self.quadrantID == 3) then 
+		offsetX = offsetX + width
+		offsetY = offsetY + height
+	end 
+
+	if (self.quadrantID == 4) then 
+		offsetY = offsetY + height
+	end 
+
+		-- Convert to coordinates used 
 	-- by the wow texcoord system
 	LLx = LLx + .5
 	LRx = LRx + .5
@@ -200,37 +219,13 @@ Quadrant.RotateTexture = function(self, degrees)
 	ULy = 1 - (ULy + .5)
 	URy = 1 - (URy + .5)
 
-	-- Get the angle and position of the new center
-	local width, height = self:GetSize()
-	local center = (degrees+45*mod)* DEGS_TO_RADS
-	
-	-- Relative to quadrant #1
-	local CX, CY = math_cos(center) *.5, math_sin(center) *.5
-	local offsetX = CX*ROOT_OF_HALF*width*2 - width/2
-	local offsetY = CY*ROOT_OF_HALF*height*2 - height/2
-
-	if self.quadrantID == 2 then 
-		offsetX = offsetX + width
-	end 	
-
-	if self.quadrantID == 3 then 
-		offsetX = offsetX + width
-		offsetY = offsetY + height
-	end 
-
-	if self.quadrantID == 4 then 
-		offsetY = offsetY + height
-	end 
-
 	-- Perform rotation, texcoord transformation and repositioning
-	local rotation = -math_abs(self.quadrantDegree - degrees)
-	self:SetRotation(-rotation*mod * DEGS_TO_RADS)
-	--self:SetRotation(-mod*(90-degrees) * DEGS_TO_RADS)
-	self:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
-	
-	--print(("%s, %.1f, %.1f"):format(point,offsetX,offsetY))
+	self:SetRotation(-(self.quadrantDegree + (self.clockwise and 0 or 90) - degrees) * DEGS_TO_RADS)
 	self:SetPoint(point, offsetX, offsetY)
+	self:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
 
+	-- Tell the environment this was the active quadrant
+	return true
 end
 
 local Update = function(self, elapsed)
@@ -256,7 +251,6 @@ local Update = function(self, elapsed)
 		end 
 	else
 
-
 		-- percentage of the bar filled
 		local percentage = value/(maxValue - minValue)
 
@@ -267,60 +261,51 @@ local Update = function(self, elapsed)
 
 		-- How many degrees into the bar?
 		local valueDegree = degreeSpan * percentage
-
 		if data.clockwise then 
 			
 			-- add offset, subtract value
 			local realAngle = degreeOffset - valueDegree 
 
-			-- make sure we don't use negative values
-			--if (realAngle < 0) then 
-			--	realAngle = realAngle + 360
-			--end 
-
-			local currentQuadrant
+			local passedCurrent
 			for barID = 1,#quadrantOrder,1 do 
 				local bar = data.quadrants[quadrantOrder[barID]]
 
-				if currentQuadrant then 
-					bar.active = false
-				else 
-					if (realAngle < 0) then 
-						realAngle = realAngle + 360
-					end 
-					if (realAngle >= bar.quadrantDegree) and (realAngle < bar.quadrantDegree + 90) then 
-						currentQuadrant = true
-					end 
-					bar.active = true
+				local isCurrent = bar:RotateTexture(realAngle)
+				if isCurrent then 
+					passedCurrent = true 
 				end 
 
-				bar:RotateTexture(realAngle)
+				bar.active = isCurrent or (not passedCurrent)
+
+				if bar.active and (not bar:IsShown()) then
+					bar:Show()
+				elseif (not bar.active) and bar:IsShown() then 
+					bar:Hide()
+				end 
 			end 
 		else 
 
 			-- add offset, subtract span size, add value
 			local realAngle = degreeOffset - degreeSpan + valueDegree 
 
-			-- make sure we don't use negative values
-			--if (realAngle < 0) then 
-			--	realAngle = realAngle + 360
-			--end 
-			
-			for barID = #quadrantOrder,1,-1 do 
+			local passedCurrent
+			for barID = 1,#quadrantOrder,1 do 
 				local bar = data.quadrants[quadrantOrder[barID]]
-				bar.active = realAngle >= bar.quadrantDegree
-				bar:RotateTexture(realAngle)
+
+				local isCurrent = bar:RotateTexture(realAngle)
+				if isCurrent then 
+					passedCurrent = true 
+				end 
+
+				bar.active = isCurrent or (not passedCurrent)
+
+				if bar.active and (not bar:IsShown()) then
+					bar:Show()
+				elseif (not bar.active) and bar:IsShown() then 
+					bar:Hide()
+				end 
 			end 
 		end 
-
-
-		for id,bar in ipairs(data.quadrants) do 
-			if bar.active and (not bar:IsShown()) then
-				bar:Show()
-			elseif (not bar.active) and bar:IsShown() then 
-				bar:Hide()
-			end 
-		end
 	end
 
 	-- Allow modules to add their postupdates here
@@ -380,7 +365,7 @@ local OnUpdate = function(self, elapsed)
 			end 
 		end 
 	else
-		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) then
+		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) or (not data.smoothing) then
 			data.scaffold:SetScript("OnUpdate", nil)
 		end
 	end
@@ -396,53 +381,74 @@ local OnUpdate = function(self, elapsed)
 	data.elapsed = 0
 end
 
+local UpdateQuadrantOrder = function(self)
+	local data = Bars[self]
+	
+	local clockwise = data.clockwise
+	local degreeOffset = data.degreeOffset
+	local degreeSpan = data.degreeSpan
+	local quadrants = data.quadrants
+	local quadrantOrder = data.quadrantOrder
+
+	-- Figure out where the quadrant containing the offset is located
+	local firstDegree
+	if clockwise then
+		firstDegree = degreeOffset 
+	else 
+		firstDegree = degreeOffset - degreeSpan
+	end 
+
+	if (firstDegree < 0) then 
+		firstDegree = firstDegree + 360
+	elseif (firstDegree >= 360) then 
+		firstDegree = firstDegree - 360
+	end 
+
+	local firstQuadrant
+	for i = 1,#quadrants do
+		local bar = quadrants[i] 
+		if (firstDegree >= bar.quadrantDegree) and (firstDegree < bar.quadrantDegree + 90) then 
+			firstQuadrant = i
+			break
+		end 
+	end
+
+	-- Iterate through quadrants to decide the order
+	local current = firstQuadrant
+	if clockwise then 
+		for i = 1,4 do
+			local id = i
+			quadrantOrder[i] = current
+			current = current - 1
+			if (current < 1) then 
+				current = current + 4
+			end 
+		end 
+	else 
+		for i = 1,4 do
+			local id = i
+			quadrantOrder[i] = current
+			current = current + 1
+			if (current > 4) then 
+				current = current - 4
+			end 
+		end 
+	end 
+
+	Update(self)
+end 
 
 -- Sets the angles where the bar starts and ends. 
 -- Generally recommended to slightly overshoot the texture "edges" 
 -- to avoid textures being abruptly cut off. 
 SpinBar.SetDegreeOffset = function(self, degreeOffset)
-	local data = Bars[self]
-
-	data.degreeOffset = degreeOffset
-
-	for i = #data.quadrants,1,-1 do
-		local bar = data.quadrants[i] 
-		if (degreeOffset >= bar.quadrantDegree) then 
-			data.startQuadrant = i
-		end 
-		if data.clockwise then 
-			if (degreeOffset - data.degreeSpan >= bar.quadrantDegree) then 
-				data.endQuadrant = i
-			end 
-		else 
-			if (degreeOffset + data.degreeSpan >= bar.quadrantDegree) then 
-				data.endQuadrant = i
-			end 
-		end 
-	end 
-
-	Update(self)
+	Bars[self].degreeOffset = degreeOffset
+	UpdateQuadrantOrder(self)
 end
 
 SpinBar.SetDegreeSpan = function(self, degreeSpan)
-	local data = Bars[self]
-
-	data.degreeSpan = degreeSpan
-
-	for i = #data.quadrants,1,-1 do
-		local bar = data.quadrants[i] 
-		if data.clockwise then 
-			if (data.degreeOffset - degreeSpan >= bar.quadrantDegree) then 
-				data.endQuadrant = i
-			end 
-		else 
-			if (data.degreeOffset + degreeSpan >= bar.quadrantDegree) then 
-				data.endQuadrant = i
-			end 
-		end 
-	end 
-
-	Update(self)
+	Bars[self].degreeSpan = degreeSpan
+	UpdateQuadrantOrder(self)
 end 
 
 -- Sets the min/max-values as in any other bar.
@@ -476,9 +482,11 @@ SpinBar.SetValue = function(self, value, overrideSmoothing)
 		value = min
 	end
 	data.barValue = value
+	
 	if overrideSmoothing then 
 		data.barDisplayValue = value
 	end 
+
 	if (not data.disableSmoothing) then
 		if (data.barDisplayValue > max) then
 			data.barDisplayValue = max
@@ -488,6 +496,7 @@ SpinBar.SetValue = function(self, value, overrideSmoothing)
 		data.smoothingInitialValue = data.barDisplayValue
 		data.smoothingStart = GetTime()
 	end
+
 	if (value ~= data.barDisplayValue) then
 		data.smoothing = true
 	end
@@ -495,9 +504,9 @@ SpinBar.SetValue = function(self, value, overrideSmoothing)
 	if (data.smoothing or (data.barDisplayValue > min) or (data.barDisplayValue < max)) then
 		if (not data.scaffold:GetScript("OnUpdate")) then
 			data.scaffold:SetScript("OnUpdate", OnUpdate)
-			data.smoothing = true
 		end
 	end
+
 	Update(self)
 end
 
@@ -555,14 +564,14 @@ end
 
 SpinBar.SetClockwise = function(self, clockwise)
 	local data = Bars[self]
-	data.clockwise = true
+	data.clockwise = clockwise
 	for id,bar in ipairs(data.quadrants) do 
 		bar.clockwise = clockwise
 	end 
-	Update(self)
+	UpdateQuadrantOrder(self)
 end
 
-SpinBar.GetDirection = function(self)
+SpinBar.IsClockwise = function(self)
 	return Bars[self].clockwise
 end
 
@@ -758,7 +767,6 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 		bar:SetSize(1,1)
 		bar:SetDrawLayer("BACKGROUND", 0)
 		bar.quadrantID = i 
-		bar.clockwise = false
 
 		-- Reset position, texcoords and rotation.
 		-- Just use the standard method here, 
@@ -832,12 +840,10 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 
 	-- quadrants and degrees
 	data.quadrants = quadrants
-	data.clockwise = true -- let the bar fill clockwise
-	data.degreeOffset = 270 -- where the bar starts in the circle
+	data.clockwise = nil -- let the bar fill clockwise
+	data.degreeOffset = 0 -- where the bar starts in the circle
 	data.degreeSpan = 360 -- size of the bar in degrees
-	data.startQuadrant = 3 -- the quadrant it starts in
-	data.endQuadrant = 4 -- the quadrant it ends in
-	data.quadrantOrder = { 3,2,1,4 } -- might go with this system instead?
+	data.quadrantOrder = { 1,2,3,4 } -- might go with this system instead?
 
 	-- Give multiple objects access using their 'self' as key
 	Bars[statusbar] = data

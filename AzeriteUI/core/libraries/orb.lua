@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 14)
+local LibOrb = CogWheel:Set("LibOrb", 16)
 if (not LibOrb) then	
 	return
 end
@@ -35,15 +35,15 @@ local Orb = LibFrame:CreateFrame("Frame")
 local Orb_MT = { __index = Orb }
 
 local Update = function(self, elapsed)
-	local Data = Orbs[self]
+	local data = Orbs[self]
 
-	local value = Data.disableSmoothing and Data.orbValue or Data.orbDisplayValue
-	local min, max = Data.orbMin, Data.orbMax
-	local orientation = Data.orbOrientation
-	local width, height = Data.scaffold:GetSize() 
-	local orb = Data.orb
-	local spark = Data.spark
-	local glow = Data.glow
+	local value = data.disableSmoothing and data.barValue or data.barDisplayValue
+	local min, max = data.barMin, data.barMax
+	local orientation = data.orbOrientation
+	local width, height = data.scaffold:GetSize() 
+	local orb = data.orb
+	local spark = data.spark
+	local glow = data.glow
 	
 	if value > max then
 		value = max
@@ -59,8 +59,10 @@ local Update = function(self, elapsed)
 	end
 	
 	if (value <= min) or (max == min) then
-		Data.scrollframe:Hide()
+		data.scrollframe:Hide()
 	else
+		print(GetTime())
+
 		local newSize, mult
 		if (max > min) then
 			mult = (value-min)/(max-min)
@@ -71,31 +73,31 @@ local Update = function(self, elapsed)
 		end
 		local displaySize = math_max(newSize, 0.0001) -- sizes can't be 0 in Legion
 
-		Data.scrollframe:SetHeight(displaySize)
-		Data.scrollframe:SetVerticalScroll(height - newHeight)
-		if (not Data.scrollframe:IsShown()) then
-			Data.scrollframe:Show()
+		data.scrollframe:SetHeight(displaySize)
+		data.scrollframe:SetVerticalScroll(height - newHeight)
+		if (not data.scrollframe:IsShown()) then
+			data.scrollframe:Show()
 		end
 	end
 	
-	if (value == max) or (value == min) or (value/max >= Data.sparkMaxPercent) or (value/max <= Data.sparkMinPercent) then
+	if (value == max) or (value == min) or (value/max >= data.sparkMaxPercent) or (value/max <= data.sparkMinPercent) then
 		if spark:IsShown() then
 			spark:Hide()
-			spark:SetAlpha(Data.sparkMinAlpha)
-			Data.sparkDirection = "IN"
+			spark:SetAlpha(data.sparkMinAlpha)
+			data.sparkDirection = "IN"
 			glow:Hide()
-			glow:SetAlpha(Data.sparkMinAlpha)
+			glow:SetAlpha(data.sparkMinAlpha)
 		end
 	else
-		local scrollframe = Data.scrollframe
-		local sparkOffsetY = Data.sparkOffset
-		local sparkHeight = Data.sparkHeight
-		local leftCrop = Data.orbLeftCrop
-		local rightCrop = Data.orbRightCrop
+		local scrollframe = data.scrollframe
+		local sparkOffsetY = data.sparkOffset
+		local sparkHeight = data.sparkHeight
+		local leftCrop = data.barLeftCrop
+		local rightCrop = data.barRightCrop
 
 		local sparkWidth = math_sqrt((height/2)^2 - (math_abs((height/2) - newHeight))^2) * 2
 		local sparkOffsetX = (height - sparkWidth)/2
-		local sparkOffsetY = Data.sparkOffset * sparkHeight
+		local sparkOffsetY = data.sparkOffset * sparkHeight
 		local freeSpace = height - leftCrop - rightCrop
 
 		if sparkWidth > freeSpace then 
@@ -139,23 +141,23 @@ local Update = function(self, elapsed)
 
 		if elapsed then
 			local currentAlpha = glow:GetAlpha()
-			local targetAlpha = Data.sparkDirection == "IN" and Data.sparkMaxAlpha or Data.sparkMinAlpha
-			local range = Data.sparkMaxAlpha - Data.sparkMinAlpha
-			local alphaChange = elapsed/(Data.sparkDirection == "IN" and Data.sparkDurationIn or Data.sparkDurationOut) * range
+			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
+			local range = data.sparkMaxAlpha - data.sparkMinAlpha
+			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range
 		
-			if Data.sparkDirection == "IN" then
+			if data.sparkDirection == "IN" then
 				if currentAlpha + alphaChange < targetAlpha then
 					currentAlpha = currentAlpha + alphaChange
 				else
 					currentAlpha = targetAlpha
-					Data.sparkDirection = "OUT"
+					data.sparkDirection = "OUT"
 				end
-			elseif Data.sparkDirection == "OUT" then
+			elseif data.sparkDirection == "OUT" then
 				if currentAlpha + alphaChange > targetAlpha then
 					currentAlpha = currentAlpha - alphaChange
 				else
 					currentAlpha = targetAlpha
-					Data.sparkDirection = "IN"
+					data.sparkDirection = "IN"
 				end
 			end
 			spark:SetAlpha(.6 + currentAlpha/3) -- keep the spark brighter and less animated
@@ -173,52 +175,61 @@ local smoothingFrequency = .2 -- time for the smooth transition to complete
 local smoothingLimit = 1/120 -- max updates per second
 
 local OnUpdate = function(self, elapsed)
-	local Data = Orbs[self]
-	Data.elapsed = (Data.elapsed or 0) + elapsed
-	if (Data.elapsed < smoothingLimit) then
+	local data = Orbs[self]
+	data.elapsed = (data.elapsed or 0) + elapsed
+	if (data.elapsed < smoothingLimit) then
 		return
 	else
-		Data.elapsed = 0
+		data.elapsed = 0
 	end
-	if (Data.disableSmoothing) then
-		if (Data.orbValue <= Data.orbMin) or (Data.orbValue >= Data.orbMax) then
-			Data.scaffold:SetScript("OnUpdate", nil)
+	
+	if (data.disableSmoothing) then
+		if (data.barValue <= data.barMin) or (data.barValue >= data.barMax) then
+			data.scaffold:SetScript("OnUpdate", nil)
 		end
+	elseif (data.smoothing) then
+		if (math_abs(data.barDisplayValue - data.barValue) < smoothingMinValue) then 
+			data.barDisplayValue = data.barValue
+			data.smoothing = nil
+		else 
+			-- The fraction of the total bar this total animation should cover  
+			local animsize = (data.barValue - data.smoothingInitialValue)/(data.barMax - data.barMin) 
+
+			-- Points per second on average for the whole bar
+			local pps = (data.barMax - data.barMin)/(data.smoothingFrequency or smoothingFrequency)
+
+			-- Position in time relative to the length of the animation, scaled from 0 to 1
+			local position = (GetTime() - data.smoothingStart)/(data.smoothingFrequency or smoothingFrequency) 
+			if (position < 1) then 
+				-- The change needed when using average speed
+				local average = pps * animsize * data.elapsed -- can and should be negative
+
+				-- Tha change relative to point in time and distance passed
+				local change = 2*(3 * ( 1 - position )^2 * position) * average*2 --  y = 3 * (1 − t)^2 * t  -- quad bezier fast ascend + slow descend
+				--local change = 2*(3 * ( 1 - position ) * position^2) * average*2 -- y = 3 * (1 − t) * t^2 -- quad bezier slow ascend + fast descend
+				--local change = 2 * average * ((position < .7) and math_abs(position/.7) or math_abs((1-position)/.3)) -- linear slow ascend + fast descend
+				
+				--print(("time: %.3f pos: %.3f change: %.1f"):format(GetTime() - data.smoothingStart, position, change))
+
+				-- If there's room for a change in the intended direction, apply it, otherwise finish the animation
+				if ( (data.barValue > data.barDisplayValue) and (data.barValue > data.barDisplayValue + change) ) 
+				or ( (data.barValue < data.barDisplayValue) and (data.barValue < data.barDisplayValue + change) ) then 
+					data.barDisplayValue = data.barDisplayValue + change
+				else 
+					data.barDisplayValue = data.barValue
+					data.smoothing = nil
+				end 
+			else 
+				data.barDisplayValue = data.barValue
+				data.smoothing = nil
+			end 
+		end 
 	else
-		if (Data.smoothing) then
-			local goal = Data.orbValue
-			local display = Data.orbDisplayValue
-			local change = (goal-display)*(elapsed/(Data.smoothingFrequency or smoothingFrequency))
-			if (display < smoothingMinValue) then
-				Data.orbDisplayValue = goal
-				Data.smoothing = nil
-			else
-				if (goal > display) then
-					if (goal > (display + change)) then
-						Data.orbDisplayValue = display + change
-					else
-						Data.orbDisplayValue = goal
-						Data.smoothing = nil
-					end
-				elseif (goal < display) then
-					if (goal < (display + change)) then
-						Data.orbDisplayValue = display + change
-					else
-						Data.orbDisplayValue = goal
-						Data.smoothing = nil
-					end
-				else
-					Data.orbDisplayValue = goal
-					Data.smoothing = nil
-				end
-			end
-		else
-			if (Data.orbDisplayValue <= Data.orbMin) or (Data.orbDisplayValue >= Data.orbMax) then
-				Data.scaffold:SetScript("OnUpdate", nil)
-				Data.smoothing = nil
-			end
+		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) or (not data.smoothing) then
+			data.scaffold:SetScript("OnUpdate", nil)
 		end
 	end
+
 	Update(self, elapsed)
 end
 
@@ -231,28 +242,33 @@ Orb.DisableSmoothing = function(self, disableSmoothing)
 end
 
 -- sets the value the orb should move towards
-Orb.SetValue = function(self, value)
-	local Data = Orbs[self]
-	local min, max = Data.orbMin, Data.orbMax
+Orb.SetValue = function(self, value, overrideSmoothing)
+	local data = Orbs[self]
+	local min, max = data.barMin, data.barMax
 	if (value > max) then
 		value = max
 	elseif (value < min) then
 		value = min
 	end
-	if (not Data.disableSmoothing) then
-		if (Data.orbDisplayValue > max) then
-			Data.orbDisplayValue = max
-		elseif (Data.orbDisplayValue < min) then
-			Data.orbDisplayValue = min
+	data.barValue = value
+	if overrideSmoothing then 
+		data.barDisplayValue = value
+	end 
+	if (not data.disableSmoothing) then
+		if (data.barDisplayValue > max) then
+			data.barDisplayValue = max
+		elseif (data.barDisplayValue < min) then
+			data.barDisplayValue = min
 		end
+		data.smoothingInitialValue = data.barDisplayValue
+		data.smoothingStart = GetTime()
 	end
-	Data.orbValue = value
-	if (value ~= Data.orbDisplayValue) then
-		Data.smoothing = true
+	if (value ~= data.barDisplayValue) then
+		data.smoothing = true
 	end
-	if (Data.smoothing or (Data.orbDisplayValue > min) or (Data.orbDisplayValue < max)) then
-		if (not Data.scaffold:GetScript("OnUpdate")) then
-			Data.scaffold:SetScript("OnUpdate", OnUpdate)
+	if (data.smoothing or (data.barDisplayValue > min) or (data.barDisplayValue < max)) then
+		if (not data.scaffold:GetScript("OnUpdate")) then
+			data.scaffold:SetScript("OnUpdate", OnUpdate)
 		end
 	end
 	Update(self)
@@ -260,46 +276,53 @@ end
 
 -- forces a hard reset to zero
 Orb.Clear = function(self)
-	local Data = Orbs[self]
-	Data.orbValue = Data.orbMin
-	Data.orbDisplayValue = Data.orbMin
+	local data = Orbs[self]
+	data.barValue = data.barMin
+	data.barDisplayValue = data.barMin
 	Update(self)
 end
 
-Orb.SetMinMaxValues = function(self, min, max)
-	local Data = Orbs[self]
-	if (Data.orbValue > max) then
-		Data.orbValue = max
-	elseif (Data.orbValue < min) then
-		Data.orbValue = min
+Orb.SetMinMaxValues = function(self, min, max, overrideSmoothing)
+	local data = Orbs[self]
+	if (data.barMin == min) and (data.barMax == max) then 
+		return 
+	end 
+	if (data.barValue > max) then
+		data.barValue = max
+	elseif (data.barValue < min) then
+		data.barValue = min
 	end
-	if (Data.orbDisplayValue > max) then
-		Data.orbDisplayValue = max
-	elseif (Data.orbDisplayValue < min) then
-		Data.orbDisplayValue = min
-	end
-	Data.orbMin = min
-	Data.orbMax = max
+	if overrideSmoothing then 
+		data.barDisplayValue = data.barValue
+	else 
+		if (data.barDisplayValue > max) then
+			data.barDisplayValue = max
+		elseif (data.barDisplayValue < min) then
+			data.barDisplayValue = min
+		end
+	end 
+	data.barMin = min
+	data.barMax = max
 	Update(self)
 end
 
 Orb.SetStatusBarColor = function(self, ...)
-	local Data = Orbs[self]
+	local data = Orbs[self]
 	local r, g, b = ...	
-	Data.layer1:SetVertexColor(r, g, b, .5)
-	Data.layer2:SetVertexColor(r*1/2, g*1/2, b*1/2, .9)
-	Data.layer3:SetVertexColor(r*1/4, g*1/4, b*1/4, 1)
-	Data.spark:SetVertexColor(r, g, b)
-	Data.glow:SetVertexColor(r, g, b)
+	data.layer1:SetVertexColor(r, g, b, .5)
+	data.layer2:SetVertexColor(r*1/2, g*1/2, b*1/2, .9)
+	data.layer3:SetVertexColor(r*1/4, g*1/4, b*1/4, 1)
+	data.spark:SetVertexColor(r, g, b)
+	data.glow:SetVertexColor(r, g, b)
 end
 
 Orb.SetStatusBarTexture = function(self, ...)
-	local Data = Orbs[self]
+	local data = Orbs[self]
 
 	-- set all the layers at once
 	local numArgs = select("#", ...)
 	for i = 1, numArgs do 
-		local layer = Data["layer"..i]
+		local layer = data["layer"..i]
 		if (not layer) then 
 			break
 		end
@@ -309,7 +332,7 @@ Orb.SetStatusBarTexture = function(self, ...)
 
 	-- We hide layers that aren't set
 	for i = numArgs+1, 3 do 
-		local layer = Data["layer"..i]
+		local layer = data["layer"..i]
 		if layer then 
 			layer:SetTexture("")
 		end 
@@ -339,14 +362,14 @@ Orb.SetSparkBlendMode = function(self, blendMode)
 end 
 
 Orb.SetSparkFlash = function(self, durationIn, durationOut, minAlpha, maxAlpha)
-	local Data = Orbs[self]
-	Data.sparkDurationIn = durationIn
-	Data.sparkDurationOut = durationOut
-	Data.sparkMinAlpha = minAlpha
-	Data.sparkMaxAlpha = maxAlpha
-	Data.sparkDirection = "IN"
-	Data.spark:SetAlpha(minAlpha)
-	Data.glow:SetAlpha(minAlpha)
+	local data = Orbs[self]
+	data.sparkDurationIn = durationIn
+	data.sparkDurationOut = durationOut
+	data.sparkMinAlpha = minAlpha
+	data.sparkMaxAlpha = maxAlpha
+	data.sparkDirection = "IN"
+	data.spark:SetAlpha(minAlpha)
+	data.glow:SetAlpha(minAlpha)
 end
 
 Orb.ClearAllPoints = function(self)
@@ -366,37 +389,37 @@ Orb.GetPoint = function(self, ...)
 end
 
 Orb.SetSize = function(self, width, height)
-	local Data = Orbs[self]
-	local leftCrop = Data.orbLeftCrop
-	local rightCrop = Data.orbRightCrop
-	Data.scaffold:SetSize(width, height)
-	Data.scrollchild:SetSize(width, height)
-	Data.scrollframe:SetWidth(width - (leftCrop + rightCrop))
-	Data.scrollframe:SetHorizontalScroll(leftCrop)
-	Data.scrollframe:ClearAllPoints()
-	Data.scrollframe:SetPoint("BOTTOM", leftCrop/2 - rightCrop/2, 0)
-	Data.sparkHeight = height/4 >= 8 and height/4 or 8
+	local data = Orbs[self]
+	local leftCrop = data.barLeftCrop
+	local rightCrop = data.barRightCrop
+	data.scaffold:SetSize(width, height)
+	data.scrollchild:SetSize(width, height)
+	data.scrollframe:SetWidth(width - (leftCrop + rightCrop))
+	data.scrollframe:SetHorizontalScroll(leftCrop)
+	data.scrollframe:ClearAllPoints()
+	data.scrollframe:SetPoint("BOTTOM", leftCrop/2 - rightCrop/2, 0)
+	data.sparkHeight = height/4 >= 8 and height/4 or 8
 	Update(self)
 end
 
 Orb.SetWidth = function(self, width)
-	local Data = Orbs[self]
-	local leftCrop = Data.orbLeftCrop
-	local rightCrop = Data.orbRightCrop
-	Data.scaffold:SetWidth(width)
-	Data.scrollchild:SetWidth(width)
-	Data.scrollframe:SetWidth(width - (leftCrop + rightCrop))
-	Data.scrollframe:SetHorizontalScroll(leftCrop)
-	Data.scrollframe:ClearAllPoints()
-	Data.scrollframe:SetPoint("BOTTOM", leftCrop/2 - rightCrop/2, 0)
+	local data = Orbs[self]
+	local leftCrop = data.barLeftCrop
+	local rightCrop = data.barRightCrop
+	data.scaffold:SetWidth(width)
+	data.scrollchild:SetWidth(width)
+	data.scrollframe:SetWidth(width - (leftCrop + rightCrop))
+	data.scrollframe:SetHorizontalScroll(leftCrop)
+	data.scrollframe:ClearAllPoints()
+	data.scrollframe:SetPoint("BOTTOM", leftCrop/2 - rightCrop/2, 0)
 	Update(self)
 end
 
 Orb.SetHeight = function(self, height)
-	local Data = Orbs[self]
-	Data.scaffold:SetHeight(height)
-	Data.scrollchild:SetHeight(height)
-	Data.sparkHeight = height/4 >= 8 and height/4 or 8
+	local data = Orbs[self]
+	data.scaffold:SetHeight(height)
+	data.scrollchild:SetHeight(height)
+	data.sparkHeight = height/4 >= 8 and height/4 or 8
 	Update(self)
 end
 
@@ -405,12 +428,12 @@ Orb.SetParent = function(self, parent)
 end
 
 Orb.GetValue = function(self)
-	return Orbs[self].orbValue
+	return Orbs[self].barValue
 end
 
 Orb.GetMinMaxValues = function(self)
-	local Data = Orbs[self]
-	return Data.orbMin, Data.orbMax
+	local data = Orbs[self]
+	return data.barMin, data.barMax
 end
 
 Orb.GetStatusBarColor = function(self, id)
@@ -438,11 +461,22 @@ Orb.CreateFontString = function(self, ...)
 end
 
 Orb.SetScript = function(self, ...)
-	Orbs[self].scaffold:SetScript(...)
+	-- can not allow the scaffold to get its scripts overwritten
+	local scriptHandler, func = ... 
+	if (scriptHandler == "OnUpdate") then 
+		Orbs[self].OnUpdate = func 
+	else 
+		Orbs[self].scaffold:SetScript(...)
+	end 
 end
 
 Orb.GetScript = function(self, ...)
-	return Orbs[self].scaffold:GetScript(...)
+	local scriptHandler, func = ... 
+	if (scriptHandler == "OnUpdate") then 
+		return Orbs[self].OnUpdate
+	else 
+		return Orbs[self].scaffold:GetScript(...)
+	end 
 end
 
 Orb.GetObjectType = function(self) return "Orb" end
@@ -454,15 +488,15 @@ Orb.IsShown = function(self) return Orbs[self].scaffold:IsShown() end
 
 -- Fancy method allowing us to crop the orb's sides
 Orb.SetCrop = function(self, leftCrop, rightCrop)
-	local Data = Orbs[self]
-	Data.orbLeftCrop = leftCrop
-	Data.orbRightCrop = rightCrop
-	self:SetSize(Data.scrollchild:GetSize()) 
+	local data = Orbs[self]
+	data.barLeftCrop = leftCrop
+	data.barRightCrop = rightCrop
+	self:SetSize(data.scrollchild:GetSize()) 
 end
 
 Orb.GetCrop = function(self)
-	local Data = Orbs[self]
-	return Data.orbLeftCrop, Data.orbRightCrop
+	local data = Orbs[self]
+	return data.barLeftCrop, data.barRightCrop
 end
 
 LibOrb.CreateOrb = function(self, parent, rotateClockwise, speedModifier)
@@ -569,12 +603,13 @@ LibOrb.CreateOrb = function(self, parent, rotateClockwise, speedModifier)
 	data.spark = spark
 	data.glow = glow
 
-	data.orbMin = 0 -- min value
-	data.orbMax = 1 -- max value
-	data.orbValue = 0 -- real value
-	data.orbDisplayValue = 0 -- displayed value while smoothing
-	data.orbLeftCrop = 0 -- percentage of the orb cropped from the left
-	data.orbRightCrop = 0 -- percentage of the orb cropped from the right
+	data.barMin = 0 -- min value
+	data.barMax = 1 -- max value
+	data.barValue = 0 -- real value
+	data.barDisplayValue = 0 -- displayed value while smoothing
+	data.barLeftCrop = 0 -- percentage of the orb cropped from the left
+	data.barRightCrop = 0 -- percentage of the orb cropped from the right
+	data.barSmoothingMode = "bezier-fast-in-slow-out"
 
 	data.sparkHeight = 8
 	data.sparkOffset = 1/32

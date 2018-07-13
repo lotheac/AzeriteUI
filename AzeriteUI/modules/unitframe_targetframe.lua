@@ -359,7 +359,6 @@ local Style = function(self, unit, id, ...)
 	health:Place("TOPRIGHT", -27, -27)
 	health:SetOrientation("LEFT") -- set the bar to grow towards the left
 	health:SetFlippedHorizontally(true) -- flips the bar texture horizontally
-	health:SetStatusBarColor(1,1,1,.85)
 	health.colorTapped = true
 	health.colorDisconnected = true
 	health.colorClass = true

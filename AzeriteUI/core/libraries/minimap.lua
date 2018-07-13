@@ -1,5 +1,5 @@
-local Version = 19 -- This library's version 
-local MapVersion = 19 -- Minimap library version the minimap created by this is compatible with
+local Version = 20 -- This library's version 
+local MapVersion = 20 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -684,6 +684,7 @@ LibMinimap.GetMinimapHandler = function(self)
 		-- create a new instance of the element 
 		-- note that we're using the same template for all elements
 		local proxy = setmetatable(LibMinimap:CreateFrame("Frame"), ElementHandler_MT)
+		proxy:SetAllPoints(Private.MapContent)
 		proxy._owner = self
 
 		-- activate the event handler

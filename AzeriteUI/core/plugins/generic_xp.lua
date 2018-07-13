@@ -46,7 +46,7 @@ if (gameLocale == "zhCN") then
 end 
 
 
-local UpdateValue = function(element, min, max)
+local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 	if element.OverrideValue then
 		return element:OverrideValue(unit, min, max)
 	end
@@ -54,9 +54,25 @@ local UpdateValue = function(element, min, max)
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	value:SetFormattedText(short(min))
 
+	local percent = value.Percent
+	if percent then 
+		percent:SetFormattedText("%d", min/max*100)
+	end 
+
 	if element.colorValue then 
-		local color = element._owner.colors[restedLeft and "rested" or "xp"] 
+		local color
+		if restedLeft then 
+			local colors = element._owner.colors
+			color = colors.restedValue or colors.rested or colors.xpValue or colors.xp
+		else 
+			local colors = element._owner.colors
+			color = colors.xpValue or colors.xp
+		end 
 		value:SetTextColor(color[1], color[2], color[3])
+
+		if percent then 
+			percent:SetTextColor(color[1], color[2], color[3])
+		end 
 	end 
 
 end 
@@ -83,7 +99,7 @@ local Update = function(self, event, ...)
 	end 
 
 	if element.Value then 
-		element:UpdateValue(min, max)
+		element:UpdateValue(min, max, restedLeft, restedTimeLeft)
 	end 
 
 	if element.Rested then
@@ -96,7 +112,7 @@ local Update = function(self, event, ...)
 	end 
 
 	if element.PostUpdate then 
-		element:PostUpdate(min, max)
+		element:PostUpdate(min, max, restedLeft, restedTimeLeft)
 	end 
 	
 end 

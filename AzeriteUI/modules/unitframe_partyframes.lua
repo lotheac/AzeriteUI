@@ -140,7 +140,6 @@ local Style = function(self, unit, id, ...)
 	health:SetOrientation("RIGHT") -- set the bar to grow towards the right.
 	health:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
 	health:SetSmoothingFrequency(.5) -- set the duration of the smoothing.
-	health:SetStatusBarColor(1, 1, 1, .85) -- the alpha won't be overwritten. 
 	health:SetStatusBarTexture(getPath("cast_bar"))
 	health.colorTapped = false -- color tap denied units 
 	health.colorDisconnected = true -- color disconnected units
@@ -245,24 +244,38 @@ local Style = function(self, unit, id, ...)
 
 	-- Group Role
 	-----------------------------------------------------------
-	self.GroupRole = {}
+	local groupRole = overlay:CreateFrame()
+	groupRole:SetSize(37, 37)
+	groupRole:SetPoint("TOP", 0, 0)
+	self.GroupRole = groupRole
 
-	local roleHealer = overlay:CreateTexture()
-	roleHealer:SetTexture(getPath("partyrole_heal"))
-	roleHealer:SetSize(37, 37)
-	roleHealer:SetPoint("TOP", 0, 0)
+	local groupRoleBg = groupRole:CreateTexture()
+	groupRoleBg:SetDrawLayer("BACKGROUND")
+	groupRoleBg:SetTexture(getPath("point_plate"))
+	groupRoleBg:SetVertexColor(unpack(Colors.ui.stone))
+	groupRoleBg:SetSize(72,72)
+	groupRoleBg:SetPoint("CENTER")
+	self.GroupRole.Bg = groupRoleBg
+
+	local roleHealer = groupRole:CreateTexture()
+	roleHealer:SetDrawLayer("ARTWORK")
+	roleHealer:SetTexture(getPath("grouprole-icons-heal"))
+	roleHealer:SetSize(32,32)
+	roleHealer:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Healer = roleHealer 
 
-	local roleTank = overlay:CreateTexture()
-	roleTank:SetTexture(getPath("partyrole_tank"))
-	roleTank:SetSize(37, 37)
-	roleTank:SetPoint("TOP", 0, 0)
+	local roleTank = groupRole:CreateTexture()
+	roleTank:SetDrawLayer("ARTWORK")
+	roleTank:SetTexture(getPath("grouprole-icons-tank"))
+	roleTank:SetSize(32, 32)
+	roleTank:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Tank = roleTank
 
-	local roleDPS = overlay:CreateTexture()
-	roleDPS:SetTexture(getPath("partyrole_dps"))
-	roleDPS:SetSize(37, 37)
-	roleDPS:SetPoint("TOP", 0, 0)
+	local roleDPS = groupRole:CreateTexture()
+	roleDPS:SetDrawLayer("ARTWORK")
+	roleDPS:SetTexture(getPath("grouprole-icons-dps"))
+	roleDPS:SetSize(32, 32)
+	roleDPS:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Damager = roleDPS
 
 
@@ -285,10 +298,10 @@ end
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
+		--self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
 		
 		-- uncomment this and comment the above line out to test party frames 
-		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
+		self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
 	end 
 end 
 

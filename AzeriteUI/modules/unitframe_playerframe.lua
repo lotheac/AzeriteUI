@@ -275,7 +275,6 @@ local Style = function(self, unit, id, ...)
 	health:SetOrientation("RIGHT") -- set the bar to grow towards the right.
 	health:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
 	health:SetSmoothingFrequency(.5) -- set the duration of the smoothing.
-	health:SetStatusBarColor(1, 1, 1, .85) -- the alpha won't be overwritten. 
 	health:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
 	health.colorTapped = false -- color tap denied units 
 	health.colorDisconnected = false -- color disconnected units
@@ -337,7 +336,6 @@ local Style = function(self, unit, id, ...)
 	power:SetSize(120, 140)
 	power:Place("BOTTOMLEFT", -101,  38)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
-	power:SetStatusBarColor(1, 1, 1, .85) -- only the alpha changes should prevail here. 
 	power:SetOrientation("UP") -- set the bar to grow towards the top.
 	power:SetSparkMap(map.crystal) -- set the map the spark follows along the bar.
 	power.ignoredResource = "MANA" -- make the bar hide when MANA is the primary resource. 

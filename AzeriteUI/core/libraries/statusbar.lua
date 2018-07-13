@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 32)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 33)
 if (not LibStatusBar) then	
 	return
 end
@@ -216,6 +216,7 @@ local Update = function(self, elapsed)
 	if (value == min) or (max == min) then
 		bar:Hide()
 	else
+
 		local displaySize, mult
 		if (max > min) then
 			mult = (value-min)/(max-min)
@@ -443,7 +444,7 @@ local OnUpdate = function(self, elapsed)
 			end 
 		end 
 	else
-		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) then
+		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) or (not data.smoothing) then
 			data.scaffold:SetScript("OnUpdate", nil)
 		end
 	end
@@ -533,7 +534,6 @@ StatusBar.SetValue = function(self, value, overrideSmoothing)
 	if (data.smoothing or (data.barDisplayValue > min) or (data.barDisplayValue < max)) then
 		if (not data.scaffold:GetScript("OnUpdate")) then
 			data.scaffold:SetScript("OnUpdate", OnUpdate)
-			data.smoothing = true
 		end
 	end
 	Update(self)

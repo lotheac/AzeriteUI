@@ -1,4 +1,4 @@
-local LibDB = CogWheel:Set("LibDB", 8)
+local LibDB = CogWheel:Set("LibDB", 11)
 if (not LibDB) then	
 	return
 end
@@ -37,6 +37,7 @@ local addons = LibDB.addons
 local frame = LibDB.frame
 
 -- Assign a smart metatable to the config table
+-- Note: do NOT iterate over this table, it'll add nil entries! 
 setmetatable(configs, { __index = function(tbl,key) tbl[key] = {} return tbl[key] end })
 
 -- Syntax check 
@@ -73,18 +74,25 @@ end
 
 LibDB.ParseSavedVariables = function(self)
 
-	local globalDB = globals[tostring(self)]
+	-- The name of the global variable containing saved settings
+	local globalName = globals[tostring(self:GetOwner())] -- tostring(self)
+
+	-- THe actual global table
+	globalDB = _G[globalName]
 	if (not globalDB) then
 		return error(("LibDB: The global table '%s' doesn't exist. Did you forget to register it with RegisterSavedVariablesGlobal in the top level module first?"):format(globalName))
 	end	
 
+	-- Our local cache for the current addon object
+	-- Will be created on demand if it doesn't exist
 	local configDB = configs[tostring(self:GetOwner())]
-	
+
 	-- Merge and/or overwrite current configs with stored settings.
 	-- *doesn't matter that we mess up any links by replacing the tables, 
 	--  because this all happens before any module's OnInit or OnEnable,
 	--  meaning if the modules do it right, they haven't fetched their config or db yet.
 	for name,data in pairs(globalDB) do
+
 		if data.profiles and configDB[name] and configDB[name].profiles then
 			local profiles = data.profiles -- speeeed!
 
@@ -150,11 +158,18 @@ LibDB.NewConfig = function(self, name, config, returnProfile)
 			global = copyTable(config)
 		}
 	}
-	
+
+	-- Need to sync this up against the global saved variables, 
+	-- or the settings won't store.
+	self:ParseSavedVariables()
+
 	return self:GetConfig(name, returnProfile)
 end
 
--- if the 'profile' argument is left out, the 'global' profile will be returned
+-- If the 'profile' argument is left out, the 'global' profile will be returned
+-- The 'option' argument allows the module to retrieve options 
+-- for specific realms, characters or faction.
+-- Remember that the realm name is a part of the character profile name!
 LibDB.GetConfig = function(self, name, profile, option)
 	check(name, 1, "string")
 	check(profile, 2, "string", "nil")
@@ -166,13 +181,13 @@ LibDB.GetConfig = function(self, name, profile, option)
 	end	
 	local config
 	if (profile == "realm") then
-		config = configDB[name].profiles.realm[(GetRealmName())]
+		config = configDB[name].profiles.realm[option or (GetRealmName())]
 		
 	elseif (profile == "character") then
-		config = configDB[name].profiles.character[UnitName("player").."-"..GetRealmName()]
+		config = configDB[name].profiles.character[option or (UnitName("player").."-"..GetRealmName())]
 		
 	elseif (profile == "faction") then
-		config = configDB[name].profiles.faction[(UnitFactionGroup("player"))]
+		config = configDB[name].profiles.faction[option or (UnitFactionGroup("player"))]
 		
 	elseif (profile == "global") or (not profile) then
 		config = configDB[name].profiles.global
@@ -223,16 +238,12 @@ LibDB.RegisterSavedVariablesGlobal = function(self, globalName)
 		return error("LibDB: You cannot call RegisterSavedVariablesGlobal on anything but the top level module.")
 	end
 
-	-- Even though the variables are loaded prior to this, 
-	-- the table might not exist yet as it could be the first time running.
-	globalDB = _G[globalName] or {}
+	-- Add the name of the new global to our registry
+	-- Note that several modules and addons can point to the same global.
+	globals[tostring(self)] = globalName
 
-	-- Add the new DB table to our registry
-	-- Note that several modules and addons can point to the same global, 
-	globals[tostring(self)] = globalDB
-
-	-- Refresh the pointer in case it's the first time running
-	_G[globalName] = _G[globalName] or globalDB
+	-- Create the global variable itself
+	_G[globalName] = {}
 
 	-- Parse saved variables and set up profiles for char, realm etc 
 	return self:ParseSavedVariables()
@@ -252,7 +263,8 @@ local embedMethods = {
 -- Since this can only be called by top level modules, 
 -- there's no reason including it in any other.
 local onlyOnOwner = {
-	RegisterSavedVariablesGlobal = true
+	RegisterSavedVariablesGlobal = true,
+	ParseSavedVariables = true
 }
 
 LibDB.Embed = function(self, target)

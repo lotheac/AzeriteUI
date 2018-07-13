@@ -7,6 +7,9 @@ local AzeriteUI = CogWheel("LibModule"):NewModule("AzeriteUI", "LibDB", "LibEven
 -- initializing this module and all its submodules. 
 AzeriteUI:SetAddon(ADDON) 
 
+-- Saved variables
+--AzeriteUI_DB = {} 
+
 -- Tell the backend where our saved variables are found.
 -- *it's important that we're doing this here, before any module configs are created.
 AzeriteUI:RegisterSavedVariablesGlobal("AzeriteUI_DB")
@@ -20,6 +23,8 @@ local EnableAddOn = _G.EnableAddOn
 local LoadAddOn = _G.LoadAddOn
 
 AzeriteUI.OnInit = function(self)
+	--self:ParseSavedVariables() -- AzeriteUI_DB
+
 	-- In case some other jokers have disabled these, we add them back to avoid a World of Bugs.
 	-- RothUI used to remove the two first, and a lot of people missed his documentation on how to get them back. 
 	-- I personally removed the objective's tracker for a while in DiabolicUI, which led to pain. Lots of pain.
