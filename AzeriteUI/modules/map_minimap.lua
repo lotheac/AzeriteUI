@@ -691,7 +691,7 @@ Minimap.SetUpMinimap = function(self)
 	innerRing:SetPoint("CENTER", 0, 0)
 	innerRing:SetSize(211,211)
 	innerRing:SetStatusBarTexture(getPath("minimap-bars-two-inner"))
-	--innerRing:SetClockwise(true) -- bar runs clockwise
+	innerRing:SetClockwise(true) -- bar runs clockwise
 	innerRing:SetMinMaxValues(0,100)
 	innerRing:SetValue(45)
 	innerRing:SetDegreeOffset(90*3 - 21) -- bar starts at 21 degrees out from the bottom vertical axis

@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 16)
+local LibOrb = CogWheel:Set("LibOrb", 17)
 if (not LibOrb) then	
 	return
 end
@@ -61,7 +61,6 @@ local Update = function(self, elapsed)
 	if (value <= min) or (max == min) then
 		data.scrollframe:Hide()
 	else
-		print(GetTime())
 
 		local newSize, mult
 		if (max > min) then

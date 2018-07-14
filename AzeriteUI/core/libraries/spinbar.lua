@@ -4,7 +4,7 @@
 -- The thread that started it: 
 -- http://www.wowinterface.com/forums/showthread.php?t=45918
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 9)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 10)
 if (not LibSpinBar) then	
 	return
 end

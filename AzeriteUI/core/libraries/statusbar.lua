@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 33)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 34)
 if (not LibStatusBar) then	
 	return
 end

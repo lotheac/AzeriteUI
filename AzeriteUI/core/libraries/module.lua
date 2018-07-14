@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 16)
+local LibModule = CogWheel:Set("LibModule", 17)
 if (not LibModule) then	
 	return
 end
@@ -32,8 +32,13 @@ local tostring = tostring
 local type = type
 
 -- WoW API
+local GetAddOnEnableState = _G.GetAddOnEnableState
+local GetAddOnInfo = _G.GetAddOnInfo
+local GetNumAddOns = _G.GetNumAddOns
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local IsLoggedIn = _G.IsLoggedIn
+local UnitName = _G.UnitName
+
 
 -- Library registries
 LibModule.addonDependencies = {} -- table holding module/widget/handler dependencies
@@ -488,7 +493,40 @@ LibModule.IsEnabled = function(self)
 	return enabledModules[self]
 end
 
-	
+
+local _GetAddOnInfo = function(index)
+	local name, title, notes, loadable, reason, security, newVersion = GetAddOnInfo(index)
+	local enabled = not(GetAddOnEnableState(UnitName("player"), index) == 0) 
+	return name, title, notes, enabled, loadable, reason, security
+end
+
+-- Check if an addon exists in the addon listing and loadable on demand
+LibModule.IsAddOnLoadable = function(self, target)
+	local target = string_lower(target)
+	for i = 1,GetNumAddOns() do
+		local name, title, notes, enabled, loadable, reason, security = _GetAddOnInfo(i)
+		if string_lower(name) == target then
+			if loadable then
+				return true
+			end
+		end
+	end
+end
+
+-- Check if an addon is enabled	in the addon listing
+-- *Making this available as a generic library method.
+LibModule.IsAddOnEnabled = function(self, target)
+	local target = string_lower(target)
+	for i = 1,GetNumAddOns() do
+		local name, title, notes, enabled, loadable, reason, security = _GetAddOnInfo(i)
+		if string_lower(name) == target then
+			if enabled then
+				return true
+			end
+		end
+	end
+end
+
 
 local embedMethods = {
 	NewModule = true, 

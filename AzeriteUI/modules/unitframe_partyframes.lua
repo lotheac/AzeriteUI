@@ -298,10 +298,10 @@ end
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
-		--self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
+		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
 		
 		-- uncomment this and comment the above line out to test party frames 
-		self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
+		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
 	end 
 end 
 
