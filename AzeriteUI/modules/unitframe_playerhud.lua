@@ -450,7 +450,7 @@ local Style = function(self, unit, id, ...)
 	castBg:SetSize(151,73)
 	castBg:SetPoint("CENTER", 0, -2)
 	castBg:SetTexture(getPath("cast_back"))
-	castBg:SetVertexColor(unpack(Colors.ui.stone))
+	castBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 	local castValue = cast:CreateFontString()
 	castValue:SetPoint("CENTER", 0, 0)

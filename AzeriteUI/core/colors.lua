@@ -76,6 +76,7 @@ Colors.quest.gray = prepare(120/255, 120/255, 120/255)
 Colors.normal = prepare(229/255, 178/255, 38/255)
 Colors.highlight = prepare(250/255, 250/255, 250/255)
 Colors.title = prepare(255/255, 234/255, 137/255)
+Colors.offwhite = prepare(230/255, 230/255, 230/255)
 
 Colors.xp = prepare(116/255, 23/255, 229/255) -- xp bar 
 Colors.xpValue = prepare(145/255, 77/255, 229/255) -- xp bar text

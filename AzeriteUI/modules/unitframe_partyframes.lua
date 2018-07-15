@@ -154,7 +154,7 @@ local Style = function(self, unit, id, ...)
 	healthBg:SetSize(130, 84)
 	healthBg:SetPoint("CENTER", 0, -2)
 	healthBg:SetTexture(getPath("cast_back"))
-	healthBg:SetVertexColor(unpack(Colors.ui.stone))
+	healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	self.Health.Bg = healthBg
 
 	local healthVal = overlay:CreateFontString()
@@ -225,7 +225,7 @@ local Style = function(self, unit, id, ...)
 	portraitFg:SetPoint("CENTER", portrait, "CENTER", 0, 0)
 	portraitFg:SetSize(180,180)
 	portraitFg:SetTexture(getPath("party_portrait_border"))
-	portraitFg:SetVertexColor(unpack(Colors.ui.stone))
+	portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	self.Portrait.Fg = portraitFg
 
 
@@ -252,7 +252,7 @@ local Style = function(self, unit, id, ...)
 	local groupRoleBg = groupRole:CreateTexture()
 	groupRoleBg:SetDrawLayer("BACKGROUND")
 	groupRoleBg:SetTexture(getPath("point_plate"))
-	groupRoleBg:SetVertexColor(unpack(Colors.ui.stone))
+	groupRoleBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	groupRoleBg:SetSize(72,72)
 	groupRoleBg:SetPoint("CENTER")
 	self.GroupRole.Bg = groupRoleBg

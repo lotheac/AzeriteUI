@@ -155,11 +155,11 @@ local PostUpdateTextures = function(self)
 
 		local healthBg = self.Health.Bg
 		healthBg:SetTexture(getPath("hp_cap_case"))
-		healthBg:SetVertexColor(unpack(Colors.ui.stone))
+		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case"))
-		powerFg:SetVertexColor(unpack(Colors.ui.stone))
+		powerFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local absorb = self.Absorb
 		absorb:SetSize(385, 40)
@@ -172,7 +172,7 @@ local PostUpdateTextures = function(self)
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
-			manaOrb.Border:SetVertexColor(unpack(Colors.ui.stone)) 
+			manaOrb.Border:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3]) 
 		end 
 
 	-- Battle Hardened
@@ -183,11 +183,11 @@ local PostUpdateTextures = function(self)
 
 		local healthBg = self.Health.Bg
 		healthBg:SetTexture(getPath("hp_mid_case"))
-		healthBg:SetVertexColor(unpack(Colors.ui.stone))
+		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case"))
-		powerFg:SetVertexColor(unpack(Colors.ui.stone))
+		powerFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local absorb = self.Absorb
 		absorb:SetSize(385, 37)
@@ -200,7 +200,7 @@ local PostUpdateTextures = function(self)
 		local manaOrb = self.ExtraPower
 		if manaOrb then 
 			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
-			manaOrb.Border:SetVertexColor(unpack(Colors.ui.stone)) 
+			manaOrb.Border:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3]) 
 		end 
 
 	-- Novice

@@ -168,7 +168,7 @@ local PostUpdateTextures = function(self)
 			healthBg:SetSize(694, 190)
 			healthBg:SetPoint("CENTER", -.5, 1)
 			healthBg:SetTexture(getPath("hp_boss_case"))
-			healthBg:SetVertexColor(unpack(Colors.ui.stone))
+			healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
@@ -181,7 +181,7 @@ local PostUpdateTextures = function(self)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
-			portraitFg:SetVertexColor(unpack(Colors.ui.stone))
+			portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 		end
 
 	-- War Seasoned / Capped  
@@ -199,7 +199,7 @@ local PostUpdateTextures = function(self)
 			healthBg:SetSize(716, 188)
 			healthBg:SetPoint("CENTER", -1, .5)
 			healthBg:SetTexture(getPath("hp_cap_case"))
-			healthBg:SetVertexColor(unpack(Colors.ui.stone))
+			healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
@@ -212,7 +212,7 @@ local PostUpdateTextures = function(self)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
-			portraitFg:SetVertexColor(unpack(Colors.ui.stone))
+			portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 		end 
 
 	-- Battle Hardened / Mid level
@@ -230,7 +230,7 @@ local PostUpdateTextures = function(self)
 			healthBg:SetSize(716, 188)
 			healthBg:SetPoint("CENTER", -1, -.5)
 			healthBg:SetTexture(getPath("hp_mid_case"))
-			healthBg:SetVertexColor(unpack(Colors.ui.stone))
+			healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	
 			local healthVal = self.Health.Value
 			healthVal:Show()
@@ -243,7 +243,7 @@ local PostUpdateTextures = function(self)
 
 			local portraitFg = self.Portrait.Fg
 			portraitFg:SetTexture(getPath("portrait_frame_hi"))
-			portraitFg:SetVertexColor(unpack(Colors.ui.stone))
+			portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 		end 
 
 	-- Trivial / Critter
@@ -497,7 +497,7 @@ local Style = function(self, unit, id, ...)
 	levelBadge:SetPoint("CENTER", portrait, "CENTER", 48,-28)
 	levelBadge:SetSize(86,86)
 	levelBadge:SetTexture(getPath("point_plate"))
-	levelBadge:SetVertexColor(unpack(Colors.ui.stone))
+	levelBadge:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	level.Badge = levelBadge
 
 	local levelSkull = overlay:CreateTexture()

@@ -521,7 +521,7 @@ Minimap.SetUpMinimap = function(self)
 	border:SetDrawLayer("BACKGROUND")
 	border:SetTexture(getPath("minimap-border"))
 	border:SetSize(419,419)
-	border:SetVertexColor(unpack(Colors.ui.stone))
+	border:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	border:SetPoint("CENTER", 0, 0)
 
 	Handler.Border = border
@@ -537,7 +537,7 @@ Minimap.SetUpMinimap = function(self)
 	coordinates:SetJustifyV("BOTTOM")
 	coordinates:SetShadowOffset(0, 0)
 	coordinates:SetShadowColor(0, 0, 0, 1)
-	coordinates:SetTextColor(230/255, 230/255, 230/255, .75)
+	coordinates:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75) 
 	coordinates.OverrideValue = Coordinates_OverrideValue
 
 	Handler.Coordinates = coordinates
@@ -556,7 +556,7 @@ Minimap.SetUpMinimap = function(self)
 	clock:SetJustifyV("BOTTOM")
 	clock:SetShadowOffset(0, 0)
 	clock:SetShadowColor(0, 0, 0, 1)
-	clock:SetTextColor(230/255, 230/255, 230/255)
+	clock:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	clock.useStandardTime = self.db.useStandardTime -- standard (12-hour) or military (24-hour) time
 	clock.useServerTime = self.db.useServerTime -- realm time or local time
 	clock.showSeconds = false -- show seconds in the clock
@@ -609,7 +609,7 @@ Minimap.SetUpMinimap = function(self)
 	framerate:SetJustifyV("BOTTOM")
 	framerate:SetShadowOffset(0, 0)
 	framerate:SetShadowColor(0, 0, 0, 1)
-	framerate:SetTextColor(230/255, 230/255, 230/255)
+	framerate:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	framerate.OverrideValue = FrameRate_OverrideValue
 
 	Handler.FrameRate = framerate
@@ -623,7 +623,7 @@ Minimap.SetUpMinimap = function(self)
 	latency:SetJustifyV("BOTTOM")
 	latency:SetShadowOffset(0, 0)
 	latency:SetShadowColor(0, 0, 0, 1)
-	latency:SetTextColor(230/255, 230/255, 230/255)
+	latency:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	latency.OverrideValue = Latency_OverrideValue
 
 	Handler.Latency = latency
@@ -647,7 +647,7 @@ Minimap.SetUpMinimap = function(self)
 	ringFrameBg:SetTexture(getPath("minimap-twobars-backdrop"))
 	--ringFrameBg:SetTexture(getPath("minimap-onebar-backdrop"))
 	ringFrameBg:SetDrawLayer("BACKGROUND", 1)
-	ringFrameBg:SetVertexColor(unpack(Colors.ui.stone))
+	ringFrameBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 
 	-- outer ring
@@ -752,7 +752,7 @@ Minimap.SetUpMinimap = function(self)
 	toggleBackdrop:SetSize(100,100)
 	toggleBackdrop:SetPoint("CENTER", 0, 0)
 	toggleBackdrop:SetTexture(getPath("point_plate"))
-	toggleBackdrop:SetVertexColor(unpack(Colors.ui.stone))
+	toggleBackdrop:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 	local innerPercent = ringFrame:CreateFontString()
 	innerPercent:SetDrawLayer("OVERLAY")
