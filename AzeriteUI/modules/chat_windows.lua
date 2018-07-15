@@ -113,7 +113,7 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	-- strip away textures
 	for tex in self:GetChatWindowTabTextures(frame) do 
-		tex:SetTexture("")
+		tex:SetTexture(nil)
 		tex:SetAlpha(0)
 	end 
 
@@ -187,7 +187,7 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	-- strip away textures
 	for tex in self:GetChatWindowEditBoxTextures(frame) do 
-		tex:SetTexture("")
+		tex:SetTexture(nil)
 		tex:SetAlpha(0)
 	end 
 
@@ -249,7 +249,7 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	local buttonFrame = self:GetChatWindowButtonFrame(frame)
 	for tex in self:GetChatWindowButtonFrameTextures(frame) do 
-		tex:SetTexture("")
+		tex:SetTexture(nil)
 		tex:SetAlpha(0)
 	end
 

@@ -1,4 +1,4 @@
-local LibActionBar = CogWheel:Set("LibActionBar", 3)
+local LibActionBar = CogWheel:Set("LibActionBar", 4)
 if (not LibActionBar) then
 	return
 end
@@ -13,14 +13,14 @@ assert(LibFrame, "LibActionBar requires LibFrame to be loaded.")
 local LibSound = CogWheel("LibSound")
 assert(LibSound, "LibActionBar requires LibSound to be loaded.")
 
-local LibActionButton = CogWheel("LibActionButton")
-assert(LibActionButton, "LibActionBar requires LibActionButton to be loaded.")
+--local LibActionButton = CogWheel("LibActionButton")
+--assert(LibActionButton, "LibActionBar requires LibActionButton to be loaded.")
 
 -- Embed event functionality into this
 LibEvent:Embed(LibActionBar)
 LibFrame:Embed(LibActionBar)
 LibSound:Embed(LibActionBar)
-LibActionButton:Embed(LibActionBar)
+--LibActionButton:Embed(LibActionBar)
 
 -- Lua API
 local _G = _G

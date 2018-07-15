@@ -76,7 +76,7 @@ local Update = function(self, event, unit)
 			element:SetTexture(element.classTexture or [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]])
 			element:SetTexCoord(CLASS_ICON_TCOORDS[classToken][1], CLASS_ICON_TCOORDS[classToken][2], CLASS_ICON_TCOORDS[classToken][3], CLASS_ICON_TCOORDS[classToken][4])
 		else
-			element:SetTexture("")
+			element:SetTexture(nil)
 		end
 	else 
 		if (element.fallback2DTexture) then 

@@ -358,12 +358,12 @@ UIWidgets["Minimap"] = function(self)
 	QueueStatusMinimapButton.Eye.texture:SetAlpha(0)
 
 	if QueueStatusMinimapButtonBorder then
-		QueueStatusMinimapButtonBorder:SetTexture("")
+		QueueStatusMinimapButtonBorder:SetTexture(nil)
 		QueueStatusMinimapButtonBorder:SetAlpha(0)
 	end
 
 	if QueueStatusMinimapButton.Highlight then -- bugged out in MoP
-		QueueStatusMinimapButton.Highlight:SetTexture("")
+		QueueStatusMinimapButton.Highlight:SetTexture(nil)
 		QueueStatusMinimapButton.Highlight:SetAlpha(0)
 	end
 

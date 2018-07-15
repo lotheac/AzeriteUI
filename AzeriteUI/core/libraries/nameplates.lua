@@ -882,7 +882,7 @@ NamePlate.UpdateAuras = function(self)
 				cc:SetScript("OnUpdate", nil)
 			end
 			if cc.Icon then 
-				cc.Icon:SetTexture("")
+				cc.Icon:SetTexture(nil)
 			end 
 			cc.currentPrio = nil
 			cc.currentSpellID = nil

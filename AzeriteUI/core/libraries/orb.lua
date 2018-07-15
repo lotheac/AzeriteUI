@@ -333,7 +333,7 @@ Orb.SetStatusBarTexture = function(self, ...)
 	for i = numArgs+1, 3 do 
 		local layer = data["layer"..i]
 		if layer then 
-			layer:SetTexture("")
+			layer:SetTexture(nil)
 		end 
 	end 
 end
