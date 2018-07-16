@@ -472,10 +472,10 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------	
 
 	local level = overlay:CreateFontString()
-	level:SetPoint("CENTER", self, "TOPRIGHT", 80, -63)
+	level:SetPoint("CENTER", self, "TOPRIGHT", 79, -62)
 	level:SetDrawLayer("BORDER")
 	level:SetFontObject(GameFontWhite)
-	level:SetFont(GameFontWhite:GetFont(), 13, "OUTLINE")
+	level:SetFont(GameFontWhite:GetFont(), 12, "OUTLINE")
 	level:SetJustifyH("CENTER")
 	level:SetJustifyV("MIDDLE")
 	level:SetShadowOffset(0, 0)

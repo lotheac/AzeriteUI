@@ -165,7 +165,9 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	check(buttonType, 2, "string")
 	check(buttonTemplate, 3, "table", "nil")
 
-	if (not Templates[buttonType]) then 
+	local template = Templates[buttonType]
+
+	if (not template) then 
 		error(("Unknown button type: '%s'"):format(buttonType), 3)
 	end 
 
@@ -176,7 +178,7 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	local name = "CG_ActionButton"..LibActionButton.numButtons
 
 	-- Retrieve the constructor method for this button type and spawn the button
-	local button = Templates[buttonType].Spawn(self, parent, name, buttonTemplate, ...)
+	local button = template.Spawn(self, parent, name, buttonTemplate, ...)
 
 	-- Store the button and its type
 	if (not Buttons[self]) then 
@@ -208,11 +210,11 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	-- Update all elements when shown
 	button:HookScript("OnShow", button.Update)
 	
+	-- Enable the newly created button
+	template.Enable(button)
+
 	-- Run a full initial update
 	button:Update()
-
-	-- Enable the newly created button
-	button:Enable()
 
 	return button
 end

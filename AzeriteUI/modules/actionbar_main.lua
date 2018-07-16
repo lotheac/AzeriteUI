@@ -48,6 +48,50 @@ end
 ----------------------------------------------------
 local ActionButton = {}
 
+-- Called by mouseover scripts
+ActionButton.UpdateMouseOver = function(self)
+	local Border = self.Border
+	local Darken = self.Darken 
+	local Glow = self.Glow
+	local colors = self.colors
+
+	if self.isMouseOver then 
+		if Darken then 
+			Darken:SetAlpha(Darken.highlight)
+		end 
+		if Border then 
+			Border:SetVertexColor(colors.highlight[1], colors.highlight[2], colors.highlight[3])
+		end 
+		if Glow then 
+			Glow:Show()
+		end 
+	else 
+		if Darken then 
+			Darken:SetAlpha(self.Darken.normal)
+		end 
+		if Border then 
+			Border:SetVertexColor(colors.ui.stone[1], colors.ui.stone[2], colors.ui.stone[3])
+		end 
+		if Glow then 
+			Glow:Hide()
+		end 
+	end 
+end 
+
+ActionButton.PostEnter = function(self)
+	self:UpdateMouseOver()
+end 
+
+ActionButton.PostLeave = function(self)
+	self:UpdateMouseOver()
+end 
+
+ActionButton.PostUpdate = function(self)
+	self:UpdateMouseOver()
+end 
+
+-- Todo: make some or most of these layers baseline, 
+-- they are required to properly use the button after all.
 ActionButton.PostCreate = function(self, ...)
 
 	local barID, buttonID = ...
@@ -58,44 +102,31 @@ ActionButton.PostCreate = function(self, ...)
 	self:SetSize(buttonSize,buttonSize)
 
 	if (barID == 1) then 
-		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64 + ((buttonID-1) * (buttonSize + buttonSpacing)), 44)
+		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64 -8 + ((buttonID-1) * (buttonSize + buttonSpacing)), 44 -4)
 	elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
-		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 44)
+		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64 -8 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 44 -4)
 	end 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
 
-	local backdrop = self:CreateTexture()
-	backdrop:SetDrawLayer("BACKGROUND", 1)
-	backdrop:SetSize(buttonSize/(122/256),buttonSize/(122/256))
-	backdrop:SetPoint("CENTER", 0, 0)
-	backdrop:SetTexture(getPath("actionbutton-backdrop"))
 
-	local icon = self:CreateTexture()
-	icon:SetDrawLayer("BACKGROUND", 2)
-	icon:SetSize(iconSize,iconSize)
-	icon:SetPoint("CENTER", 0, 0)
-	icon:SetMask(getPath("minimap_mask_circle"))
+	-- Restyle the blizz layers
+	-----------------------------------------------------
 
-	local darken = self:CreateTexture()
-	darken:SetDrawLayer("BACKGROUND", 3)
-	darken:SetSize(icon:GetSize())
-	darken:SetAllPoints(icon)
-	darken:SetMask(getPath("minimap_mask_circle"))
-	darken:SetColorTexture(0, 0, 0)
-	darken.highlight = 0
-	darken.normal = .35
+	self.Icon:SetSize(iconSize,iconSize)
+	self.Icon:ClearAllPoints()
+	self.Icon:SetPoint("CENTER", 0, 0)
+	self.Icon:SetMask(getPath("minimap_mask_circle"))
 
-	-- let blizz handle this one
-	local pushed = self:CreateTexture(nil, "OVERLAY")
-	pushed:SetDrawLayer("ARTWORK", 1)
-	pushed:SetSize(icon:GetSize())
-	pushed:SetAllPoints(icon)
-	pushed:SetMask(getPath("minimap_mask_circle"))
-	pushed:SetColorTexture(1, 1, 1, .15)
+	self.Pushed:SetDrawLayer("ARTWORK", 1)
+	self.Pushed:SetSize(self.Icon:GetSize())
+	self.Pushed:ClearAllPoints()
+	self.Pushed:SetAllPoints(self.Icon)
+	self.Pushed:SetMask(getPath("minimap_mask_circle"))
+	self.Pushed:SetColorTexture(1, 1, 1, .15)
 
-	self:SetPushedTexture(pushed)
+	self:SetPushedTexture(self.Pushed)
 	self:GetPushedTexture():SetBlendMode("ADD")
 		
 	-- We need to put it back in its correct drawlayer, 
@@ -103,45 +134,73 @@ ActionButton.PostCreate = function(self, ...)
 	-- to it randomly being drawn behind the icon texture. 
 	self:GetPushedTexture():SetDrawLayer("ARTWORK") 
 
-	local flash = self:CreateTexture()
-	flash:SetDrawLayer("ARTWORK", 2)
-	flash:SetSize(icon:GetSize())
-	flash:SetAllPoints(icon)
-	flash:SetMask(getPath("minimap_mask_circle"))
-	flash:SetColorTexture(1, 0, 0, .25)
-	flash:Hide()
+	self.Flash:SetDrawLayer("ARTWORK", 2)
+	self.Flash:SetSize(self.Icon:GetSize())
+	self.Flash:ClearAllPoints()
+	self.Flash:SetAllPoints(icon)
+	self.Flash:SetMask(getPath("minimap_mask_circle"))
 
-	local cooldown = self:CreateFrame("Cooldown")
-	cooldown:SetAllPoints()
-	cooldown:SetFrameLevel(self:GetFrameLevel() + 1)
+	-- mask textures?
+	-- self.Cooldown
+	-- self.ChargeCooldown
 
-	local chargeCooldown = self:CreateFrame("Cooldown")
-	chargeCooldown:SetAllPoints()
-	chargeCooldown:SetFrameLevel(self:GetFrameLevel() + 2)
+	self.CooldownCount:ClearAllPoints()
+	self.CooldownCount:SetPoint("CENTER", 1, 0)
+	self.CooldownCount:SetFontObject(fontObject)
+	self.CooldownCount:SetFont(fontObject:GetFont(), fontSize + 4, fontStyle) 
+	self.CooldownCount:SetJustifyH("CENTER")
+	self.CooldownCount:SetJustifyV("MIDDLE")
+	self.CooldownCount:SetShadowOffset(0, 0)
+	self.CooldownCount:SetShadowColor(0, 0, 0, 1)
+	self.CooldownCount:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3], .85)
 
-	local overlay = self:CreateFrame("Frame")
-	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 3)
+	self.Count:ClearAllPoints()
+	self.Count:SetPoint("BOTTOMRIGHT", -2, 1)
+	self.Count:SetFontObject(fontObject)
+	self.Count:SetFont(fontObject:GetFont(), fontSize + 4, fontStyle) 
+	self.Count:SetJustifyH("CENTER")
+	self.Count:SetJustifyV("BOTTOM")
+	self.Count:SetShadowOffset(0, 0)
+	self.Count:SetShadowColor(0, 0, 0, 1)
+	self.Count:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3], .85)
 
-	local cooldownCount = overlay:CreateFontString()
-	cooldownCount:SetDrawLayer("ARTWORK", 1)
-	cooldownCount:SetPoint("CENTER", 1, 0)
-	cooldownCount:SetFontObject(GameFontNormal)
-	cooldownCount:SetFont(GameFontNormal:GetFont(), fontSize + 4, fontStyle) 
-	cooldownCount:SetJustifyH("CENTER")
-	cooldownCount:SetJustifyV("MIDDLE")
-	cooldownCount:SetShadowOffset(0, 0)
-	cooldownCount:SetShadowColor(0, 0, 0, 1)
-	cooldownCount:SetTextColor(Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .85)
+	self.Keybind:ClearAllPoints()
+	self.Keybind:SetPoint("TOPRIGHT", -2, -1)
+	self.Keybind:SetFontObject(fontObject)
+	self.Keybind:SetFont(fontObject:GetFont(), fontSize - 2, fontStyle) 
+	self.Keybind:SetJustifyH("CENTER")
+	self.Keybind:SetJustifyV("BOTTOM")
+	self.Keybind:SetShadowOffset(0, 0)
+	self.Keybind:SetShadowColor(0, 0, 0, 1)
+	self.Keybind:SetTextColor(self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3], .75)
 
-	local border = overlay:CreateTexture()
+
+	-- Our own style layers
+	-----------------------------------------------------
+
+	local backdrop = self:CreateTexture()
+	backdrop:SetDrawLayer("BACKGROUND", 1)
+	backdrop:SetSize(buttonSize/(122/256),buttonSize/(122/256))
+	backdrop:SetPoint("CENTER", 0, 0)
+	backdrop:SetTexture(getPath("actionbutton-backdrop"))
+
+	local darken = self:CreateTexture()
+	darken:SetDrawLayer("BACKGROUND", 3)
+	darken:SetSize(self.Icon:GetSize())
+	darken:SetAllPoints(self.Icon)
+	darken:SetMask(getPath("minimap_mask_circle"))
+	darken:SetColorTexture(0, 0, 0)
+	darken.highlight = 0
+	darken.normal = .35
+
+	local border = self.Overlay:CreateTexture()
 	border:SetDrawLayer("BORDER", 1)
 	border:SetSize(buttonSize/(122/256),buttonSize/(122/256))
 	border:SetPoint("CENTER", 0, 0)
 	border:SetTexture(getPath("actionbutton-border"))
-	border:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	border:SetVertexColor(self.colors.ui.stone[1], self.colors.ui.stone[2], self.colors.ui.stone[3])
 
-	local glow = overlay:CreateTexture()
+	local glow = self.Overlay:CreateTexture()
 	glow:SetDrawLayer("ARTWORK", 1)
 	glow:SetSize(iconSize/(122/256),iconSize/(122/256))
 	glow:SetPoint("CENTER", 0, 0)
@@ -150,42 +209,10 @@ ActionButton.PostCreate = function(self, ...)
 	glow:SetBlendMode("ADD")
 	glow:Hide()
 
-	local count = overlay:CreateFontString()
-	count:SetDrawLayer("OVERLAY", 1)
-	count:SetPoint("BOTTOMRIGHT", -2, 1)
-	count:SetFontObject(GameFontNormal)
-	count:SetFont(GameFontNormal:GetFont(), fontSize + 4, fontStyle) 
-	count:SetJustifyH("CENTER")
-	count:SetJustifyV("BOTTOM")
-	count:SetShadowOffset(0, 0)
-	count:SetShadowColor(0, 0, 0, 1)
-	count:SetTextColor(Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .85)
-
-	local keybind = overlay:CreateFontString()
-	keybind:SetDrawLayer("OVERLAY", 2)
-	keybind:SetPoint("TOPRIGHT", -2, -1)
-	keybind:SetFontObject(GameFontNormal)
-	keybind:SetFont(GameFontNormal:GetFont(), fontSize - 2, fontStyle) 
-	keybind:SetJustifyH("CENTER")
-	keybind:SetJustifyV("BOTTOM")
-	keybind:SetShadowOffset(0, 0)
-	keybind:SetShadowColor(0, 0, 0, 1)
-	keybind:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75)
-
-	
-	-- Reference the layers
 	self.Backdrop = backdrop
 	self.Border = border
-	self.ChargeCooldown = chargeCooldown
-	self.Cooldown = cooldown
-	self.CooldownCount = cooldownCount
-	self.Count = count
 	self.Darken = darken
-	self.Flash = flash
 	self.Glow = glow
-	self.Icon = icon
-	self.Keybind = keybind
-	self.Pushed = pushed
 
 end 
 
@@ -239,7 +266,58 @@ ActionBarMain.UpdateBindings = function(self)
 			end	
 		end
 	end 
+
+	-- Update keybinds for pet battles, 
+	-- so our bars don't steal them.
+	self:GetPetBattleController()
 end 
+
+
+ActionBarMain.GetPetBattleController = function(self)
+	if (not self.petBattleController) then
+
+		-- The blizzard petbattle UI gets its keybinds from the primary action bar, 
+		-- so in order for the petbattle UI keybinds to function properly, 
+		-- we need to temporarily give the primary action bar backs its keybinds.
+		local petbattle = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerStateTemplate")
+		petbattle:SetAttribute("_onattributechanged", [[
+			if (name == "state-petbattle") then
+				if (value == "petbattle") then
+					for i = 1,6 do
+						local our_button, blizz_button = ("CLICK AzeriteUIActionButton%d:LeftButton"):format(i), ("ACTIONBUTTON%d"):format(i)
+
+						-- Grab the keybinds from our own primary action bar,
+						-- and assign them to the default blizzard bar. 
+						-- The pet battle system will in turn get its bindings 
+						-- from the default blizzard bar, and the magic works! :)
+						
+						for k=1,select("#", GetBindingKey(our_button)) do
+							local key = select(k, GetBindingKey(our_button)) -- retrieve the binding key from our own primary bar
+							self:SetBinding(true, key, blizz_button) -- assign that key to the default bar
+						end
+						
+						-- do the same for the default UIs bindings
+						for k=1,select("#", GetBindingKey(blizz_button)) do
+							local key = select(k, GetBindingKey(blizz_button))
+							self:SetBinding(true, key, blizz_button)
+						end	
+					end
+				else
+					-- Return the key bindings to whatever buttons they were
+					-- assigned to before we so rudely grabbed them! :o
+					self:ClearBindings()
+				end
+			end
+		]])
+
+		-- Do we ever need to update his?
+		RegisterAttributeDriver(petbattle, "state-petbattle", "[petbattle]petbattle;nopetbattle")
+
+		self.petBattleController = petbattle
+	end
+
+	return self.petBattleController
+end
 
 ActionBarMain.SpawnButtons = function(self)
 	local db = self.db
@@ -247,6 +325,11 @@ ActionBarMain.SpawnButtons = function(self)
 	-- Mainbar, visible part
 	for id = 1,7 do
 		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
+
+		-- Give it an additional global name we can use with its id 
+		-- to give the main bar back its keybinds when in pet battles.
+		-- Better to use this than the names given by the library.
+		_G["AzeriteUIActionButton"..id] = button
 	end
 
 	-- Mainbar, hidden part
@@ -267,15 +350,19 @@ ActionBarMain.UpdateSettings = function(self)
 
 	for button in self:GetAllActionButtonsOrdered() do 
 		button:RegisterForClicks(db.castOnDown and "AnyDown" or "AnyUp")
+		button:Update()
 	end 
 end 
 
 ActionBarMain.OnEvent = function(self, event, ...)
+
 	if (event == "UPDATE_BINDINGS") then 
 		self:UpdateBindings()
+
 	elseif (event == "PLAYER_ENTERING_WORLD") then 
 		self:UpdateBindings()
 	end 
+
 end 
 
 ActionBarMain.OnInit = function(self)
@@ -285,6 +372,7 @@ ActionBarMain.OnInit = function(self)
 	self:SpawnButtons()
 
 	-- Update saved settings
+	self:UpdateBindings()
 	self:UpdateSettings()
 end 
 

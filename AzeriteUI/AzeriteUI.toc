@@ -72,6 +72,7 @@ core\plugins\unit_auras.lua
 core\plugins\unit_cast.lua
 core\plugins\unit_classification.lua
 core\plugins\unit_classpower.lua
+core\plugins\unit_combat.lua
 core\plugins\unit_extrapower.lua
 core\plugins\unit_grouprole.lua
 core\plugins\unit_health.lua

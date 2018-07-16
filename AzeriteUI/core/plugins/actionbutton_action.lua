@@ -84,35 +84,6 @@ end
 ActionButton.UpdateFlash = function(self) 
 end 
 
--- Called by mouseover scripts
-ActionButton.UpdateMouseOver = function(self)
-	local Border = self.Border
-	local Darken = self.Darken 
-	local Glow = self.Glow
-	local colors = self.colors
-
-	if self.isMouseOver then 
-		if Darken then 
-			Darken:SetAlpha(Darken.highlight)
-		end 
-		if Border then 
-			Border:SetVertexColor(colors.highlight[1], colors.highlight[2], colors.highlight[3])
-		end 
-		if Glow then 
-			Glow:Show()
-		end 
-	else 
-		if Darken then 
-			Darken:SetAlpha(self.Darken.normal)
-		end 
-		if Border then 
-			Border:SetVertexColor(colors.ui.stone[1], colors.ui.stone[2], colors.ui.stone[3])
-		end 
-		if Glow then 
-			Glow:Hide()
-		end 
-	end 
-end 
 
 -- Called when the usable state of the button changes
 ActionButton.UpdateUsable = function(self) 
@@ -124,7 +95,11 @@ ActionButton.Update = function(self)
 	self:UpdateCount()
 	self:UpdateCooldown()
 	self:UpdateUsable()
-	self:UpdateMouseOver()
+
+	-- Allow modules to add in methods this way
+	if self.PostUpdate then 
+		self:PostUpdate()
+	end 
 end
 
 
@@ -169,12 +144,16 @@ end
 
 ActionButton.OnEnter = function(self) 
 	self.isMouseOver = true
-	self:UpdateMouseOver()
+	if self.PostEnter then 
+		self:PostEnter()
+	end 
 end
 
 ActionButton.OnLeave = function(self) 
 	self.isMouseOver = nil
-	self:UpdateMouseOver()
+	if self.PostLeave then 
+		self:PostLeave()
+	end 
 end
 
 ActionButton.PreClick = function(self) 
@@ -183,7 +162,92 @@ end
 ActionButton.PostClick = function(self) 
 end
 
+local Style = function(self)
+	local icon = self:CreateTexture()
+	icon:SetDrawLayer("BACKGROUND", 2)
+	icon:SetAllPoints()
 
+	-- let blizz handle this one
+	local pushed = self:CreateTexture(nil, "OVERLAY")
+	pushed:SetDrawLayer("ARTWORK", 1)
+	pushed:SetAllPoints(icon)
+	pushed:SetColorTexture(1, 1, 1, .15)
+
+	self:SetPushedTexture(pushed)
+	self:GetPushedTexture():SetBlendMode("ADD")
+		
+	-- We need to put it back in its correct drawlayer, 
+	-- or Blizzard will set it to ARTWORK which can lead 
+	-- to it randomly being drawn behind the icon texture. 
+	self:GetPushedTexture():SetDrawLayer("ARTWORK") 
+
+	local flash = self:CreateTexture()
+	flash:SetDrawLayer("ARTWORK", 2)
+	flash:SetAllPoints(icon)
+	flash:SetColorTexture(1, 0, 0, .25)
+	flash:Hide()
+
+	local cooldown = self:CreateFrame("Cooldown")
+	cooldown:SetAllPoints()
+	cooldown:SetFrameLevel(self:GetFrameLevel() + 1)
+
+	local chargeCooldown = self:CreateFrame("Cooldown")
+	chargeCooldown:SetAllPoints()
+	chargeCooldown:SetFrameLevel(self:GetFrameLevel() + 2)
+
+	local overlay = self:CreateFrame("Frame")
+	overlay:SetAllPoints()
+	overlay:SetFrameLevel(self:GetFrameLevel() + 3)
+
+	local cooldownCount = overlay:CreateFontString()
+	cooldownCount:SetDrawLayer("ARTWORK", 1)
+	cooldownCount:SetPoint("CENTER", 1, 0)
+	cooldownCount:SetFontObject(GameFontNormal)
+	cooldownCount:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE") 
+	cooldownCount:SetJustifyH("CENTER")
+	cooldownCount:SetJustifyV("MIDDLE")
+	cooldownCount:SetShadowOffset(0, 0)
+	cooldownCount:SetShadowColor(0, 0, 0, 1)
+	cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
+
+	local count = overlay:CreateFontString()
+	count:SetDrawLayer("OVERLAY", 1)
+	count:SetPoint("BOTTOMRIGHT", -2, 1)
+	count:SetFontObject(GameFontNormal)
+	count:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE") 
+	count:SetJustifyH("CENTER")
+	count:SetJustifyV("BOTTOM")
+	count:SetShadowOffset(0, 0)
+	count:SetShadowColor(0, 0, 0, 1)
+	count:SetTextColor(250/255, 250/255, 250/255, .85)
+
+	local keybind = overlay:CreateFontString()
+	keybind:SetDrawLayer("OVERLAY", 2)
+	keybind:SetPoint("TOPRIGHT", -2, -1)
+	keybind:SetFontObject(GameFontNormal)
+	keybind:SetFont(GameFontNormal:GetFont(), 12, "OUTLINE") 
+	keybind:SetJustifyH("CENTER")
+	keybind:SetJustifyV("BOTTOM")
+	keybind:SetShadowOffset(0, 0)
+	keybind:SetShadowColor(0, 0, 0, 1)
+	keybind:SetTextColor(230/255, 230/255, 230/255, .75)
+
+
+	-- Reference the frames
+	self.ChargeCooldown = chargeCooldown
+	self.Cooldown = cooldown
+	self.Overlay = overlay
+	
+	-- Reference the layers
+	self.CooldownCount = cooldownCount
+	self.Count = count
+	self.Flash = flash
+	self.Icon = icon
+	self.Keybind = keybind
+	self.Pushed = pushed
+
+	return self
+end 
 
 -- The 'self' here is the module spawning the button
 local Spawn = function(self, parent, name, buttonTemplate, ...)
@@ -247,7 +311,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	]=])
 	
 	-- Create the button
-	local button = setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT)
+	local button = Style(setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT))
 	button:SetFrameStrata("LOW")
 	button:RegisterForDrag("LeftButton", "RightButton")
 	button:RegisterForClicks("AnyUp")
@@ -341,8 +405,7 @@ local Update = function(self, event, ...)
 		self:Update()
 			
 	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
-
-		if ((arg1 == 0) or (arg1 == tonumber(button:GetAction()))) then
+		if ((arg1 == 0) or (arg1 == tonumber(self:GetAction()))) then
 			self:Update()
 		end
 	

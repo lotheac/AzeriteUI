@@ -21,6 +21,7 @@ local tonumber = tonumber
 local unpack = unpack
 
 -- WoW API
+local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
 local GetFramerate = _G.GetFramerate
 local GetNetStats = _G.GetNetStats
 local GetServerTime = _G.GetServerTime
@@ -167,6 +168,11 @@ local fullXPString = "%s / %s - %s%%"
 local restedString = " (%s%% %s)"
 local shortLevelString = "%s %d"
 
+-- Font settings
+local fontObject = GameFontNormal
+local fontStyle = "OUTLINE"
+local fontSize = 14
+
 local Toggle_UpdateTooltip = function(self)
 	local tooltip = Minimap:GetMinimapTooltip()
 
@@ -234,61 +240,6 @@ local Toggle_UpdateTooltip = function(self)
 	tooltip:Show()
 end 
 
-local Toggle_OnMouseUp = function(self, button)
-	local db = Minimap.db
-	db.stickyBars = not db.stickyBars
-
-	local frame = self.Frame
-	if (db.stickyBars and (not frame:IsShown())) then 
-
-		-- Kill off any hide countdowns
-		self:SetScript("OnUpdate", nil)
-		self.fadeDelay = nil
-		self.fadeDuration = nil
-		self.timeFading = nil
-
-		frame:SetAlpha(1)
-		frame:Show()
-
-	elseif ((not db.stickyBars) and (not frame.isMouseOver) and frame:IsShown()) then 
-
-		-- Initiate hide countdown
-		self.fadeDelay = 1.5
-		self.fadeDuration = .35
-		self.timeFading = 0
-		self:SetScript("OnUpdate", Toggle_OnUpdate)
-	end 
-
-	if self.UpdateTooltip then 
-		self:UpdateTooltip()
-	end 
-
-	if Minimap.db.stickyBars then 
-		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars enabled."].."|r")
-	else
-		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars disabled."].."|r")
-	end 	
-end
-
-local Toggle_OnEnter = function(self)
-	self.UpdateTooltip = Toggle_UpdateTooltip
-	self.isMouseOver = true
-
-	-- Kill off any hide countdowns
-	self:SetScript("OnUpdate", nil)
-	self.fadeDelay = nil
-	self.fadeDuration = nil
-	self.timeFading = nil
-
-	local frame = self.Frame
-	if (not frame:IsShown()) then 
-		frame:SetAlpha(1)
-		frame:Show()
-	end 
-
-	self:UpdateTooltip()
-end
-
 local Toggle_OnUpdate = function(self, elapsed)
 
 	self.fadeDelay = self.fadeDelay - elapsed
@@ -310,24 +261,92 @@ local Toggle_OnUpdate = function(self, elapsed)
 	self.timeFading = self.timeFading + elapsed
 end 
 
-local Toggle_OnLeave = function(self)
-	local db = Minimap.db
-
+local Toggle_UpdateFrame = function(self)
 	local frame = self.Frame
-	if (frame:IsShown() and (not db.stickyBars)) then 
+
+	local db = Minimap.db
+	if ((db.stickyBars or self.isMouseOver or frame.isMouseOver) and (not frame:IsShown())) then 
+
+		-- Kill off any hide countdowns
+		self:SetScript("OnUpdate", nil)
+		self.fadeDelay = nil
+		self.fadeDuration = nil
+		self.timeFading = nil
+
+		if (not frame:IsShown()) then 
+			frame:SetAlpha(1)
+			frame:Show()
+		end 
+
+	elseif ((not db.stickyBars) and ((not frame.isMouseOver) or (not self.isMouseOver)) and frame:IsShown()) then 
 
 		-- Initiate hide countdown
 		self.fadeDelay = 1.5
 		self.fadeDuration = .35
 		self.timeFading = 0
 		self:SetScript("OnUpdate", Toggle_OnUpdate)
-
 	end 
+end
+
+local Toggle_OnMouseUp = function(self, button)
+	local db = Minimap.db
+	db.stickyBars = not db.stickyBars
+
+	Toggle_UpdateFrame(self)
+
+	if self.UpdateTooltip then 
+		self:UpdateTooltip()
+	end 
+
+	if Minimap.db.stickyBars then 
+		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars enabled."].."|r")
+	else
+		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars disabled."].."|r")
+	end 	
+end
+
+local Toggle_OnEnter = function(self)
+	self.UpdateTooltip = Toggle_UpdateTooltip
+	self.isMouseOver = true
+
+	Toggle_UpdateFrame(self)
+
+	self:UpdateTooltip()
+end
+
+local Toggle_OnLeave = function(self)
+	local db = Minimap.db
 
 	self.isMouseOver = nil
 	self.UpdateTooltip = nil
 
-	Minimap:GetMinimapTooltip():Hide()
+	Toggle_UpdateFrame(self)
+	
+	if (not MouseIsOver(self.Frame)) then 
+		Minimap:GetMinimapTooltip():Hide()
+	end 
+end
+
+local RingFrame_OnEnter = function(self)
+	self.UpdateTooltip = Toggle_UpdateTooltip
+	self.isMouseOver = true
+
+	Toggle_UpdateFrame(self._owner)
+
+	self:UpdateTooltip()
+end
+
+local RingFrame_OnLeave = function(self)
+	local db = Minimap.db
+
+	self.isMouseOver = nil
+	self.UpdateTooltip = nil
+
+	Toggle_UpdateFrame(self._owner)
+	
+	if (not MouseIsOver(self._owner)) then 
+		Minimap:GetMinimapTooltip():Hide()
+	end 
 end
 
 local Time_UpdateTooltip = function(self)
@@ -436,13 +455,17 @@ local Zone_OnLeave = function(self)
 	Minimap:GetMinimapTooltip():Hide()
 end 
 
+local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
+	local description = element.Value and element.Value.Description
+	if description then 
+		local nextLevel = UnitLevel("player")
+		description:SetFormattedText("to level %s", nextLevel)
+	end 
+end
+
 Minimap.SetUpMinimap = function(self)
 
 	local db = self.db
-
-	local fontObject = GameFontNormal
-	local fontStyle = "OUTLINE"
-	local fontSize = 14
 
 
 	-- Frame
@@ -639,32 +662,48 @@ Minimap.SetUpMinimap = function(self)
 	ringFrame:SetAllPoints() -- set it to cover the map
 	ringFrame:EnableMouse(true) -- make sure minimap blips and their tooltips don't punch through
 	ringFrame:SetShown(db.stickyBars) 
+	ringFrame:SetScript("OnEnter", RingFrame_OnEnter)
+	ringFrame:SetScript("OnLeave", RingFrame_OnLeave)
+
 
 	-- ring frame backdrops
 	local ringFrameBg = ringFrame:CreateTexture()
-	ringFrameBg:SetPoint("CENTER", 0, 0)
-	ringFrameBg:SetSize(419,419)
+	ringFrameBg:SetPoint("CENTER", 0, -1)
+	ringFrameBg:SetSize(411, 411) -- 419,419 
 	ringFrameBg:SetTexture(getPath("minimap-twobars-backdrop"))
 	--ringFrameBg:SetTexture(getPath("minimap-onebar-backdrop"))
 	ringFrameBg:SetDrawLayer("BACKGROUND", 1)
 	ringFrameBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
+	ringFrame.Bg = ringFrameBg
 
 	-- outer ring
 	local outerRing = ringFrame:CreateSpinBar()
-	outerRing:SetPoint("CENTER", 0, 0)
-	outerRing:SetSize(211,211)
+	outerRing:SetFrameLevel(outerRing:GetFrameLevel() + 5) -- give room for the rested bar
+	outerRing:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
+	outerRing:SetSize(211 *411/419,211 *411/419)
 	outerRing:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
 	--outerRing:SetStatusBarTexture(getPath("minimap-bars-single"))
 	outerRing:SetClockwise(true) -- bar runs clockwise
 	outerRing:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
 	outerRing:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
+	outerRing:SetAlpha(.75)
 	outerRing.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
 	outerRing.colorRested = true -- color the rested bonus bar when showing xp
 	outerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
 	outerRing.colorStanding = true -- color the bar according to your standing when tracking reputation
 	outerRing.colorValue = true -- color the value string same color as the bar
 	outerRing.backdropMultiplier = 1/3 -- color the backdrop a darker shade of the outer bar color
+
+	local rested = ringFrame:CreateSpinBar()
+	rested:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
+	rested:SetSize(211 *411/419,211 *411/419)
+	rested:SetStatusBarTexture(getPath("minimap-bars-single"))
+	rested:SetAlpha(.15)
+	rested:SetClockwise(true) -- bar runs clockwise
+	rested:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
+	rested:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
+	rested:Hide()
+	outerRing.Rested = rested
 
 	-- outer ring backdrop
 	--local outerRingBackdrop = ringFrame:CreateTexture()
@@ -677,19 +716,33 @@ Minimap.SetUpMinimap = function(self)
 
 	-- outer ring value text
 	local outerRingValue = outerRing:CreateFontString()
-	outerRingValue:SetPoint("TOP", ringFrame, "CENTER", 0, -2)
+	outerRingValue:SetPoint("TOP", ringFrameBg, "CENTER", 0, -2)
 	outerRingValue:SetFontObject(GameFontNormal)
 	outerRingValue:SetFont(GameFontNormal:GetFont(), fontSize + 1, fontStyle) 
 	outerRingValue:SetJustifyH("CENTER")
 	outerRingValue:SetJustifyV("TOP")
 	outerRingValue:SetShadowOffset(0, 0)
 	outerRingValue:SetShadowColor(0, 0, 0, 1)
+	outerRingValue.showDeficit = true -- show what's missing 
 	outerRing.Value = outerRingValue
+
+	-- outer ring value description text
+	local outerRingValueDescription = outerRing:CreateFontString()
+	outerRingValueDescription:SetPoint("TOP", outerRingValue, "BOTTOM", 0, 0)
+	outerRingValueDescription:SetFontObject(GameFontNormal)
+	outerRingValueDescription:SetFont(GameFontNormal:GetFont(), fontSize - 3, fontStyle) 
+	outerRingValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
+	outerRingValueDescription:SetJustifyH("CENTER")
+	outerRingValueDescription:SetJustifyV("TOP")
+	outerRingValueDescription:SetShadowOffset(0, 0)
+	outerRingValueDescription:SetShadowColor(0, 0, 0, 1)
+	outerRing.Value.Description = outerRingValueDescription
 
 	-- inner ring 
 	local innerRing = ringFrame:CreateSpinBar()
-	innerRing:SetPoint("CENTER", 0, 0)
-	innerRing:SetSize(211,211)
+	innerRing:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
+	innerRing:SetSize(211 *411/419,211 *411/419)
+	outerRing:SetAlpha(.75)
 	innerRing:SetStatusBarTexture(getPath("minimap-bars-two-inner"))
 	innerRing:SetClockwise(true) -- bar runs clockwise
 	innerRing:SetMinMaxValues(0,100)
@@ -704,36 +757,29 @@ Minimap.SetUpMinimap = function(self)
 
 	-- inner ring value text
 	local innerRingValue = innerRing:CreateFontString()
-	innerRingValue:SetPoint("BOTTOM", ringFrame, "CENTER", 0, 2)
+	innerRingValue:SetPoint("BOTTOM", ringFrameBg, "CENTER", 0, 2)
 	innerRingValue:SetFontObject(GameFontNormal)
 	innerRingValue:SetFont(GameFontNormal:GetFont(), fontSize + 1, fontStyle) 
 	innerRingValue:SetJustifyH("CENTER")
 	innerRingValue:SetJustifyV("TOP")
 	innerRingValue:SetShadowOffset(0, 0)
 	innerRingValue:SetShadowColor(0, 0, 0, 1)
+	innerRingValue.showDeficit = true -- show what's missing 
 	innerRing.Value = innerRingValue
 
 	-- extra thin ring (for resting...?)
 	local resting = ringFrame:CreateTexture()
-	resting:SetPoint("CENTER", ringFrame, "CENTER", 0, 0)
+	resting:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
 	resting:SetSize(211,211)
 	resting:SetTexture(getPath("xp_ring"))
 	resting:SetDrawLayer("BACKGROUND", 3)
 	resting:Hide()
 	
 	Handler.XP = outerRing
+	Handler.XP.PostUpdate = PostUpdate_XP
+
 	Handler.ArtifactPower = innerRing
 	Handler.Resting = resting
-
-
-	-- Change bar contents with a simple; 
-	--    DisableElemet("Element") + EnableElemet("Element")  (?)
-	-- Seems like the simplest way to change bars, 
-	-- because the minimap library will handle everything then. 
-	-- Will write this into some sort of interface later on! 
-
-	--Handler.Honor = outerRing
-	--Handler.Reputation = innerRing
 
 	-- Toggle button for ring frame
 	local toggle = Handler:CreateOverlayFrame()
@@ -745,6 +791,7 @@ Minimap.SetUpMinimap = function(self)
 	toggle:SetScript("OnLeave", Toggle_OnLeave)
 	toggle:SetScript("OnMouseUp", Toggle_OnMouseUp)
 	toggle._owner = Handler
+	ringFrame._owner = toggle
 	toggle.Frame = ringFrame
 
 	local toggleBackdrop = toggle:CreateTexture()
@@ -837,14 +884,91 @@ Minimap.OnEvent = function(self, event, ...)
 	end 
 end 
 
+Minimap.UpdateBars = function(self, event, ...)
+
+
+	local playerLevel = UnitLevel("player")
+	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
+	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
+	local hasXP = (not IsXPUserDisabled()) and (playerLevel < playerMax) or (playerLevel < expacMax) 
+	local hasAP = FindActiveAzeriteItem()
+
+	--Handler.Honor = outerRing
+	--Handler.Reputation = innerRing
+
+
+	local Handler = self:GetMinimapHandler()
+
+	if (hasXP) or (hasAP) then
+		if (not Handler.Toggle:IsShown()) then  
+			Handler.Toggle:Show()
+		end
+	
+		-- 2 bars
+		if (hasXP and hasAP) then
+			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-twobars-backdrop"))
+
+			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
+			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
+			Handler.XP.Value:ClearAllPoints()
+			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
+			Handler.XP.Value:SetFont(Handler.ArtifactPower.Value:GetFontObject():GetFont(), fontSize + 1, fontStyle) 
+			Handler.XP.Value.Description:Hide()
+			--Handler.XP.Value.Percent
+		
+			--Handler.ArtifactPower.Value
+			--Handler.ArtifactPower.Value.Percent
+
+			self:EnableMinimapElement("ArtifactPower")
+			self:EnableMinimapElement("XP")
+			
+		-- 1 bar
+		else
+			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-onebar-backdrop"))
+
+			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-single"))
+			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-single"))
+			Handler.XP.Value:ClearAllPoints()
+			Handler.XP.Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
+			Handler.XP.Value:SetFont(Handler.ArtifactPower.Value:GetFontObject():GetFont(), fontSize + 10, fontStyle) 
+			Handler.XP.Value.Description:Show()
+
+			if hasXP then 
+				self:DisableMinimapElement("ArtifactPower")
+				self:EnableMinimapElement("XP")
+			elseif hasAP then 
+				self:DisableMinimapElement("XP")
+				self:EnableMinimapElement("ArtifactPower")
+			end 
+		end 
+
+		-- Post update the frame, could be sticky
+		Toggle_UpdateFrame(Handler.Toggle)
+
+	else 
+		Handler.Toggle:Hide()
+		Handler.Toggle.Frame:Hide()
+	end 
+
+end
+
 Minimap.OnInit = function(self)
 	self.db = self:NewConfig("Minimap", defaults, "global")
+
 	self:SetUpMinimap()
+	self:UpdateBars()
 end 
 
 Minimap.OnEnable = function(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")	
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent") -- size and mask must be updated after this
+
+	-- Bar count updates
+	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "UpdateBars")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateBars")	
+
+	-- Enable all minimap elements
 	self:EnableAllElements()
+
 end 

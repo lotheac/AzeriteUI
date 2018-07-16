@@ -15,6 +15,7 @@ local UnitXP = _G.UnitXP
 local UnitXPMax = _G.UnitXPMax
 
 
+-- Number abbreviations
 local short = function(value)
 	value = tonumber(value)
 	if (not value) then return "" end
@@ -28,6 +29,7 @@ local short = function(value)
 		return tostring(math_floor(value))
 	end	
 end
+
 
 -- zhCN exceptions
 local gameLocale = GetLocale()
@@ -52,7 +54,11 @@ local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 	end
 
 	local value = element.Value or element:IsObjectType("FontString") and element 
-	value:SetFormattedText(short(min))
+	if value.showDeficit then 
+		value:SetFormattedText(short(max - min))
+	else 
+		value:SetFormattedText(short(min))
+	end
 
 	local percent = value.Percent
 	if percent then 
@@ -107,7 +113,12 @@ local Update = function(self, event, ...)
 		element.Rested:SetValue(math_min(max, min + (restedLeft or 0)))
 		
 		if element.colorRested then 
-			element.Rested:SetStatusBarColor()
+			local color = self.colors[restedLeft and "rested" or "xp"] 
+			element.Rested:SetStatusBarColor(color[1], color[2], color[3])
+		end 
+
+		if (not element.Rested:IsShown()) then 
+			element.Rested:Show()
 		end 
 	end 
 

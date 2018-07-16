@@ -334,7 +334,7 @@ local Style = function(self, unit, id, ...)
 
 	local power = backdrop:CreateStatusBar()
 	power:SetSize(120, 140)
-	power:Place("BOTTOMLEFT", -101,  38)
+	power:Place("BOTTOMLEFT", -101, 38)
 	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
 	power:SetOrientation("UP") -- set the bar to grow towards the top.
 	power:SetSparkMap(map.crystal) -- set the map the spark follows along the bar.
@@ -379,7 +379,7 @@ local Style = function(self, unit, id, ...)
 	or (PlayerClass == "MAGE") or (PlayerClass == "WARLOCK") then
 
 		local extraPower = backdrop:CreateOrb()
-		extraPower:SetSize(103, 103) -- 113,113
+		extraPower:SetSize(103, 103) -- 113,113 
 		extraPower:Place("BOTTOMLEFT", -97 +5, 22 + 5) -- -97,22 
 		extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3")) -- define the textures used in the orb. 
 		extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
@@ -438,6 +438,15 @@ local Style = function(self, unit, id, ...)
 
 	-- Widgets
 	-----------------------------------------------------------
+
+	-- Combat Indicator
+	local combat = overlay:CreateTexture()
+	combat:SetSize(80,80)
+	combat:SetPoint("CENTER", self, "BOTTOMLEFT", -41, 22) 
+	combat:SetTexture(getPath("icon-combat"))
+	combat:SetVertexColor(Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75)
+
+	self.Combat = combat
 
 	--[[
 	-- spec

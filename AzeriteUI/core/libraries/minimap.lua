@@ -1,5 +1,5 @@
-local Version = 20 -- This library's version 
-local MapVersion = 20 -- Minimap library version the minimap created by this is compatible with
+local Version = 21 -- This library's version 
+local MapVersion = 21 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -825,6 +825,7 @@ local embedMethods = {
 	GetMinimapHandler = true,
 	GetMinimapTooltip = true, 
 	EnableMinimapElement = true, 
+	DisableMinimapElement = true,
 	UpdateAllMinimapElements = true
 }
 
