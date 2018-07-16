@@ -38,13 +38,6 @@ core\libraries\fader.lua
 core\libraries\mover.lua
 core\libraries\bagbutton.lua
 core\libraries\actionbutton.lua
-core\libraries\actionbutton_action.lua
-core\libraries\actionbutton_custom.lua
-core\libraries\actionbutton_item.lua
-core\libraries\actionbutton_macro.lua
-core\libraries\actionbutton_pet.lua
-core\libraries\actionbutton_spell.lua
-core\libraries\actionbutton_stance.lua
 core\libraries\actionbar.lua
 core\libraries\unitframe.lua
 core\libraries\blizzard.lua
@@ -89,6 +82,15 @@ core\plugins\unit_power.lua
 core\plugins\unit_raidrole.lua
 core\plugins\unit_spec.lua
 core\plugins\unit_targeted.lua
+
+# actionbutton types
+core\plugins\actionbutton_action.lua
+core\plugins\actionbutton_custom.lua
+core\plugins\actionbutton_item.lua
+core\plugins\actionbutton_macro.lua
+core\plugins\actionbutton_pet.lua
+core\plugins\actionbutton_spell.lua
+core\plugins\actionbutton_stance.lua
 
 # custom color library
 core\colors.lua
