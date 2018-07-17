@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 8)
+local LibActionButton = CogWheel:Set("LibActionButton", 12)
 if (not LibActionButton) then	
 	return
 end
@@ -29,6 +29,7 @@ local setmetatable = setmetatable
 local string_join = string.join
 local string_match = string.match
 local table_insert = table.insert
+local table_remove = table.remove
 local table_sort = table.sort
 local type = type
 
@@ -156,6 +157,7 @@ Button.GetTooltip = function(self)
 end
 
 
+
 LibActionButton.GetGenericMeta = function(self)
 	return Button_MT
 end
@@ -187,11 +189,10 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	Buttons[self][button] = buttonType
 
 	-- Add any methods from the optional template.
+	-- *we're now allowing modules to overwrite methods.
 	if buttonTemplate then
 		for methodName, func in pairs(buttonTemplate) do
-			-- Do not allow this to overwrite existing methods,
-			-- also make sure it's only actual functions we inherit.
-			if (type(func) == "function") and (not button[methodName]) then
+			if (type(func) == "function") then
 				button[methodName] = func
 			end
 		end

@@ -372,20 +372,6 @@ local Style = function(self, unit, id, ...)
 	healthBg:SetTexCoord(1,0,0,1)
 	self.Health.Bg = healthBg
 
-	local healthVal = health:CreateFontString()
-	healthVal:SetPoint("RIGHT", -27, 4)
-	healthVal:SetDrawLayer("OVERLAY")
-	healthVal:SetFontObject(GameFontNormal)
-	healthVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
-	healthVal:SetJustifyH("CENTER")
-	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetShadowOffset(0, 0)
-	healthVal:SetShadowColor(0, 0, 0, 0)
-	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
-
-	self.Health.Value = healthVal
-	self.Health.OverrideValue = OverrideHealthValue
-
 
 	-- Absorb Bar
 	-----------------------------------------------------------	
@@ -397,20 +383,6 @@ local Style = function(self, unit, id, ...)
 	absorb:SetFlippedHorizontally(true) -- flips the bar texture horizontally
 	absorb:SetStatusBarColor(1,1,1,.5)
 	self.Absorb = absorb
-
-	local absorbVal = health:CreateFontString()
-	absorbVal:SetPoint("RIGHT", healthVal, "LEFT", -13, 0)
-	absorbVal:SetDrawLayer("OVERLAY")
-	absorbVal:SetFontObject(GameFontNormal)
-	absorbVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
-	absorbVal:SetJustifyH("CENTER")
-	absorbVal:SetJustifyV("MIDDLE")
-	absorbVal:SetShadowOffset(0, 0)
-	absorbVal:SetShadowColor(0, 0, 0, 0)
-	absorbVal:SetTextColor( 240/255, 240/255, 240/255, .5)
-
-	self.Absorb.Value = absorbVal 
-	self.Absorb.OverrideValue = OverrideValue
 	
 
 	-- Cast Bar
@@ -468,16 +440,13 @@ local Style = function(self, unit, id, ...)
 	self.Portrait.Fg = portraitFg
 
 
-	-- Level
-	-----------------------------------------------------------	
-
+	-- Unit Level
 	local level = overlay:CreateFontString()
 	level:SetPoint("CENTER", self, "TOPRIGHT", 79, -62)
 	level:SetDrawLayer("BORDER")
-	level:SetFontObject(GameFontWhite)
-	level:SetFont(GameFontWhite:GetFont(), 12, "OUTLINE")
 	level:SetJustifyH("CENTER")
 	level:SetJustifyV("MIDDLE")
+	level:SetFontObject(AzeriteFont11_Outline)
 	level:SetShadowOffset(0, 0)
 	level:SetShadowColor(0, 0, 0, 0)
 
@@ -565,20 +534,48 @@ local Style = function(self, unit, id, ...)
 	self.Targeted.PetByEnemy = petByEnemy
 
 
-	-- Name
+	-- Texts
 	-----------------------------------------------------------	
 
+	-- Unit Name
 	local name = overlay:CreateFontString()
 	name:SetPoint("TOPRIGHT", -53, 16)
 	name:SetDrawLayer("OVERLAY")
-	name:SetFontObject(GameFontNormal)
-	name:SetFont(GameFontNormal:GetFont(), 16, "OUTLINE")
 	name:SetJustifyH("CENTER")
 	name:SetJustifyV("TOP")
+	name:SetFontObject(AzeriteFont16_Outline)
 	name:SetShadowOffset(0, 0)
 	name:SetShadowColor(0, 0, 0, 0)
 	name:SetTextColor(240/255, 240/255, 240/255, .75)
 	self.Name = name
+
+	-- Health Value
+	local healthVal = health:CreateFontString()
+	healthVal:SetPoint("RIGHT", -27, 4)
+	healthVal:SetDrawLayer("OVERLAY")
+	healthVal:SetJustifyH("CENTER")
+	healthVal:SetJustifyV("MIDDLE")
+	healthVal:SetFontObject(AzeriteFont18_Outline)
+	healthVal:SetShadowOffset(0, 0)
+	healthVal:SetShadowColor(0, 0, 0, 0)
+	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
+
+	self.Health.Value = healthVal
+	self.Health.OverrideValue = OverrideHealthValue
+
+	-- Absorb value
+	local absorbVal = health:CreateFontString()
+	absorbVal:SetPoint("RIGHT", healthVal, "LEFT", -13, 0)
+	absorbVal:SetDrawLayer("OVERLAY")
+	absorbVal:SetJustifyH("CENTER")
+	absorbVal:SetJustifyV("MIDDLE")
+	absorbVal:SetFontObject(AzeriteFont18_Outline)
+	absorbVal:SetShadowOffset(0, 0)
+	absorbVal:SetShadowColor(0, 0, 0, 0)
+	absorbVal:SetTextColor( 240/255, 240/255, 240/255, .5)
+
+	self.Absorb.Value = absorbVal 
+	self.Absorb.OverrideValue = OverrideValue
 
 
 	-- Update target frame textures

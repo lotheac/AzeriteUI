@@ -82,7 +82,7 @@ Colors.xp = prepare(116/255, 23/255, 229/255) -- xp bar
 Colors.xpValue = prepare(145/255, 77/255, 229/255) -- xp bar text
 Colors.rested = prepare(163/255, 23/255, 229/255) -- xp bar while being rested
 Colors.restedValue = prepare(203/255, 77/255, 229/255) -- xp bar text while being rested
-Colors.restedbonus = prepare(93/255, 23/255, 179/255) -- rested bonus bar
+Colors.restedBonus = prepare(3/4* 93/255, 3/4* 23/255, 3/4* 179/255) -- rested bonus bar
 Colors.artifact = prepare(229/255, 204/255, 127/255) -- artifact or azerite power bar
 
 -- I'll add these back on demand, then clean up before release

@@ -290,19 +290,6 @@ local Style = function(self, unit, id, ...)
 	healthBg:SetPoint("CENTER", 1, -.5)
 	self.Health.Bg = healthBg
 
-	local healthVal = health:CreateFontString()
-	healthVal:SetPoint("LEFT", 27, 4)
-	healthVal:SetDrawLayer("OVERLAY")
-	healthVal:SetFontObject(GameFontNormal)
-	healthVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
-	healthVal:SetJustifyH("CENTER")
-	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetShadowOffset(0, 0)
-	healthVal:SetShadowColor(0, 0, 0, 0)
-	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
-	self.Health.Value = healthVal
-	self.Health.OverrideValue = OverrideHealthValue
-
 
 	-- Absorb Bar
 	-----------------------------------------------------------	
@@ -315,19 +302,6 @@ local Style = function(self, unit, id, ...)
 	absorb:SetStatusBarColor(1, 1, 1, .25) -- make the bar fairly transparent, it's just an overlay after all. 
 	self.Absorb = absorb
 
-	local absorbVal = health:CreateFontString()
-	absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 13, 0)
-	absorbVal:SetDrawLayer("OVERLAY")
-	absorbVal:SetFontObject(GameFontNormal)
-	absorbVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
-	absorbVal:SetJustifyH("CENTER")
-	absorbVal:SetJustifyV("MIDDLE")
-	absorbVal:SetShadowOffset(0, 0)
-	absorbVal:SetShadowColor(0, 0, 0, 0)
-	absorbVal:SetTextColor(240/255, 240/255, 240/255, .5)
-	self.Absorb.Value = absorbVal 
-	self.Absorb.OverrideValue = OverrideValue
-	
 
 	-- Power Crystal
 	-----------------------------------------------------------
@@ -355,19 +329,6 @@ local Style = function(self, unit, id, ...)
 	powerFg:SetDrawLayer("ARTWORK")
 	powerFg:SetTexture(getPath("pw_crystal_case"))
 	self.Power.Fg = powerFg
-
-	local powerVal = power:CreateFontString()
-	powerVal:SetPoint("CENTER", 0, -16)
-	powerVal:SetDrawLayer("OVERLAY")
-	powerVal:SetFontObject(GameFontNormal)
-	powerVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
-	powerVal:SetJustifyH("CENTER")
-	powerVal:SetJustifyV("MIDDLE")
-	powerVal:SetShadowOffset(0, 0)
-	powerVal:SetShadowColor(0, 0, 0, 0)
-	powerVal:SetTextColor(240/255, 240/255, 240/255, .4)
-	self.Power.Value = powerVal
-	self.Power.UpdateValue = OverrideValue
 
 
 	-- Mana Orb
@@ -407,10 +368,9 @@ local Style = function(self, unit, id, ...)
 		local extraPowerVal = extraPower:CreateFontString()
 		extraPowerVal:SetPoint("CENTER", 3, 0)
 		extraPowerVal:SetDrawLayer("OVERLAY")
-		extraPowerVal:SetFontObject(GameFontNormal)
-		extraPowerVal:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE")
 		extraPowerVal:SetJustifyH("CENTER")
 		extraPowerVal:SetJustifyV("MIDDLE")
+		extraPowerVal:SetFontObject(Game15Font_o1)
 		extraPowerVal:SetShadowOffset(0, 0)
 		extraPowerVal:SetShadowColor(0, 0, 0, 0)
 		extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
@@ -436,9 +396,6 @@ local Style = function(self, unit, id, ...)
 	self.Cast = cast
 
 
-	-- Widgets
-	-----------------------------------------------------------
-
 	-- Combat Indicator
 	local combat = overlay:CreateTexture()
 	combat:SetSize(80,80)
@@ -447,6 +404,49 @@ local Style = function(self, unit, id, ...)
 	combat:SetVertexColor(Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75)
 
 	self.Combat = combat
+
+
+	-- Texts
+	-----------------------------------------------------------
+
+	-- Health Value
+	local healthVal = health:CreateFontString()
+	healthVal:SetPoint("LEFT", 27, 4)
+	healthVal:SetDrawLayer("OVERLAY")
+	healthVal:SetJustifyH("CENTER")
+	healthVal:SetJustifyV("MIDDLE")
+	healthVal:SetFontObject(AzeriteFont18_Outline)
+	healthVal:SetShadowOffset(0, 0)
+	healthVal:SetShadowColor(0, 0, 0, 0)
+	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
+	self.Health.Value = healthVal
+	self.Health.OverrideValue = OverrideHealthValue
+
+	-- Absorb Value
+	local absorbVal = health:CreateFontString()
+	absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 13, 0)
+	absorbVal:SetDrawLayer("OVERLAY")
+	absorbVal:SetJustifyH("CENTER")
+	absorbVal:SetJustifyV("MIDDLE")
+	absorbVal:SetFontObject(AzeriteFont18_Outline)
+	absorbVal:SetShadowOffset(0, 0)
+	absorbVal:SetShadowColor(0, 0, 0, 0)
+	absorbVal:SetTextColor(240/255, 240/255, 240/255, .5)
+	self.Absorb.Value = absorbVal 
+	self.Absorb.OverrideValue = OverrideValue
+
+	-- Power Value
+	local powerVal = power:CreateFontString()
+	powerVal:SetPoint("CENTER", 0, -16)
+	powerVal:SetDrawLayer("OVERLAY")
+	powerVal:SetJustifyH("CENTER")
+	powerVal:SetJustifyV("MIDDLE")
+	powerVal:SetFontObject(AzeriteFont18_Outline)
+	powerVal:SetShadowOffset(0, 0)
+	powerVal:SetShadowColor(0, 0, 0, 0)
+	powerVal:SetTextColor(240/255, 240/255, 240/255, .4)
+	self.Power.Value = powerVal
+	self.Power.UpdateValue = OverrideValue
 
 	--[[
 	-- spec

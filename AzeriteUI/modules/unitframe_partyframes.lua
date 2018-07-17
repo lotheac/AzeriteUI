@@ -160,18 +160,16 @@ local Style = function(self, unit, id, ...)
 	local healthVal = overlay:CreateFontString()
 	healthVal:SetPoint("CENTER", health, "CENTER", 0, 0)
 	healthVal:SetDrawLayer("OVERLAY")
-	healthVal:SetFontObject(GameFontNormal)
-	healthVal:SetFont(GameFontNormal:GetFont(), 11, "OUTLINE")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetShadowOffset(0, 0)
-	healthVal:SetShadowColor(0, 0, 0, 0)
+	healthVal:SetFontObject(Game11Font_o1)
+	healthVal:SetShadowOffset(-.85, -.85)
+	healthVal:SetShadowColor(0, 0, 0, .75)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
 	self.Health.Value = healthVal
 	self.Health.OverrideValue = OverrideHealthValue
 
 	self:RegisterEvent("PLAYER_FLAGS_CHANGED", OnEvent)
-
 
 	-- Absorb Bar
 	-----------------------------------------------------------	

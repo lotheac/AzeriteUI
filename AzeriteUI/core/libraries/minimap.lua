@@ -1,5 +1,5 @@
-local Version = 21 -- This library's version 
-local MapVersion = 21 -- Minimap library version the minimap created by this is compatible with
+local Version = 22 -- This library's version 
+local MapVersion = 22 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -293,9 +293,22 @@ ElementHandler.CreateOverlayFrame = function(proxy, frameType)
 	return LibMinimap:SyncMinimap(true) and Private.MapOverlay:CreateFrame(frameType or "Frame")
 end 
 
+ElementHandler.CreateOverlayText = function(proxy)
+	return LibMinimap:SyncMinimap(true) and Private.MapOverlay:CreateFontString()
+end 
+
+ElementHandler.CreateOverlayTexture = function(proxy)
+	return LibMinimap:SyncMinimap(true) and Private.MapOverlay:CreateTexture()
+end 
+
 ElementHandler.CreateBorderFrame = function(proxy, frameType)
 	check(frameType, 1, "string", "nil")
 	return LibMinimap:SyncMinimap(true) and Private.MapBorder:CreateFrame(frameType or "Frame")
+end 
+
+ElementHandler.CreateContentFrame = function(proxy, frameType)
+	check(frameType, 1, "string", "nil")
+	return LibMinimap:SyncMinimap(true) and Private.MapContent:CreateFrame(frameType or "Frame")
 end 
 
 ElementHandler.CreateBorderText = function(proxy)
@@ -382,13 +395,13 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 	-- Map border meant to place elements in.  
 	Private.MapBorder = Private.MapBorder or Private.MapVisibility:CreateFrame()
 	Private.MapBorder:SetAllPoints(Private.MapHolder)
-	Private.MapBorder:SetFrameLevel(4)
+	Private.MapBorder:SetFrameLevel(10)
 
 	-- Info frame for elements that should always be visible
 	Private.MapInfo = Private.MapInfo or LibMinimap:CreateFrame("Frame")
 	Private.MapInfo:SetAllPoints() -- This will by default fill the entire master frame
 	Private.MapInfo:SetFrameStrata("LOW") 
-	Private.MapInfo:SetFrameLevel(5)
+	Private.MapInfo:SetFrameLevel(20)
 
 	-- Overlay frame for temporary elements
 	Private.MapOverlay = Private.MapOverlay or Private.MapVisibility:CreateFrame("Frame")

@@ -113,7 +113,7 @@ local Update = function(self, event, ...)
 		element.Rested:SetValue(math_min(max, min + (restedLeft or 0)))
 		
 		if element.colorRested then 
-			local color = self.colors[restedLeft and "rested" or "xp"] 
+			local color = self.colors.restedBonus 
 			element.Rested:SetStatusBarColor(color[1], color[2], color[3])
 		end 
 
@@ -174,5 +174,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 4)
 end 

@@ -540,7 +540,7 @@ Minimap.SetUpMinimap = function(self)
 	backdrop:SetVertexColor(0, 0, 0, .15)
 	
 	-- Border
-	local border = Handler:CreateBorderTexture()
+	local border = Handler:CreateOverlayTexture()
 	border:SetDrawLayer("BACKGROUND")
 	border:SetTexture(getPath("minimap-border"))
 	border:SetSize(419,419)
@@ -549,17 +549,15 @@ Minimap.SetUpMinimap = function(self)
 
 	Handler.Border = border
 
-
 	-- Coordinates
 	local coordinates = Handler:CreateBorderText()
 	coordinates:SetPoint("BOTTOM", 3, 23) 
 	coordinates:SetDrawLayer("OVERLAY")
-	coordinates:SetFontObject(GameFontNormal)
-	coordinates:SetFont(GameFontNormal:GetFont(), fontSize - 2, fontStyle) 
 	coordinates:SetJustifyH("CENTER")
 	coordinates:SetJustifyV("BOTTOM")
+	coordinates:SetFontObject(AzeriteFont12_Outline)
 	coordinates:SetShadowOffset(0, 0)
-	coordinates:SetShadowColor(0, 0, 0, 1)
+	coordinates:SetShadowColor(0, 0, 0, 0)
 	coordinates:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75) 
 	coordinates.OverrideValue = Coordinates_OverrideValue
 
@@ -571,14 +569,13 @@ Minimap.SetUpMinimap = function(self)
 	Handler.ClockFrame = clockFrame
 
 	local clock = clockFrame:CreateFontString()
-	clock:SetPoint("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -(13 + 10), 35) 
+	clock:SetPoint("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -23, -8) 
 	clock:SetDrawLayer("OVERLAY")
-	clock:SetFontObject(fontObject)
-	clock:SetFont(fontObject:GetFont(), fontSize, fontStyle)
 	clock:SetJustifyH("RIGHT")
 	clock:SetJustifyV("BOTTOM")
+	clock:SetFontObject(AzeriteFont15_Outline)
 	clock:SetShadowOffset(0, 0)
-	clock:SetShadowColor(0, 0, 0, 1)
+	clock:SetShadowColor(0, 0, 0, 0)
 	clock:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	clock.useStandardTime = self.db.useStandardTime -- standard (12-hour) or military (24-hour) time
 	clock.useServerTime = self.db.useServerTime -- realm time or local time
@@ -603,12 +600,11 @@ Minimap.SetUpMinimap = function(self)
 	local zone = zoneFrame:CreateFontString()
 	zone:SetPoint("BOTTOMRIGHT", clock, "BOTTOMLEFT", -8, 0) 
 	zone:SetDrawLayer("OVERLAY")
-	zone:SetFontObject(fontObject)
-	zone:SetFont(fontObject:GetFont(), fontSize, fontStyle)
 	zone:SetJustifyH("RIGHT")
 	zone:SetJustifyV("BOTTOM")
+	zone:SetFontObject(AzeriteFont15_Outline)
 	zone:SetShadowOffset(0, 0)
-	zone:SetShadowColor(0, 0, 0, 1)
+	zone:SetShadowColor(0, 0, 0, 0)
 	zone.colorPvP = true -- color zone names according to their PvP type 
 	zone.colorcolorDifficulty = true -- color instance names according to their difficulty
 
@@ -626,12 +622,11 @@ Minimap.SetUpMinimap = function(self)
 	local framerate = performanceFrame:CreateFontString()
 	framerate:SetPoint("BOTTOM", clock, "TOP", 0, 6)
 	framerate:SetDrawLayer("OVERLAY")
-	framerate:SetFontObject(fontObject)
-	framerate:SetFont(fontObject:GetFont(), fontSize, fontStyle)
 	framerate:SetJustifyH("RIGHT")
 	framerate:SetJustifyV("BOTTOM")
+	framerate:SetFontObject(AzeriteFont12_Outline)
 	framerate:SetShadowOffset(0, 0)
-	framerate:SetShadowColor(0, 0, 0, 1)
+	framerate:SetShadowColor(0, 0, 0, 0)
 	framerate:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	framerate.OverrideValue = FrameRate_OverrideValue
 
@@ -640,12 +635,11 @@ Minimap.SetUpMinimap = function(self)
 	local latency = performanceFrame:CreateFontString()
 	latency:SetPoint("BOTTOMRIGHT", zone, "TOPRIGHT", 0, 6) 
 	latency:SetDrawLayer("OVERLAY")
-	latency:SetFontObject(fontObject)
-	latency:SetFont(fontObject:GetFont(), fontSize, fontStyle)
 	latency:SetJustifyH("CENTER")
 	latency:SetJustifyV("BOTTOM")
+	latency:SetFontObject(AzeriteFont12_Outline)
 	latency:SetShadowOffset(0, 0)
-	latency:SetShadowColor(0, 0, 0, 1)
+	latency:SetShadowColor(0, 0, 0, 0)
 	latency:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
 	latency.OverrideValue = Latency_OverrideValue
 
@@ -658,7 +652,7 @@ Minimap.SetUpMinimap = function(self)
 	performanceFrame:SetScript("OnLeave", Performance_OnLeave)
 
 	-- Ring frame
-	local ringFrame = Handler:CreateOverlayFrame()
+	local ringFrame = Handler:CreateBorderFrame()
 	ringFrame:SetAllPoints() -- set it to cover the map
 	ringFrame:EnableMouse(true) -- make sure minimap blips and their tooltips don't punch through
 	ringFrame:SetShown(db.stickyBars) 
@@ -668,10 +662,9 @@ Minimap.SetUpMinimap = function(self)
 
 	-- ring frame backdrops
 	local ringFrameBg = ringFrame:CreateTexture()
-	ringFrameBg:SetPoint("CENTER", 0, -1)
-	ringFrameBg:SetSize(411, 411) -- 419,419 
+	ringFrameBg:SetPoint("CENTER", 0, -2)
+	ringFrameBg:SetSize(410, 410) -- 419,419 
 	ringFrameBg:SetTexture(getPath("minimap-twobars-backdrop"))
-	--ringFrameBg:SetTexture(getPath("minimap-onebar-backdrop"))
 	ringFrameBg:SetDrawLayer("BACKGROUND", 1)
 	ringFrameBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	ringFrame.Bg = ringFrameBg
@@ -680,13 +673,12 @@ Minimap.SetUpMinimap = function(self)
 	local outerRing = ringFrame:CreateSpinBar()
 	outerRing:SetFrameLevel(outerRing:GetFrameLevel() + 5) -- give room for the rested bar
 	outerRing:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-	outerRing:SetSize(211 *411/419,211 *411/419)
+	outerRing:SetSize(ringFrameBg:GetWidth()/2, ringFrameBg:GetHeight()/2) 
 	outerRing:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
-	--outerRing:SetStatusBarTexture(getPath("minimap-bars-single"))
 	outerRing:SetClockwise(true) -- bar runs clockwise
 	outerRing:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
 	outerRing:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
-	outerRing:SetAlpha(.75)
+	outerRing:SetAlpha(.95)
 	outerRing.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
 	outerRing.colorRested = true -- color the rested bonus bar when showing xp
 	outerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
@@ -698,7 +690,7 @@ Minimap.SetUpMinimap = function(self)
 	rested:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
 	rested:SetSize(211 *411/419,211 *411/419)
 	rested:SetStatusBarTexture(getPath("minimap-bars-single"))
-	rested:SetAlpha(.15)
+	rested:SetAlpha(.95)
 	rested:SetClockwise(true) -- bar runs clockwise
 	rested:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
 	rested:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
@@ -717,32 +709,30 @@ Minimap.SetUpMinimap = function(self)
 	-- outer ring value text
 	local outerRingValue = outerRing:CreateFontString()
 	outerRingValue:SetPoint("TOP", ringFrameBg, "CENTER", 0, -2)
-	outerRingValue:SetFontObject(GameFontNormal)
-	outerRingValue:SetFont(GameFontNormal:GetFont(), fontSize + 1, fontStyle) 
 	outerRingValue:SetJustifyH("CENTER")
 	outerRingValue:SetJustifyV("TOP")
+	outerRingValue:SetFontObject(AzeriteFont15_Outline)
 	outerRingValue:SetShadowOffset(0, 0)
-	outerRingValue:SetShadowColor(0, 0, 0, 1)
+	outerRingValue:SetShadowColor(0, 0, 0, 0)
 	outerRingValue.showDeficit = true -- show what's missing 
 	outerRing.Value = outerRingValue
 
 	-- outer ring value description text
 	local outerRingValueDescription = outerRing:CreateFontString()
 	outerRingValueDescription:SetPoint("TOP", outerRingValue, "BOTTOM", 0, 0)
-	outerRingValueDescription:SetFontObject(GameFontNormal)
-	outerRingValueDescription:SetFont(GameFontNormal:GetFont(), fontSize - 3, fontStyle) 
 	outerRingValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
 	outerRingValueDescription:SetJustifyH("CENTER")
 	outerRingValueDescription:SetJustifyV("TOP")
+	outerRingValueDescription:SetFontObject(AzeriteFont11_Outline)
 	outerRingValueDescription:SetShadowOffset(0, 0)
-	outerRingValueDescription:SetShadowColor(0, 0, 0, 1)
+	outerRingValueDescription:SetShadowColor(0, 0, 0, 0)
 	outerRing.Value.Description = outerRingValueDescription
 
 	-- inner ring 
 	local innerRing = ringFrame:CreateSpinBar()
 	innerRing:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-	innerRing:SetSize(211 *411/419,211 *411/419)
-	outerRing:SetAlpha(.75)
+	innerRing:SetSize(ringFrameBg:GetWidth()/2, ringFrameBg:GetHeight()/2)
+	innerRing:SetAlpha(.95)
 	innerRing:SetStatusBarTexture(getPath("minimap-bars-two-inner"))
 	innerRing:SetClockwise(true) -- bar runs clockwise
 	innerRing:SetMinMaxValues(0,100)
@@ -758,12 +748,11 @@ Minimap.SetUpMinimap = function(self)
 	-- inner ring value text
 	local innerRingValue = innerRing:CreateFontString()
 	innerRingValue:SetPoint("BOTTOM", ringFrameBg, "CENTER", 0, 2)
-	innerRingValue:SetFontObject(GameFontNormal)
-	innerRingValue:SetFont(GameFontNormal:GetFont(), fontSize + 1, fontStyle) 
 	innerRingValue:SetJustifyH("CENTER")
 	innerRingValue:SetJustifyV("TOP")
+	innerRingValue:SetFontObject(AzeriteFont15_Outline)
 	innerRingValue:SetShadowOffset(0, 0)
-	innerRingValue:SetShadowColor(0, 0, 0, 1)
+	innerRingValue:SetShadowColor(0, 0, 0, 0)
 	innerRingValue.showDeficit = true -- show what's missing 
 	innerRing.Value = innerRingValue
 
@@ -784,8 +773,8 @@ Minimap.SetUpMinimap = function(self)
 	-- Toggle button for ring frame
 	local toggle = Handler:CreateOverlayFrame()
 	toggle:SetFrameLevel(toggle:GetFrameLevel() + 10) -- need this above the ring frame and the rings
-	toggle:SetPoint("CENTER", Handler, "BOTTOM", 0, -6)
-	toggle:SetSize(48,48)
+	toggle:SetPoint("CENTER", Handler, "BOTTOM", 1, -6)
+	toggle:SetSize(56,56)
 	toggle:EnableMouse(true)
 	toggle:SetScript("OnEnter", Toggle_OnEnter)
 	toggle:SetScript("OnLeave", Toggle_OnLeave)
@@ -803,23 +792,21 @@ Minimap.SetUpMinimap = function(self)
 
 	local innerPercent = ringFrame:CreateFontString()
 	innerPercent:SetDrawLayer("OVERLAY")
-	innerPercent:SetFontObject(GameFontNormal)
-	innerPercent:SetFont(GameFontNormal:GetFont(), fontSize -1, fontStyle) 
 	innerPercent:SetJustifyH("CENTER")
 	innerPercent:SetJustifyV("MIDDLE")
+	innerPercent:SetFontObject(AzeriteFont13_Outline)
 	innerPercent:SetShadowOffset(0, 0)
-	innerPercent:SetShadowColor(0, 0, 0, 1)
+	innerPercent:SetShadowColor(0, 0, 0, 0)
 	innerPercent:SetPoint("CENTER", 1, -64)
 	innerRing.Value.Percent = innerPercent
 
 	local outerPercent = toggle:CreateFontString()
 	outerPercent:SetDrawLayer("OVERLAY")
-	outerPercent:SetFontObject(GameFontNormal)
-	outerPercent:SetFont(GameFontNormal:GetFont(), fontSize -2, fontStyle) 
 	outerPercent:SetJustifyH("CENTER")
 	outerPercent:SetJustifyV("MIDDLE")
+	outerPercent:SetFontObject(AzeriteFont13_Outline)
 	outerPercent:SetShadowOffset(0, 0)
-	outerPercent:SetShadowColor(0, 0, 0, 1)
+	outerPercent:SetShadowColor(0, 0, 0, 0)
 	outerPercent:SetPoint("CENTER", 1, -1)
 	outerRing.Value.Percent = outerPercent
 
@@ -912,7 +899,7 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
 			Handler.XP.Value:ClearAllPoints()
 			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
-			Handler.XP.Value:SetFont(Handler.ArtifactPower.Value:GetFontObject():GetFont(), fontSize + 1, fontStyle) 
+			Handler.XP.Value:SetFontObject(AzeriteFont15_Outline) 
 			Handler.XP.Value.Description:Hide()
 			--Handler.XP.Value.Percent
 		
@@ -930,7 +917,7 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-single"))
 			Handler.XP.Value:ClearAllPoints()
 			Handler.XP.Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
-			Handler.XP.Value:SetFont(Handler.ArtifactPower.Value:GetFontObject():GetFont(), fontSize + 10, fontStyle) 
+			Handler.XP.Value:SetFontObject(AzeriteFont24_Outline) 
 			Handler.XP.Value.Description:Show()
 
 			if hasXP then 

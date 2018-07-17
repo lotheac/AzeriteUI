@@ -96,6 +96,9 @@ core\plugins\actionbutton_stance.lua
 # custom color library
 core\colors.lua
 
+# custom fonts objects
+core\fonts.xml
+
 # localization
 locale\enUS.lua
 locale\deDE.lua

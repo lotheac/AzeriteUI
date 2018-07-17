@@ -7,17 +7,26 @@ end
 -- Lua API
 local _G = _G
 local pairs = pairs
+local table_insert = table.insert 
+local table_remove = table.remove
 local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
 local GetActionCharges = _G.GetActionCharges
+local GetActionCooldown = _G.GetActionCooldown
+local GetActionLossOfControlCooldown = _G.GetActionLossOfControlCooldown
 local GetActionCount = _G.GetActionCount
 local GetActionTexture = _G.GetActionTexture
 local GetBindingKey = _G.GetBindingKey 
 local HasAction = _G.HasAction
 local IsConsumableAction = _G.IsConsumableAction
 local IsStackableAction = _G.IsStackableAction
+
+-- Blizzard Textures
+local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
+local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
+local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
 
 ----------------------------------------------------
@@ -52,9 +61,85 @@ ActionButton.UpdateBinding = function(self)
 	end 
 end 
 
--- Called when the button cooldown changes 
-ActionButton.UpdateCooldown = function(self) 
-end 
+local OnCooldownDone = function(cooldown)
+	cooldown:SetScript("OnCooldownDone", nil)
+	cooldown:GetParent():UpdateCooldown()
+end
+
+local CooldownFrame_Clear = function(cooldown)
+	cooldown:Clear()
+end
+
+local CooldownFrame_Set = function(cooldown, start, duration, enable, forceShowDrawEdge, modRate)
+	if (enable and (enable ~= 0) and (start > 0) and (duration > 0)) then
+		cooldown:SetDrawEdge(forceShowDrawEdge)
+		cooldown:SetCooldown(start, duration, modRate)
+	else
+		CooldownFrame_Clear(cooldown)
+	end
+end
+
+local EndChargeCooldown = function(cooldown)
+	cooldown:Hide()
+end
+
+local StartChargeCooldown = function(cooldown, chargeStart, chargeDuration, chargeModRate)
+
+	-- Set the spellcharge cooldown
+	--cooldown:SetDrawBling(cooldown:GetEffectiveAlpha() > 0.5)
+	CooldownFrame_Set(cooldown, chargeStart, chargeDuration, true, true, chargeModRate)
+
+	if ((not chargeStart) or (chargeStart == 0)) then
+		EndChargeCooldown(cooldown)
+	end
+end
+
+ActionButton.UpdateCooldown = function(self)
+	local Cooldown = self.Cooldown
+	if Cooldown then 
+		local locStart, locDuration = self:GetLossOfControlCooldown()
+		local start, duration, enable, modRate = self:GetCooldown()
+		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self:GetAction())
+
+		--Cooldown:SetDrawBling(Cooldown:GetEffectiveAlpha() > 0.5)
+
+		if ((locStart + locDuration) > (start + duration)) then
+
+			if Cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL then
+				Cooldown:SetEdgeTexture(EDGE_LOC_TEXTURE)
+				Cooldown:SetSwipeColor(0.17, 0, 0)
+				Cooldown:SetHideCountdownNumbers(true)
+				Cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
+			end
+			CooldownFrame_Set(Cooldown, locStart, locDuration, true, true, modRate)
+
+		else
+
+			if (Cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL) then
+				Cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+				Cooldown:SetSwipeColor(0, 0, 0)
+				Cooldown:SetHideCountdownNumbers(false)
+				Cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
+			end
+
+			if (locStart > 0) then
+				Cooldown:SetScript("OnCooldownDone", OnCooldownDone)
+			end
+
+			local ChargeCooldown = self.ChargeCooldown
+			if ChargeCooldown then 
+				if (charges and maxCharges and (charges > 0) and (charges < maxCharges)) then
+					StartChargeCooldown(ChargeCooldown, chargeStart, chargeDuration, chargeModRate)
+				else
+					EndChargeCooldown(ChargeCooldown)
+				end
+			end 
+
+			CooldownFrame_Set(Cooldown, start, duration, enable, false, modRate)
+		end
+	end 
+end
+
 
 -- Called when spell chargers or item count changes
 ActionButton.UpdateCount = function(self) 
@@ -69,7 +154,7 @@ ActionButton.UpdateCount = function(self)
 					count = "*"
 				end
 			else
-				local charges, maxCharges, chargeStart, chargeDuration = GetActionCharges(action)
+				local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(action)
 				if (charges and maxCharges and (maxCharges > 1) and (charges > 0)) then
 					count = charges
 				end
@@ -84,7 +169,6 @@ end
 ActionButton.UpdateFlash = function(self) 
 end 
 
-
 -- Called when the usable state of the button changes
 ActionButton.UpdateUsable = function(self) 
 end 
@@ -94,6 +178,7 @@ ActionButton.Update = function(self)
 	self:UpdateBinding()
 	self:UpdateCount()
 	self:UpdateCooldown()
+	self:UpdateFlash()
 	self:UpdateUsable()
 
 	-- Allow modules to add in methods this way
@@ -116,6 +201,14 @@ end
 
 ActionButton.GetActionTexture = function(self) 
 	return GetActionTexture(self:GetAction())
+end
+
+ActionButton.GetCooldown = function(self) 
+	return GetActionCooldown(self:GetAction()) 
+end
+
+ActionButton.GetLossOfControlCooldown = function(self) 
+	return GetActionLossOfControlCooldown(self:GetAction()) 
 end
 
 ActionButton.GetParent = function(self)
@@ -187,17 +280,35 @@ local Style = function(self)
 	flash:SetColorTexture(1, 0, 0, .25)
 	flash:Hide()
 
-	local cooldown = self:CreateFrame("Cooldown")
+	local cooldown = self:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	cooldown:Hide()
 	cooldown:SetAllPoints()
 	cooldown:SetFrameLevel(self:GetFrameLevel() + 1)
+	cooldown:SetReverse(false)
+	cooldown:SetSwipeColor(0, 0, 0, .75)
+	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+	cooldown:SetDrawSwipe(true)
+	cooldown:SetDrawBling(true)
+	cooldown:SetDrawEdge(false)
+	cooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
 
-	local chargeCooldown = self:CreateFrame("Cooldown")
+	local chargeCooldown = self:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	chargeCooldown:Hide()
 	chargeCooldown:SetAllPoints()
 	chargeCooldown:SetFrameLevel(self:GetFrameLevel() + 2)
+	chargeCooldown:SetReverse(false)
+	chargeCooldown:SetSwipeColor(0, 0, 0, .75)
+	chargeCooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	chargeCooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+	chargeCooldown:SetDrawSwipe(true)
+	chargeCooldown:SetDrawBling(true)
+	chargeCooldown:SetDrawEdge(false)
+	chargeCooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
 
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 3)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 5)
 
 	local cooldownCount = overlay:CreateFontString()
 	cooldownCount:SetDrawLayer("ARTWORK", 1)
@@ -408,7 +519,11 @@ local Update = function(self, event, ...)
 		if ((arg1 == 0) or (arg1 == tonumber(self:GetAction()))) then
 			self:Update()
 		end
-	
+
+	elseif event == "ACTIONBAR_UPDATE_COOLDOWN" then
+		self:UpdateCooldown()
+		-- update tooltip here
+
 	elseif (event == "UPDATE_SHAPESHIFT_FORM") then
 		self:Update()
 
@@ -431,6 +546,7 @@ end
 -- Register events and update handlers here
 local Enable = function(self)
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
+	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 	self:RegisterEvent("UPDATE_BINDINGS", Proxy)
@@ -442,6 +558,7 @@ end
 -- Disable events and update handlers here
 local Disable = function(self)
 	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 	self:UnregisterEvent("UPDATE_BINDINGS", Proxy)
@@ -450,4 +567,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 3)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 6)

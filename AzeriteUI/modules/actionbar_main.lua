@@ -20,9 +20,11 @@ local ClearOverrideBindings = _G.ClearOverrideBindings
 local GetBindingKey = _G.GetBindingKey
 local SetOverrideBindingClick = _G.SetOverrideBindingClick
 
-
--- Textures for generic styling
+-- Blizzard textures for generic styling
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
+local BLING_TEXTURE = [[Interface\Cooldown\star4]]
+local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
+local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
 
 
 -- Default settings
@@ -42,6 +44,50 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
+-- Hotkey abbreviations for better readability
+local shortenKeybind = function(key)
+	if key then
+		key = key:upper()
+		key = key:gsub(" ", "")
+		key = key:gsub("ALT%-", L["Alt"])
+		key = key:gsub("CTRL%-", L["Ctrl"])
+		key = key:gsub("SHIFT%-", L["Shift"])
+		key = key:gsub("NUMPAD", L["NumPad"])
+
+		key = key:gsub("PLUS", "%+")
+		key = key:gsub("MINUS", "%-")
+		key = key:gsub("MULTIPLY", "%*")
+		key = key:gsub("DIVIDE", "%/")
+
+		key = key:gsub("BACKSPACE", L["Backspace"])
+
+		for i = 1,31 do
+			key = key:gsub("BUTTON" .. i, L["Button" .. i])
+		end
+
+		key = key:gsub("CAPSLOCK", L["Capslock"])
+		key = key:gsub("CLEAR", L["Clear"])
+		key = key:gsub("DELETE", L["Delete"])
+		key = key:gsub("END", L["End"])
+		key = key:gsub("HOME", L["Home"])
+		key = key:gsub("INSERT", L["Insert"])
+		key = key:gsub("MOUSEWHEELDOWN", L["Mouse Wheel Down"])
+		key = key:gsub("MOUSEWHEELUP", L["Mouse Wheel Up"])
+		key = key:gsub("NUMLOCK", L["Num Lock"])
+		key = key:gsub("PAGEDOWN", L["Page Down"])
+		key = key:gsub("PAGEUP", L["Page Up"])
+		key = key:gsub("SCROLLLOCK", L["Scroll Lock"])
+		key = key:gsub("SPACEBAR", L["Spacebar"])
+		key = key:gsub("TAB", L["Tab"])
+
+		key = key:gsub("DOWNARROW", L["Down Arrow"])
+		key = key:gsub("LEFTARROW", L["Left Arrow"])
+		key = key:gsub("RIGHTARROW", L["Right Arrow"])
+		key = key:gsub("UPARROW", L["Up Arrow"])
+
+		return key
+	end
+end
 
 
 -- ActionButton Template
@@ -90,6 +136,15 @@ ActionButton.PostUpdate = function(self)
 	self:UpdateMouseOver()
 end 
 
+ActionButton.UpdateBinding = function(self)
+	local Keybind = self.Keybind
+	if Keybind then 
+		local key = self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton")
+		Keybind:SetText(shortenKeybind(key) or "")
+	end 
+end
+
+
 -- Todo: make some or most of these layers baseline, 
 -- they are required to properly use the button after all.
 ActionButton.PostCreate = function(self, ...)
@@ -137,17 +192,28 @@ ActionButton.PostCreate = function(self, ...)
 	self.Flash:SetDrawLayer("ARTWORK", 2)
 	self.Flash:SetSize(self.Icon:GetSize())
 	self.Flash:ClearAllPoints()
-	self.Flash:SetAllPoints(icon)
+	self.Flash:SetAllPoints(self.Icon)
 	self.Flash:SetMask(getPath("minimap_mask_circle"))
 
 	-- mask textures?
-	-- self.Cooldown
-	-- self.ChargeCooldown
+	self.Cooldown:ClearAllPoints()
+	self.Cooldown:SetAllPoints(self.Icon)
+	self.Cooldown:SetSwipeTexture(getPath("minimap_mask_circle"))
+	self.Cooldown:SetSwipeColor(0, 0, 0, .75)
+	self.Cooldown:SetBlingTexture(getPath("blank"), 0, 0, 0, 0) 
+	self.Cooldown:SetDrawBling(true)
+
+	self.ChargeCooldown:ClearAllPoints()
+	self.ChargeCooldown:SetAllPoints(self.Icon)
+	self.ChargeCooldown:SetSwipeTexture(getPath("blank"), 0, 0, 0, 0)
+	self.ChargeCooldown:SetSwipeColor(0, 0, 0, 0)
+	self.ChargeCooldown:SetDrawSwipe(false)
+	self.ChargeCooldown:SetBlingTexture(getPath("blank"), 0, 0, 0, 0) 
+	self.ChargeCooldown:SetDrawBling(false)
 
 	self.CooldownCount:ClearAllPoints()
 	self.CooldownCount:SetPoint("CENTER", 1, 0)
-	self.CooldownCount:SetFontObject(fontObject)
-	self.CooldownCount:SetFont(fontObject:GetFont(), fontSize + 4, fontStyle) 
+	self.CooldownCount:SetFontObject(AzeriteFont16_Outline)
 	self.CooldownCount:SetJustifyH("CENTER")
 	self.CooldownCount:SetJustifyV("MIDDLE")
 	self.CooldownCount:SetShadowOffset(0, 0)
@@ -156,8 +222,7 @@ ActionButton.PostCreate = function(self, ...)
 
 	self.Count:ClearAllPoints()
 	self.Count:SetPoint("BOTTOMRIGHT", -2, 1)
-	self.Count:SetFontObject(fontObject)
-	self.Count:SetFont(fontObject:GetFont(), fontSize + 4, fontStyle) 
+	self.Count:SetFontObject(AzeriteFont15_Outline)
 	self.Count:SetJustifyH("CENTER")
 	self.Count:SetJustifyV("BOTTOM")
 	self.Count:SetShadowOffset(0, 0)
@@ -166,8 +231,7 @@ ActionButton.PostCreate = function(self, ...)
 
 	self.Keybind:ClearAllPoints()
 	self.Keybind:SetPoint("TOPRIGHT", -2, -1)
-	self.Keybind:SetFontObject(fontObject)
-	self.Keybind:SetFont(fontObject:GetFont(), fontSize - 2, fontStyle) 
+	self.Keybind:SetFontObject(AzeriteFont12_Outline)
 	self.Keybind:SetJustifyH("CENTER")
 	self.Keybind:SetJustifyV("BOTTOM")
 	self.Keybind:SetShadowOffset(0, 0)

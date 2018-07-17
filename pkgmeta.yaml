@@ -4,6 +4,10 @@ enable-nolib-creation: no
 move-folders:
     AzeriteUI/AzeriteUI: AzeriteUI
 
+manual-changelog:
+    filename: CHANGELOG.md
+    markup-type: markdown
+
 license-output: LICENSE.txt
 
 ignore:

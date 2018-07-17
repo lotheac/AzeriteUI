@@ -62,6 +62,7 @@ local UpdateValue = function(element, minimapZoneName, pvpType)
 	end
 	if (element:IsObjectType("FontString")) then 
 		local r, g, b
+		local a = element:GetAlpha() or 1
 		if (element.colorPvP and pvpType) then 
 			local color = (element.colors or Colors).zone[pvpType]
 			if color then 
@@ -70,9 +71,10 @@ local UpdateValue = function(element, minimapZoneName, pvpType)
 		elseif element.colorDifficulty then 
 		end 
 		if (r and g and b) then 
-			element:SetTextColor(r, g, b)
+			element:SetTextColor(r, g, b, a)
 		else 
-			element:SetTextColor(unpack((element.colors or Colors).normal))
+			r, g, b = unpack((element.colors or Colors).normal)
+			element:SetTextColor(r, g, b, a)
 		end 
 		element:SetText(minimapZoneName)
 	end 
@@ -132,5 +134,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("Zone", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("Zone", Enable, Disable, Proxy, 3)
 end 
