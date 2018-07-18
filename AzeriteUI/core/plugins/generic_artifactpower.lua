@@ -58,7 +58,7 @@ local UpdateValue = function(element, min, max)
 
 	local percent = value.Percent
 	if percent then 
-		percent:SetFormattedText("%d", min/max*100)
+		percent:SetFormattedText("%d%%", min/max*100)
 	end 
 
 	if element.colorValue then 
@@ -69,7 +69,6 @@ local UpdateValue = function(element, min, max)
 			percent:SetTextColor(color[1], color[2], color[3])
 		end 
 	end 
-
 end 
 
 local Update = function(self, event, ...)
@@ -142,5 +141,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 4)
 end 

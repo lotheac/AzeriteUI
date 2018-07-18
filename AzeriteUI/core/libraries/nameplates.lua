@@ -549,6 +549,7 @@ NamePlate.UpdateLevel = function(self)
 end
 
 NamePlate.UpdateColor = function(self)
+	do return end
 	local unit = self.unit
 	if not UnitExists(unit) then
 		return
@@ -954,10 +955,12 @@ NamePlate.OnShow = function(self)
 	if self.Cast then 
 		self.Cast:Hide()
 	end 
+	--[[
+	]]
 
 	self:SetAlpha(0) -- set the actual alpha to 0
 	self.currentAlpha = 0 -- update stored alpha value
-	self:UpdateAll() -- update all elements while it's still transparent
+	--self:UpdateAll() -- update all elements while it's still transparent
 	self:Show() -- make the fully transparent frame visible
 
 	-- this will trigger the fadein 
@@ -966,6 +969,11 @@ NamePlate.OnShow = function(self)
 	-- must be called after the plate has been added to visiblePlates
 	self:UpdateFrameLevel() 
 
+	for element in pairs(elements) do
+		self:EnableElement(element, unit)
+	end
+	self:UpdateAllElements()
+
 	if (self.PostUpdate) then 
 		self:PostUpdate()
 	end 
@@ -973,6 +981,10 @@ end
 
 NamePlate.OnHide = function(self)
 	visiblePlates[self] = false -- this will trigger the fadeout and hiding
+
+	for element in pairs(elements) do
+		self:DisableElement(element, unit)
+	end
 end
 
 NamePlate.HandleBaseFrame = function(self, baseFrame)
@@ -1003,6 +1015,21 @@ NamePlate.CreateSizer = function(self, baseFrame)
 		plate:Show()
 	end)
 end
+
+local OnNamePlateEvent = function(frame, event, ...)
+	if (frame:IsVisible() and callbacks[frame] and callbacks[frame][event]) then 
+		local events = callbacks[frame][event]
+		local isUnitEvent = unitEvents[event]
+		for i = 1, #events do
+			if isUnitEvent then 
+				events[i](frame, event, ...)
+			else 
+				events[i](frame, event, frame.unit, ...)
+			end 
+		end
+	end 
+end
+
 
 NamePlate.RegisterEvent = function(self, event, func, unitless)
 	if (frequentUpdateFrames[self] and event ~= "UNIT_PORTRAIT_UPDATE" and event ~= "UNIT_MODEL_CHANGED") then 
@@ -1092,6 +1119,28 @@ NamePlate.UpdateAllElements = function(self, event, ...)
 	end
 end
 
+NamePlate.DisableAllElements = function(self, event, ...)
+	if (not UnitExists(unit)) then 
+		return 
+	end
+	if (self.PreUpdate) then
+		self:PreUpdate(event, unit, ...)
+	end
+	if (frameElements[self]) then
+		for element in pairs(frameElementsEnabled[self]) do
+			-- Will run the registered Update function for the element, 
+			-- which isually is the "Proxy" method in my elements. 
+			-- We cannot direcly access the ForceUpdate method, 
+			-- as that is meant for in-module updates to that unique
+			-- instance of the element, and doesn't exist on the template element itself. 
+			elements[element].Update(self, "Forced", self.unit)
+		end
+	end
+	if (self.PostUpdate) then
+		self:PostUpdate(event, unit, ...)
+	end
+end
+
 NamePlate.EnableElement = function(self, element)
 	if (not frameElements[self]) then
 		frameElements[self] = {}
@@ -1143,7 +1192,7 @@ NamePlate.DisableElement = function(self, element)
 	
 	frameElementsEnabled[self][element] = nil
 	
-	if frequentUpdates[self][element] then
+	if (frequentUpdates[self] and frequentUpdates[self][element]) then
 		-- remove the element's frequent update entry
 		frequentUpdates[self][element].elapsed = nil
 		frequentUpdates[self][element].hz = nil
@@ -1173,6 +1222,15 @@ NamePlate.DisableElement = function(self, element)
 	end
 end
 
+NamePlate.EnableFrequentUpdates = function(self, element, frequency)
+	if (not frequentUpdates[self]) then
+		frequentUpdates[self] = {}
+	end
+	frequentUpdates[self][element] = { elapsed = 0, hz = tonumber(frequency) or .5 }
+	--if (not LibUnitFrame:GetScript("OnUpdate")) then
+	--	LibUnitFrame:SetScript("OnUpdate", OnUpdate)
+	--end
+end
 
 -- This is where a name plate is first created, 
 -- but it hasn't been assigned a unit (Legion) or shown yet.
@@ -1202,6 +1260,8 @@ LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
 	end
 
 	allPlates[baseFrame] = plate
+
+	plate:SetScript("OnEvent", OnNamePlateEvent)
 
 	self:ForAllEmbeds("PostCreateNamePlate", plate, baseFrame)
 
@@ -1322,6 +1382,7 @@ LibNamePlate.OnEvent = function(self, event, ...)
 		if plate then
 			plate.unit = unit
 			plate:OnShow(unit)
+
 		end
 
 	-- This is called when Legion plates are hidden
@@ -1778,8 +1839,22 @@ end
 LibNamePlate.OnUpdate = function(self, elapsed)
 	-- Update any running castbars, before we throttle.
 	-- We need to do this on every update to make sure the values are correct.
-	for owner, castBar in pairs(castBarPool) do
-		self:UpdateCastBar(castBar, owner.unit, castData[castBar], elapsed)
+	--for owner, castBar in pairs(castBarPool) do
+	--	self:UpdateCastBar(castBar, owner.unit, castData[castBar], elapsed)
+	--end
+
+	for frame, frequentElements in pairs(frequentUpdates) do
+		for element, frequency in pairs(frequentElements) do
+			if frequency.hz then
+				frequency.elapsed = frequency.elapsed + elapsed
+				if (frequency.elapsed >= frequency.hz) then
+					elements[element].Update(frame, "FrequentUpdate", frame.unit, elapsed) 
+					frequency.elapsed = 0
+				end
+			else
+				elements[element].Update(frame, "FrequentUpdate", frame.unit)
+			end
+		end
 	end
 
 	-- Throttle the updates, to increase the performance. 
@@ -1791,7 +1866,7 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 	for plate, baseFrame in pairs(visiblePlates) do
 		if baseFrame then
 			plate:UpdateAlpha()
-			plate:UpdateHealth()
+			--plate:UpdateHealth()
 		else
 			plate.targetAlpha = 0
 		end
@@ -1856,12 +1931,12 @@ LibNamePlate.Enable = function(self)
 
 	-- Updates
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
-	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
-	self:RegisterEvent("RAID_TARGET_UPDATE", "OnEvent")
-	self:RegisterEvent("UNIT_AURA", "OnEvent")
-	self:RegisterEvent("UNIT_FACTION", "OnEvent")
-	self:RegisterEvent("UNIT_LEVEL", "OnEvent")
-	self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", "OnEvent")
+	--self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
+	--self:RegisterEvent("RAID_TARGET_UPDATE", "OnEvent")
+	--self:RegisterEvent("UNIT_AURA", "OnEvent")
+	--self:RegisterEvent("UNIT_FACTION", "OnEvent")
+	--self:RegisterEvent("UNIT_LEVEL", "OnEvent")
+	--self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", "OnEvent")
 
 	-- NamePlate Update Cycles
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
@@ -1879,17 +1954,17 @@ LibNamePlate.Enable = function(self)
 	--self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
 
 	-- Castbars
-	self:RegisterEvent("UNIT_SPELLCAST_START", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_FAILED", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_FAILED_QUIET", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_STOP", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_DELAYED", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", "OnSpellCast")
-	self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_START", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_FAILED", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_FAILED_QUIET", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_STOP", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_DELAYED", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", "OnSpellCast")
+	--self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP", "OnSpellCast")
 
 	self.enabled = true
 end 

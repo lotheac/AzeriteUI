@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 22)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 23)
 if (not LibUnitFrame) then	
 	return
 end
@@ -471,7 +471,7 @@ UnitFrame.DisableElement = function(self, element)
 	
 	frameElementsEnabled[self][element] = nil
 	
-	if frequentUpdates[self][element] then
+	if (frequentUpdates[self] and frequentUpdates[self][element]) then
 		-- remove the element's frequent update entry
 		frequentUpdates[self][element].elapsed = nil
 		frequentUpdates[self][element].hz = nil

@@ -13,6 +13,7 @@ local _G = _G
 local date = date
 local math_floor = math.floor
 local math_pi = math.pi
+local select = select
 local string_format = string.format
 local string_gsub = string.gsub
 local string_match = string.match
@@ -22,10 +23,28 @@ local unpack = unpack
 
 -- WoW API
 local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
+local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
+local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
 local GetFramerate = _G.GetFramerate
 local GetNetStats = _G.GetNetStats
+local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
 local GetServerTime = _G.GetServerTime
+local IsXPUserDisabled = _G.IsXPUserDisabled
 local ToggleCalendar = _G.ToggleCalendar
+local UnitLevel = _G.UnitLevel
+local UnitRace = _G.UnitRace
+
+
+-- Pandaren can get 300% rested bonus
+local maxRested = select(2, UnitRace("player")) == "Pandaren" and 3 or 1.5
+
+-- Various string formatting for our tooltips and bars
+local shortXPString = "%s%%"
+local longXPString = "%s / %s"
+local fullXPString = "%s / %s (%s)"
+local restedString = " (%s%% %s)"
+local shortLevelString = "%s %d"
+
 
 -- Default settings
 -- Changing these does NOT change in-game settings
@@ -104,6 +123,15 @@ if (gameLocale == "zhCN") then
 	end
 end 
 
+-- Figure out if the player has a XP bar
+local PlayerHasXP = function()
+	local playerLevel = UnitLevel("player")
+	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
+	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
+	local hasXP = (not IsXPUserDisabled()) and (playerLevel < playerMax) or (playerLevel < expacMax) 
+	return hasXP
+end
+
 
 -- Callbacks
 ----------------------------------------------------
@@ -138,6 +166,7 @@ local Performance_UpdateTooltip = function(self)
 	local rg, gg, bg = unpack(Colors.quest.green)
 
 	tooltip:SetDefaultAnchor(self)
+	tooltip:SetMaximumWidth(330)
 	tooltip:AddLine(L["Network Stats"], rt, gt, bt)
 	tooltip:AddLine(" ")
 	tooltip:AddDoubleLine(L["World latency:"], ("%d|cff888888%s|r"):format(math_floor(latencyWorld), MILLISECONDS_ABBR), rh, gh, bh, r, g, b)
@@ -158,83 +187,97 @@ local Performance_OnLeave = function(self)
 	self.UpdateTooltip = nil
 end 
 
--- Pandaren can get 300% rested bonus
-local maxRested = select(2, UnitRace("player")) == "Pandaren" and 3 or 1.5
-
--- Various string formatting for our tooltips and bars
-local shortXPString = "%s%%"
-local longXPString = "%s / %s"
-local fullXPString = "%s / %s - %s%%"
-local restedString = " (%s%% %s)"
-local shortLevelString = "%s %d"
-
--- Font settings
-local fontObject = GameFontNormal
-local fontStyle = "OUTLINE"
-local fontSize = 14
-
+-- This is the XP and AP tooltip (and rep/honor later on) 
 local Toggle_UpdateTooltip = function(self)
+
 	local tooltip = Minimap:GetMinimapTooltip()
+	local hasXP = PlayerHasXP()
+	local hasAP = FindActiveAzeriteItem()
 
 	local NC = "|r"
 	local rt, gt, bt = unpack(Colors.title)
 	local r, g, b = unpack(Colors.normal)
 	local rh, gh, bh = unpack(Colors.highlight)
+	local rgg, ggg, bgg = unpack(Colors.quest.gray)
 	local rg, gg, bg = unpack(Colors.quest.green)
 	local rr, gr, br = unpack(Colors.quest.red)
 	local green = Colors.quest.green.colorCode
 	local normal = Colors.normal.colorCode
+	local highlight = Colors.highlight.colorCode
 
-	local resting = IsResting()
-	local restState, restedName, mult = GetRestState()
-	local restedLeft, restedTimeLeft = GetXPExhaustion(), GetTimeToWellRested()
-	local min, max = UnitXP("player"), UnitXPMax("player")
+	local resting, restState, restedName, mult
+	local restedLeft, restedTimeLeft
 
-	tooltip:SetDefaultAnchor(self)
-	--tooltip:SetMaximumWidth(280)
+	-- XP tooltip
+	-- Currently more or less a clone of the blizzard tip, we should improve!
+	if hasXP then 
+		resting = IsResting()
+		restState, restedName, mult = GetRestState()
+		restedLeft, restedTimeLeft = GetXPExhaustion(), GetTimeToWellRested()
+		
+		local min, max = UnitXP("player"), UnitXPMax("player")
 
-	local rh, gh, bh = unpack(Colors.highlight)
+		tooltip:SetDefaultAnchor(self)
+		tooltip:SetMaximumWidth(330)
+		tooltip:AddDoubleLine(POWER_TYPE_EXPERIENCE, UnitLevel("player"), rt, gt, bt, rt, gt, bt)
+		tooltip:AddDoubleLine(L["Current XP: "], fullXPString:format(normal..short(min)..NC, normal..short(max)..NC, highlight..math_floor(min/max*100).."%"..NC), rh, gh, bh, rgg, ggg, bgg)
 
-	-- use XP as the title
-	tooltip:AddLine(shortLevelString:format(LEVEL, UnitLevel("player")), rt, gt, bt)
-	tooltip:AddLine(" ")
-	tooltip:AddDoubleLine(L["Current XP: "], longXPString:format(normal..short(min)..NC, normal..short(max)..NC), rh, gh, bh, rh, gh, bh)
+		-- add rested bonus if it exists
+		if (restedLeft and (restedLeft > 0)) then
+			tooltip:AddDoubleLine(L["Rested Bonus: "], fullXPString:format(normal..short(restedLeft)..NC, normal..short(max * maxRested)..NC, highlight..math_floor(restedLeft/(max * maxRested)*100).."%"..NC), rh, gh, bh, rgg, ggg, bgg)
+		end
+		
+	end 
 
-	-- add rested bonus if it exists
-	if (restedLeft and (restedLeft > 0)) then
-		tooltip:AddDoubleLine(L["Rested Bonus: "], longXPString:format(normal..short(restedLeft)..NC, normal..short(max * maxRested)..NC), rh, gh, bh, rh, gh, bh)
-	end
-	
-	if (restState == 1) then
-		tooltip:AddLine(" ")
-		tooltip:AddLine(L["Rested"], rh, gh, bh)
-		tooltip:AddLine(L["%s of normal experience gained from monsters."]:format(shortXPString:format((mult or 1)*100)), rg, gg, bg)
-		if resting and restedTimeLeft and restedTimeLeft > 0 then
+	-- New BfA Artifact Power tooltip!
+	if hasAP then 
+		if hasXP then 
 			tooltip:AddLine(" ")
-			tooltip:AddLine(L["Resting"], rh, gh, bh)
-			if restedTimeLeft > hour*2 then
-				tooltip:AddLine(L["You must rest for %s additional hours to become fully rested."]:format(highlight..math_floor(restedTimeLeft/hour)..NC), r, g, b)
+		end 
+
+		local min, max = GetAzeriteItemXPInfo(hasAP)
+		local level = GetPowerLevel(hasAP) 
+
+		tooltip:AddDoubleLine(ARTIFACT_POWER, level, rt, gt, bt, rt, gt, bt)
+		tooltip:AddDoubleLine(L["Current Artifact Power: "], fullXPString:format(normal..short(min)..NC, normal..short(max)..NC, highlight..math_floor(min/max*100).."%"..NC), rh, gh, bh, rgg, ggg, bgg)
+	end 
+
+	if hasXP then 
+		if (restState == 1) then
+			if resting and restedTimeLeft and restedTimeLeft > 0 then
+				tooltip:AddLine(" ")
+				--tooltip:AddLine(L["Resting"], rh, gh, bh)
+				if restedTimeLeft > hour*2 then
+					tooltip:AddLine(L["You must rest for %s additional hours to become fully rested."]:format(highlight..math_floor(restedTimeLeft/hour)..NC), r, g, b, true)
+				else
+					tooltip:AddLine(L["You must rest for %s additional minutes to become fully rested."]:format(highlight..math_floor(restedTimeLeft/minute)..NC), r, g, b, true)
+				end
 			else
-				tooltip:AddLine(L["You must rest for %s additional minutes to become fully rested."]:format(highlight..math_floor(restedTimeLeft/minute)..NC), r, g, b)
+				tooltip:AddLine(" ")
+				--tooltip:AddLine(L["Rested"], rh, gh, bh)
+				tooltip:AddLine(L["%s of normal experience gained from monsters."]:format(shortXPString:format((mult or 1)*100)), rg, gg, bg, true)
+			end
+		elseif (restState >= 2) then
+			if not(restedTimeLeft and restedTimeLeft > 0) then 
+				tooltip:AddLine(" ")
+				tooltip:AddLine(L["You should rest at an Inn."], rr, gr, br)
+			else
+				-- No point telling people there's nothing to tell them, is there?
+				--tooltip:AddLine(" ")
+				--tooltip:AddLine(L["Normal"], rh, gh, bh)
+				--tooltip:AddLine(L["%s of normal experience gained from monsters."]:format(shortXPString:format((mult or 1)*100)), rg, gg, bg, true)
 			end
 		end
-	elseif (restState >= 2) then
+	end 
+
+	-- Only adding the sticky toggle to the toggle button for now, not the frame.
+	if MouseIsOver(self) then 
 		tooltip:AddLine(" ")
-		tooltip:AddLine(L["Normal"], rh, gh, bh)
-		tooltip:AddLine(L["%s of normal experience gained from monsters."]:format(shortXPString:format((mult or 1)*100)), rg, gg, bg)
-
-		if not(restedTimeLeft and restedTimeLeft > 0) then 
-			tooltip:AddLine(" ")
-			tooltip:AddLine(L["You should rest at an Inn."], rr, gr, br)
-		end
-	end
-
-	tooltip:AddLine(" ")
-
-	if Minimap.db.stickyBars then 
-		tooltip:AddLine(L["%s to disable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
-	else 
-		tooltip:AddLine(L["%s to enable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+		if Minimap.db.stickyBars then 
+			tooltip:AddLine(L["%s to disable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+		else 
+			tooltip:AddLine(L["%s to enable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+		end 
 	end 
 
 	tooltip:Show()
@@ -327,8 +370,12 @@ local Toggle_OnLeave = function(self)
 	end 
 end
 
+local RingFrame_UpdateTooltip = function(self)
+	Toggle_UpdateTooltip(self._owner)
+end 
+
 local RingFrame_OnEnter = function(self)
-	self.UpdateTooltip = Toggle_UpdateTooltip
+	self.UpdateTooltip = RingFrame_UpdateTooltip
 	self.isMouseOver = true
 
 	Toggle_UpdateFrame(self._owner)
@@ -376,6 +423,7 @@ local Time_UpdateTooltip = function(self)
 	end 
 	
 	tooltip:SetDefaultAnchor(self)
+	tooltip:SetMaximumWidth(280)
 	tooltip:AddLine(TIMEMANAGER_TOOLTIP_TITLE, rt, gt, bt)
 	tooltip:AddLine(" ")
 	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, ls, lsuffix, Minimap.db.useStandardTime, Minimap.db.showSeconds)), rh, gh, bh, r, g, b)
@@ -462,6 +510,62 @@ local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 		description:SetFormattedText("to level %s", nextLevel)
 	end 
 end
+
+local AP_OverrideValue = function(element, min, max)
+	print(element, min, max, restedLeft, restedTimeLeft)
+	local value = element.Value or element:IsObjectType("FontString") and element 
+	if value.showDeficit then 
+		value:SetFormattedText(short(max - min))
+	else 
+		value:SetFormattedText(short(min))
+	end
+	local percent = value.Percent
+	if percent then 
+		-- removing the percentage sign
+		percent:SetFormattedText("%d", min/max*100)
+	end 
+
+	if element.colorValue then 
+		local color = element._owner.colors.artifact
+		value:SetTextColor(color[1], color[2], color[3])
+
+		if percent then 
+			percent:SetTextColor(color[1], color[2], color[3])
+		end 
+	end 
+end 
+
+local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
+	local value = element.Value or element:IsObjectType("FontString") and element 
+	if value.showDeficit then 
+		value:SetFormattedText(short(max - min))
+	else 
+		value:SetFormattedText(short(min))
+	end
+
+	local percent = value.Percent
+	if percent then 
+		-- removing the percentage sign
+		percent:SetFormattedText("%d", min/max*100)
+	end 
+
+	if element.colorValue then 
+		local color
+		if restedLeft then 
+			local colors = element._owner.colors
+			color = colors.restedValue or colors.rested or colors.xpValue or colors.xp
+		else 
+			local colors = element._owner.colors
+			color = colors.xpValue or colors.xp
+		end 
+		value:SetTextColor(color[1], color[2], color[3])
+
+		if percent then 
+			percent:SetTextColor(color[1], color[2], color[3])
+		end 
+	end 
+
+end 
 
 Minimap.SetUpMinimap = function(self)
 
@@ -716,6 +820,7 @@ Minimap.SetUpMinimap = function(self)
 	outerRingValue:SetShadowColor(0, 0, 0, 0)
 	outerRingValue.showDeficit = true -- show what's missing 
 	outerRing.Value = outerRingValue
+	outerRing.OverrideValue = XP_OverrideValue
 
 	-- outer ring value description text
 	local outerRingValueDescription = outerRing:CreateFontString()
@@ -866,18 +971,16 @@ Minimap.OnEvent = function(self, event, ...)
 		self:UpdateMinimapMask()
 		self:UpdateMinimapSize()
 		self:UpdateInformationDisplay()
+		self:UpdateBars()
 	elseif (event == "PLAYER_TARGET_CHANGED") then 
 		self:UpdateInformationDisplay()
 	end 
 end 
 
+
 Minimap.UpdateBars = function(self, event, ...)
 
-
-	local playerLevel = UnitLevel("player")
-	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
-	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
-	local hasXP = (not IsXPUserDisabled()) and (playerLevel < playerMax) or (playerLevel < expacMax) 
+	local hasXP = PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
 
 	--Handler.Honor = outerRing
@@ -901,6 +1004,7 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
 			Handler.XP.Value:SetFontObject(AzeriteFont15_Outline) 
 			Handler.XP.Value.Description:Hide()
+			Handler.XP.OverrideValue = XP_OverrideValue
 			--Handler.XP.Value.Percent
 		
 			--Handler.ArtifactPower.Value
@@ -923,7 +1027,11 @@ Minimap.UpdateBars = function(self, event, ...)
 			if hasXP then 
 				self:DisableMinimapElement("ArtifactPower")
 				self:EnableMinimapElement("XP")
+				Handler.XP.OverrideValue = XP_OverrideValue
+
 			elseif hasAP then 
+				Handler.XP.OverrideValue = AP_OverrideValue
+
 				self:DisableMinimapElement("XP")
 				self:EnableMinimapElement("ArtifactPower")
 			end 
@@ -947,15 +1055,11 @@ Minimap.OnInit = function(self)
 end 
 
 Minimap.OnEnable = function(self)
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")	
-	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
+	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent") -- don't we always need this? :)
+	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent") -- changing alpha on this
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent") -- size and mask must be updated after this
-
-	-- Bar count updates
-	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "UpdateBars")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateBars")	
 
 	-- Enable all minimap elements
 	self:EnableAllElements()
-
 end 

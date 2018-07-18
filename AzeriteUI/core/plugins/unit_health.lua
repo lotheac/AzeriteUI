@@ -110,12 +110,20 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 	elseif (element.colorClass and UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
 		r, g, b = unpack(self.colors.class[class])
-	elseif (element.colorReaction and UnitReaction(unit, "player")) then
-		r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
-	else
-		r, g, b = unpack(self.colors.health)
+	else 
+		local threat = UnitThreatSituation("player", unit)
+		if (element.colorThreat and threat and (threat > 0)) then
+			r, g, b = unpack(self.colors.threat[threat])
+		elseif (element.colorReaction and UnitReaction(unit, "player")) then
+			r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
+		else
+			r, g, b = unpack(self.colors.health)
+		end
 	end
 	element:SetStatusBarColor(r, g, b)
+	if element.PostUpdateColor then 
+		element:PostUpdateColor(unit, min, max, disconnected, dead, tapped)
+	end 
 end
 
 local Update = function(self, event, unit)
@@ -155,6 +163,7 @@ end
 local Enable = function(self)
 	local element = self.Health
 	if element then
+
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 
@@ -187,5 +196,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 6)
 end 

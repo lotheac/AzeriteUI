@@ -49,9 +49,6 @@ end
 
 
 local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
-	if element.OverrideValue then
-		return element:OverrideValue(unit, min, max)
-	end
 
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value.showDeficit then 
@@ -62,7 +59,7 @@ local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 
 	local percent = value.Percent
 	if percent then 
-		percent:SetFormattedText("%d", min/max*100)
+		percent:SetFormattedText("%d%%", min/max*100)
 	end 
 
 	if element.colorValue then 
@@ -92,7 +89,8 @@ local Update = function(self, event, ...)
 	local resting = IsResting()
 	local restState, restedName, mult = GetRestState()
 	local restedLeft, restedTimeLeft = GetXPExhaustion(), GetTimeToWellRested()
-	local min, max = UnitXP("player"), UnitXPMax("player")
+	local min = UnitXP("player") or 0 
+	local max = UnitXPMax("player") or 0
 
 	if element:IsObjectType("StatusBar") then 
 		element:SetMinMaxValues(0, max)
@@ -105,7 +103,7 @@ local Update = function(self, event, ...)
 	end 
 
 	if element.Value then 
-		element:UpdateValue(min, max, restedLeft, restedTimeLeft)
+		(element.OverrideValue or element.UpdateValue) (element, min, max, restedLeft, restedTimeLeft)
 	end 
 
 	if element.Rested then
@@ -125,7 +123,6 @@ local Update = function(self, event, ...)
 	if element.PostUpdate then 
 		element:PostUpdate(min, max, restedLeft, restedTimeLeft)
 	end 
-	
 end 
 
 local Proxy = function(self, ...)
@@ -174,5 +171,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 6)
 end 

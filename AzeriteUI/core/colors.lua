@@ -103,23 +103,25 @@ Colors.artifact = prepare(229/255, 204/255, 127/255) -- artifact or azerite powe
 -- Original colors at https://wow.gamepedia.com/Class#Class_colors
 Colors.class = {}
 Colors.class.DEATHKNIGHT = prepare(176/255, 31/255, 79/255)
---Colors.class.DEATHKNIGHT = prepare(255/255, 190/255, 12/255)
-Colors.class.DEMONHUNTER = prepare(149/255, 221/255, 18/255) 
---Colors.class.DRUID = prepare(255/255, 125/255, 10/255)
+Colors.class.DEMONHUNTER = prepare(163/255, 48/255, 201/255)
 Colors.class.DRUID = prepare(191/255, 93/255, 7/255)
 Colors.class.HUNTER = prepare(191/255, 232/255, 115/255) 
 Colors.class.MAGE = prepare(105/255, 204/255, 240/255)
 Colors.class.MONK = prepare(0/255, 255/255, 150/255)
---Colors.class.PALADIN = prepare(211/255, 156/255, 42/255) 
-Colors.class.PALADIN = prepare(254/255, 245/255, 145/255) 
---Colors.class.PRIEST = prepare(220/255, 235/255, 250/255) 
-Colors.class.PRIEST = prepare(176/255, 200/255, 225/255) 
-Colors.class.ROGUE = prepare(105/255, 73/255, 175/255) 
+Colors.class.PALADIN = prepare(245/255, 140/255, 186/255)
+Colors.class.PRIEST = prepare(176/255, 200/255, 225/255)
+Colors.class.ROGUE = prepare( 255/255, 225/255, 95/255 ) 
 Colors.class.SHAMAN = prepare(255/255, 190/255, 12/255) 
---Colors.class.WARLOCK = prepare(227/255, 71/255, 226/255) 
 Colors.class.WARLOCK = prepare(148/255, 130/255, 201/255) 
 Colors.class.WARRIOR = prepare(229/255, 156/255, 110/255) 
 Colors.class.UNKNOWN = prepare(195/255, 202/255, 217/255)
+
+-- Stuff we never used
+--Colors.class.PRIEST = prepare(220/255, 235/255, 250/255) 
+--Colors.class.DEMONHUNTER = prepare(149/255, 221/255, 18/255) -- AzeriteUI green
+--Colors.class.PALADIN = prepare(211/255, 156/255, 42/255)  -- AzeriteUI gold (looks like... ewww not gold)
+--Colors.class.PALADIN = prepare(254/255, 245/255, 145/255)  -- AzeriteUI yellow
+--Colors.class.ROGUE = prepare(105/255, 73/255, 175/255)  -- AzeriteUI purple
 
 -- debuffs
 Colors.debuff = {}

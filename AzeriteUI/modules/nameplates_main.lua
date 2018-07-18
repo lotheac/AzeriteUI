@@ -276,6 +276,13 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	health:SetSparkMap(map.plate)
 	health:SetAlpha(.85)
 	health:Hide()
+	health.colorTapped = true
+	health.colorDisconnected = true
+	health.colorClass = true
+	health.colorReaction = true
+	health.colorHealth = true
+	health.colorThreat = true
+	health.frequent = 1/120
 	plate.Health = health
 
 	local healthBg = health:CreateTexture()
@@ -307,6 +314,39 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	--healthGlow:SetTexture(getPath("nameplate_solid"))
 	--healthGlow:SetVertexColor(0, 0, 0, .75)
 
+	-- Health bar
+	local cast = health:CreateStatusBar()
+	cast:SetSize(80,10)
+	cast:SetPoint("TOP", health, "BOTTOM", 0, -6)
+	cast:SetStatusBarTexture(getPath("nameplate_bar"))
+	cast:SetStatusBarColor(70/255, 255/255, 131/255, .69) 
+	cast:SetOrientation("LEFT")
+	cast:SetSmoothingFrequency(.1)
+	cast:SetSparkMap(map.plate)
+	plate.Cast = cast
+
+	local castBg = cast:CreateTexture()
+	castBg:SetDrawLayer("BACKGROUND", 0)
+	castBg:SetSize(80,10)
+	castBg:SetPoint("CENTER", 0, 0)
+	castBg:SetTexture(getPath("nameplate_bar"))
+	castBg:SetVertexColor(.15, .15, .15, .82)
+
+	local castBorder = cast:CreateTexture()
+	castBorder:SetDrawLayer("BACKGROUND", -1)
+	castBorder:SetSize(84,14)
+	castBorder:SetPoint("CENTER", 0, 0)
+	castBorder:SetTexture(getPath("nameplate_solid"))
+	castBorder:SetVertexColor(0, 0, 0, .82)
+
+	local castGlow = cast:CreateTexture()
+	castGlow:SetDrawLayer("BACKGROUND", -2)
+	castGlow:SetSize(88,18)
+	castGlow:SetPoint("CENTER", 0, 0)
+	castGlow:SetTexture(getPath("nameplate_solid"))
+	castGlow:SetVertexColor(0, 0, 0, .25)
+
+	
 	do 
 		return 
 	end 

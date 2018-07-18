@@ -364,6 +364,7 @@ local Style = function(self, unit, id, ...)
 	health.colorClass = true
 	health.colorReaction = true
 	health.colorHealth = true
+	health.colorThreat = true
 	health.frequent = 1/120
 	self.Health = health
 
@@ -441,6 +442,9 @@ local Style = function(self, unit, id, ...)
 
 
 	-- Unit Level
+	-----------------------------------------------------------
+
+	-- level text
 	local level = overlay:CreateFontString()
 	level:SetPoint("CENTER", self, "TOPRIGHT", 79, -62)
 	level:SetDrawLayer("BORDER")
@@ -461,6 +465,7 @@ local Style = function(self, unit, id, ...)
 	level.defaultColor = { 251/255, 255/255, 255/255 } 
 	level.alpha = .7
 
+	-- Badge backdrop
 	local levelBadge = overlay:CreateTexture()
 	levelBadge:SetDrawLayer("BACKGROUND")
 	levelBadge:SetPoint("CENTER", portrait, "CENTER", 48,-28)
@@ -469,6 +474,7 @@ local Style = function(self, unit, id, ...)
 	levelBadge:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	level.Badge = levelBadge
 
+	-- Skull texture for bosses, high level and dead units  
 	local levelSkull = overlay:CreateTexture()
 	levelSkull:SetDrawLayer("BORDER")
 	levelSkull:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
@@ -532,6 +538,15 @@ local Style = function(self, unit, id, ...)
 	petByEnemy:SetPoint("TOPRIGHT", 29, 43)
 	petByEnemy:SetVertexColor(227/255, 231/255, 216/255)
 	self.Targeted.PetByEnemy = petByEnemy
+
+
+	-- Auras
+	-----------------------------------------------------------
+
+	local auras = content:CreateFrame("Frame")
+	
+
+	self.Auras = auras
 
 
 	-- Texts
