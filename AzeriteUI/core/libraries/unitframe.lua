@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 25)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 26)
 if (not LibUnitFrame) then	
 	return
 end
@@ -180,9 +180,22 @@ local check = function(value, num, ...)
 end
 
 
+
 -- Library Updates
 --------------------------------------------------------------------------
+
+-- global update limit, no elements can go above this
+local THROTTLE = 1/30 
+
 local OnUpdate = function(self, elapsed)
+
+	-- Throttle the updates, to increase the performance. 
+	self.elapsed = (self.elapsed or 0) + elapsed
+	if (self.elapsed < THROTTLE) then
+		return
+	end
+	local elapsed = self.elapsed
+
 	for frame, frequentElements in pairs(frequentUpdates) do
 		for element, frequency in pairs(frequentElements) do
 			if frequency.hz then
@@ -196,6 +209,8 @@ local OnUpdate = function(self, elapsed)
 			end
 		end
 	end
+
+	self.elapsed = 0
 end
 
 

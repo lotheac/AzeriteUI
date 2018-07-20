@@ -193,6 +193,8 @@ ActionButton.PostCreate = function(self, ...)
 	self.Flash:SetSize(self.Icon:GetSize())
 	self.Flash:ClearAllPoints()
 	self.Flash:SetAllPoints(self.Icon)
+	self.Flash:SetTexture(BLANK_TEXTURE)
+	self.Flash:SetVertexColor(1, 0, 0, .25)
 	self.Flash:SetMask(getPath("minimap_mask_circle"))
 
 	-- mask textures?
@@ -420,36 +422,43 @@ ActionBarMain.SpawnButtons = function(self)
 	hoverFrame:SetPoint("TOPLEFT", hoverButtons[1], "TOPLEFT", 0, 0)
 	hoverFrame:SetPoint("BOTTOMRIGHT", hoverButtons[#hoverButtons], "BOTTOMRIGHT", 0, 0)
 	hoverFrame:SetScript("OnUpdate", function(self, elapsed) 
-		if self:IsMouseOver(0,0,0,0) then
-			if (not self.isMouseOver) then 
-				self.isMouseOver = true
-				self.alpha = 1
-				for id,button in ipairs(hoverButtons) do 
-					button:SetAlpha(self.alpha)
-				end 
-			end
-		elseif (not self:IsMouseOver(0,0,0,0)) then 
+		self.elapsed = (self.elapsed or 0) - elapsed
 
-			if self.isMouseOver then 
-				self.isMouseOver = nil
-				if (not self.fadeOutTime) then 
-					self.fadeOutTime = fadeOutTime
+		if (self.elapsed <= 0) then
+
+			if self:IsMouseOver(0,0,0,0) then
+				if (not self.isMouseOver) then 
+					self.isMouseOver = true
+					self.alpha = 1
+					for id,button in ipairs(hoverButtons) do 
+						button:SetAlpha(self.alpha)
+					end 
+				end
+			elseif (not self:IsMouseOver(0,0,0,0)) then 
+
+				if self.isMouseOver then 
+					self.isMouseOver = nil
+					if (not self.fadeOutTime) then 
+						self.fadeOutTime = fadeOutTime
+					end 
+				end 
+
+				if self.fadeOutTime then 
+					self.fadeOutTime = self.fadeOutTime - elapsed
+					if self.fadeOutTime > 0 then 
+						self.alpha = self.fadeOutTime / fadeOutTime
+					else 
+						self.alpha = 0
+						self.fadeOutTime = nil
+					end 
+
+					for id,button in ipairs(hoverButtons) do 
+						button:SetAlpha(self.alpha)
+					end 
 				end 
 			end 
 
-			if self.fadeOutTime then 
-				self.fadeOutTime = self.fadeOutTime - elapsed
-				if self.fadeOutTime > 0 then 
-					self.alpha = self.fadeOutTime / fadeOutTime
-				else 
-					self.alpha = 0
-					self.fadeOutTime = nil
-				end 
-
-				for id,button in ipairs(hoverButtons) do 
-					button:SetAlpha(self.alpha)
-				end 
-			end 
+			self.elapsed = .05
 		end 
 	end)
 end 

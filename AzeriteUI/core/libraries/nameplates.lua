@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 11)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 12)
 if (not LibNamePlate) then	
 	return
 end
@@ -145,7 +145,7 @@ alphaLevels[4] = alphaLevels[4] or .25 	-- For non-targeted trivial mobs
 alphaLevels[5] = alphaLevels[5] or .15 	-- For non-targeted NPCs 
 
 -- Update and fading frequencies
-local THROTTLE = 1/60
+local THROTTLE = 1/30 -- global update limit, no elements can go above this
 local FADE_IN = 3/4 -- time in seconds to fade in
 local FADE_OUT = 1/20 -- time in seconds to fade out
 
@@ -1843,6 +1843,15 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 	--	self:UpdateCastBar(castBar, owner.unit, castData[castBar], elapsed)
 	--end
 
+	-- Throttle the updates, to increase the performance. 
+	self.elapsed = (self.elapsed or 0) + elapsed
+	if (self.elapsed < THROTTLE) then
+		return
+	end
+
+	-- We need the full value since the last set of updates
+	local elapsed = self.elapsed
+
 	for frame, frequentElements in pairs(frequentUpdates) do
 		for element, frequency in pairs(frequentElements) do
 			if frequency.hz then
@@ -1855,12 +1864,6 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 				elements[element].Update(frame, "FrequentUpdate", frame.unit)
 			end
 		end
-	end
-
-	-- Throttle the updates, to increase the performance. 
-	self.elapsed = (self.elapsed or 0) + elapsed
-	if (self.elapsed < THROTTLE) then
-		return
 	end
 
 	for plate, baseFrame in pairs(visiblePlates) do

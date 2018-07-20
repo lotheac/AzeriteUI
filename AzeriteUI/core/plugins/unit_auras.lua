@@ -150,7 +150,7 @@ local Aura_SetCooldownTimer = function(button, start, duration)
 	end 
 end 
 
-local HZ = 1/30
+local HZ = 1/10
 local Aura_UpdateTimer = function(button, elapsed)
 	if button.timeLeft then
 		button.elapsed = (button.elapsed or 0) + elapsed
@@ -702,5 +702,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 9)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 10)
 end 

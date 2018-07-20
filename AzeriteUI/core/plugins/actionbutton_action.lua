@@ -24,6 +24,7 @@ local HasAction = _G.HasAction
 local IsActionInRange = _G.IsActionInRange
 local IsConsumableAction = _G.IsConsumableAction
 local IsStackableAction = _G.IsStackableAction
+local IsUsableAction = _G.IsUsableAction
 
 -- Blizzard Textures
 local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
@@ -91,76 +92,57 @@ local OnUpdate = function(self, elapsed)
 
 	self.flashTime = (self.flashTime or 0) - elapsed
 	self.rangeTimer = (self.rangeTimer or -1) - elapsed
+	self.cooldownTimer = (self.cooldownTimer or 0) - elapsed
 
-	local Cooldown = self.Cooldown 
-	if Cooldown.active then 
+	-- Cooldown count
+	if (self.cooldownTimer <= 0) then 
+		local Cooldown = self.Cooldown 
+		if Cooldown.active then 
 
-		local start, duration
-		if (Cooldown.currentCooldownType == COOLDOWN_TYPE_NORMAL) then 
-			local action = self:GetAction()
-			start, duration = GetActionCooldown(action)
+			local start, duration
+			if (Cooldown.currentCooldownType == COOLDOWN_TYPE_NORMAL) then 
+				local action = self.action
+				start, duration = GetActionCooldown(action)
 
-		elseif (Cooldown.currentCooldownType == COOLDOWN_TYPE_LOSS_OF_CONTROL) then
-			local action = self:GetAction()
-			start, duration = GetActionLossOfControlCooldown(action)
+			elseif (Cooldown.currentCooldownType == COOLDOWN_TYPE_LOSS_OF_CONTROL) then
+				local action = self.action
+				start, duration = GetActionLossOfControlCooldown(action)
 
+			end 
+
+			if ((start > 0) and (duration > 1.5)) then
+				self.CooldownCount:SetFormattedText(formatCooldownTime(duration - GetTime() + start))
+			else 
+				self.CooldownCount:SetText("")
+			end  
 		end 
 
-		if ((start > 0) and (duration > 1.5)) then
-			self.CooldownCount:SetFormattedText(formatCooldownTime(duration - GetTime() + start))
-		else 
-			self.CooldownCount:SetText("")
-		end  
+		self.cooldownTimer = .1
 	end 
 
-	if (self.rangeTimer <= 0) or (self.flashTime <= 0) then
+	-- Range
+	if (self.rangeTimer <= 0) then
+		local inRange = self:IsInRange()
+		local oldRange = self.outOfRange
+		self.outOfRange = (inRange == false)
+		if oldRange ~= self.outOfRange then
+			self:UpdateUsable()
+		end
+		self.rangeTimer = TOOLTIP_UPDATE_TIME
+	end 
 
-		-- Flashing
-		if (self.flashing == 1) and (self.flashTime <= 0) then
+	-- Flashing
+	if (self.flashTime <= 0) then
+		if (self.flashing == 1) then
 			if self.Flash:IsShown() then
 				self.Flash:Hide()
 			else
 				self.Flash:Show()
 			end
 		end
+		self.flashTime = self.flashTime + ATTACK_BUTTON_FLASH_TIME
+	end 
 
-		-- Range
-		--[[
-		if (self.rangeTimer <= 0) then
-			local inRange = button:IsInRange()
-			local oldRange = button.outOfRange
-			button.outOfRange = (inRange == false)
-			if oldRange ~= button.outOfRange then
-				if button.config.outOfRangeColoring == "button" then
-					UpdateUsable(button)
-				elseif button.config.outOfRangeColoring == "hotkey" then
-					local hotkey = button.HotKey
-					if hotkey:GetText() == RANGE_INDICATOR then
-						if inRange == false then
-							hotkey:Show()
-						else
-							hotkey:Hide()
-						end
-					end
-					if inRange == false then
-						hotkey:SetVertexColor(unpack(button.config.colors.range))
-					else
-						hotkey:SetVertexColor(0.75, 0.75, 0.75)
-					end
-				end
-			end
-		end
-		]]--
-
-		-- Update values
-		if (self.flashTime <= 0) then
-			self.flashTime = self.flashTime + ATTACK_BUTTON_FLASH_TIME
-		end
-
-		if (self.rangeTimer <= 0) then
-			self.rangeTimer = TOOLTIP_UPDATE_TIME
-		end
-	end
 end 
 
 
@@ -168,13 +150,14 @@ end
 ActionButton.UpdateAction = function(self)
 	local Icon = self.Icon
 	if Icon then 
-		local action = self:GetAction()
-		if HasAction(action) then 
+		self.action = self:GetAction()
+		if HasAction(self.action) then 
 			Icon:SetTexture(self:GetActionTexture())
 		else
 			Icon:SetTexture(nil) 
 		end 
 	end 
+	self:Update()
 end 
 
 -- Called when the keybinds are loaded or changed
@@ -228,7 +211,7 @@ ActionButton.UpdateCooldown = function(self)
 	if Cooldown then 
 		local locStart, locDuration = self:GetLossOfControlCooldown()
 		local start, duration, enable, modRate = self:GetCooldown()
-		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self:GetAction())
+		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
 
 		if ((locStart + locDuration) > (start + duration)) then
 
@@ -273,7 +256,7 @@ ActionButton.UpdateCount = function(self)
 	local Count = self.Count
 	if Count then 
 		local count
-		local action = self:GetAction()
+		local action = self.action
 		if HasAction(action) then 
 			if IsConsumableAction(action) or IsStackableAction(action) then
 				local count = GetActionCount(action)
@@ -292,16 +275,53 @@ ActionButton.UpdateCount = function(self)
 	end 
 end 
 
--- Updates the attack skill (red) flashing
-ActionButton.UpdateFlash = function(self) 
+local StartFlash = function(self)
+	self.flashing = 1
+	self.flashTime = 0
+end
+
+local StopFlash = function(self)
+	self.flashing = 0
+	self.Flash:Hide()
+end 
+
+	-- Updates the attack skill (red) flashing
+ActionButton.UpdateFlash = function(self)
+	local Flash = self.Flash
+	if Flash then 
+		local action = self.action
+		if HasAction(action) then 
+			if (IsAttackAction(action) and IsCurrentAction(action)) or IsAutoRepeatAction(action) then
+				StartFlash(self)
+			else
+				StopFlash(self)
+			end
+		end 
+	end 
 end 
 
 -- Called when the usable state of the button changes
 ActionButton.UpdateUsable = function(self) 
+	if self.outOfRange then
+		self.Icon:SetVertexColor(1, .15, .15)
+
+	else
+		local isUsable, notEnoughMana = IsUsableAction(self.action)
+		if isUsable then
+			self.Icon:SetVertexColor(1, 1, 1)
+
+		elseif notEnoughMana then
+			self.Icon:SetVertexColor(.35, .35, 1)
+
+		else
+			self.Icon:SetVertexColor(.4, .4, .4)
+		end
+	end
+
 end 
 
 ActionButton.Update = function(self)
-	self:UpdateAction()
+	--self:UpdateAction() --- loooop!
 	self:UpdateBinding()
 	self:UpdateCount()
 	self:UpdateCooldown()
@@ -327,15 +347,15 @@ ActionButton.GetAction = function(self)
 end
 
 ActionButton.GetActionTexture = function(self) 
-	return GetActionTexture(self:GetAction())
+	return GetActionTexture(self.action)
 end
 
 ActionButton.GetCooldown = function(self) 
-	return GetActionCooldown(self:GetAction()) 
+	return GetActionCooldown(self.action) 
 end
 
 ActionButton.GetLossOfControlCooldown = function(self) 
-	return GetActionLossOfControlCooldown(self:GetAction()) 
+	return GetActionLossOfControlCooldown(self.action) 
 end
 
 ActionButton.GetParent = function(self)
@@ -361,10 +381,25 @@ end
 
 -- Isers
 ----------------------------------------------------
-ActionButton.IsInRange = function(self)
-	return (IsActionInRange(self:GetAction()) ~= 0)
-end 
 
+ActionButton.IsInRange = function(self)
+	local unit = self:GetAttribute("unit")
+	if unit == "player" then
+		unit = nil
+	end
+	local val = self:IsUnitInRange(unit)
+	-- map 1/0 to true false, since the return values are inconsistent between actions and spells
+	if val == 1 then val = true elseif val == 0 then val = false end
+	return val
+end
+
+ActionButton.IsUnitInRange = function(self, unit) 
+	return IsActionInRange(self.action, unit) 
+end
+
+
+ActionButton.IsAttack = function(self)
+end
 
 
 
@@ -376,7 +411,7 @@ local UpdateTooltip = function(self)
 	tooltip:Hide()
 	tooltip:SetDefaultAnchor(self)
 	tooltip:SetMinimumWidth(280)
-	tooltip:SetAction(self:GetAction())
+	tooltip:SetAction(self.action)
 end 
 
 ActionButton.OnEnter = function(self) 
@@ -563,9 +598,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 				local oldpage = self:GetAttribute("actionpage"); 
 				if (oldpage ~= newpage) then
 					self:SetAttribute("actionpage", tonumber(newpage)); 
-					if self:IsShown() then 
-						self:CallMethod("Update"); 
-					end
+					self:CallMethod("UpdateAction"); 
 				end 
 			]], value)
 		end 
@@ -664,18 +697,28 @@ local Update = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
 		self:Update()
 
-	-- can I avoid using this?
+	elseif (event == "PLAYER_ENTER_COMBAT") then
+		--StartFlash(self)
+		self:UpdateFlash()
+
+	elseif (event == "PLAYER_LEAVE_COMBAT") then
+		--StopFlash(self)
+		self:UpdateFlash()
+
 	elseif (event == "ACTIONBAR_PAGE_CHANGED") then
 		self:Update()
 			
 	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
-		if ((arg1 == 0) or (arg1 == tonumber(self:GetAction()))) then
+		if ((arg1 == 0) or (arg1 == tonumber(self.action))) then
 			self:Update()
 		end
 
-	elseif event == "ACTIONBAR_UPDATE_COOLDOWN" then
+	elseif (event == "ACTIONBAR_UPDATE_COOLDOWN") then
 		self:UpdateCooldown()
 		-- update tooltip here
+	
+	elseif (event == "ACTIONBAR_UPDATE_USABLE") then
+		self:UpdateUsable()
 
 	elseif (event == "UPDATE_SHAPESHIFT_FORM") then
 		self:Update()
@@ -700,8 +743,11 @@ end
 local Enable = function(self)
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
+	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
+	self:RegisterEvent("PLAYER_ENTER_COMBAT", Proxy)
+	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
 	self:RegisterEvent("UPDATE_BINDINGS", Proxy)
 	--self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
 	self:RegisterEvent("SPELL_UPDATE_CHARGES", Proxy)
@@ -712,8 +758,11 @@ end
 local Disable = function(self)
 	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
 	self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
+	self:UnregisterEvent("PLAYER_ENTER_COMBAT", Proxy)
+	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
 	self:UnregisterEvent("UPDATE_BINDINGS", Proxy)
 	--self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
 	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Proxy)
