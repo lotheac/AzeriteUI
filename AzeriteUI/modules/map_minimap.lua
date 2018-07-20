@@ -937,7 +937,8 @@ end
 -- Set the size and position 
 Minimap.UpdateMinimapSize = function(self)
 	self:SetMinimapSize(213, 213) 
-	self:SetMinimapPosition("BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -53, 59) 
+	self:SetMinimapPosition("BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -58, 59) 
+	--self:SetMinimapPosition("BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -53, 59) 
 end 
 
 -- Update alpha of information area
@@ -1012,7 +1013,7 @@ Minimap.UpdateBars = function(self, event, ...)
 
 			self:EnableMinimapElement("ArtifactPower")
 			self:EnableMinimapElement("XP")
-			
+
 		-- 1 bar
 		else
 			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-onebar-backdrop"))
@@ -1035,7 +1036,11 @@ Minimap.UpdateBars = function(self, event, ...)
 				self:DisableMinimapElement("XP")
 				self:EnableMinimapElement("ArtifactPower")
 			end 
-		end 
+
+			if (Handler.ArtifactPower:IsShown()) then 
+				Handler.ArtifactPower:Hide()
+			end 
+	end 
 
 		-- Post update the frame, could be sticky
 		Toggle_UpdateFrame(Handler.Toggle)

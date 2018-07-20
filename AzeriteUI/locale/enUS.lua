@@ -66,6 +66,12 @@ L["Enable to show hidden areas|nyou have not yet discovered."] = true
 L["Press %s to copy."] = true
 
 
+-- Config & Micro Menu
+--------------------------------------------
+L["Main Menu"] = true
+L["<Left-click> to toggle menu."] = true
+
+
 -- Keybind Abbreviations
 --------------------------------------------
 L["Alt"] = "A"

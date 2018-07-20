@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 23)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 25)
 if (not LibUnitFrame) then	
 	return
 end
@@ -515,13 +515,14 @@ end
 -- This is shared by all unitframes, unless these methods 
 -- are specifically overwritten by the modules.
 UnitFrame.GetTooltip = function(self)
-	return LibUnitFrame:GetTooltip("CG_UnitFrameTooltip") or LibUnitFrame:CreateTooltip("CG_UnitFrameTooltip")
+	return LibUnitFrame:GetUnitFrameTooltip()
 end 
 
 UnitFrame.OnEnter = function(self)
 	local tooltip = self:GetTooltip()
 	tooltip:Hide()
 	tooltip:SetDefaultAnchor(self)
+	tooltip:SetMinimumWidth(160)
 	tooltip:SetUnit(self.unit)
 end
 

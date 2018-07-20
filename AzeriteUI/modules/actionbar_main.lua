@@ -227,16 +227,16 @@ ActionButton.PostCreate = function(self, ...)
 	self.Count:SetJustifyV("BOTTOM")
 	self.Count:SetShadowOffset(0, 0)
 	self.Count:SetShadowColor(0, 0, 0, 1)
-	self.Count:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3], .85)
+	self.Count:SetTextColor(self.colors.normal[1], self.colors.normal[2], self.colors.normal[3], .85)
 
 	self.Keybind:ClearAllPoints()
-	self.Keybind:SetPoint("TOPRIGHT", -2, -1)
+	self.Keybind:SetPoint("TOPRIGHT", -2, -3)
 	self.Keybind:SetFontObject(AzeriteFont12_Outline)
 	self.Keybind:SetJustifyH("CENTER")
 	self.Keybind:SetJustifyV("BOTTOM")
 	self.Keybind:SetShadowOffset(0, 0)
 	self.Keybind:SetShadowColor(0, 0, 0, 1)
-	self.Keybind:SetTextColor(self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3], .75)
+	self.Keybind:SetTextColor(self.colors.quest.gray[1], self.colors.quest.gray[2], self.colors.quest.gray[3], .75)
 
 
 	-- Our own style layers
@@ -386,6 +386,7 @@ end
 ActionBarMain.SpawnButtons = function(self)
 	local db = self.db
 
+
 	-- Mainbar, visible part
 	for id = 1,7 do
 		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
@@ -396,17 +397,61 @@ ActionBarMain.SpawnButtons = function(self)
 		_G["AzeriteUIActionButton"..id] = button
 	end
 
+	local hoverButtons = {}
+
 	-- Mainbar, hidden part
 	for id = 8,12 do 
 		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
-		button:Hide()
+		button:SetAlpha(0)
+
+		hoverButtons[#hoverButtons + 1] = button 
 	end 
 
 	-- "Bottomleft"
 	for id = 1,6 do 
 		local button = self:SpawnActionButton("action", "UICenter", ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
-		button:Hide()
+		button:SetAlpha(0)
+
+		hoverButtons[#hoverButtons + 1] = button 
 	end 
+
+	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
+	local hoverFrame = self:CreateFrame("Frame")
+	hoverFrame:SetPoint("TOPLEFT", hoverButtons[1], "TOPLEFT", 0, 0)
+	hoverFrame:SetPoint("BOTTOMRIGHT", hoverButtons[#hoverButtons], "BOTTOMRIGHT", 0, 0)
+	hoverFrame:SetScript("OnUpdate", function(self, elapsed) 
+		if self:IsMouseOver(0,0,0,0) then
+			if (not self.isMouseOver) then 
+				self.isMouseOver = true
+				self.alpha = 1
+				for id,button in ipairs(hoverButtons) do 
+					button:SetAlpha(self.alpha)
+				end 
+			end
+		elseif (not self:IsMouseOver(0,0,0,0)) then 
+
+			if self.isMouseOver then 
+				self.isMouseOver = nil
+				if (not self.fadeOutTime) then 
+					self.fadeOutTime = fadeOutTime
+				end 
+			end 
+
+			if self.fadeOutTime then 
+				self.fadeOutTime = self.fadeOutTime - elapsed
+				if self.fadeOutTime > 0 then 
+					self.alpha = self.fadeOutTime / fadeOutTime
+				else 
+					self.alpha = 0
+					self.fadeOutTime = nil
+				end 
+
+				for id,button in ipairs(hoverButtons) do 
+					button:SetAlpha(self.alpha)
+				end 
+			end 
+		end 
+	end)
 end 
 
 ActionBarMain.UpdateSettings = function(self)

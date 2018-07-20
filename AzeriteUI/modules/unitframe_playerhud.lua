@@ -489,6 +489,9 @@ local Style = function(self, unit, id, ...)
 	-- This does not affect runes, which still require 6 frames.
 	classPower.maxComboPoints = 5 
 
+	-- Rune sort order according to time left
+	classPower.runeSortOrder = "ASC" -- put available runes first
+
 	-- Set the point alpha to 0 when no target is selected
 	-- This does not affect runes 
 	classPower.hideWhenNoTarget = true 

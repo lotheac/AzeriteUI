@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 18)
+local LibTooltip = CogWheel:Set("LibTooltip", 25)
 if (not LibTooltip) then	
 	return
 end
@@ -32,7 +32,8 @@ local assert = assert
 local error = error
 local getmetatable = getmetatable
 local ipairs = ipairs
-local math_abs = math.abs 
+local math_abs = math.abs
+local math_ceil = math.ceil 
 local math_floor = math.floor
 local pairs = pairs
 local select = select 
@@ -53,6 +54,7 @@ local unpack = unpack
 -- WoW API 
 local GetCVarBool = _G.GetCVarBool
 local GetQuestGreenRange = _G.GetQuestGreenRange
+local GetTime = _G.GetTime
 local hooksecurefunc = _G.hooksecurefunc
 local UnitClass = _G.UnitClass
 local UnitExists = _G.UnitExists
@@ -77,6 +79,7 @@ LibTooltip.tooltips = LibTooltip.tooltips or {} -- tooltips keyed by frame handl
 LibTooltip.tooltipsByName = LibTooltip.tooltipsByName or {} -- tooltips keyed by frame name
 LibTooltip.tooltipSettings = LibTooltip.tooltipSettings or {} -- per tooltip settings
 LibTooltip.tooltipDefaults = LibTooltip.tooltipDefaults or {} -- per tooltip defaults
+LibTooltip.visibleTooltips = LibTooltip.visibleTooltips or {} -- currently visible tooltips
 LibTooltip.numTooltips = LibTooltip.numTooltips or 0 -- current number of tooltips created
 
 -- Inherit the template too, we override the older methods farther down anyway
@@ -89,11 +92,12 @@ local TooltipsByName = LibTooltip.tooltipsByName
 local TooltipSettings = LibTooltip.tooltipSettings
 local TooltipDefaults = LibTooltip.tooltipDefaults
 local Tooltip = LibTooltip.tooltipTemplate
+local Visible = LibTooltip.visibleTooltips
 
 -- Constants we might change or make variable later on
 local TEXT_INSET = 10 -- text insets from tooltip edges
 local RIGHT_PADDING= 40 -- padding between left and right messages
-local LINE_PADDING = 2 -- padding between lines of text
+local LINE_PADDING = 4 -- padding between lines of text
 
 
 -- Utility Functions
@@ -184,8 +188,8 @@ local createNewLinePair = function(tooltip, lineIndex)
 	local left = tooltip:CreateFontString(tooltipName.."TextLeft"..lineIndex)
 	left:Hide()
 	left:SetDrawLayer("ARTWORK")
-	left:SetFontObject(GameTooltipText)
-	left:SetTextColor(tooltip.colors.highlight[1], tooltip.colors.highlight[2], tooltip.colors.highlight[3])
+	left:SetFontObject((lineIndex == 1) and Game15Font_o1 or Game12Font_o1)
+	left:SetTextColor(tooltip.colors.offwhite[1], tooltip.colors.offwhite[2], tooltip.colors.offwhite[3])
 	left:SetJustifyH("LEFT")
 	left:SetJustifyV("TOP")
 	left:SetIndentedWordWrap(false)
@@ -198,8 +202,8 @@ local createNewLinePair = function(tooltip, lineIndex)
 	local right = tooltip:CreateFontString(tooltipName.."TextRight"..lineIndex)
 	right:Hide()
 	right:SetDrawLayer("ARTWORK")
-	right:SetFontObject(GameTooltipText)
-	right:SetTextColor(tooltip.colors.highlight[1], tooltip.colors.highlight[2], tooltip.colors.highlight[3])
+	right:SetFontObject((lineIndex == 1) and Game15Font_o1 or Game12Font_o1)
+	right:SetTextColor(tooltip.colors.offwhite[1], tooltip.colors.offwhite[2], tooltip.colors.offwhite[3])
 	right:SetJustifyH("RIGHT")
 	right:SetJustifyV("TOP") 
 	right:SetIndentedWordWrap(false)
@@ -229,6 +233,27 @@ local short = function(value)
 	end	
 end
 
+-- Time constants
+local DAY, HOUR, MINUTE = 86400, 3600, 60
+
+-- Time formatting
+local formatTime = function(time)
+	if time > DAY then -- more than a day
+		return "%d%s %d%s", time/DAY - time/DAY%1, "d", time%DAY/HOUR, "h"
+	elseif time > HOUR then -- more than an hour
+		return "%d%s %d%s", time/HOUR - time/HOUR%1, "h", time%HOUR - time%HOUR%1 , "m"
+	elseif time > MINUTE then -- more than a minute
+		return "%d%s %d%s", time/MINUTE - time/MINUTE%1, "m", time%MINUTE - time%1  , "s"
+	elseif time > 5 then -- more than 5 seconds
+		return "%d%s", time - time%1, "s"
+	elseif time > 0 then
+		return "%.1f%s", time, "s"
+	else
+		return ""
+	end	
+end
+
+
 -- zhCN exceptions
 local gameLocale = GetLocale()
 if (gameLocale == "zhCN") then 
@@ -253,6 +278,7 @@ local Colors = {
 	-- some basic ui colors used by all text
 	normal = prepare(229/255, 178/255, 38/255),
 	highlight = prepare(250/255, 250/255, 250/255),
+	offwhite = prepare(196/255, 196/255, 196/255), 
 	title = prepare(255/255, 234/255, 137/255),
 
 	-- health bar coloring
@@ -536,8 +562,7 @@ Tooltip.AddBar = function(self, barType)
 
 		-- Add a value string, but let the modules handle it.
 		local value = bar:CreateFontString()
-		value:SetFontObject(GameTooltipText)
-		value:SetFont(value:GetFont(), 12, "OUTLINE")
+		value:SetFontObject(Game13Font_o1)
 		value:SetPoint("CENTER", 0, 0)
 		value:SetDrawLayer("OVERLAY")
 		value:SetJustifyH("CENTER")
@@ -860,193 +885,6 @@ Tooltip.SetBarHeight = function(self, barHeight, barType)
 	self:UpdateBackdropLayout()
 end 
 
---[[
-Tooltip.ClearMoney = function(self)
-	if ( not self.shownMoneyFrames ) then
-		return;
-	end
-
-	local moneyFrame;
-	for i=1, self.shownMoneyFrames do
-		moneyFrame = _G[self:GetName().."MoneyFrame"..i];
-		if(moneyFrame) then
-			moneyFrame:Hide();
-			MoneyFrame_SetType(moneyFrame, "STATIC");
-		end
-	end
-	self.shownMoneyFrames = nil;
-end 
-
-Tooltip.SetMoney = function(self, money, type, prefixText, suffixText)
-	self:AddLine(" ", 1.0, 1.0, 1.0);
-	local numLines = self:NumLines();
-	if ( not self.numMoneyFrames ) then
-		self.numMoneyFrames = 0;
-	end
-	if ( not self.shownMoneyFrames ) then
-		self.shownMoneyFrames = 0;
-	end
-	local name = self:GetName().."MoneyFrame"..self.shownMoneyFrames+1;
-	local moneyFrame = _G[name];
-	if ( not moneyFrame ) then
-		self.numMoneyFrames = self.numMoneyFrames+1;
-		moneyFrame = CreateFrame("Frame", name, self, "TooltipMoneyFrameTemplate");
-		name = moneyFrame:GetName();
-		MoneyFrame_SetType(moneyFrame, "STATIC");
-	end
-	_G[name.."PrefixText"]:SetText(prefixText);
-	_G[name.."SuffixText"]:SetText(suffixText);
-	if ( type ) then
-		MoneyFrame_SetType(moneyFrame, type);
-	end
-	--We still have this variable offset because many AddOns use this function. The money by itself will be unaligned if we do not use this.
-	local xOffset;
-	if ( prefixText ) then
-		xOffset = 4;
-	else
-		xOffset = 0;
-	end
-	moneyFrame:SetPoint("LEFT", self:GetName().."TextLeft"..numLines, "LEFT", xOffset, 0);
-	moneyFrame:Show();
-	if ( not self.shownMoneyFrames ) then
-		self.shownMoneyFrames = 1;
-	else
-		self.shownMoneyFrames = self.shownMoneyFrames+1;
-	end
-	MoneyFrame_Update(moneyFrame:GetName(), money);
-	local moneyFrameWidth = moneyFrame:GetWidth();
-	if ( self:GetMinimumWidth() < moneyFrameWidth ) then
-		self:SetMinimumWidth(moneyFrameWidth);
-	end
-	self.hasMoney = 1;
-end
-
-
-Tooltip.ClearInsertedFrames = function(self)
-	if ( self.insertedFrames ) then
-		for i = 1, #self.insertedFrames do
-			self.insertedFrames[i]:SetParent(nil)
-			self.insertedFrames[i]:Hide()
-		end
-	end
-	self.insertedFrames = nil
-end
-
-Tooltip.ResetSecondaryCompareItem = function(self)
-end 
-
-Tooltip.AdvanceSecondaryCompareItem = function(self)
-end 
-
-Tooltip.PreAdvanceSecondaryCompareItem = function(self)
-	if ( GetCVarBool("allowCompareWithToggle") ) then
-		self:AdvanceSecondaryCompareItem()
-	end
-end 
-
-Tooltip.ShowCompareItem = function(self, anchorFrame)
-
-	if ( not self ) then
-		self = GameTooltip;
-	end
-
-	if( not anchorFrame ) then
-		anchorFrame = self.overrideComparisonAnchorFrame or self;
-	end
-
-	if ( self.needsReset ) then
-		self:ResetSecondaryCompareItem();
-		self:PreAdvanceSecondaryCompareItem();
-		self.needsReset = false;
-	end
-
-	local shoppingTooltip1, shoppingTooltip2 = unpack(self.shoppingTooltips);
-
-	local primaryItemShown, secondaryItemShown = shoppingTooltip1:SetCompareItem(shoppingTooltip2, self);
-
-	local leftPos = anchorFrame:GetLeft();
-	local rightPos = anchorFrame:GetRight();
-
-	local side;
-	local anchorType = self:GetAnchorType();
-	local totalWidth = 0;
-	if ( primaryItemShown  ) then
-		totalWidth = totalWidth + shoppingTooltip1:GetWidth();
-	end
-	if ( secondaryItemShown  ) then
-		totalWidth = totalWidth + shoppingTooltip2:GetWidth();
-	end
-	if ( self.overrideComparisonAnchorSide ) then
-		side = self.overrideComparisonAnchorSide;
-	else
-		-- find correct side
-		local rightDist = 0;
-		if ( not rightPos ) then
-			rightPos = 0;
-		end
-		if ( not leftPos ) then
-			leftPos = 0;
-		end
-
-		rightDist = GetScreenWidth() - rightPos;
-
-		if ( anchorType and totalWidth < leftPos and (anchorType == "ANCHOR_LEFT" or anchorType == "ANCHOR_TOPLEFT" or anchorType == "ANCHOR_BOTTOMLEFT") ) then
-			side = "left";
-		elseif ( anchorType and totalWidth < rightDist and (anchorType == "ANCHOR_RIGHT" or anchorType == "ANCHOR_TOPRIGHT" or anchorType == "ANCHOR_BOTTOMRIGHT") ) then
-			side = "right";
-		elseif ( rightDist < leftPos ) then
-			side = "left";
-		else
-			side = "right";
-		end
-	end
-
-	-- see if we should slide the tooltip
-	if ( anchorType and anchorType ~= "ANCHOR_PRESERVE" ) then
-		if ( (side == "left") and (totalWidth > leftPos) ) then
-			self:SetAnchorType(anchorType, (totalWidth - leftPos), 0);
-		elseif ( (side == "right") and (rightPos + totalWidth) >  GetScreenWidth() ) then
-			self:SetAnchorType(anchorType, -((rightPos + totalWidth) - GetScreenWidth()), 0);
-		end
-	end
-
-	if ( secondaryItemShown ) then
-		shoppingTooltip2:SetOwner(self, "ANCHOR_NONE");
-		shoppingTooltip2:ClearAllPoints();
-		shoppingTooltip1:SetOwner(self, "ANCHOR_NONE");
-		shoppingTooltip1:ClearAllPoints();
-
-		if ( side and side == "left" ) then
-			shoppingTooltip1:SetPoint("TOPRIGHT", anchorFrame, "TOPLEFT", 0, -10);
-		else
-			shoppingTooltip2:SetPoint("TOPLEFT", anchorFrame, "TOPRIGHT", 0, -10);
-		end
-
-		if ( side and side == "left" ) then
-			shoppingTooltip2:SetPoint("TOPRIGHT", shoppingTooltip1, "TOPLEFT");
-		else
-			shoppingTooltip1:SetPoint("TOPLEFT", shoppingTooltip2, "TOPRIGHT");
-		end
-	else
-		shoppingTooltip1:SetOwner(self, "ANCHOR_NONE");
-		shoppingTooltip1:ClearAllPoints();
-
-		if ( side and side == "left" ) then
-			shoppingTooltip1:SetPoint("TOPRIGHT", anchorFrame, "TOPLEFT", 0, -10);
-		else
-			shoppingTooltip1:SetPoint("TOPLEFT", anchorFrame, "TOPRIGHT", 0, -10);
-		end
-
-		shoppingTooltip2:Hide();
-	end
-
-	-- We have to call this again because :SetOwner clears the tooltip.
-	shoppingTooltip1:SetCompareItem(shoppingTooltip2, self);
-	shoppingTooltip1:Show();
-
-end 
-]]--
-
 
 
 -- Rewritten Tooltip API
@@ -1076,6 +914,26 @@ Tooltip.SetDefaultAnchor = function(self, parent)
 	self:UpdatePosition()
 end 
 
+Tooltip.SetSmartAnchor = function(self, parent, offsetX, offsetY)
+
+	-- Keyword parse the owner frame, to allow tooltips to use our custom crames. 
+	self:SetOwner(LibTooltip:GetFrame(parent), "ANCHOR_NONE")
+
+	local width, height = UIParent:GetSize()
+	local left = parent:GetLeft()
+	local right = width - parent:GetRight()
+	local bottom = parent:GetBottom() 
+	local top = height - parent:GetTop()
+	local point = ((bottom < top) and "BOTTOM" or "TOP") .. ((left < right) and "LEFT" or "RIGHT") 
+	local rPoint = ((bottom < top) and "TOP" or "BOTTOM") .. ((left < right) and "RIGHT" or "LEFT") 
+	
+	offsetX = (offsetX or 10) * ((left < right) and 1 or -1)
+	offsetY = (offsetY or 10) * ((bottom < top) and 1 or -1)
+
+	self:Place(point, parent, rPoint, offsetX, offsetY)
+end 
+
+
 -- Returns the correct difficulty color compared to the player.
 -- Using this as a tooltip method to access our custom colors.
 Tooltip.GetDifficultyColorByLevel = function(self, level)
@@ -1094,6 +952,77 @@ Tooltip.GetDifficultyColorByLevel = function(self, level)
 		return colors.gray[1], colors.gray[2], colors.gray[3], colors.gray.colorCode
 	end
 end
+
+Tooltip.SetAction = function(self, slot)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+	local data = self:GetTooltipDataForAction(slot, self.data)
+	if data then 
+
+		-- Because a millionth of a second matters.
+		local colors = self.colors
+
+		-- Shouldn't be any bars here, but if for some reason 
+		-- the tooltip wasn't properly hidden before this, 
+		-- we make sure the bars are reset!
+		self:ClearStatusBars(true) -- suppress layout updates
+
+		-- Action Title
+		if data.schoolType then 
+			self:AddDoubleLine(data.name, data.schoolType, colors.title[1], colors.title[2], colors.title[3], colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true, true	)
+		else 
+			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
+		end 
+
+		-- Cost and range
+		if (data.spellCost or data.spellRange) then 
+			if (data.spellRange and data.spellCost) then 
+				self:AddDoubleLine(data.spellCost, data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
+
+			elseif data.spellRange then 
+				self:AddDoubleLine(data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
+
+			elseif data.spellCost then 
+				self:AddLine(data.spellCost, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
+			end 
+		end 
+
+		-- Time and Cooldown 
+		if (data.castTime or data.cooldownTime) then 
+			if (data.castTime and data.cooldownTime) then 
+				self:AddDoubleLine(data.castTime, data.cooldownTime, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+
+			elseif data.cooldownTime then 
+				self:AddDoubleLine(data.cooldownTime, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+
+			elseif data.castTime then 
+				self:AddLine(data.castTime, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+			end 
+		end 
+
+		-- Cooldown remaining. Check for charges first.
+		if (data.charges and data.maxCharges and (data.charges > 0) and (data.charges < data.maxCharges)) then
+
+			local msg = string_format(SPELL_RECHARGE_TIME, string_format(formatTime(data.chargeDuration - (GetTime() - data.chargeStart))))
+			self:AddLine(msg, colors.normal[1], colors.normal[2], colors.normal[3])
+
+		elseif (data.cooldownEnable and (data.cooldownEnable ~= 0) and (data.cooldownStart > 0) and (data.cooldownDuration > 0)) then 
+			
+			local msg = string_format(ITEM_COOLDOWN_TIME, string_format(formatTime(data.cooldownDuration - (GetTime() - data.cooldownStart))))
+			self:AddLine(msg, colors.normal[1], colors.normal[2], colors.normal[3])
+			
+		end 
+
+		-- Description
+		if data.description then 
+			self:AddLine(data.description, colors.quest.green[1], colors.quest.green[2], colors.quest.green[3], true)
+		end 
+
+		self:Show()
+	end 
+end 
 
 Tooltip.SetUnit = function(self, unit)
 	if (not self.owner) then
@@ -1157,11 +1086,15 @@ Tooltip.SetUnit = function(self, unit)
 				end 
 
 				if (data.classDisplayName and data.class) then 
-					levelLine = (levelLine and levelLine.." " or "") .. colors.class[data.class].colorCode .. data.classDisplayName .. "|r"
+					if self.colorClass then 
+						levelLine = (levelLine and levelLine.." " or "") .. colors.class[data.class].colorCode .. data.classDisplayName .. "|r"
+					else 
+						levelLine = (levelLine and levelLine.." " or "") .. data.classDisplayName
+					end 
 				end 
 
 				if levelLine then 
-					self:AddLine(levelLine, colors.highlight[1], colors.highlight[2], colors.highlight[3])
+					self:AddLine(levelLine, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
 				end 
 
 				-- player faction (Horde/Alliance/Neutral)
@@ -1178,6 +1111,15 @@ Tooltip.SetUnit = function(self, unit)
 			else  
 				if data.city then 
 					self:AddLine(data.city, colors.title[1], colors.title[2], colors.title[3])
+				end 
+
+				-- Beast etc 
+				if data.creatureFamily then 
+					self:AddLine(data.creatureType, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+
+				-- Humanoid, Crab, etc 
+				elseif data.creatureType then 
+					self:AddLine(data.creatureType, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
 				end  
 			end 
 
@@ -1192,12 +1134,91 @@ Tooltip.SetUnit = function(self, unit)
 end
 
 Tooltip.SetUnitAura = function(self, unit, auraID, filter)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+	self.unit = unit
+	local unit = self:GetTooltipUnit()
+	if unit then 
+		local data = self:GetTooltipDataForUnitAura(unit, auraID, filter, self.data)
+		if data then 
+
+			-- Because a millionth of a second matters.
+			local colors = self.colors
+
+			-- Shouldn't be any bars here, but if for some reason 
+			-- the tooltip wasn't properly hidden before this, 
+			-- we make sure the bars are reset!
+			self:ClearStatusBars(true) -- suppress layout updates
+
+			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
+
+			self:Show()
+		end 
+	end 
 end
 
 Tooltip.SetUnitBuff = function(self, unit, buffID, filter)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+	self.unit = unit
+	local unit = self:GetTooltipUnit()
+	if unit then 
+		local data = self:GetTooltipDataForUnitBuff(unit, buffID, filter, self.data)
+		if data then 
+
+			-- Because a millionth of a second matters.
+			local colors = self.colors
+
+			-- Shouldn't be any bars here, but if for some reason 
+			-- the tooltip wasn't properly hidden before this, 
+			-- we make sure the bars are reset!
+			self:ClearStatusBars(true) -- suppress layout updates
+
+			-- title
+			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
+
+			if data.description then 
+				self:AddLine(data.description, colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true)
+			end 
+
+			if data.timeRemaining then 
+				self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
+			end 
+
+			self:Show()
+		end 
+	end 
 end
 
 Tooltip.SetUnitDebuff = function(self, unit, debuffID, filter)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+	self.unit = unit
+	local unit = self:GetTooltipUnit()
+	if unit then 
+		local data = self:GetTooltipDataForUnitDebuff(unit, debuffID, filter, self.data)
+		if data then 
+
+			-- Because a millionth of a second matters.
+			local colors = self.colors
+
+			-- Shouldn't be any bars here, but if for some reason 
+			-- the tooltip wasn't properly hidden before this, 
+			-- we make sure the bars are reset!
+			self:ClearStatusBars(true) -- suppress layout updates
+
+			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
+
+
+			self:Show()
+		end 
+	end 
 end
 
 -- The same as the old Blizz call is doing. Bad. 
@@ -1240,7 +1261,7 @@ Tooltip.AddLine = function(self, msg, r, g, b, wrap)
 
 	-- Always fall back to default coloring if color is not provided
 	if not (r and g and b) then 
-		r, g, b = self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3]
+		r, g, b = self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3]
 	end 
 
 	local left = self.lines.left[self.numLines]
@@ -1271,10 +1292,10 @@ Tooltip.AddDoubleLine = function(self, leftMsg, rightMsg, r, g, b, r2, g2, b2, l
 
 	-- Always fall back to default coloring if color is not provided
 	if not(r and g and b) then 
-		r, g, b = self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3]
+		r, g, b = self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3]
 	end 
 	if not(r2 and g2 and b2) then 
-		r2, g2, b2 = self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3]
+		r2, g2, b2 = self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3]
 	end 
 
 	local left = self.lines.left[self.numLines]
@@ -1295,7 +1316,7 @@ Tooltip.GetNumLines = function(self)
 end
 
 Tooltip.GetLine = function(self, lineIndex)
-	return self.lines[lineIndex]
+	return self.lines.left[lineIndex], self.lines.right[lineIndex]
 end
 
 Tooltip.ClearLine = function(self, lineIndex, noUpdate)
@@ -1307,13 +1328,13 @@ Tooltip.ClearLine = function(self, lineIndex, noUpdate)
 		local left = table_remove(self.lines.left[lineIndex])
 		left:Hide()
 		left:SetText("")
-		left:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+		left:SetTextColor(self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3])
 		left:ClearAllPoints()
 
 		local right = table_remove(self.lines.right[lineIndex])
 		right:Hide()
 		right:SetText("")
-		right:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+		right:SetTextColor(self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3])
 
 		-- Reduce the number of visible lines
 		self.numLines = self.numLines - 1
@@ -1351,13 +1372,13 @@ Tooltip.ClearAllLines = function(self, noUpdate)
 		local left = self.lines.left[lineIndex]
 		left:Hide()
 		left:SetText("")
-		left:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+		left:SetTextColor(self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3])
 		left:ClearAllPoints()
 
 		local right = self.lines.right[lineIndex]
 		right:Hide()
 		right:SetText("")
-		right:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3])
+		right:SetTextColor(self.colors.offwhite[1], self.colors.offwhite[2], self.colors.offwhite[3])
 	end 
 
 	-- Do a second pass to re-align points from start to finish.
@@ -1468,6 +1489,15 @@ end
 
 Tooltip.OnShow = function(self)
 
+	Visible[self] = true
+
+	-- Hide all other registered tooltips when showing one
+	for tooltip in pairs(Visible) do 
+		if (tooltip ~= self) then 
+			tooltip:Hide()
+		end 
+	end 
+
 	self:UpdateScale()
 	self:UpdateLayout()
 	self:UpdateBarLayout()
@@ -1482,9 +1512,12 @@ Tooltip.OnShow = function(self)
 	if (not BattlePetTooltip:IsForbidden() and BattlePetTooltip:IsShown()) then 
 		BattlePetTooltip:Hide()
 	end 
+
 end 
 
 Tooltip.OnHide = function(self)
+	Visible[self] = nil
+
 	self:ClearMoney(true) -- -- suppress layout updates from this
 	self:ClearStatusBars(true) -- suppress layout updates from this
 	self:ClearAllLines(true)
@@ -1826,7 +1859,7 @@ LibTooltip.CreateTooltip = function(self, name)
 	tooltip.numBars = 0 -- current number of visible bars
 	tooltip.numTextures = 0 -- current number of visible textures
 	tooltip.minimumWidth = 160 -- current minimum display width
-	tooltip.maximumWidth = 330 -- current maximum display width
+	tooltip.maximumWidth = 360 -- current maximum display width
 	tooltip.colors = Colors -- assign our color table, can be replaced by modules to override colors. 
 	tooltip.lines = { left = {}, right = {} } -- pool of all text lines
 	tooltip.bars = {} -- pool of all bars

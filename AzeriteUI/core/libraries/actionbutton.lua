@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 12)
+local LibActionButton = CogWheel:Set("LibActionButton", 13)
 if (not LibActionButton) then	
 	return
 end
@@ -12,10 +12,15 @@ assert(LibFrame, "LibActionButton requires LibFrame to be loaded.")
 local LibSound = CogWheel("LibSound")
 assert(LibSound, "LibActionButton requires LibSound to be loaded.")
 
+local LibTooltip = CogWheel("LibTooltip")
+assert(LibTooltip, "LibChatWindow requires LibTooltip to be loaded.")
+
+
 -- Embed event functionality into this
 LibEvent:Embed(LibActionButton)
 LibFrame:Embed(LibActionButton)
 LibSound:Embed(LibActionButton)
+LibTooltip:Embed(LibActionButton)
 
 -- Lua API
 local _G = _G

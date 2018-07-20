@@ -96,6 +96,9 @@ core\plugins\actionbutton_stance.lua
 # custom color library
 core\colors.lua
 
+# custom aura lists
+core\auras.lua
+
 # custom fonts objects
 core\fonts.xml
 
@@ -118,7 +121,9 @@ core\main.lua
 
 # interface modules
 modules\actionbar_main.lua
+modules\blizzard_gamemenu.lua
 modules\blizzard_interface_styling.lua
+modules\blizzard_micromenu.lua
 modules\blizzard_popups_styling.lua
 modules\blizzard_tooltips_styling.lua
 modules\chat_bubbles.lua

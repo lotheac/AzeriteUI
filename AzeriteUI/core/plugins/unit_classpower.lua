@@ -381,107 +381,15 @@ ClassPower.HolyPower = setmetatable({
 }, Generic_MT)
 
 ClassPower.Runes = setmetatable({ 
-	OnUpdateRune = function(rune, elapsed)
-		local runeData = rune._owner.runeData[rune.runeID]
-		local duration = runeData.duration + elapsed
-		if (duration < runeData.max) then 
-			runeData.duration = duration
-			rune:SetValue(duration, true)
-		else 
-			runeData.min = 0
-			runeData.max = 1
-			runeData.value = 1
-			runeData.duration = nil
-			runeData.start = nil
-			rune:SetMinMaxValues(0, 1)
-			rune:SetValue(1, true)
-			rune:SetScript("OnUpdate", nil)
-		end 
-	end,
-	UpdateRuneDisplay = function(element, runeID)
-		local rune = element[runeID]
-		local runeData = element.runeData[rune.runeID]
-		if (runeData.energized or runeData.runeReady) then
-			rune:SetMinMaxValues(0, 1)
-			rune:SetValue(1, true)
-			rune:SetScript("OnUpdate", nil)
-		else
-			if runeData.duration then 
-				rune:SetValue(runeData.duration, true)
-				rune:SetMinMaxValues(0, runeData.max)
-				rune:SetScript("OnUpdate", element.OnUpdateRune)
-			end 
-		end
-		if (not rune:IsShown()) then 
-			rune:Show()
-		end 
-	end, 
-	UpdateRuneDisplays = function(element)
-		-- Sort the display according to cooldowns
-		table_sort(element.runeOrder, element.SortByCooldown)
 
-		-- Give the displayed runes correct IDs
-		local readyCount = 0
-		for i = 1,#element.runeOrder do 
-			local runeData = element.runeOrder[i]
-			if (runeData.runeReady or runeData.energized) then 
-				readyCount = readyCount + 1
-			end 
-			element[i].runeID = runeData.runeID
-			element:UpdateRuneDisplay(i)
-		end 
-		return readyCount
-	end,
-	UpdateRuneData = function(element, runeID, energized)
-		local runeData = element.runeData[runeID]
-		local start, duration, runeReady = GetRuneCooldown(runeID)
-		if (energized or runeReady) then
-			runeData.min = 0
-			runeData.max = 1
-			runeData.value = 1
-			runeData.duration = nil
-			runeData.start = nil
-		else
-			if start then 
-				runeData.start = start
-				runeData.duration = GetTime() - start
-				runeData.max = duration
-			end 
-		end
-		runeData.energized = energized
-		runeData.runeReady = runeReady
-
-		-- Update the displayed elements
-		return element:UpdateRuneDisplays()
-	end,
-	SortByCooldown = function(a,b)
-		if (not b) then 
-			return true 
-		end
-		if a.duration or b.duration then 
-			if a.duration and b.duration then 
-				return (a.max - a.duration) < (b.max - b.duration) 
-			else 
-				return b.duration and true or false
-			end 
-		else
-			return a.runeID < b.runeID
-		end
-	end,
 	EnablePower = function(self)
 		local element = self.ClassPower
 		element.powerID = SPELL_POWER_RUNES
 		element.powerType = "RUNES"
-		element.max = 6
-		element.maxDisplayed = nil
+		element.max = 6 -- no global value exists for this
+		element.maxDisplayed = nil -- don't limit this by default
+		element.runeOrder = { 1, 2, 3, 4, 5, 6 } -- starting with a numeric order
 		element.isEnabled = true
-
-		element.runeData = {}
-		element.runeOrder = {}
-		for i = 1,6 do 
-			element.runeData[i] = { runeID = i }
-			element.runeOrder[i] = element.runeData[i]
-		end
 
 		self:RegisterEvent("RUNE_POWER_UPDATE", Proxy, true)
 
@@ -489,13 +397,38 @@ ClassPower.Runes = setmetatable({
 	end,
 	DisablePower = function(self)
 		local element = self.ClassPower
-		element.runeData = nil
 		element.runeOrder = nil
 		for i = 1, #element do 
 			element[i]:SetScript("OnUpdate", nil)
 		end 
 		Generic.DisablePower(self)
 	end, 
+	SortByTimeAsc = function(runeAID, runeBID)
+		local runeAStart, _, runeARuneReady = GetRuneCooldown(runeAID)
+		local runeBStart, _, runeBRuneReady = GetRuneCooldown(runeBID)
+		if (runeARuneReady ~= runeBRuneReady) then
+			return runeARuneReady
+		elseif (runeAStart ~= runeBStart) then
+			return runeAStart < runeBStart
+		else
+			return runeAID < runeBID
+		end
+	end,
+	SortByTimeDesc = function(runeAID, runeBID)
+		local runeAStart, _, runeARuneReady = GetRuneCooldown(runeAID)
+		local runeBStart, _, runeBRuneReady = GetRuneCooldown(runeBID)
+		if (runeARuneReady ~= runeBRuneReady) then
+			return runeBRuneReady
+		elseif (runeAStart ~= runeBStart) then
+			return runeAStart > runeBStart
+		else
+			return runeAID > runeBID
+		end
+	end,
+	OnUpdateRune = function(rune, elapsed)
+		rune.duration = rune.duration + elapsed
+		rune:SetValue(rune.duration, true)
+	end,
 	UpdatePower = function(self, event, unit, ...)
 		local element = self.ClassPower
 		if (not element.isEnabled) then 
@@ -503,52 +436,66 @@ ClassPower.Runes = setmetatable({
 			return 
 		end 
 
-		if (event == "RUNE_POWER_UPDATE") then 
-			local runeID, energized = ...
+		if (element.runeSortOrder == "ASC") then
+			table_sort(element.runeOrder, element.SortByTimeAsc)
+			element.hasSortOrder = true
 
-			local min = element:UpdateRuneData(runeID, energized)
-			--element:UpdateRune(runeID, energized)
+		elseif (element.runeSortOrder == "DESC") then
+			table_sort(element.runeOrder, element.SortByTimeDesc)
+			element.hasSortOrder = true
 
-			local powerType = element.powerType
-			local powerID = element.powerID 
-			--local min = UnitPower("player", powerID, true) or 0
-			local max = UnitPowerMax("player", powerID) or 0
+		elseif (element.hasSortOrder) then
+			table_sort(element.runeOrder)
+			element.hasSortOrder = false
+		end
 
-			--local runeData = element.runeData[runeID]
-			--runeData.value = min
-			--runeData.max = max
+		local min = 0 -- available runes
+		local max = UnitPowerMax("player", element.powerID) or 0 -- maximum available runes
+		local maxDisplayed = element.max or max -- maximum displayed runes
+
+		-- Update runes
+		local runeID, rune, start, duration, runeReady
+		for id = 1,#element.runeOrder do
+			runeID = element.runeOrder[id]
+			rune = element[id]
+
+			if (not rune) then 
+				break 
+			end
 			
-			return min, max, powerType
-		end 
+			start, duration, runeReady = GetRuneCooldown(runeID)
+			if (runeReady) then
+				rune:SetScript("OnUpdate", nil)
+				rune:SetMinMaxValues(0, 1)
+				rune:SetValue(1, true)
 
-		-- Can I check here if they are energized?
-		local min = 0
-		for runeID = 1, element.max do 
-			min = element:UpdateRuneData(runeID, energized)
-			--element:UpdateRune(runeID)
-		end 
+				-- update count of available runes
+				min = min + 1
 
-		local powerType = element.powerType
-		local powerID = element.powerID 
+			elseif (start) then
+				rune.duration = GetTime() - start
+				rune:SetMinMaxValues(0, duration, true)
+				rune:SetValue(0, true)
+				rune:SetScript("OnUpdate", element.OnUpdateRune)
+			end
+		end
 
-		--local min = UnitPower("player", powerID, true) or 0
-		local max = UnitPowerMax("player", powerID) or 0
-		local maxDisplayed = element.max or max
-
+		-- Make sure the runes are shown
 		for i = 1, maxDisplayed do 
 			if not element[i]:IsShown() then 
 				element[i]:Show()
 			end 
 		end 
 
-		for i = maxDisplayed+1, #element do 
+		-- Hide additional points in the classpower element, if any
+		for i = maxDisplayed + 1, #element do 
 			element[i]:SetValue(0)
 			if element[i]:IsShown() then 
 				element[i]:Hide()
 			end 
 		end 
 
-		return min, max, powerType
+		return min, max, element.powerType
 	end, 
 	UpdateColor = function(element, unit, min, max, powerType)
 		local self = element._owner
@@ -963,5 +910,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 11)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 12)
 end 

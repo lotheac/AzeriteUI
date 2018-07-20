@@ -55,6 +55,24 @@
 		</Member>
 	</FontFamily>
 
+	<FontFamily name="AzeriteFont13" virtual="true">
+		<Member alphabet="roman">
+			<Font font="Fonts\FRIZQT__.ttf" height="13" />
+		</Member>
+		<Member alphabet="korean">
+			<Font font="Fonts\K_Pagetext.ttf" height="13" />
+		</Member>
+		<Member alphabet="simplifiedchinese">
+			<Font font="Fonts\ARKai_T.ttf" height="13" />
+		</Member>
+		<Member alphabet="traditionalchinese">
+			<Font font="Fonts\blei00d.ttf" height="13" />
+		</Member>
+		<Member alphabet="russian">
+			<Font font="Fonts\MORPHEUS_CYR.ttf" height="13" />
+		</Member>
+	</FontFamily>
+
 	<FontFamily name="AzeriteFont13_Outline" virtual="true">
 		<Member alphabet="roman">
 			<Font font="Fonts\FRIZQT__.ttf" height="13" outline="NORMAL"/>
@@ -70,6 +88,24 @@
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\MORPHEUS_CYR.ttf" height="13" outline="NORMAL"/>
+		</Member>
+	</FontFamily>
+
+	<FontFamily name="AzeriteFont14" virtual="true">
+		<Member alphabet="roman">
+			<Font font="Fonts\FRIZQT__.ttf" height="14" />
+		</Member>
+		<Member alphabet="korean">
+			<Font font="Fonts\K_Pagetext.ttf" height="14" />
+		</Member>
+		<Member alphabet="simplifiedchinese">
+			<Font font="Fonts\ARKai_T.ttf" height="14" />
+		</Member>
+		<Member alphabet="traditionalchinese">
+			<Font font="Fonts\blei00d.ttf" height="14" />
+		</Member>
+		<Member alphabet="russian">
+			<Font font="Fonts\MORPHEUS_CYR.ttf" height="14" />
 		</Member>
 	</FontFamily>
 

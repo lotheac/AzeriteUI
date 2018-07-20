@@ -19,7 +19,9 @@ local GetActionLossOfControlCooldown = _G.GetActionLossOfControlCooldown
 local GetActionCount = _G.GetActionCount
 local GetActionTexture = _G.GetActionTexture
 local GetBindingKey = _G.GetBindingKey 
+local GetTime = _G.GetTime
 local HasAction = _G.HasAction
+local IsActionInRange = _G.IsActionInRange
 local IsConsumableAction = _G.IsConsumableAction
 local IsStackableAction = _G.IsStackableAction
 
@@ -28,6 +30,51 @@ local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
 local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
 local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
+
+-- Utility Functions
+----------------------------------------------------
+
+-- Time constants
+local DAY, HOUR, MINUTE = 86400, 3600, 60
+
+-- Time formatting
+local formatTime = function(time)
+	if time > DAY then -- more than a day
+		return "%d%s %d%s", time/DAY - time/DAY%1, "d", time%DAY/HOUR, "h"
+	elseif time > HOUR then -- more than an hour
+		return "%d%s %d%s", time/HOUR - time/HOUR%1, "h", time%HOUR - time%HOUR%1 , "m"
+	elseif time > MINUTE then -- more than a minute
+		return "%d%s %d%s", time/MINUTE - time/MINUTE%1, "m", time%MINUTE - time%1  , "s"
+	elseif time > 5 then -- more than 5 seconds
+		return "%d%s", time - time%1, "s"
+	elseif time > 0 then
+		return "%.1f%s", time, "s"
+	else
+		return ""
+	end	
+end
+
+-- Aimed to be compact and displayed on buttons
+local formatCooldownTime = function(time)
+	if time > DAY then -- more than a day
+		time = time + DAY/2
+		return "%d%s", time/DAY - time/DAY%1, "d"
+	elseif time > HOUR then -- more than an hour
+		time = time + HOUR/2
+		return "%d%s", time/HOUR - time/HOUR%1, "h"
+	elseif time > MINUTE then -- more than a minute
+		time = time + MINUTE/2
+		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
+	elseif time > 10 then -- more than 10 seconds
+		return "%d", time - time%1
+	elseif time > 5 then -- more than 5 seconds
+		return "|cffff8800%d|r", time - time%1
+	elseif time > 0 then
+		return "|cffff0000%.1f|r", time
+	else
+		return ""
+	end	
+end
 
 ----------------------------------------------------
 -- ActionButton Template
@@ -39,6 +86,83 @@ local ActionButton_MT = { __index = ActionButton }
 
 -- Updates
 ----------------------------------------------------
+
+local OnUpdate = function(self, elapsed)
+
+	self.flashTime = (self.flashTime or 0) - elapsed
+	self.rangeTimer = (self.rangeTimer or -1) - elapsed
+
+	local Cooldown = self.Cooldown 
+	if Cooldown.active then 
+
+		local start, duration
+		if (Cooldown.currentCooldownType == COOLDOWN_TYPE_NORMAL) then 
+			local action = self:GetAction()
+			start, duration = GetActionCooldown(action)
+
+		elseif (Cooldown.currentCooldownType == COOLDOWN_TYPE_LOSS_OF_CONTROL) then
+			local action = self:GetAction()
+			start, duration = GetActionLossOfControlCooldown(action)
+
+		end 
+
+		if ((start > 0) and (duration > 1.5)) then
+			self.CooldownCount:SetFormattedText(formatCooldownTime(duration - GetTime() + start))
+		else 
+			self.CooldownCount:SetText("")
+		end  
+	end 
+
+	if (self.rangeTimer <= 0) or (self.flashTime <= 0) then
+
+		-- Flashing
+		if (self.flashing == 1) and (self.flashTime <= 0) then
+			if self.Flash:IsShown() then
+				self.Flash:Hide()
+			else
+				self.Flash:Show()
+			end
+		end
+
+		-- Range
+		--[[
+		if (self.rangeTimer <= 0) then
+			local inRange = button:IsInRange()
+			local oldRange = button.outOfRange
+			button.outOfRange = (inRange == false)
+			if oldRange ~= button.outOfRange then
+				if button.config.outOfRangeColoring == "button" then
+					UpdateUsable(button)
+				elseif button.config.outOfRangeColoring == "hotkey" then
+					local hotkey = button.HotKey
+					if hotkey:GetText() == RANGE_INDICATOR then
+						if inRange == false then
+							hotkey:Show()
+						else
+							hotkey:Hide()
+						end
+					end
+					if inRange == false then
+						hotkey:SetVertexColor(unpack(button.config.colors.range))
+					else
+						hotkey:SetVertexColor(0.75, 0.75, 0.75)
+					end
+				end
+			end
+		end
+		]]--
+
+		-- Update values
+		if (self.flashTime <= 0) then
+			self.flashTime = self.flashTime + ATTACK_BUTTON_FLASH_TIME
+		end
+
+		if (self.rangeTimer <= 0) then
+			self.rangeTimer = TOOLTIP_UPDATE_TIME
+		end
+	end
+end 
+
 
 -- Called when the button action (and thus the texture) has changed
 ActionButton.UpdateAction = function(self)
@@ -61,12 +185,15 @@ ActionButton.UpdateBinding = function(self)
 	end 
 end 
 
+-- not exposing these methods
 local OnCooldownDone = function(cooldown)
+	cooldown.active = nil
 	cooldown:SetScript("OnCooldownDone", nil)
 	cooldown:GetParent():UpdateCooldown()
 end
 
 local CooldownFrame_Clear = function(cooldown)
+	cooldown.active = nil
 	cooldown:Clear()
 end
 
@@ -74,12 +201,14 @@ local CooldownFrame_Set = function(cooldown, start, duration, enable, forceShowD
 	if (enable and (enable ~= 0) and (start > 0) and (duration > 0)) then
 		cooldown:SetDrawEdge(forceShowDrawEdge)
 		cooldown:SetCooldown(start, duration, modRate)
+		cooldown.active = true
 	else
 		CooldownFrame_Clear(cooldown)
 	end
 end
 
 local EndChargeCooldown = function(cooldown)
+	cooldown.active = nil
 	cooldown:Hide()
 end
 
@@ -101,8 +230,6 @@ ActionButton.UpdateCooldown = function(self)
 		local start, duration, enable, modRate = self:GetCooldown()
 		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self:GetAction())
 
-		--Cooldown:SetDrawBling(Cooldown:GetEffectiveAlpha() > 0.5)
-
 		if ((locStart + locDuration) > (start + duration)) then
 
 			if Cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL then
@@ -118,7 +245,7 @@ ActionButton.UpdateCooldown = function(self)
 			if (Cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL) then
 				Cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
 				Cooldown:SetSwipeColor(0, 0, 0)
-				Cooldown:SetHideCountdownNumbers(false)
+				Cooldown:SetHideCountdownNumbers(true)
 				Cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
 			end
 
@@ -232,11 +359,32 @@ ActionButton.SetParent = function(self, parent)
 end 
 
 
+-- Isers
+----------------------------------------------------
+ActionButton.IsInRange = function(self)
+	return (IsActionInRange(self:GetAction()) ~= 0)
+end 
+
+
+
+
 -- Script Handlers
 ----------------------------------------------------
 
+local UpdateTooltip = function(self)
+	local tooltip = self:GetTooltip()
+	tooltip:Hide()
+	tooltip:SetDefaultAnchor(self)
+	tooltip:SetMinimumWidth(280)
+	tooltip:SetAction(self:GetAction())
+end 
+
 ActionButton.OnEnter = function(self) 
 	self.isMouseOver = true
+	self.UpdateTooltip = UpdateTooltip
+
+	self:UpdateTooltip()
+
 	if self.PostEnter then 
 		self:PostEnter()
 	end 
@@ -244,6 +392,11 @@ end
 
 ActionButton.OnLeave = function(self) 
 	self.isMouseOver = nil
+	self.UpdateTooltip = nil
+
+	local tooltip = self:GetTooltip()
+	tooltip:Hide()
+
 	if self.PostLeave then 
 		self:PostLeave()
 	end 
@@ -314,7 +467,6 @@ local Style = function(self)
 	cooldownCount:SetDrawLayer("ARTWORK", 1)
 	cooldownCount:SetPoint("CENTER", 1, 0)
 	cooldownCount:SetFontObject(GameFontNormal)
-	cooldownCount:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE") 
 	cooldownCount:SetJustifyH("CENTER")
 	cooldownCount:SetJustifyV("MIDDLE")
 	cooldownCount:SetShadowOffset(0, 0)
@@ -325,7 +477,6 @@ local Style = function(self)
 	count:SetDrawLayer("OVERLAY", 1)
 	count:SetPoint("BOTTOMRIGHT", -2, 1)
 	count:SetFontObject(GameFontNormal)
-	count:SetFont(GameFontNormal:GetFont(), 18, "OUTLINE") 
 	count:SetJustifyH("CENTER")
 	count:SetJustifyV("BOTTOM")
 	count:SetShadowOffset(0, 0)
@@ -336,7 +487,6 @@ local Style = function(self)
 	keybind:SetDrawLayer("OVERLAY", 2)
 	keybind:SetPoint("TOPRIGHT", -2, -1)
 	keybind:SetFontObject(GameFontNormal)
-	keybind:SetFont(GameFontNormal:GetFont(), 12, "OUTLINE") 
 	keybind:SetJustifyH("CENTER")
 	keybind:SetJustifyV("BOTTOM")
 	keybind:SetShadowOffset(0, 0)
@@ -440,6 +590,9 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	button:SetScript("OnLeave", ActionButton.OnLeave)
 	button:SetScript("PreClick", ActionButton.PreClick)
 	button:SetScript("PostClick", ActionButton.PostClick)
+
+	-- Not exposing this one
+	button:SetScript("OnUpdate", OnUpdate)
 
 	-- secure references
 	page:SetFrameRef("Visibility", visibility)
@@ -567,4 +720,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 6)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 10)

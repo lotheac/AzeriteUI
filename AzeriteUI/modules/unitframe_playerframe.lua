@@ -5,8 +5,9 @@ if (not AzeriteUI) then
 	return 
 end
 
-local UnitFramePlayer = AzeriteUI:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local UnitFramePlayer = AzeriteUI:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local WhiteList = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras").WhiteList
 
 -- Lua API
 local _G = _G
@@ -141,6 +142,119 @@ end
 
 local UpdategHealthValue = function(element, unit, min, max)
 end 
+
+
+local BuffFilter = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+
+	-- ALways whitelisted auras, boss debuffs and stealable for mages
+	if WhiteList[spellId] or isBossDebuff or (PlayerClass == "MAGE" and isStealable) then 
+		return true 
+	end 
+
+	-- Try to hide non-player auras outdoors
+	if (not isOwnedByPlayer) and (not IsInInstance()) then 
+		return 
+	end 
+
+	-- Hide static and very long ones
+	if (not duration) or (duration > 60) then 
+		return 
+	end 
+
+	-- show our own short ones
+	if (isOwnedByPlayer and duration and (duration > 0) and (duration < 60)) then 
+		return true
+	end 
+	
+end 
+
+local DebuffFilter = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+
+	if WhiteList[spellId] or isBossDebuff then 
+		return true 
+	end 
+
+	-- Try to hide non-player auras outdoors
+	if (not isOwnedByPlayer) and (not IsInInstance()) then 
+		return 
+	end 
+
+	-- Hide static and very long ones
+	if (not duration) or (duration > 60) then 
+		return 
+	end 
+
+	-- show our own short ones
+	if (isOwnedByPlayer and duration and (duration > 0) and (duration < 60)) then 
+		return true
+	end 
+	
+end 
+
+
+local PostCreateAuraButton = function(element, button)
+	
+	-- Downscale factor of the border backdrop
+	local sizeMod = 3/4
+
+
+	-- Restyle original elements
+	----------------------------------------------------
+
+	-- Spell icon
+	-- We inset the icon, so the border aligns with the button edge
+	local icon = button.Icon
+	icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
+	icon:ClearAllPoints()
+	icon:SetPoint("TOPLEFT", 9*sizeMod, -9*sizeMod)
+	icon:SetPoint("BOTTOMRIGHT", -9*sizeMod, 9*sizeMod)
+
+	-- Aura stacks
+	local count = button.Count
+	count:SetFontObject(AzeriteFont11_Outline)
+	count:ClearAllPoints()
+	count:SetPoint("BOTTOMRIGHT", 2, -2)
+
+	-- Aura time remaining
+	local time = button.Time
+	time:SetFontObject(AzeriteFont14_Outline)
+	--time:ClearAllPoints()
+	--time:SetPoint("CENTER", 0, 0)
+
+
+	-- Create custom elements
+	----------------------------------------------------
+
+	-- Retrieve the icon drawlayer, and put our darkener right above
+	local iconDrawLayer, iconDrawLevel = icon:GetDrawLayer()
+
+	-- Darken the icons slightly, don't want them too bright
+	local darken = button:CreateTexture()
+	darken:SetDrawLayer(iconDrawLayer, iconDrawLevel + 1)
+	darken:SetSize(icon:GetSize())
+	darken:SetAllPoints(icon)
+	darken:SetColorTexture(0, 0, 0, .25)
+
+	-- Create our own custom border.
+	-- Using our new thick tooltip border, just scaled down slightly.
+	local border = button.Overlay:CreateFrame("Frame")
+	border:SetPoint("TOPLEFT", -14 *sizeMod, 14 *sizeMod)
+	border:SetPoint("BOTTOMRIGHT", 14 *sizeMod, -14 *sizeMod)
+	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	border:SetBackdrop({
+		edgeFile = getPath("tooltip_border"),
+		edgeSize = 32 *sizeMod
+	})
+
+	-- This one we reference, for magic school coloring later on
+	button.Border = border
+
+end
+
+-- Anything to post update at all?
+local PostUpdateAuraButton = function(element, button)
+end
+
 
 -- Style Post Updates
 -- Styling function applying sizes and textures 
@@ -406,6 +520,47 @@ local Style = function(self, unit, id, ...)
 	self.Combat = combat
 
 
+	-- Auras
+	-----------------------------------------------------------
+	-- not appearing?
+	local auras = content:CreateFrame("Frame")
+	auras:Place("BOTTOMLEFT", health, "TOPLEFT", 10, 24)
+	auras:SetSize(42*8 + 8*6, 42) -- auras will be aligned in the available space, this size gives us 7x1 auras
+
+	auras.auraSize = 40 -- too much?
+	auras.spacingH = 4 -- horizontal/column spacing between buttons
+	auras.spacingV = 4 -- vertical/row spacing between aura buttons
+	auras.growthX = "RIGHT" -- auras grow to the left
+	auras.growthY = "UP" -- rows grow downwards (we just have a single row, though)
+	auras.maxButtons = nil -- when set will limit the number of buttons regardless of space available
+	auras.showCooldownSpiral = false -- don't show the spiral as a timer
+	auras.showCooldownTime = true -- show timer numbers
+
+	-- Filter strings
+	auras.auraFilter = nil -- general aura filter, only used if the below aren't here
+	auras.buffFilter = "HELPFUL" -- buff specific filter passed to blizzard API calls
+	auras.debuffFilter = "HARMFUL" -- debuff specific filter passed to blizzard API calls
+	
+	-- Filter methods
+	auras.AuraFilter = nil -- general aura filter function, called when the below aren't there
+	auras.BuffFilter = BuffFilter -- buff specific filter function
+	auras.DebuffFilter = DebuffFilter -- debuff specific filter function
+	
+	-- Aura tooltip position
+	auras.tooltipDefaultPosition = nil 
+	auras.tooltipPoint = "BOTTOMLEFT"
+	auras.tooltipAnchor = nil
+	auras.tooltipRelPoint = "TOPLEFT"
+	auras.tooltipOffsetX = 8 
+	auras.tooltipOffsetY = 16
+
+	self.Auras = auras
+	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+
+	local auraTooltip = UnitFramePlayer:CreateTooltip("AzeriteUI_PlayerAuraTooltip")
+
+
 	-- Texts
 	-----------------------------------------------------------
 
@@ -498,7 +653,6 @@ end
 
 UnitFramePlayer.OnInit = function(self)
 	local playerFrame = self:SpawnUnitFrame("player", "UICenter", Style)
-
 	self.frame = playerFrame
 end 
 
