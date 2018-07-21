@@ -506,8 +506,12 @@ end
 local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 	local description = element.Value and element.Value.Description
 	if description then 
-		local nextLevel = UnitLevel("player")
-		description:SetFormattedText("to level %s", nextLevel)
+		local level = UnitLevel("player")
+		if (level and (level > 0)) then 
+			description:SetFormattedText("to level %s", level + 1)
+		else 
+			description:SetText("")
+		end 
 	end 
 end
 

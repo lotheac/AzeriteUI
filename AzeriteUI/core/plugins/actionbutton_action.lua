@@ -97,6 +97,7 @@ local OnUpdate = function(self, elapsed)
 	-- Cooldown count
 	if (self.cooldownTimer <= 0) then 
 		local Cooldown = self.Cooldown 
+		local CooldownCount = self.CooldownCount
 		if Cooldown.active then 
 
 			local start, duration
@@ -110,11 +111,24 @@ local OnUpdate = function(self, elapsed)
 
 			end 
 
-			if ((start > 0) and (duration > 1.5)) then
-				self.CooldownCount:SetFormattedText(formatCooldownTime(duration - GetTime() + start))
-			else 
-				self.CooldownCount:SetText("")
-			end  
+			if CooldownCount then 
+				if ((start > 0) and (duration > 1.5)) then
+					CooldownCount:SetFormattedText(formatCooldownTime(duration - GetTime() + start))
+					if (not CooldownCount:IsShown()) then 
+						CooldownCount:Show()
+					end
+				else 
+					if (CooldownCount:IsShown()) then 
+						CooldownCount:SetText("")
+						CooldownCount:Hide()
+					end
+				end  
+			end 
+		else
+			if (CooldownCount and CooldownCount:IsShown()) then 
+				CooldownCount:SetText("")
+				CooldownCount:Hide()
+			end
 		end 
 
 		self.cooldownTimer = .1
@@ -152,7 +166,7 @@ ActionButton.UpdateAction = function(self)
 	if Icon then 
 		self.action = self:GetAction()
 		if HasAction(self.action) then 
-			Icon:SetTexture(self:GetActionTexture())
+			Icon:SetTexture(GetActionTexture(self.action))
 		else
 			Icon:SetTexture(nil) 
 		end 
@@ -209,8 +223,8 @@ end
 ActionButton.UpdateCooldown = function(self)
 	local Cooldown = self.Cooldown
 	if Cooldown then 
-		local locStart, locDuration = self:GetLossOfControlCooldown()
-		local start, duration, enable, modRate = self:GetCooldown()
+		local locStart, locDuration = GetActionLossOfControlCooldown(self.action)
+		local start, duration, enable, modRate = GetActionCooldown(self.action)
 		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
 
 		if ((locStart + locDuration) > (start + duration)) then
@@ -321,7 +335,13 @@ ActionButton.UpdateUsable = function(self)
 end 
 
 ActionButton.Update = function(self)
-	--self:UpdateAction() --- loooop!
+
+	if HasAction(self.action) then 
+		self.Icon:SetTexture(GetActionTexture(self.action))
+	else
+		self.Icon:SetTexture(nil) 
+	end 
+
 	self:UpdateBinding()
 	self:UpdateCount()
 	self:UpdateCooldown()
@@ -632,7 +652,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	page:SetFrameRef("Button", button)
 	visibility:SetFrameRef("Page", page)
 
-	page:WrapScript(button, "OnDragStart", [[
+	button:SetAttribute("OnDragStart", [[
 		local actionpage = self:GetAttribute("actionpage"); 
 		if (not actionpage) then
 			return
@@ -642,6 +662,28 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 			return "action", action
 		end
 	]])
+
+	page:WrapScript(button, "OnDragStart", [[
+		return self:RunAttribute("OnDragStart")
+	]])
+
+	-- Wrap twice, because the post-script is not run when the pre-script causes a pickup (doh)
+	-- we also need some phony message, or it won't work =/
+	page:WrapScript(button, "OnDragStart", [[
+		return "message", "update"
+	]])
+
+	-- when is this called...?
+	page:WrapScript(button, "OnReceiveDrag", [[
+		local kind, value, subtype, extra = ...
+		if ((not kind) or (not value)) then 
+			return false 
+		end
+		local actionpage = self:GetAttribute("actionpage"); 
+		local action = (actionpage - 1) * 12 + self:GetID();
+		return "action", action
+	]])
+
 
 	local driver 
 	if (barID == 1) then 
@@ -720,17 +762,23 @@ local Update = function(self, event, ...)
 	elseif (event == "ACTIONBAR_UPDATE_USABLE") then
 		self:UpdateUsable()
 
-	elseif (event == "UPDATE_SHAPESHIFT_FORM") then
-		self:Update()
-
 	elseif (event == "CURRENT_SPELL_CAST_CHANGED") then
 		self:UpdateAction()
+
+	elseif (event == "LOSS_OF_CONTROL_ADDED") then
+		self:UpdateCooldown()
+
+	elseif (event == "LOSS_OF_CONTROL_UPDATE") then
+		self:UpdateCooldown()
 
 	elseif (event == "SPELL_UPDATE_CHARGES") then
 		self:UpdateCount()
 
 	elseif (event == "UPDATE_BINDINGS") then
 		self:UpdateBinding()
+
+	elseif (event == "UPDATE_SHAPESHIFT_FORM") then
+		self:Update()
 
 	end 
 end
@@ -745,6 +793,8 @@ local Enable = function(self)
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
+	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Proxy)
+	self:RegisterEvent("LOSS_OF_CONTROL_UPDATE", Proxy)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 	self:RegisterEvent("PLAYER_ENTER_COMBAT", Proxy)
 	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
@@ -760,13 +810,16 @@ local Disable = function(self)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
 	self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
+	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Proxy)
+	self:UnregisterEvent("LOSS_OF_CONTROL_UPDATE", Proxy)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 	self:UnregisterEvent("PLAYER_ENTER_COMBAT", Proxy)
 	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
 	self:UnregisterEvent("UPDATE_BINDINGS", Proxy)
 	--self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
 	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Proxy)
+	
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 10)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 11)
