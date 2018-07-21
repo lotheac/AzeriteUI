@@ -13,12 +13,15 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
+local FlyoutHasSpell = _G.FlyoutHasSpell
 local GetActionCharges = _G.GetActionCharges
 local GetActionCooldown = _G.GetActionCooldown
+local GetActionInfo = _G.GetActionInfo
 local GetActionLossOfControlCooldown = _G.GetActionLossOfControlCooldown
 local GetActionCount = _G.GetActionCount
 local GetActionTexture = _G.GetActionTexture
 local GetBindingKey = _G.GetBindingKey 
+local GetMacroSpell = _G.GetMacroSpell
 local GetTime = _G.GetTime
 local HasAction = _G.HasAction
 local IsActionInRange = _G.IsActionInRange
@@ -162,16 +165,20 @@ end
 
 -- Called when the button action (and thus the texture) has changed
 ActionButton.UpdateAction = function(self)
+	local oldAction = self.action
+	local newAction = self:GetAction()
 	local Icon = self.Icon
 	if Icon then 
-		self.action = self:GetAction()
-		if HasAction(self.action) then 
-			Icon:SetTexture(GetActionTexture(self.action))
+		if HasAction(newAction) then 
+			Icon:SetTexture(GetActionTexture(newAction))
 		else
 			Icon:SetTexture(nil) 
 		end 
 	end 
-	self:Update()
+	if (oldAction ~= newAction) then 
+		self.action = newAction
+		self:Update()
+	end
 end 
 
 -- Called when the keybinds are loaded or changed
@@ -264,8 +271,6 @@ ActionButton.UpdateCooldown = function(self)
 	end 
 end
 
-
--- Called when spell chargers or item count changes
 ActionButton.UpdateCount = function(self) 
 	local Count = self.Count
 	if Count then 
@@ -347,6 +352,7 @@ ActionButton.Update = function(self)
 	self:UpdateCooldown()
 	self:UpdateFlash()
 	self:UpdateUsable()
+	self:UpdateOverlayGlow()
 
 	-- Allow modules to add in methods this way
 	if self.PostUpdate then 
@@ -390,6 +396,15 @@ ActionButton.GetPageID = function(self)
 	return self._pager:GetID()
 end 
 
+ActionButton.GetSpellID = function(self)
+	local actionType, id, subType = GetActionInfo(self.action)
+	if (actionType == "spell") then
+		return id
+	elseif (actionType == "macro") then
+		local _, _, spellID = GetMacroSpell(id)
+		return spellID
+	end
+end
 
 -- Setters
 ----------------------------------------------------
@@ -404,21 +419,18 @@ end
 
 ActionButton.IsInRange = function(self)
 	local unit = self:GetAttribute("unit")
-	if unit == "player" then
+	if (unit == "player") then
 		unit = nil
 	end
-	local val = self:IsUnitInRange(unit)
-	-- map 1/0 to true false, since the return values are inconsistent between actions and spells
-	if val == 1 then val = true elseif val == 0 then val = false end
+
+	local val = IsActionInRange(self.action, unit)
+	if (val == 1) then 
+		val = true 
+	elseif (val == 0) then 
+		val = false 
+	end
+
 	return val
-end
-
-ActionButton.IsUnitInRange = function(self, unit) 
-	return IsActionInRange(self.action, unit) 
-end
-
-
-ActionButton.IsAttack = function(self)
 end
 
 
@@ -463,106 +475,16 @@ end
 ActionButton.PostClick = function(self) 
 end
 
-local Style = function(self)
-	local icon = self:CreateTexture()
-	icon:SetDrawLayer("BACKGROUND", 2)
-	icon:SetAllPoints()
+local AddElements = function(button)
 
-	-- let blizz handle this one
-	local pushed = self:CreateTexture(nil, "OVERLAY")
-	pushed:SetDrawLayer("ARTWORK", 1)
-	pushed:SetAllPoints(icon)
-	pushed:SetColorTexture(1, 1, 1, .15)
+	LibActionButton:CreateButtonLayers(button)
+	LibActionButton:CreateButtonOverlay(button)
+	LibActionButton:CreateButtonCooldowns(button)
+	LibActionButton:CreateButtonCount(button)
+	LibActionButton:CreateButtonKeybind(button)
+	LibActionButton:CreateButtonOverlayGlow(button)
 
-	self:SetPushedTexture(pushed)
-	self:GetPushedTexture():SetBlendMode("ADD")
-		
-	-- We need to put it back in its correct drawlayer, 
-	-- or Blizzard will set it to ARTWORK which can lead 
-	-- to it randomly being drawn behind the icon texture. 
-	self:GetPushedTexture():SetDrawLayer("ARTWORK") 
-
-	local flash = self:CreateTexture()
-	flash:SetDrawLayer("ARTWORK", 2)
-	flash:SetAllPoints(icon)
-	flash:SetColorTexture(1, 0, 0, .25)
-	flash:Hide()
-
-	local cooldown = self:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
-	cooldown:Hide()
-	cooldown:SetAllPoints()
-	cooldown:SetFrameLevel(self:GetFrameLevel() + 1)
-	cooldown:SetReverse(false)
-	cooldown:SetSwipeColor(0, 0, 0, .75)
-	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
-	cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
-	cooldown:SetDrawSwipe(true)
-	cooldown:SetDrawBling(true)
-	cooldown:SetDrawEdge(false)
-	cooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
-
-	local chargeCooldown = self:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
-	chargeCooldown:Hide()
-	chargeCooldown:SetAllPoints()
-	chargeCooldown:SetFrameLevel(self:GetFrameLevel() + 2)
-	chargeCooldown:SetReverse(false)
-	chargeCooldown:SetSwipeColor(0, 0, 0, .75)
-	chargeCooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
-	chargeCooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
-	chargeCooldown:SetDrawSwipe(true)
-	chargeCooldown:SetDrawBling(true)
-	chargeCooldown:SetDrawEdge(false)
-	chargeCooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
-
-	local overlay = self:CreateFrame("Frame")
-	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 5)
-
-	local cooldownCount = overlay:CreateFontString()
-	cooldownCount:SetDrawLayer("ARTWORK", 1)
-	cooldownCount:SetPoint("CENTER", 1, 0)
-	cooldownCount:SetFontObject(GameFontNormal)
-	cooldownCount:SetJustifyH("CENTER")
-	cooldownCount:SetJustifyV("MIDDLE")
-	cooldownCount:SetShadowOffset(0, 0)
-	cooldownCount:SetShadowColor(0, 0, 0, 1)
-	cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
-
-	local count = overlay:CreateFontString()
-	count:SetDrawLayer("OVERLAY", 1)
-	count:SetPoint("BOTTOMRIGHT", -2, 1)
-	count:SetFontObject(GameFontNormal)
-	count:SetJustifyH("CENTER")
-	count:SetJustifyV("BOTTOM")
-	count:SetShadowOffset(0, 0)
-	count:SetShadowColor(0, 0, 0, 1)
-	count:SetTextColor(250/255, 250/255, 250/255, .85)
-
-	local keybind = overlay:CreateFontString()
-	keybind:SetDrawLayer("OVERLAY", 2)
-	keybind:SetPoint("TOPRIGHT", -2, -1)
-	keybind:SetFontObject(GameFontNormal)
-	keybind:SetJustifyH("CENTER")
-	keybind:SetJustifyV("BOTTOM")
-	keybind:SetShadowOffset(0, 0)
-	keybind:SetShadowColor(0, 0, 0, 1)
-	keybind:SetTextColor(230/255, 230/255, 230/255, .75)
-
-
-	-- Reference the frames
-	self.ChargeCooldown = chargeCooldown
-	self.Cooldown = cooldown
-	self.Overlay = overlay
-	
-	-- Reference the layers
-	self.CooldownCount = cooldownCount
-	self.Count = count
-	self.Flash = flash
-	self.Icon = icon
-	self.Keybind = keybind
-	self.Pushed = pushed
-
-	return self
+	return button
 end 
 
 -- The 'self' here is the module spawning the button
@@ -625,7 +547,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	]=])
 	
 	-- Create the button
-	local button = Style(setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT))
+	local button = AddElements(setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT))
 	button:SetFrameStrata("LOW")
 	button:RegisterForDrag("LeftButton", "RightButton")
 	button:RegisterForClicks("AnyUp")
@@ -736,20 +658,15 @@ end
 local Update = function(self, event, ...)
 	local arg1 = ...
 
-	if (event == "PLAYER_ENTERING_WORLD") then 
+	if (event == "PLAYER_ENTERING_WORLD") or (event == "UPDATE_SHAPESHIFT_FORM") then 
 		self:Update()
 
 	elseif (event == "PLAYER_ENTER_COMBAT") then
-		--StartFlash(self)
 		self:UpdateFlash()
 
 	elseif (event == "PLAYER_LEAVE_COMBAT") then
-		--StopFlash(self)
 		self:UpdateFlash()
 
-	elseif (event == "ACTIONBAR_PAGE_CHANGED") then
-		self:Update()
-			
 	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
 		if ((arg1 == 0) or (arg1 == tonumber(self.action))) then
 			self:Update()
@@ -757,7 +674,6 @@ local Update = function(self, event, ...)
 
 	elseif (event == "ACTIONBAR_UPDATE_COOLDOWN") then
 		self:UpdateCooldown()
-		-- update tooltip here
 	
 	elseif (event == "ACTIONBAR_UPDATE_USABLE") then
 		self:UpdateUsable()
@@ -774,11 +690,30 @@ local Update = function(self, event, ...)
 	elseif (event == "SPELL_UPDATE_CHARGES") then
 		self:UpdateCount()
 
+	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW") then
+		local spellID = self:GetSpellID()
+		if (spellID and (spellID == arg1)) then
+			self:ShowOverlayGlow()
+		else
+			local actionType, id = GetActionInfo(self.action)
+			if (actionType == "flyout") and FlyoutHasSpell(id, arg1) then
+				self:ShowOverlayGlow()
+			end
+		end
+
+	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_HIDE") then
+		local spellID = self:GetSpellID()
+		if (spellID and (spellID == arg1)) then
+			self:HideOverlayGlow()
+		else
+			local actionType, id = GetActionInfo(self.action)
+			if actionType == "flyout" and FlyoutHasSpell(id, arg1) then
+				self:HideOverlayGlow()
+			end
+		end
+
 	elseif (event == "UPDATE_BINDINGS") then
 		self:UpdateBinding()
-
-	elseif (event == "UPDATE_SHAPESHIFT_FORM") then
-		self:Update()
 
 	end 
 end
@@ -789,6 +724,7 @@ end
 
 -- Register events and update handlers here
 local Enable = function(self)
+
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
@@ -822,4 +758,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 11)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 14)

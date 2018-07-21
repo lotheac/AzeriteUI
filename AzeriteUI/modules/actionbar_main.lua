@@ -240,6 +240,20 @@ ActionButton.PostCreate = function(self, ...)
 	self.Keybind:SetShadowColor(0, 0, 0, 1)
 	self.Keybind:SetTextColor(self.colors.quest.gray[1], self.colors.quest.gray[2], self.colors.quest.gray[3], .75)
 
+	self.OverlayGlow:ClearAllPoints()
+	self.OverlayGlow:SetPoint("CENTER", self, "CENTER", 0, 0)
+	self.OverlayGlow:SetSize(buttonSize * 1.25, buttonSize * 1.25)
+	--self.OverlayGlow:SetPoint("TOPLEFT", self, "TOPLEFT", -buttonSize*.2, buttonSize*.2)
+	--self.OverlayGlow:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", buttonSize*.2, -buttonSize*.2)
+	--self.OverlayGlow:SetPoint("TOPLEFT", self, "TOPLEFT", -buttonSize*.2, buttonSize*.2)
+	--self.OverlayGlow:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", buttonSize*.2, -buttonSize*.2)
+	self.OverlayGlow.spark:SetTexture(getPath("IconAlert-Circle"))
+	self.OverlayGlow.innerGlow:SetTexture(getPath("IconAlert-Circle"))
+	self.OverlayGlow.innerGlowOver:SetTexture(getPath("IconAlert-Circle"))
+	self.OverlayGlow.outerGlow:SetTexture(getPath("IconAlert-Circle"))
+	self.OverlayGlow.outerGlowOver:SetTexture(getPath("IconAlert-Circle"))
+	self.OverlayGlow.ants:SetTexture(getPath("IconAlertAnts-Circle"))
+
 
 	-- Our own style layers
 	-----------------------------------------------------
@@ -259,10 +273,14 @@ ActionButton.PostCreate = function(self, ...)
 	darken.highlight = 0
 	darken.normal = .35
 
-	local border = self.Overlay:CreateTexture()
+	local borderFrame = self:CreateFrame("Frame")
+	borderFrame:SetFrameLevel(self:GetFrameLevel() + 5)
+
+
+	local border = borderFrame:CreateTexture()
 	border:SetDrawLayer("BORDER", 1)
 	border:SetSize(buttonSize/(122/256),buttonSize/(122/256))
-	border:SetPoint("CENTER", 0, 0)
+	border:SetPoint("CENTER", self, "CENTER", 0, 0)
 	border:SetTexture(getPath("actionbutton-border"))
 	border:SetVertexColor(self.colors.ui.stone[1], self.colors.ui.stone[2], self.colors.ui.stone[3])
 

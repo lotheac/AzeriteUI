@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.3] 2018-07-21
+### Changed
+- Limited amounts of full ActionButton updates to address a severe performance issue experienced from the ActionBar module while using abilities.
+
 ## [1.0.2] 2018-07-21
 ### Added
 - Added boss unit frames with health, cast bars, and a few auras. 

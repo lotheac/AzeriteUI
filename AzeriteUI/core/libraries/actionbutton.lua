@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 13)
+local LibActionButton = CogWheel:Set("LibActionButton", 17)
 if (not LibActionButton) then	
 	return
 end
@@ -36,26 +36,28 @@ local string_match = string.match
 local table_insert = table.insert
 local table_remove = table.remove
 local table_sort = table.sort
+local tostring = tostring
 local type = type
-
--- WoW API
 
 
 -- Doing it this way to make the transition to library later on easier
 LibActionButton.embeds = LibActionButton.embeds or {} 
 LibActionButton.buttons = LibActionButton.buttons or {} 
 LibActionButton.callbacks = LibActionButton.callbacks or {} 
-LibActionButton.pages = LibActionButton.pages or {} 
-LibActionButton.visibilities = LibActionButton.visibilities or {} 
 LibActionButton.elements = LibActionButton.elements or {} -- global buttontype registry
 LibActionButton.numButtons = LibActionButton.numButtons or 0 -- total number of spawned buttons 
 
 -- Shortcuts
 local Buttons = LibActionButton.buttons
 local Callbacks = LibActionButton.callbacks
-local Pages = LibActionButton.pages
 local Templates = LibActionButton.elements
-local Visibilities = LibActionButton.visibilities
+
+
+-- Blizzard Textures
+local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
+local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
+local BLING_TEXTURE = [[Interface\Cooldown\star4]]
+
 
 
 -- Utility Functions
@@ -157,10 +159,326 @@ Button.UnregisterAllEvents = function(self)
 	UnregisterAllEvents(self)
 end
 
+Button.GetSpellID = function(self)
+	return nil
+end
+
 Button.GetTooltip = function(self)
 	return LibActionButton:GetTooltip("CG_ActionButtonTooltip") or LibActionButton:CreateTooltip("CG_ActionButtonTooltip")
 end
 
+local maxAlpha, maxAntAlpha = .5, .5
+
+local OverlayGlowAnimOutFinished = function(animGroup)
+	local overlay = animGroup:GetParent()
+	local frame = overlay:GetParent()
+	overlay:Hide()
+end
+
+local OverlayGlow_OnHide = function(self)
+	if self.animOut:IsPlaying() then
+		self.animOut:Stop()
+		OverlayGlowAnimOutFinished(self.animOut)
+	end
+end
+
+local CreateScaleAnim = function(group, target, order, duration, x, y, delay)
+	local scale = group:CreateAnimation("Scale")
+	scale:SetTarget(target:GetName())
+	scale:SetOrder(order)
+	scale:SetDuration(duration)
+	scale:SetScale(x, y)
+
+	if delay then
+		scale:SetStartDelay(delay)
+	end
+end
+
+local CreateAlphaAnim = function(group, target, order, duration, fromAlpha, toAlpha, delay)
+	local alpha = group:CreateAnimation("Alpha")
+	alpha:SetTarget(target:GetName())
+	alpha:SetOrder(order)
+	alpha:SetDuration(duration)
+	alpha:SetFromAlpha(fromAlpha)
+	alpha:SetToAlpha(toAlpha)
+
+	if delay then
+		alpha:SetStartDelay(delay)
+	end
+end
+
+local AnimIn_OnPlay = function(group)
+	local frame = group:GetParent()
+	local frameWidth, frameHeight = frame:GetSize()
+	frame.spark:SetSize(frameWidth, frameHeight)
+	frame.spark:SetAlpha(0.3)
+	frame.innerGlow:SetSize(frameWidth / 2, frameHeight / 2)
+	frame.innerGlow:SetAlpha(maxAlpha)
+	frame.innerGlowOver:SetAlpha(maxAlpha)
+	frame.outerGlow:SetSize(frameWidth * 2, frameHeight * 2)
+	frame.outerGlow:SetAlpha(maxAlpha)
+	frame.outerGlowOver:SetAlpha(maxAlpha)
+	frame.ants:SetSize(frameWidth * 0.85, frameHeight * 0.85)
+	frame.ants:SetAlpha(0)
+	frame:Show()
+end
+
+local AnimIn_OnFinished = function(group)
+	local frame = group:GetParent()
+	local frameWidth, frameHeight = frame:GetSize()
+	frame.spark:SetAlpha(0)
+	frame.innerGlow:SetAlpha(0)
+	frame.innerGlow:SetSize(frameWidth, frameHeight)
+	frame.innerGlowOver:SetAlpha(0.0)
+	frame.outerGlow:SetSize(frameWidth, frameHeight)
+	frame.outerGlowOver:SetAlpha(0.0)
+	frame.outerGlowOver:SetSize(frameWidth, frameHeight)
+	frame.ants:SetAlpha(maxAntAlpha)
+end
+
+local CreateOverlayGlow = function(button)
+
+	-- create frame and textures
+	local name = button:GetName() .. "OverlayGlow" 
+	local overlay = button:CreateFrame("Frame", name)
+
+	-- spark
+	overlay.spark = overlay:CreateTexture(name .. "Spark", "BACKGROUND")
+	overlay.spark:SetPoint("CENTER")
+	overlay.spark:SetAlpha(0)
+	overlay.spark:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+	overlay.spark:SetTexCoord(0.00781250, 0.61718750, 0.00390625, 0.26953125)
+
+	-- inner glow
+	overlay.innerGlow = overlay:CreateTexture(name .. "InnerGlow", "ARTWORK")
+	overlay.innerGlow:SetPoint("CENTER")
+	overlay.innerGlow:SetAlpha(0)
+	overlay.innerGlow:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+	overlay.innerGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+
+	-- inner glow over
+	overlay.innerGlowOver = overlay:CreateTexture(name .. "InnerGlowOver", "ARTWORK")
+	overlay.innerGlowOver:SetPoint("TOPLEFT", overlay.innerGlow, "TOPLEFT")
+	overlay.innerGlowOver:SetPoint("BOTTOMRIGHT", overlay.innerGlow, "BOTTOMRIGHT")
+	overlay.innerGlowOver:SetAlpha(0)
+	overlay.innerGlowOver:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+	overlay.innerGlowOver:SetTexCoord(0.00781250, 0.50781250, 0.53515625, 0.78515625)
+
+	-- outer glow
+	overlay.outerGlow = overlay:CreateTexture(name .. "OuterGlow", "ARTWORK")
+	overlay.outerGlow:SetPoint("CENTER")
+	overlay.outerGlow:SetAlpha(0)
+	overlay.outerGlow:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+	overlay.outerGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+
+	-- outer glow over
+	overlay.outerGlowOver = overlay:CreateTexture(name .. "OuterGlowOver", "ARTWORK")
+	overlay.outerGlowOver:SetPoint("TOPLEFT", overlay.outerGlow, "TOPLEFT")
+	overlay.outerGlowOver:SetPoint("BOTTOMRIGHT", overlay.outerGlow, "BOTTOMRIGHT")
+	overlay.outerGlowOver:SetAlpha(0)
+	overlay.outerGlowOver:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+	overlay.outerGlowOver:SetTexCoord(0.00781250, 0.50781250, 0.53515625, 0.78515625)
+
+	-- ants
+	overlay.ants = overlay:CreateTexture(name .. "Ants", "OVERLAY")
+	overlay.ants:SetPoint("CENTER")
+	overlay.ants:SetAlpha(0)
+	overlay.ants:SetTexture([[Interface\SpellActivationOverlay\IconAlertAnts]])
+
+	-- setup antimations
+	overlay.animIn = overlay:CreateAnimationGroup()
+	CreateScaleAnim(overlay.animIn, overlay.spark,          1, 0.2, 1.5, 1.5)
+	CreateAlphaAnim(overlay.animIn, overlay.spark,          1, 0.2, 0, 1)
+	CreateScaleAnim(overlay.animIn, overlay.innerGlow,      1, 0.3, 2, 2)
+	CreateScaleAnim(overlay.animIn, overlay.innerGlowOver,  1, 0.3, 2, 2)
+	CreateAlphaAnim(overlay.animIn, overlay.innerGlowOver,  1, 0.3, maxAlpha, 0)
+	CreateScaleAnim(overlay.animIn, overlay.outerGlow,      1, 0.3, 0.5, 0.5)
+	CreateScaleAnim(overlay.animIn, overlay.outerGlowOver,  1, 0.3, 0.5, 0.5)
+	CreateAlphaAnim(overlay.animIn, overlay.outerGlowOver,  1, 0.3, maxAlpha, 0)
+	CreateScaleAnim(overlay.animIn, overlay.spark,          1, 0.2, 2/3, 2/3, 0.2)
+	CreateAlphaAnim(overlay.animIn, overlay.spark,          1, 0.2, maxAlpha, 0, 0.2)
+	CreateAlphaAnim(overlay.animIn, overlay.innerGlow,      1, 0.2, maxAlpha, 0, 0.3)
+	CreateAlphaAnim(overlay.animIn, overlay.ants,           1, 0.2, 0, maxAlpha, 0.3)
+	overlay.animIn:SetScript("OnPlay", AnimIn_OnPlay)
+	overlay.animIn:SetScript("OnFinished", AnimIn_OnFinished)
+
+	overlay.animOut = overlay:CreateAnimationGroup()
+	CreateAlphaAnim(overlay.animOut, overlay.outerGlowOver, 1, 0.2, 0, 1)
+	CreateAlphaAnim(overlay.animOut, overlay.ants,          1, 0.2, maxAlpha, 0)
+	CreateAlphaAnim(overlay.animOut, overlay.outerGlowOver, 2, 0.2, maxAlpha, 0)
+	CreateAlphaAnim(overlay.animOut, overlay.outerGlow,     2, 0.2, maxAlpha, 0)
+	overlay.animOut:SetScript("OnFinished", OverlayGlowAnimOutFinished)
+
+	-- scripts
+	overlay:SetScript("OnUpdate", ActionButton_OverlayGlowOnUpdate)
+	overlay:SetScript("OnHide", OverlayGlow_OnHide)
+
+	return overlay
+end
+
+local GetOverlayGlow = function()
+	local overlay = table_remove(lib.unusedOverlays)
+	if not overlay then
+		overlay = CreateOverlayGlow()
+	end
+	return overlay
+end
+
+
+Button.ShowOverlayGlow = function(self)
+	local OverlayGlow = self.OverlayGlow
+	if OverlayGlow.animOut:IsPlaying() then
+		OverlayGlow.animOut:Stop()
+		OverlayGlow.animIn:Play()
+	end
+end 
+
+Button.HideOverlayGlow = function(self)
+	local OverlayGlow = self.OverlayGlow
+	if OverlayGlow.animIn:IsPlaying() then
+		OverlayGlow.animIn:Stop()
+	end
+	if self:IsVisible() then
+		OverlayGlow.animOut:Play()
+	else
+		OverlayGlowAnimOutFinished(OverlayGlow.animOut)
+	end
+end 
+
+Button.UpdateOverlayGlow = function(self)
+	local spellId = self:GetSpellID()
+	if (spellId and IsSpellOverlayed(spellId)) then
+		self:ShowOverlayGlow()
+	else
+		self:HideOverlayGlow()
+	end
+end
+
+
+LibActionButton.CreateButtonLayers = function(self, button)
+
+	-- icon
+	local icon = button:CreateTexture()
+	icon:SetDrawLayer("BACKGROUND", 2)
+	icon:SetAllPoints()
+	button.Icon = icon
+
+	local flash = button:CreateTexture()
+	flash:SetDrawLayer("ARTWORK", 2)
+	flash:SetAllPoints(icon)
+	flash:SetColorTexture(1, 0, 0, .25)
+	flash:Hide()
+	button.Flash = flash
+
+	-- let blizz handle this one
+	local pushed = button:CreateTexture(nil, "OVERLAY")
+	pushed:SetDrawLayer("ARTWORK", 1)
+	pushed:SetAllPoints(icon)
+	pushed:SetColorTexture(1, 1, 1, .15)
+	button.Pushed = pushed
+
+	button:SetPushedTexture(pushed)
+	button:GetPushedTexture():SetBlendMode("ADD")
+	button:GetPushedTexture():SetDrawLayer("ARTWORK") -- must be updated after pushed texture has been set
+
+end
+
+LibActionButton.CreateButtonOverlay = function(self, button)
+
+	local overlay = button:CreateFrame("Frame")
+	overlay:SetAllPoints()
+	overlay:SetFrameLevel(button:GetFrameLevel() + 15)
+	button.Overlay = overlay
+
+end 
+
+LibActionButton.CreateButtonKeybind = function(self, button)
+
+	local keybind = (button.Overlay or button):CreateFontString()
+	keybind:SetDrawLayer("OVERLAY", 2)
+	keybind:SetPoint("TOPRIGHT", -2, -1)
+	keybind:SetFontObject(GameFontNormal)
+	keybind:SetJustifyH("CENTER")
+	keybind:SetJustifyV("BOTTOM")
+	keybind:SetShadowOffset(0, 0)
+	keybind:SetShadowColor(0, 0, 0, 1)
+	keybind:SetTextColor(230/255, 230/255, 230/255, .75)
+	button.Keybind = keybind
+
+end 
+
+LibActionButton.CreateButtonCount = function(self, button)
+
+	local count = (button.Overlay or button):CreateFontString()
+	count:SetDrawLayer("OVERLAY", 1)
+	count:SetPoint("BOTTOMRIGHT", -2, 1)
+	count:SetFontObject(GameFontNormal)
+	count:SetJustifyH("CENTER")
+	count:SetJustifyV("BOTTOM")
+	count:SetShadowOffset(0, 0)
+	count:SetShadowColor(0, 0, 0, 1)
+	count:SetTextColor(250/255, 250/255, 250/255, .85)
+	button.Count = count
+
+end 
+
+LibActionButton.CreateButtonOverlayGlow = function(self, button)
+
+	local overlayGlow = CreateOverlayGlow(button)
+	overlayGlow:SetFrameLevel(button:GetFrameLevel() + 10)
+
+	local frameWidth, frameHeight = button:GetSize()
+	overlayGlow:ClearAllPoints()
+	overlayGlow:SetSize(frameWidth * 1.4, frameHeight * 1.4)
+	overlayGlow:SetPoint("TOPLEFT", button, "TOPLEFT", -frameWidth * 0.2, frameHeight * 0.2)
+	overlayGlow:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", frameWidth * 0.2, -frameHeight * 0.2)
+
+	button.OverlayGlow = overlayGlow
+
+end
+
+LibActionButton.CreateButtonCooldowns = function(self, button)
+
+	local cooldown = button:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	cooldown:Hide()
+	cooldown:SetAllPoints()
+	cooldown:SetFrameLevel(button:GetFrameLevel() + 1)
+	cooldown:SetReverse(false)
+	cooldown:SetSwipeColor(0, 0, 0, .75)
+	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+	cooldown:SetDrawSwipe(true)
+	cooldown:SetDrawBling(true)
+	cooldown:SetDrawEdge(false)
+	cooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
+	button.Cooldown = cooldown
+
+	local cooldownCount = (button.Overlay or button):CreateFontString()
+	cooldownCount:SetDrawLayer("ARTWORK", 1)
+	cooldownCount:SetPoint("CENTER", 1, 0)
+	cooldownCount:SetFontObject(GameFontNormal)
+	cooldownCount:SetJustifyH("CENTER")
+	cooldownCount:SetJustifyV("MIDDLE")
+	cooldownCount:SetShadowOffset(0, 0)
+	cooldownCount:SetShadowColor(0, 0, 0, 1)
+	cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
+	button.CooldownCount = cooldownCount
+
+	local chargeCooldown = button:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	chargeCooldown:Hide()
+	chargeCooldown:SetAllPoints()
+	chargeCooldown:SetFrameLevel(button:GetFrameLevel() + 2)
+	chargeCooldown:SetReverse(false)
+	chargeCooldown:SetSwipeColor(0, 0, 0, .75)
+	chargeCooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	chargeCooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+	chargeCooldown:SetDrawSwipe(true)
+	chargeCooldown:SetDrawBling(true)
+	chargeCooldown:SetDrawEdge(false)
+	chargeCooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
+	button.ChargeCooldown = chargeCooldown
+
+end
 
 
 LibActionButton.GetGenericMeta = function(self)
@@ -217,6 +535,7 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	button:HookScript("OnShow", button.Update)
 	
 	-- Enable the newly created button
+	-- This is where events are registered and set up
 	template.Enable(button)
 
 	-- Run a full initial update
@@ -224,6 +543,7 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 
 	return button
 end
+
 
 local sortByID = function(a,b)
 	if (a) and (b) then 
@@ -281,37 +601,6 @@ LibActionButton.GetAllActionButtonsByType = function(self, buttonType)
 		return sorted[counter]
 	end 
 end 
-
-
--- Spawn a new button
-LibActionButton.SpawnActionButton2 = function(self, parent, buttonType, buttonID, buttonTemplate, ...)
-
-
-
-	
-	local button
-	if (buttonType == "pet") then
-		button = setmetatable(LibActionButton:CreateFrame("CheckButton", name , header, "PetActionButtonTemplate"), Button_MT)
-		button:UnregisterAllEvents()
-		button:SetScript("OnEvent", nil)
-		button:SetScript("OnUpdate", nil)
-		button:SetScript("OnDragStart", nil)
-		button:SetScript("OnReceiveDrag", nil)
-		
-	elseif (buttonType == "stance") then
-		button = setmetatable(LibActionButton:CreateFrame("CheckButton", name , header, "StanceButtonTemplate"), Button_MT)
-		button:UnregisterAllEvents()
-		button:SetScript("OnEvent", nil)
-		
-	--elseif (buttonType == "extra") then
-		--button = setmetatable(LibActionButton:CreateFrame("CheckButton", name , header, "ExtraActionButtonTemplate"), Button_MT)
-		--button:UnregisterAllEvents()
-		--button:SetScript("OnEvent", nil)
-	
-	else
-	end
-
-end
 
 -- register a widget/element
 LibActionButton.RegisterElement = function(self, buttonType, spawnFunc, enableFunc, disableFunc, updateFunc, version)
