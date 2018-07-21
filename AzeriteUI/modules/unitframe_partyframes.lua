@@ -13,41 +13,15 @@ local _G = _G
 local unpack = unpack
 
 -- WoW API
-local GetExpansionLevel = _G.GetExpansionLevel
-local GetQuestGreenRange = _G.GetQuestGreenRange
-local IsXPUserDisabled = _G.IsXPUserDisabled
 local UnitIsAFK = _G.UnitIsAFK
-local UnitLevel = _G.UnitLevel
-
--- WoW Objects
-local MAX_PLAYER_LEVEL_TABLE = _G.MAX_PLAYER_LEVEL_TABLE
 
 -- WoW Strings
 local AFK = _G.AFK
 local DEAD = _G.DEAD
 
--- Current player level
-local LEVEL = UnitLevel("player") 
-
 
 -- Utility Functions
 -----------------------------------------------------------------
-
--- Returns the correct difficulty color compared to the player
-local getDifficultyColorByLevel = function(level)
-	level = level - LEVEL
-	if (level > 4) then
-		return Colors.quest.red.colorCode
-	elseif (level > 2) then
-		return Colors.quest.orange.colorCode
-	elseif (level >= -2) then
-		return Colors.quest.yellow.colorCode
-	elseif (level >= -GetQuestGreenRange()) then
-		return Colors.quest.green.colorCode
-	else
-		return Colors.quest.gray.colorCode
-	end
-end
 
 -- Proxy function to get media from our local media folder
 local getPath = function(fileName)
@@ -279,20 +253,6 @@ local Style = function(self, unit, id, ...)
 
 end 
 
-UnitFrameParty.OnEvent = function(self, event, ...)
-	if (event == "PLAYER_LEVEL_UP") then 
-		local level = ...
-		if (level and (level ~= LEVEL)) then
-			LEVEL = level
-		else
-			local level = UnitLevel("player")
-			if (level ~= LEVEL) then
-				LEVEL = level
-			end
-		end
-	end
-end
-
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
@@ -303,6 +263,3 @@ UnitFrameParty.OnInit = function(self)
 	end 
 end 
 
-UnitFrameParty.OnEnable = function(self)
-	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
-end 
