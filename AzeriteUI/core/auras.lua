@@ -6,6 +6,10 @@ local _,PlayerClass = UnitClass("player")
 -- Whitelisted auras we'll always display, 
 -- even when they fall under the criteria to be filtered out.
 Auras.WhiteList = {
+	[243138] 	= true, -- Happy Feet event 
+	[246050] 	= true, -- Happy Feet buff gained restoring health
+
+
 	[57723] 	= true, -- Exhaustion "Cannot benefit from Heroism or other similar effects." (Alliance version)
 	[57724] 	= true, -- Sated "Cannot benefit from Bloodlust or other similar effects." (Horde version)
 	[160455]	= true, -- Fatigued "Cannot benefit from Netherwinds or other similar effects." (Pet version)

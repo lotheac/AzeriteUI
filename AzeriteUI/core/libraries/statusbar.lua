@@ -644,7 +644,7 @@ end
 
 StatusBar.CreateFrame = function(self, type, name, ...)
 	return self:CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
-	--return CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
+--	return CreateFrame(type or "Frame", name, Bars[self].scaffold, ...)
 end
 
 StatusBar.CreateTexture = function(self, ...)

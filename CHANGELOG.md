@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.7] 2018-07-22
+### Added
+- Added the "Happy Feet" auras to the unitframe aura whitelist. 
+
+### Changed
+- Reduced patch 8.0.1 build number requirement to 27101, since some clients still can log in using that build. 
+
 ## [1.0.6] 2018-07-22
 ### Fixed
 - The micro menu's toggle button's tooltip now properly disappears when you move the cursor away from the config button.
