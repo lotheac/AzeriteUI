@@ -650,15 +650,15 @@ local Enable = function(self)
 			self:EnableFrequentUpdates("Auras", frequent)
 		else
 			self:RegisterEvent("UNIT_AURA", Proxy)
-			self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
-			self:RegisterEvent("VEHICLE_UPDATE", Proxy)
+			self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy, true)
+			self:RegisterEvent("VEHICLE_UPDATE", Proxy, true)
 			self:RegisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
 			self:RegisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
 			self:RegisterEvent("UNIT_EXITING_VEHICLE", Proxy)
 			self:RegisterEvent("UNIT_EXITED_VEHICLE", Proxy)
 
 			if (unit == "target") or (unit == "targettarget") then
-				self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy)
+				self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy, true)
 			end
 		end
 
@@ -702,5 +702,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 10)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 12)
 end 

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.5] 2018-07-22
+### Fixed
+- Fixed a bad event registration in the unitframe library's aura element causing classpower to not properly toggle on target changes.
+
 ## [1.0.4] 2018-07-22
 ### Changed
 - Increased the size of the target unit frame's hit rectangle so that the target portrait also can be clicked to access right-click menus and similar.

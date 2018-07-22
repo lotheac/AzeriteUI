@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 27)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 28)
 if (not LibUnitFrame) then	
 	return
 end
@@ -343,6 +343,9 @@ local OnUnitFrameEvent = function(frame, event, ...)
 		local isUnitEvent = unitEvents[event]
 		for i = 1, #events do
 			if isUnitEvent then 
+				if (event == "PLAYER_TARGET_CHANGED") then 
+					print(event, ...)
+				end 
 				events[i](frame, event, ...)
 			else 
 				events[i](frame, event, frame.unit, ...)

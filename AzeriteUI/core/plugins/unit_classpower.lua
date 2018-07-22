@@ -105,6 +105,9 @@ local Generic = setmetatable({
 			self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
 		end 
 
+		if (element.hideWhenNoTarget) then 
+			self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy, true)
+		end 
 		
 	end,
 	DisablePower = function(self)
@@ -124,6 +127,7 @@ local Generic = setmetatable({
 
 		self:UnregisterEvent("PLAYER_REGEN_DISABLED", Proxy)
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", Proxy)
+		self:UnregisterEvent("PLAYER_TARGET_CHANGED", Proxy)
 	end, 
 	UpdatePower = function(self, event, unit, ...)
 		local element = self.ClassPower
@@ -883,9 +887,9 @@ local Enable = function(self)
 			self:RegisterEvent("PLAYER_LEVEL_UP", Proxy, true)
 		end  
 
-		if element.hideWhenNoTarget then 
-			self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy, true)
-		end 
+		--if element.hideWhenNoTarget then 
+		--	self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy, true)
+		--end 
 
 		return true
 	end
@@ -898,17 +902,18 @@ local Disable = function(self)
 		-- Disable the current powerType, if any
 		if element._currentType then 
 			element:DisablePower()
+			element._currentType = nil
 		end 
 
 		-- Remove generic events
 		self:UnregisterEvent("UNIT_DISPLAYPOWER", Proxy)
 		self:UnregisterEvent("PLAYER_LEVEL_UP", Proxy)
 		self:UnregisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy)
-		self:UnregisterEvent("PLAYER_TARGET_CHANGED", Proxy)
+		--self:UnregisterEvent("PLAYER_TARGET_CHANGED", Proxy)
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 12)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 14)
 end 
