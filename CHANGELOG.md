@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.6] 2018-07-22
+### Fixed
+- The micro menu's toggle button's tooltip now properly disappears when you move the cursor away from the config button.
+- Fixed a localization typo preventing mouse wheel keybinds from being abbreviated like other long keybind names are.
+
 ## [1.0.5] 2018-07-22
 ### Fixed
 - Fixed a bad event registration in the unitframe library's aura element causing classpower to not properly toggle on target changes.

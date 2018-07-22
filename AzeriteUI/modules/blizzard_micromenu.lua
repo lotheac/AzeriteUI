@@ -287,15 +287,18 @@ BlizzardMicroMenu.OnInit = function(self)
 		end
 	]])
 	configButton:SetScript("OnEnter", function() 
-		local tooltip = self:GetMicroMenuTooltip()
+		local tooltip = BlizzardMicroMenu:GetMicroMenuTooltip()
 		tooltip:SetDefaultAnchor(configButton)
 		tooltip:AddLine(L["Main Menu"])
 		tooltip:AddLine(L["<Left-click> to toggle menu."], Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3], true)
 		tooltip:Show()
 	end)
+	configButton:SetScript("OnLeave", function(button)
+		local tooltip = BlizzardMicroMenu:GetMicroMenuTooltip()
+		tooltip:Hide() 
+	end) 
 	self.ConfigButton = configButton
 
-	
 	configButton.Icon = configButton:CreateTexture()
 	configButton.Icon:SetTexture(getPath("config_button"))
 	configButton.Icon:SetSize(96,96)
