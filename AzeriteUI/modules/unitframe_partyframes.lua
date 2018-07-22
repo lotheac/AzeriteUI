@@ -260,7 +260,7 @@ end
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style, "[@party"..i..",exists,@raid6,noexists]show;hide")
+		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style, "[@raid6,exists] hide; [@party"..i..",exists] show;")
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
