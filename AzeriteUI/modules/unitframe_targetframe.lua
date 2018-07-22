@@ -443,6 +443,7 @@ local Style = function(self, unit, id, ...)
 
 	self:SetSize(439, 93) 
 	self:Place("TOPRIGHT", -153, -79) 
+	self:SetHitRectInsets(0, -80, -30, 0)
 
 	-- Assign our own global custom colors
 	self.colors = Colors

@@ -484,7 +484,7 @@ local Style = function(self, unit, id, ...)
 		extraPowerVal:SetDrawLayer("OVERLAY")
 		extraPowerVal:SetJustifyH("CENTER")
 		extraPowerVal:SetJustifyV("MIDDLE")
-		extraPowerVal:SetFontObject(Game15Font_o1)
+		extraPowerVal:SetFontObject(AzeriteFont18_Outline)
 		extraPowerVal:SetShadowOffset(0, 0)
 		extraPowerVal:SetShadowColor(0, 0, 0, 0)
 		extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
@@ -603,33 +603,6 @@ local Style = function(self, unit, id, ...)
 	self.Power.Value = powerVal
 	self.Power.UpdateValue = OverrideValue
 
-	--[[
-	-- spec
-	local spec = overlay:CreateFrame("Frame")
-	spec:SetSize(67, 51)
-	spec:Place("CENTER", power, "BOTTOM", 3, -20)
-
-	local specBg = spec:CreateTexture()
-	specBg:SetDrawLayer("BACKGROUND")
-	specBg:SetSize(67, 51)
-	specBg:SetPoint("CENTER", 0, 0)
-	specBg:SetTexture(getPath("triangle_case"))
-	specBg:SetVertexColor(  89/255,  92/255,  88/255, 1)
-
-	for i = 1,4 do 
-		local specTexture = spec:CreateTexture()
-		specTexture:SetDrawLayer("ARTWORK")
-		specTexture:SetPoint("CENTER", 0, 1)
-		specTexture:SetSize(31, 24)
-		specTexture:SetTexture(getPath("triangle_gem"))
-		specTexture:SetVertexColor(unpack(self.colors.specialization[i]))
-		specTexture:Hide()
-		spec[i] = specTexture
-	end 
-
-	self.Spec = spec
-	]]--
-	
 	-- Update textures according to player level
 	PostUpdateTextures(self)
 end 

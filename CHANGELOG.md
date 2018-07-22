@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.4] 2018-07-22
+### Changed
+- Increased the size of the target unit frame's hit rectangle so that the target portrait also can be clicked to access right-click menus and similar.
+- Increased party unit frame size by roughly eight percent.
+- Increased the font size of the mana orb value text.
+- Increased font size of actionbutton keybinds and spell charges.
+- Made the wood texture coloring slightly brighter across the entire interface.
+- Aligned the actionbuttons slightly better with the player unit frame.
+- Move tooltip unit levels to the top right side of the unit tooltips, instead of embedding it in the name. We should be able to see the names without clutter.
+
+### Fixed
+- Keybinds are now properly assigned to pet battle buttons while enganged in a pet battle. 
+- Blizzard Microbuttons will no longer become and remain visible during and after pet battles.
+- Mana orb transitions should once more be smooth and properly updated. 
+- Fixed a bug in the tooltip libraries that could cause bugs in some locales while hovering over NPC unitframes. 
+
 ## [1.0.3] 2018-07-21
 ### Changed
 - Limited amounts of full ActionButton updates to address a severe performance issue experienced from the ActionBar module while using abilities.

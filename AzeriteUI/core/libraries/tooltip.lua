@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 25)
+local LibTooltip = CogWheel:Set("LibTooltip", 26)
 if (not LibTooltip) then	
 	return
 end
@@ -1062,7 +1062,11 @@ Tooltip.SetUnit = function(self, unit)
 
 			local r, g, b = self:GetUnitHealthColor(unit)
 			if levelText then 
-				self:AddLine(levelText .. colors.quest.gray.colorCode .. ": |r" .. data.name, r, g, b, true)
+				if self.showLevelWithName then 
+					self:AddLine(levelText .. colors.quest.gray.colorCode .. ": |r" .. data.name, r, g, b, true)
+				else 
+					self:AddDoubleLine(data.name, levelText, r, g, b, true)
+				end 
 			else
 				self:AddLine(data.name, r, g, b, true)
 			end 

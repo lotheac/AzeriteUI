@@ -315,7 +315,7 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(Game11Font_o1)
+	healthVal:SetFontObject(AzeriteFont11_Outline)
 	healthVal:SetShadowOffset(-.85, -.85)
 	healthVal:SetShadowColor(0, 0, 0, .75)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
@@ -329,7 +329,17 @@ end
 UnitFrameBoss.OnInit = function(self)
 	self.frame = {}
 	for i = 1,5 do 
-		self.frame[i] = self:SpawnUnitFrame("boss"..i, "UICenter", Style)
+
+		-- Custom visibility drivers that only shows the frames
+		-- when 2 or more bosses are visible.
+		local driver 
+		if (i == 2) then 
+			driver = "[@boss"..i..",exists]show;hide"
+		else 
+			driver = "[@boss"..i..",exists,@boss2,exists]show;hide"
+		end 
+	
+		self.frame[i] = self:SpawnUnitFrame("boss"..i, "UICenter", Style, driver)
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)

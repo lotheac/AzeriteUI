@@ -231,6 +231,7 @@ BlizzardMicroMenu.UpdateMicroButtons = function()
 
 	for id,microButton in ipairs(buttons) do
 		if (microButton and microButton:IsShown()) then
+			microButton:SetParent(window) 
 			microButton:SetSize(buttonWidth*sizeMod, buttonHeight*sizeMod)
 			microButton:ClearAllPoints()
 			microButton:SetPoint("BOTTOM", window, "BOTTOM", 0, buttonSpacing + buttonHeight*sizeMod*numVisible + buttonSpacing*numVisible)
@@ -377,7 +378,6 @@ BlizzardMicroMenu.OnInit = function(self)
 				flash:SetSize(.0001, .0001)
 			end
 	
-			microButton:SetParent(configWindow)
 			microButton:SetScript("OnUpdate", nil)
 			microButton:SetScript("OnEnter", scripts[buttonName.."_OnEnter"] or scripts.MicroButton_OnEnter)
 			microButton:SetScript("OnLeave", scripts.MicroButton_OnLeave)

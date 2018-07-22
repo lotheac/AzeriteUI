@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 26)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 27)
 if (not LibUnitFrame) then	
 	return
 end
@@ -165,6 +165,10 @@ if (not customClassColors()) then
 	LibUnitFrame:RegisterEvent("ADDON_LOADED", "CustomClassColors")
 end
 
+
+
+-- Utility Functions
+--------------------------------------------------------------------------
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -577,7 +581,7 @@ LibUnitFrame.GetScript = function(self, scriptHandler)
 end
 
 -- spawn and style a new unitframe
-LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
+LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibilityDriver, ...)
 	local frame = setmetatable(LibUnitFrame:CreateFrame("Button", nil, parent, "SecureUnitButtonTemplate"), UnitFrame_MT)
 	frame:SetFrameStrata("LOW")
 
@@ -646,7 +650,10 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		EnableUnitFrameFrequent(frame)
 	end
 
-	local visibilityDriver = string_format("[@%s,exists]show;hide", unit)
+	-- Allow custom drivers to be used, put in basic ones otherwise
+	-- todo: make some generic smart exceptions for party and raid
+	visibilityDriver = visibilityDriver or string_format("[@%s,exists]show;hide", unit) 
+
 	frame:SetAttribute("_visibility-driver", visibilityDriver)
 	RegisterAttributeDriver(frame, "state-visibility", visibilityDriver)
 

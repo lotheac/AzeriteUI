@@ -157,9 +157,9 @@ ActionButton.PostCreate = function(self, ...)
 	self:SetSize(buttonSize,buttonSize)
 
 	if (barID == 1) then 
-		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64 -8 + ((buttonID-1) * (buttonSize + buttonSpacing)), 44 -4)
+		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
 	elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
-		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64 -8 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 44 -4)
+		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 42 )
 	end 
 
 	-- Assign our own global custom colors
@@ -223,8 +223,8 @@ ActionButton.PostCreate = function(self, ...)
 	self.CooldownCount:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3], .85)
 
 	self.Count:ClearAllPoints()
-	self.Count:SetPoint("BOTTOMRIGHT", -2, 1)
-	self.Count:SetFontObject(AzeriteFont15_Outline)
+	self.Count:SetPoint("BOTTOMRIGHT", -3, 3)
+	self.Count:SetFontObject(AzeriteFont18_Outline)
 	self.Count:SetJustifyH("CENTER")
 	self.Count:SetJustifyV("BOTTOM")
 	self.Count:SetShadowOffset(0, 0)
@@ -232,8 +232,8 @@ ActionButton.PostCreate = function(self, ...)
 	self.Count:SetTextColor(self.colors.normal[1], self.colors.normal[2], self.colors.normal[3], .85)
 
 	self.Keybind:ClearAllPoints()
-	self.Keybind:SetPoint("TOPRIGHT", -2, -3)
-	self.Keybind:SetFontObject(AzeriteFont12_Outline)
+	self.Keybind:SetPoint("TOPLEFT", 5, -5)
+	self.Keybind:SetFontObject(AzeriteFont15_Outline)
 	self.Keybind:SetJustifyH("CENTER")
 	self.Keybind:SetJustifyV("BOTTOM")
 	self.Keybind:SetShadowOffset(0, 0)
@@ -363,7 +363,7 @@ ActionBarMain.GetPetBattleController = function(self)
 		-- The blizzard petbattle UI gets its keybinds from the primary action bar, 
 		-- so in order for the petbattle UI keybinds to function properly, 
 		-- we need to temporarily give the primary action bar backs its keybinds.
-		local petbattle = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerStateTemplate")
+		local petbattle = self:CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
 		petbattle:SetAttribute("_onattributechanged", [[
 			if (name == "state-petbattle") then
 				if (value == "petbattle") then
@@ -406,32 +406,32 @@ end
 ActionBarMain.SpawnButtons = function(self)
 	local db = self.db
 
+	local buttons = {}
+	local name = "AzeriteUIActionButton"
 
 	-- Mainbar, visible part
 	for id = 1,7 do
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
-
-		-- Give it an additional global name we can use with its id 
-		-- to give the main bar back its keybinds when in pet battles.
-		-- Better to use this than the names given by the library.
-		_G["AzeriteUIActionButton"..id] = button
+		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, 1, id, "") 
+		buttons[#buttons + 1] = button
 	end
 
 	local hoverButtons = {}
 
 	-- Mainbar, hidden part
 	for id = 8,12 do 
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
+		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, 1, id) 
 		button:SetAlpha(0)
 
+		buttons[#buttons + 1] = button
 		hoverButtons[#hoverButtons + 1] = button 
 	end 
 
 	-- "Bottomleft"
 	for id = 1,6 do 
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
+		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
 		button:SetAlpha(0)
 
+		buttons[#buttons + 1] = button
 		hoverButtons[#hoverButtons + 1] = button 
 	end 
 

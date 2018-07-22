@@ -79,8 +79,12 @@ local Style = function(self, unit, id, ...)
 		id = counter 
 	end 
 
-	self:SetSize(120, 120)
-	self:Place("TOPLEFT", 72 + (id - 1)*120, -64)
+	-- will fully recalculate values later on, 
+	-- just using this simple modifier while developing
+	local sMod = 1.08
+
+	self:SetSize(120*sMod, 120*sMod)
+	self:Place("TOPLEFT", 50 + (id - 1)*(120*sMod), -42)
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -109,7 +113,7 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------	
 
 	local health = content:CreateStatusBar()
-	health:SetSize(75, 13)
+	health:SetSize(75*sMod, 13*sMod)
 	health:Place("BOTTOM", 0, 0)
 	health:SetOrientation("RIGHT") -- set the bar to grow towards the right.
 	health:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
@@ -125,8 +129,8 @@ local Style = function(self, unit, id, ...)
 
 	local healthBg = health:CreateTexture()
 	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetSize(130, 84)
-	healthBg:SetPoint("CENTER", 0, -2)
+	healthBg:SetSize(130*sMod, 84*sMod)
+	healthBg:SetPoint("CENTER", 0, -2*sMod)
 	healthBg:SetTexture(getPath("cast_back"))
 	healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	self.Health.Bg = healthBg
@@ -136,7 +140,7 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(Game11Font_o1)
+	healthVal:SetFontObject(AzeriteFont13_Outline)
 	healthVal:SetShadowOffset(-.85, -.85)
 	healthVal:SetShadowColor(0, 0, 0, .75)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
@@ -149,7 +153,7 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------	
 
 	local absorb = content:CreateStatusBar()
-	absorb:SetSize(75, 13)
+	absorb:SetSize(75*sMod, 13*sMod)
 	absorb:SetStatusBarTexture(getPath("cast_bar"))
 	absorb:SetFrameLevel(health:GetFrameLevel() + 2)
 	absorb:Place("BOTTOM", 0, 0)
@@ -162,8 +166,8 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------
 
 	local portrait = backdrop:CreateFrame("PlayerModel")
-	portrait:SetPoint("BOTTOM", 0, 21)
-	portrait:SetSize(65, 68) 
+	portrait:SetPoint("BOTTOM", 0, 21*sMod)
+	portrait:SetSize(65*sMod, 68*sMod) 
 	portrait:SetAlpha(.85)
 	portrait.distanceScale = 1
 	portrait.positionX = 0
@@ -180,7 +184,7 @@ local Style = function(self, unit, id, ...)
 	local portraitBg = backdrop:CreateTexture()
 	portraitBg:SetDrawLayer("BACKGROUND", 0)
 	portraitBg:SetPoint("CENTER", portrait, "CENTER", 0, 0)
-	portraitBg:SetSize(120,120)
+	portraitBg:SetSize(120*sMod,120*sMod)
 	portraitBg:SetTexture(getPath("party_portrait_back"))
 	portraitBg:SetVertexColor(.5, .5, .5)
 	self.Portrait.Bg = portraitBg
@@ -188,14 +192,14 @@ local Style = function(self, unit, id, ...)
 	local portraitShade = content:CreateTexture()
 	portraitShade:SetDrawLayer("BACKGROUND", -1)
 	portraitShade:SetPoint("CENTER", portrait, "CENTER", 0, 0)
-	portraitShade:SetSize(80, 80) 
+	portraitShade:SetSize(80*sMod, 80*sMod) 
 	portraitShade:SetTexture(getPath("shade_circle"))
 	self.Portrait.Shade = portraitShade
 
 	local portraitFg = content:CreateTexture()
 	portraitFg:SetDrawLayer("BACKGROUND", 0)
 	portraitFg:SetPoint("CENTER", portrait, "CENTER", 0, 0)
-	portraitFg:SetSize(180,180)
+	portraitFg:SetSize(180*sMod,180*sMod)
 	portraitFg:SetTexture(getPath("party_portrait_border"))
 	portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	self.Portrait.Fg = portraitFg
@@ -204,7 +208,7 @@ local Style = function(self, unit, id, ...)
 	-- Cast Bar
 	-----------------------------------------------------------
 	local cast = content:CreateStatusBar()
-	cast:SetSize(75, 13)
+	cast:SetSize(75*sMod, 13*sMod)
 	cast:SetStatusBarTexture(getPath("cast_bar"))
 	cast:SetFrameLevel(health:GetFrameLevel() + 1)
 	cast:Place("BOTTOM", 0, 0)
@@ -217,7 +221,7 @@ local Style = function(self, unit, id, ...)
 	-- Group Role
 	-----------------------------------------------------------
 	local groupRole = overlay:CreateFrame()
-	groupRole:SetSize(37, 37)
+	groupRole:SetSize(37*sMod, 37*sMod)
 	groupRole:SetPoint("TOP", 0, 0)
 	self.GroupRole = groupRole
 
@@ -225,28 +229,28 @@ local Style = function(self, unit, id, ...)
 	groupRoleBg:SetDrawLayer("BACKGROUND")
 	groupRoleBg:SetTexture(getPath("point_plate"))
 	groupRoleBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-	groupRoleBg:SetSize(72,72)
+	groupRoleBg:SetSize(72*sMod,72*sMod)
 	groupRoleBg:SetPoint("CENTER")
 	self.GroupRole.Bg = groupRoleBg
 
 	local roleHealer = groupRole:CreateTexture()
 	roleHealer:SetDrawLayer("ARTWORK")
 	roleHealer:SetTexture(getPath("grouprole-icons-heal"))
-	roleHealer:SetSize(32,32)
+	roleHealer:SetSize(32*sMod,32*sMod)
 	roleHealer:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Healer = roleHealer 
 
 	local roleTank = groupRole:CreateTexture()
 	roleTank:SetDrawLayer("ARTWORK")
 	roleTank:SetTexture(getPath("grouprole-icons-tank"))
-	roleTank:SetSize(32, 32)
+	roleTank:SetSize(32*sMod, 32*sMod)
 	roleTank:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Tank = roleTank
 
 	local roleDPS = groupRole:CreateTexture()
 	roleDPS:SetDrawLayer("ARTWORK")
 	roleDPS:SetTexture(getPath("grouprole-icons-dps"))
-	roleDPS:SetSize(32, 32)
+	roleDPS:SetSize(32*sMod, 32*sMod)
 	roleDPS:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Damager = roleDPS
 
@@ -256,7 +260,7 @@ end
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
+		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style, "[@party"..i..",exists,@raid6,noexists]show;hide")
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)

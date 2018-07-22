@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 17)
+local LibOrb = CogWheel:Set("LibOrb", 18)
 if (not LibOrb) then	
 	return
 end
@@ -170,16 +170,14 @@ local Update = function(self, elapsed)
 end
 
 local smoothingMinValue = 1 -- if a value is lower than this, we won't smoothe
-local smoothingFrequency = .2 -- time for the smooth transition to complete
-local smoothingLimit = 1/120 -- max updates per second
+local smoothingFrequency = .5 -- time for the smooth transition to complete
+local smoothingLimit = 1/60 -- max updates per second
 
 local OnUpdate = function(self, elapsed)
 	local data = Orbs[self]
 	data.elapsed = (data.elapsed or 0) + elapsed
 	if (data.elapsed < smoothingLimit) then
 		return
-	else
-		data.elapsed = 0
 	end
 	
 	if (data.disableSmoothing) then
@@ -230,6 +228,8 @@ local OnUpdate = function(self, elapsed)
 	end
 
 	Update(self, elapsed)
+
+	data.elapsed = 0
 end
 
 Orb.SetSmoothHZ = function(self, smoothingFrequency)

@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 8)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 9)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -170,7 +170,7 @@ local Constants = {
 local Patterns = {
 
 	ContainerSlots = 			"^" .. string_gsub(string_gsub(Constants.ContainerSlots, "%%d", "(%%d+)"), "%%s", "(%.+)"),
-	ItemLevel = 				"^" .. string_gsub(Constants.ContainerSlots, "%%d", "(%%d+)"),
+	ItemLevel = 				"^" .. string_gsub(Constants.ItemLevel, "%%d", "(%%d+)"),
 	Level = 						   Constants.Level,
 
 	-- For aura scanning

@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 34)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 35)
 if (not LibStatusBar) then	
 	return
 end
@@ -394,7 +394,7 @@ end
 
 local smoothingMinValue = .3 -- if a value is lower than this, we won't smoothe
 local smoothingFrequency = .5 -- time for the smooth transition to complete
-local smoothingLimit = 1/120 -- max updates per second
+local smoothingLimit = 1/60 -- max updates per second
 
 local OnUpdate = function(self, elapsed)
 	local data = Bars[self]

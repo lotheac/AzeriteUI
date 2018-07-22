@@ -61,7 +61,7 @@ Colors.dead = prepare(73/255, 25/255, 9/255)
 -- Global UI vertex coloring
 Colors.ui = {
 	stone = prepare(192/255, 192/255, 192/255),
-	wood = prepare(160/255, 160/255, 160/255)
+	wood = prepare(192/255, 192/255, 192/255)
 }
 
 -- quest difficulty coloring 

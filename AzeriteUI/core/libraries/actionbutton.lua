@@ -485,7 +485,7 @@ LibActionButton.GetGenericMeta = function(self)
 	return Button_MT
 end
 
-LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTemplate, ...)
+LibActionButton.SpawnActionButton = function(self, buttonType, parent, overrideName, buttonTemplate, ...)
 	check(parent, 1, "string", "table")
 	check(buttonType, 2, "string")
 	check(buttonTemplate, 3, "table", "nil")
