@@ -28,6 +28,7 @@ local IsActionInRange = _G.IsActionInRange
 local IsConsumableAction = _G.IsConsumableAction
 local IsStackableAction = _G.IsStackableAction
 local IsUsableAction = _G.IsUsableAction
+local SetClampedTextureRotation = _G.SetClampedTextureRotation
 
 -- Blizzard Textures
 local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
@@ -105,11 +106,11 @@ local OnUpdate = function(self, elapsed)
 
 			local start, duration
 			if (Cooldown.currentCooldownType == COOLDOWN_TYPE_NORMAL) then 
-				local action = self.action
+				local action = self.buttonAction
 				start, duration = GetActionCooldown(action)
 
 			elseif (Cooldown.currentCooldownType == COOLDOWN_TYPE_LOSS_OF_CONTROL) then
-				local action = self.action
+				local action = self.buttonAction
 				start, duration = GetActionLossOfControlCooldown(action)
 
 			end 
@@ -165,7 +166,7 @@ end
 
 -- Called when the button action (and thus the texture) has changed
 ActionButton.UpdateAction = function(self)
-	local oldAction = self.action
+	local oldAction = self.buttonAction
 	local newAction = self:GetAction()
 	local Icon = self.Icon
 	if Icon then 
@@ -176,7 +177,7 @@ ActionButton.UpdateAction = function(self)
 		end 
 	end 
 	if (oldAction ~= newAction) then 
-		self.action = newAction
+		self.buttonAction = newAction
 		self:Update()
 	end
 end 
@@ -230,9 +231,9 @@ end
 ActionButton.UpdateCooldown = function(self)
 	local Cooldown = self.Cooldown
 	if Cooldown then 
-		local locStart, locDuration = GetActionLossOfControlCooldown(self.action)
-		local start, duration, enable, modRate = GetActionCooldown(self.action)
-		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
+		local locStart, locDuration = GetActionLossOfControlCooldown(self.buttonAction)
+		local start, duration, enable, modRate = GetActionCooldown(self.buttonAction)
+		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.buttonAction)
 
 		if ((locStart + locDuration) > (start + duration)) then
 
@@ -275,7 +276,7 @@ ActionButton.UpdateCount = function(self)
 	local Count = self.Count
 	if Count then 
 		local count
-		local action = self.action
+		local action = self.buttonAction
 		if HasAction(action) then 
 			if IsConsumableAction(action) or IsStackableAction(action) then
 				local count = GetActionCount(action)
@@ -308,7 +309,7 @@ end
 ActionButton.UpdateFlash = function(self)
 	local Flash = self.Flash
 	if Flash then 
-		local action = self.action
+		local action = self.buttonAction
 		if HasAction(action) then 
 			if (IsAttackAction(action) and IsCurrentAction(action)) or IsAutoRepeatAction(action) then
 				StartFlash(self)
@@ -325,7 +326,7 @@ ActionButton.UpdateUsable = function(self)
 		self.Icon:SetVertexColor(1, .15, .15)
 
 	else
-		local isUsable, notEnoughMana = IsUsableAction(self.action)
+		local isUsable, notEnoughMana = IsUsableAction(self.buttonAction)
 		if isUsable then
 			self.Icon:SetVertexColor(1, 1, 1)
 
@@ -339,10 +340,11 @@ ActionButton.UpdateUsable = function(self)
 
 end 
 
+
 ActionButton.Update = function(self)
 
-	if HasAction(self.action) then 
-		self.Icon:SetTexture(GetActionTexture(self.action))
+	if HasAction(self.buttonAction) then 
+		self.Icon:SetTexture(GetActionTexture(self.buttonAction))
 	else
 		self.Icon:SetTexture(nil) 
 	end 
@@ -366,27 +368,21 @@ end
 
 ActionButton.GetAction = function(self)
 	local actionpage = tonumber(self:GetAttribute("actionpage"))
-	if actionpage then 
-		local id = self:GetID()
-		return (actionpage > 1) and ((actionpage - 1) * NUM_ACTIONBAR_BUTTONS + id) or id
-	end 
+	local id = self:GetID()
+	return actionpage and (actionpage > 1) and ((actionpage - 1) * NUM_ACTIONBAR_BUTTONS + id) or id
 end
 
 ActionButton.GetActionTexture = function(self) 
-	return GetActionTexture(self.action)
+	return GetActionTexture(self.buttonAction)
 end
 
 ActionButton.GetCooldown = function(self) 
-	return GetActionCooldown(self.action) 
+	return GetActionCooldown(self.buttonAction) 
 end
 
 ActionButton.GetLossOfControlCooldown = function(self) 
-	return GetActionLossOfControlCooldown(self.action) 
+	return GetActionLossOfControlCooldown(self.buttonAction) 
 end
-
-ActionButton.GetParent = function(self)
-	return self._owner:GetParent()
-end 
 
 ActionButton.GetPager = function(self)
 	return self._pager
@@ -397,7 +393,7 @@ ActionButton.GetPageID = function(self)
 end 
 
 ActionButton.GetSpellID = function(self)
-	local actionType, id, subType = GetActionInfo(self.action)
+	local actionType, id, subType = GetActionInfo(self.buttonAction)
 	if (actionType == "spell") then
 		return id
 	elseif (actionType == "macro") then
@@ -409,9 +405,6 @@ end
 -- Setters
 ----------------------------------------------------
 
-ActionButton.SetParent = function(self, parent)
-	self._owner:SetParent(parent)
-end 
 
 
 -- Isers
@@ -423,7 +416,7 @@ ActionButton.IsInRange = function(self)
 		unit = nil
 	end
 
-	local val = IsActionInRange(self.action, unit)
+	local val = IsActionInRange(self.buttonAction, unit)
 	if (val == 1) then 
 		val = true 
 	elseif (val == 0) then 
@@ -443,7 +436,7 @@ local UpdateTooltip = function(self)
 	tooltip:Hide()
 	tooltip:SetDefaultAnchor(self)
 	tooltip:SetMinimumWidth(280)
-	tooltip:SetAction(self.action)
+	tooltip:SetAction(self.buttonAction)
 end 
 
 ActionButton.OnEnter = function(self) 
@@ -483,6 +476,7 @@ local AddElements = function(button)
 	LibActionButton:CreateButtonCount(button)
 	LibActionButton:CreateButtonKeybind(button)
 	LibActionButton:CreateButtonOverlayGlow(button)
+	LibActionButton:CreateFlyoutArrow(button)
 
 	return button
 end 
@@ -539,7 +533,18 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 				local newpage = ...
 				local oldpage = self:GetAttribute("actionpage"); 
 				if (oldpage ~= newpage) then
-					self:SetAttribute("actionpage", tonumber(newpage)); 
+
+					local id = self:GetID(); 
+					local actionpage = tonumber(newpage)
+					local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+
+					self:SetAttribute("actionpage", actionpage or 0); 
+					self:SetAttribute("action", slot); 
+
+					--local actionType, actionId, subType = GetActionInfo(slot); 
+					--if (actionType == "flyout") then 
+					--end
+
 					self:CallMethod("UpdateAction"); 
 				end 
 			]], value)
@@ -551,10 +556,12 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	button:SetFrameStrata("LOW")
 	button:RegisterForDrag("LeftButton", "RightButton")
 	button:RegisterForClicks("AnyUp")
-	button:SetAttribute("flyout_direction", "UP")
 	button:SetID(buttonID)
 	button:SetAttribute("type", "action")
+	button:SetAttribute("flyoutDirection", "UP")
 	button.id = buttonID
+	button.action = 0
+
 
 	-- I don't like exposing these, but it's the simplest way right now
 	button._owner = visibility
@@ -579,7 +586,8 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 		if (not actionpage) then
 			return
 		end
-		local action = (actionpage - 1) * 12 + self:GetID();
+		local id = self:GetID(); 
+		local action = (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
 		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
 			return "action", action
 		end
@@ -602,10 +610,11 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 			return false 
 		end
 		local actionpage = self:GetAttribute("actionpage"); 
-		local action = (actionpage - 1) * 12 + self:GetID();
+		local id = self:GetID(); 
+		local action = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
 		return "action", action
 	]])
-
 
 	local driver 
 	if (barID == 1) then 
@@ -639,6 +648,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 		visibilityDriver = "[overridebar][possessbar][shapeshift]hide;[vehicleui]hide;show"
 	end 
 
+	
 	-- enable the visibility driver
 	RegisterAttributeDriver(visibility, "state-vis", visibilityDriver)
 	
@@ -668,7 +678,7 @@ local Update = function(self, event, ...)
 		self:UpdateFlash()
 
 	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
-		if ((arg1 == 0) or (arg1 == tonumber(self.action))) then
+		if ((arg1 == 0) or (arg1 == tonumber(self.buttonAction))) then
 			self:Update()
 		end
 
@@ -695,7 +705,7 @@ local Update = function(self, event, ...)
 		if (spellID and (spellID == arg1)) then
 			self:ShowOverlayGlow()
 		else
-			local actionType, id = GetActionInfo(self.action)
+			local actionType, id = GetActionInfo(self.buttonAction)
 			if (actionType == "flyout") and FlyoutHasSpell(id, arg1) then
 				self:ShowOverlayGlow()
 			end
@@ -706,7 +716,7 @@ local Update = function(self, event, ...)
 		if (spellID and (spellID == arg1)) then
 			self:HideOverlayGlow()
 		else
-			local actionType, id = GetActionInfo(self.action)
+			local actionType, id = GetActionInfo(self.buttonAction)
 			if actionType == "flyout" and FlyoutHasSpell(id, arg1) then
 				self:HideOverlayGlow()
 			end
@@ -758,4 +768,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 14)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 16)

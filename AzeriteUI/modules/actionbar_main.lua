@@ -479,6 +479,7 @@ ActionBarMain.SpawnButtons = function(self)
 			self.elapsed = .05
 		end 
 	end)
+
 end 
 
 ActionBarMain.UpdateSettings = function(self)

@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 17)
+local LibActionButton = CogWheel:Set("LibActionButton", 19)
 if (not LibActionButton) then	
 	return
 end
@@ -354,6 +354,63 @@ Button.UpdateOverlayGlow = function(self)
 	end
 end
 
+-- This will cause multiple updates when library is updated. Hmm....
+hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
+	if Buttons[self] then
+		print("calling")
+		self:UpdateFlyout()
+	end
+end)
+
+Button.UpdateFlyout = function(self)
+
+	if self.FlyoutBorder then 
+		self.FlyoutBorder:Hide()
+	end 
+
+	if self.FlyoutBorderShadow then 
+		self.FlyoutBorderShadow:Hide()
+	end 
+
+	if self.FlyoutArrow then 
+		local buttonAction = self:GetAction()
+		if HasAction(buttonAction) then
+
+			local actionType = GetActionInfo(buttonAction)
+			if (actionType == "flyout") then
+
+				local arrowDistance
+				if (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or GetMouseFocus() == self then
+					arrowDistance = 5
+				else
+					arrowDistance = 2
+				end
+
+				self.FlyoutArrow:Show()
+				self.FlyoutArrow:ClearAllPoints()
+
+				local direction = self:GetAttribute("flyoutDirection")
+				if (direction == "LEFT") then
+					self.FlyoutArrow:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
+					SetClampedTextureRotation(self.FlyoutArrow, 270)
+				elseif (direction == "RIGHT") then
+					self.FlyoutArrow:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
+					SetClampedTextureRotation(self.FlyoutArrow, 90)
+				elseif (direction == "DOWN") then
+					self.FlyoutArrow:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
+					SetClampedTextureRotation(self.FlyoutArrow, 180)
+				else
+					self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
+					SetClampedTextureRotation(self.FlyoutArrow, 0)
+				end
+
+				return
+			end
+		end
+		self.FlyoutArrow:Hide()	
+	end 
+end
+
 
 LibActionButton.CreateButtonLayers = function(self, button)
 
@@ -480,6 +537,18 @@ LibActionButton.CreateButtonCooldowns = function(self, button)
 
 end
 
+LibActionButton.CreateFlyoutArrow = function(self, button)
+	local flyoutArrow = button:CreateTexture()
+	flyoutArrow:Hide()
+	flyoutArrow:SetSize(23,11)
+	flyoutArrow:SetTexture([[Interface\Buttons\ActionBarFlyoutButton]])
+	flyoutArrow:SetTexCoord(.625, .984375, .7421875, .828125)
+	button.FlyoutArrow = flyoutArrow
+
+	-- blizzard code bugs out without these
+	button.FlyoutBorder = button:CreateTexture()
+	button.FlyoutBorderShadow = button:CreateTexture()
+end 
 
 LibActionButton.GetGenericMeta = function(self)
 	return Button_MT
@@ -500,7 +569,7 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, overrideN
 	LibActionButton.numButtons = LibActionButton.numButtons + 1
 
 	-- Make up an unique name
-	local name = "CG_ActionButton"..LibActionButton.numButtons
+	local name = overrideName or "CG_ActionButton"..LibActionButton.numButtons
 
 	-- Retrieve the constructor method for this button type and spawn the button
 	local button = template.Spawn(self, parent, name, buttonTemplate, ...)
