@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.13] 2018-07-23
+### Changed
+- Shortened the delay after you leave the minimap xp toggle button until the xp/ap frame fades out, and made the actual fading a bit faster too. 
+
+### Fixed
+- Added a fallback for finding the window size when logging in with non-fullscreen windowed mode. Will rework the entire system to work better with more window sizes and larger or ultra wide screens, but this hotfix will do for now. 
+
 ## [1.0.12] 2018-07-23
 ### Changed
 - Added a parent frame to the party frames handling hiding in raids, leaving the party frames own visibility drivers untouched.

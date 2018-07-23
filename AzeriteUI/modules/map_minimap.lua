@@ -324,8 +324,8 @@ local Toggle_UpdateFrame = function(self)
 	elseif ((not db.stickyBars) and ((not frame.isMouseOver) or (not self.isMouseOver)) and frame:IsShown()) then 
 
 		-- Initiate hide countdown
-		self.fadeDelay = 1.5
-		self.fadeDuration = .35
+		self.fadeDelay = .5
+		self.fadeDuration = .25
 		self.timeFading = 0
 		self:SetScript("OnUpdate", Toggle_OnUpdate)
 	end 

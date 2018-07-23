@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 23)
+local LibFrame = CogWheel:Set("LibFrame", 24)
 if (not LibFrame) then	
 	return
 end
@@ -276,9 +276,17 @@ end
 -- the UICenter frame should be located at.
 LibFrame.GetScreenSize = function(self)
 	local screenWidth, screenHeight = self:GetResolution()
+
+	if not(screenWidth and screenHeight) then
+		screenWidth, screenHeight = UIParent:GetSize()
+	end 
+
 	if not(screenWidth and screenHeight) then
 		return
 	end
+
+	screenWidth = math_round(screenWidth, 1e1)
+	screenHeight = math_round(screenHeight, 1e1)
 
 	local aspectRatio = math_round(screenWidth / screenHeight, 1e4)
 
