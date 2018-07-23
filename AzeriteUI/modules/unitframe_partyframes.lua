@@ -5,7 +5,7 @@ if (not AzeriteUI) then
 	return 
 end
 
-local UnitFrameParty = AzeriteUI:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local UnitFrameParty = AzeriteUI:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
@@ -106,7 +106,7 @@ local Style = function(self, unit, id, ...)
 	local sMod = 1.08
 
 	self:SetSize(120*sMod, 120*sMod)
-	self:Place("TOPLEFT", 50 + (id - 1)*(120*sMod), -42)
+	self:Place("TOPLEFT", "UICenter", "TOPLEFT", 50 + (id - 1)*(120*sMod), -42)
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -280,13 +280,32 @@ local Style = function(self, unit, id, ...)
 	roleDPS:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Damager = roleDPS
 
-
 end 
 
 UnitFrameParty.OnInit = function(self)
-	self.frame = {}
+
+	-- Create a secure parent to handle visibility changes
+	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame:SetAttribute("_onattributechanged", [=[
+		if (name == "state-vis") then
+			if (value == "show") then 
+				if (not self:IsShown()) then 
+					self:Show(); 
+				end 
+			elseif (value == "hide") then 
+				if (self:IsShown()) then 
+					self:Hide(); 
+				end 
+			end 
+		end
+	]=])
+
+	-- Hide it in raids of 6 or more players 
+	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
+	RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]hide;[@party1,exists]show;hide")
+
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style, string_format("[@raid6,exists]hide;[@%s,exists]show;hide", i))
+		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)

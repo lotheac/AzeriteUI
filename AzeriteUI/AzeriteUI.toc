@@ -130,7 +130,9 @@ modules\blizzard_tooltips_styling.lua
 modules\chat_bubbles.lua
 modules\chat_windows.lua
 modules\font_replacements.lua
+modules\hud_durability.lua
 modules\hud_orderhall.lua
+modules\hud_vehicle.lua
 modules\hud_warnings.lua
 modules\hud_worldstate.lua
 modules\map_minimap.lua

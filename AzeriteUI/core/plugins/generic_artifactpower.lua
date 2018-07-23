@@ -99,6 +99,10 @@ local Update = function(self, event, ...)
 		element:UpdateValue(min, max, level)
 	end 
 
+	if (not element:IsShown()) then 
+		element:Show()
+	end
+
 	if element.PostUpdate then 
 		element:PostUpdate(min, max, level)
 	end 
@@ -124,6 +128,7 @@ local Enable = function(self)
 		self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy, true)
 		self:RegisterEvent("PLAYER_LOGIN", Proxy, true)
 		self:RegisterEvent("PLAYER_ALIVE", Proxy, true)
+		self:RegisterEvent("CVAR_UPDATE", Proxy, true)
 
 		return true
 	end
@@ -136,10 +141,11 @@ local Disable = function(self)
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 		self:UnregisterEvent("PLAYER_LOGIN", Proxy)
 		self:UnregisterEvent("PLAYER_ALIVE", Proxy)
+		self:UnregisterEvent("CVAR_UPDATE", Proxy)
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 6)
 end 

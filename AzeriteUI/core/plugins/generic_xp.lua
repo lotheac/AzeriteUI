@@ -120,6 +120,10 @@ local Update = function(self, event, ...)
 		end 
 	end 
 
+	if (not element:IsShown()) then 
+		element:Show()
+	end
+
 	if element.PostUpdate then 
 		element:PostUpdate(min, max, restedLeft, restedTimeLeft)
 	end 
@@ -171,5 +175,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 7)
 end 

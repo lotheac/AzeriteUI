@@ -350,22 +350,10 @@ local Style = function(self, unit, id, ...)
 
 end 
 
-
 UnitFrameBoss.OnInit = function(self)
 	self.frame = {}
 	for i = 1,5 do 
-
-		-- Custom visibility drivers that only shows the frames
-		-- when 2 or more bosses are visible.
-		local driver 
-		if (i == 2) then 
-			driver = string_format("[@boss%d,exists]show;hide",i)
-		else 
-			driver = string_format("[@boss2,noexists]hide;[@%s,exists]show;hide", i)
-			--driver = string_format("[@boss%d,exists,@boss2,exists]show;hide")
-		end 
-	
-		self.frame[i] = self:SpawnUnitFrame("boss"..i, "UICenter", Style, driver)
+		self.frame[i] = self:SpawnUnitFrame("boss"..i, "UICenter", Style)
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)

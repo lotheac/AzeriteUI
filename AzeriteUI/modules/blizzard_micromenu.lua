@@ -306,7 +306,7 @@ BlizzardMicroMenu.OnInit = function(self)
 	configButton.Icon:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 	-- create window 
-	local configWindow = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerStateTemplate")
+	local configWindow = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	configWindow:EnableMouse(true)
 	configWindow:SetFrameStrata("DIALOG")
 	configWindow:Place("BOTTOMRIGHT", -41, 32)
@@ -402,7 +402,7 @@ BlizzardMicroMenu.OnInit = function(self)
 
 			-- Add a frame the secure autohider can track,
 			-- and anchor it to the micro button
-			local autohideParent = CreateFrame("Frame", nil, configWindow, "SecureHandlerStateTemplate")
+			local autohideParent = CreateFrame("Frame", nil, configWindow, "SecureHandlerAttributeTemplate")
 			autohideParent:SetPoint("TOPLEFT", microButton, "TOPLEFT", -6, 6)
 			autohideParent:SetPoint("BOTTOMRIGHT", microButton, "BOTTOMRIGHT", 6, -6)
 

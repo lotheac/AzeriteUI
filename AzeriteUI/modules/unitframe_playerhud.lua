@@ -403,12 +403,15 @@ local Style = function(self, unit, id, ...)
 
 	local sizeMod = 1.08
 
-	self:SetSize(200, 200) 
-	self:Place("CENTER", 0, 0)
+	-- Place this at the player orb/crystal, 
+	-- to make that area clickable like a portrait would be.
+	self:SetSize(103, 103) 
+	self:Place("BOTTOMLEFT", 75, 127) 
+
 
 	-- We Don't want this clickable, 
 	-- it's in the middle of the screen!
-	self:EnableMouse(false) 
+	--self:EnableMouse(false) 
 
 	-- Doesn't do anything yet, 
 	-- but leaving it here for when 
@@ -486,7 +489,7 @@ local Style = function(self, unit, id, ...)
 
 	local classPower = backdrop:CreateFrame("Frame")
 	classPower:SetSize(2,2) -- minimum size, this is really just an anchor
-	classPower:SetPoint("CENTER", 0, 0) -- center it smack in the middle of the screen
+	classPower:Place("CENTER", "UICenter", "CENTER", 0, 0) -- center it smack in the middle of the screen
 
 	-- Maximum points displayed regardless 
 	-- of max value and available point frames.
