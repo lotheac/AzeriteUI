@@ -12,6 +12,7 @@ local WhiteList = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras").WhiteList
 -- Lua API
 local _G = _G
 local unpack = unpack
+local string_format = string.format
 
 -- WoW Strings
 local DEAD = _G.DEAD
@@ -334,9 +335,10 @@ UnitFrameBoss.OnInit = function(self)
 		-- when 2 or more bosses are visible.
 		local driver 
 		if (i == 2) then 
-			driver = "[@boss"..i..",exists]show;hide"
+			driver = string_format("[@boss%d,exists]show;hide",i)
 		else 
-			driver = "[@boss"..i..",exists,@boss2,exists]show;hide"
+			driver = string_format("[@boss2,noexists]hide;[@%s,exists]show;hide", i)
+			--driver = string_format("[@boss%d,exists,@boss2,exists]show;hide")
 		end 
 	
 		self.frame[i] = self:SpawnUnitFrame("boss"..i, "UICenter", Style, driver)

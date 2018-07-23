@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.9] 2018-07-23
+### Fixed
+- Another party- and bossframe visibility driver update. It's an alpha. 
+
 ## [1.0.8] 2018-07-22
 ### Fixed
 - Updated the party unitframe visibility drivers so that party frames should be shown while in groups of 2-5 players. 

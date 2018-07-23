@@ -11,6 +11,7 @@ local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 -- Lua API
 local _G = _G
 local unpack = unpack
+local string_format = string.format
 
 -- WoW API
 local UnitIsAFK = _G.UnitIsAFK
@@ -260,7 +261,7 @@ end
 UnitFrameParty.OnInit = function(self)
 	self.frame = {}
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style, "[@raid6,exists] hide; [@party"..i..",exists] show;")
+		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style, string_format("[@raid6,exists]hide;[@%s,exists]show;hide", i))
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)
