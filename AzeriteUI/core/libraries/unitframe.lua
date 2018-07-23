@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 28)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 29)
 if (not LibUnitFrame) then	
 	return
 end
@@ -234,7 +234,7 @@ local UnregisterEvent = UnitFrame_MT.__index.UnregisterEvent
 local UnregisterAllEvents = UnitFrame_MT.__index.UnregisterAllEvents
 
 local EnableUnitFrameFrequent = function(frame, throttle)
-	frequentUpdateFrames[object] = throttle or .5
+	frequentUpdateFrames[frame] = throttle or .5
 	local timer = 0
 	frame:SetScript("OnUpdate", function(self, elapsed)
 		if (not self.unit) then
@@ -663,7 +663,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 	-- Store the unitframe in the registry
 	frames[frame] = true 
 	
-	return frame	
+	return frame
 end
 
 -- spawn and style a new group header

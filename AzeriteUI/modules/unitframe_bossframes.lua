@@ -18,6 +18,27 @@ local string_format = string.format
 local DEAD = _G.DEAD
 
 
+-- Cast Bar Map
+-- (Texture Size 128x32, Growth: RIGHT)
+local map = {
+	cast = {
+		top = {
+			{ keyPercent =   0/128, offset = -16/32 }, 
+			{ keyPercent =  10/128, offset =   0/32 }, 
+			{ keyPercent = 119/128, offset =   0/32 }, 
+			{ keyPercent = 128/128, offset = -16/32 }
+		},
+		bottom = {
+			{ keyPercent =   0/128, offset = -16/32 }, 
+			{ keyPercent =  10/128, offset =   0/32 }, 
+			{ keyPercent = 119/128, offset =   0/32 }, 
+			{ keyPercent = 128/128, offset = -16/32 }
+		}
+	}
+
+}
+
+
 -- Utility Functions
 -----------------------------------------------------------------
 
@@ -214,6 +235,7 @@ local Style = function(self, unit, id, ...)
 	health:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
 	health:SetSmoothingFrequency(.5) -- set the duration of the smoothing.
 	health:SetStatusBarTexture(getPath("cast_bar"))
+	health:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
 	health.colorTapped = false -- color tap denied units 
 	health.colorDisconnected = true -- color disconnected units
 	health.colorClass = true -- color players by class 
@@ -237,6 +259,7 @@ local Style = function(self, unit, id, ...)
 	local absorb = content:CreateStatusBar()
 	absorb:SetSize(75, 13)
 	absorb:SetStatusBarTexture(getPath("cast_bar"))
+	absorb:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
 	absorb:SetFrameLevel(health:GetFrameLevel() + 2)
 	absorb:Place("BOTTOM", 0, 0)
 	absorb:SetOrientation("RIGHT") -- grow the bar towards the left (grows from the end of the health)
@@ -249,6 +272,7 @@ local Style = function(self, unit, id, ...)
 	local cast = content:CreateStatusBar()
 	cast:SetSize(75, 13)
 	cast:SetStatusBarTexture(getPath("cast_bar"))
+	cast:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
 	cast:SetFrameLevel(health:GetFrameLevel() + 1)
 	cast:Place("BOTTOM", 0, 0)
 	cast:SetOrientation("LEFT") 

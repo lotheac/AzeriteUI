@@ -532,7 +532,10 @@ local Style = function(self, unit, id, ...)
 	auras.spacingV = 4 -- vertical/row spacing between aura buttons
 	auras.growthX = "RIGHT" -- auras grow to the left
 	auras.growthY = "UP" -- rows grow downwards (we just have a single row, though)
-	auras.maxButtons = nil -- when set will limit the number of buttons regardless of space available
+	auras.maxVisible = nil -- when set will limit the number of buttons regardless of space available
+	auras.maxBuffs = nil -- maximum number of visible buffs
+	auras.maxDebuffs = 3 -- maximum number of visible debuffs
+	auras.debuffsFirst = true -- show debuffs before buffs
 	auras.showCooldownSpiral = false -- don't show the spiral as a timer
 	auras.showCooldownTime = true -- show timer numbers
 

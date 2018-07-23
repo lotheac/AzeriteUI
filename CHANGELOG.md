@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.10] 2018-07-23
+### Added
+- Added Player Pet unit frame.
+- Added Target of Target (ToT) unit frame.
+- Added missing spark maps to party- and bossframe cast-, absorb- and health bars.
+
+### Changed
+- Slightly increased the size of the floating player cast bar.
+
 ## [1.0.9] 2018-07-23
 ### Fixed
 - Another party- and bossframe visibility driver update. It's an alpha. 

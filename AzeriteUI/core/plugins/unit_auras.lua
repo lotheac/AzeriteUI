@@ -311,6 +311,203 @@ local SetAuraButtonPosition = function(element, button, order)
 	button:SetPoint(point, offsetX, offsetY)
 end 
 
+local IterateBuffs = function(element, unit, filter, customFilter, visible)
+
+	local visibleBuffs = 0
+	local visible = visible or 0
+
+	-- Iterate helpful auras
+	for i = 1, BUFF_MAX_DISPLAY do 
+
+		-- Retrieve buff information
+		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitBuff(unit, i, filter)
+
+		-- No name means no more buffs matching the filter
+		if (not name) then
+			break
+		end
+
+		-- Figure out if the debuff is owned by us, not just cast by us
+		local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
+
+		-- Run the custom filter method, if it exists
+		if customFilter then 
+			if not customFilter(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) then 
+				name = nil
+			end 
+		end 
+
+		if name then 
+
+			-- Stop iteration if we've hit the maximum displayed 
+			if (element.maxVisible and (element.maxVisible == visible)) or (element.maxBuffs and (element.maxBuffs == visibleBuffs)) then 
+				break 
+			end 
+
+			visible = visible + 1
+			visibleBuffs = visibleBuffs + 1
+
+			-- Can't have frames that only are referenced by indexed table entries, 
+			-- we need a hashed key or for some reason /framestack will bug out. 
+			local visibleKey = tostring(visible)
+
+			if (not element[visibleKey]) then
+
+				-- Create a new button, and initially hide it while setting it up
+				element[visibleKey] = (element.CreateButton or CreateAuraButton) (element)
+				element[visibleKey]:Hide()
+
+				if element.PostCreateButton then
+					element:PostCreateButton(element[visibleKey])
+				end
+			end
+
+			local button = element[visibleKey]
+			button:SetID(i)
+
+			-- store current aura details on the aura button
+			button.isBuff = true
+			button.unit = unit
+			button.filter = filter
+			button.name = name
+			button.count = count
+			button.debuffType = debuffType
+			button.duration = duration
+			button.expirationTime = expirationTime
+			button.unitCaster = unitCaster
+			button.isStealable = isStealable
+			button.isBossDebuff = isBossDebuff
+			button.isCastByPlayer = isCastByPlayer
+			button.isOwnedByPlayer = isOwnedByPlayer
+
+			-- Update the icon texture
+			button.Icon:SetTexture(icon)
+
+			-- Update stack counts
+			button.Count:SetText((count > 1) and count or "")
+
+			-- Update timers
+			Aura_SetTimer(button, duration, expirationTime)
+
+			-- Position the button
+			if SetAuraButtonPosition(element, button, visible) then 
+				break
+			end 
+
+			-- Run module post updates
+			if element.PostUpdateButton then
+				element:PostUpdateButton(button)
+			end
+
+			-- Show the button if it was hidden
+			if (not button:IsShown()) then
+				button:Show()
+			end
+
+		end 
+
+	end 
+	return visible, visibleBuffs
+end 
+
+local IterateDebuffs = function(element, unit, filter, customFilter, visible)
+
+	local visibleDebuffs = 0
+	local visible = visible or 0
+
+	-- Iterate harmful auras
+	for i = 1, DEBUFF_MAX_DISPLAY do
+		
+		-- Retrieve debuff information
+		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitDebuff(unit, i, filter)
+
+		-- No name means no more debuffs matching the filter
+		if (not name) then
+			break
+		end
+
+		-- Figure out if the debuff is owned by us, not just cast by us
+		local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
+
+		-- Run the custom filter method, if it exists
+		if customFilter then 
+			if not customFilter(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) then 
+				name = nil
+			end 
+		end 
+
+		if name then 
+
+			-- Stop iteration if we've hit the maximum displayed 
+			if (element.maxVisible and (element.maxVisible == visible)) or (element.maxDebuffs and (element.maxDebuffs == visibleDebuffs)) then 
+				break 
+			end 
+
+			visible = visible + 1
+			visibleDebuffs = visibleDebuffs + 1
+
+
+			-- Can't have frames that only are referenced by indexed table entries, 
+			-- we need a hashed key or for some reason /framestack will bug out. 
+			local visibleKey = tostring(visible)
+
+			if (not element[visibleKey]) then
+
+				-- Create a new button, and initially hide it while setting it up
+				element[visibleKey] = (element.CreateButton or CreateAuraButton) (element)
+				element[visibleKey]:Hide()
+
+				if element.PostCreateButton then
+					element:PostCreateButton(element[visibleKey])
+				end
+			end
+
+			local button = element[visibleKey]
+			button:SetID(i)
+
+			-- store current aura details on the aura button
+			button.isBuff = false
+			button.unit = unit
+			button.filter = filter
+			button.name = name
+			button.count = count
+			button.debuffType = debuffType
+			button.duration = duration
+			button.expirationTime = expirationTime
+			button.unitCaster = unitCaster
+			button.isStealable = isStealable
+			button.isBossDebuff = isBossDebuff
+			button.isCastByPlayer = isCastByPlayer
+			button.isOwnedByPlayer = isOwnedByPlayer
+
+			-- Update the icon texture
+			button.Icon:SetTexture(icon)
+
+			-- Update stack counts
+			button.Count:SetText((count > 1) and count or "")
+
+			-- Update timers
+			Aura_SetTimer(button, duration, expirationTime)
+
+			-- Position the button
+			if SetAuraButtonPosition(element, button, visible) then 
+				break
+			end 
+
+			-- Run module post updates
+			if element.PostUpdateButton then
+				element:PostUpdateButton(button)
+			end
+
+			-- Show the button if it was hidden
+			if (not button:IsShown()) then
+				button:Show()
+			end
+		end 
+	end 
+	return visible, visibleDebuffs
+end 
+
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
@@ -323,185 +520,12 @@ local Update = function(self, event, unit)
 		end
 
 		local visible = 0
-		local visibleBuffs = 0
-		local visibleDebuffs = 0
-
-		-- Iterate helpful auras
-		for i = 1, BUFF_MAX_DISPLAY do 
-
-			-- Get the correct filter
-			local filter = Auras.buffFilter or Auras.auraFilter or Auras.filter
-
-			-- Retrieve buff information
-			local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitBuff(unit, i, filter)
-
-			-- No name means no more buffs matching the filter
-			if (not name) then
-				break
-			end
-
-			-- Figure out if the debuff is owned by us, not just cast by us
-			local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
-
-			-- Run the custom filter method, if it exists
-			local customFilter = Auras.BuffFilter or Auras.AuraFilter
-			if customFilter then 
-				if not customFilter(Auras, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) then 
-					name = nil
-				end 
-			end 
-
-			if name then 
-				visible = visible + 1
-				visibleBuffs = visibleBuffs + 1
-
-				-- Can't have frames that only are referenced by indexed table entries, 
-				-- we need a hashed key or for some reason /framestack will bug out. 
-				local visibleKey = tostring(visible)
-
-				if (not Auras[visibleKey]) then
-
-					-- Create a new button, and initially hide it while setting it up
-					Auras[visibleKey] = (Auras.CreateButton or CreateAuraButton) (Auras)
-					Auras[visibleKey]:Hide()
-
-					if Auras.PostCreateButton then
-						Auras:PostCreateButton(Auras[visibleKey])
-					end
-				end
-
-				local button = Auras[visibleKey]
-				button:SetID(i)
-
-				-- store current aura details on the aura button
-				button.isBuff = true
-				button.unit = unit
-				button.filter = filter
-				button.name = name
-				button.count = count
-				button.debuffType = debuffType
-				button.duration = duration
-				button.expirationTime = expirationTime
-				button.unitCaster = unitCaster
-				button.isStealable = isStealable
-				button.isBossDebuff = isBossDebuff
-				button.isCastByPlayer = isCastByPlayer
-				button.isOwnedByPlayer = isOwnedByPlayer
-
-				-- Update the icon texture
-				button.Icon:SetTexture(icon)
-
-				-- Update stack counts
-				button.Count:SetText((count > 1) and count or "")
-
-				-- Update timers
-				Aura_SetTimer(button, duration, expirationTime)
-
-				-- Position the button
-				if SetAuraButtonPosition(Auras, button, visible) then 
-					break
-				end 
-
-				-- Run module post updates
-				if Auras.PostUpdateButton then
-					Auras:PostUpdateButton(button)
-				end
-
-				-- Show the button if it was hidden
-				if (not button:IsShown()) then
-					button:Show()
-				end
-
-			end 
-
-		end 
-
-		-- Iterate harmful auras
-		for i = 1, DEBUFF_MAX_DISPLAY do
-			
-			-- Get the correct filter
-			local filter = Auras.debuffFilter or Auras.auraFilter or Auras.filter
-
-			-- Retrieve debuff information
-			local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitDebuff(unit, i, filter)
-
-			-- No name means no more debuffs matching the filter
-			if (not name) then
-				break
-			end
-
-			-- Figure out if the debuff is owned by us, not just cast by us
-			local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
-
-			-- Run the custom filter method, if it exists
-			local hideAura
-			if customFilter then 
-				if not customFilter(Auras, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) then 
-					name = nil
-				end 
-			end 
-
-			if name then 
-				visible = visible + 1
-				visibleDebuffs = visibleDebuffs + 1
-
-				-- Can't have frames that only are referenced by indexed table entries, 
-				-- we need a hashed key or for some reason /framestack will bug out. 
-				local visibleKey = tostring(visible)
-
-				if (not Auras[visibleKey]) then
-
-					-- Create a new button, and initially hide it while setting it up
-					Auras[visibleKey] = (Auras.CreateButton or CreateAuraButton) (Auras)
-					Auras[visibleKey]:Hide()
-
-					if Auras.PostCreateButton then
-						Auras:PostCreateButton(Auras[visibleKey])
-					end
-				end
-
-				local button = Auras[visibleKey]
-				button:SetID(i)
-
-				-- store current aura details on the aura button
-				button.isBuff = false
-				button.unit = unit
-				button.filter = filter
-				button.name = name
-				button.count = count
-				button.debuffType = debuffType
-				button.duration = duration
-				button.expirationTime = expirationTime
-				button.unitCaster = unitCaster
-				button.isStealable = isStealable
-				button.isBossDebuff = isBossDebuff
-				button.isCastByPlayer = isCastByPlayer
-				button.isOwnedByPlayer = isOwnedByPlayer
-
-				-- Update the icon texture
-				button.Icon:SetTexture(icon)
-
-				-- Update stack counts
-				button.Count:SetText((count > 1) and count or "")
-
-				-- Update timers
-				Aura_SetTimer(button, duration, expirationTime)
-
-				-- Position the button
-				if SetAuraButtonPosition(Auras, button, visible) then 
-					break
-				end 
-
-				-- Run module post updates
-				if Auras.PostUpdateButton then
-					Auras:PostUpdateButton(button)
-				end
-
-				-- Show the button if it was hidden
-				if (not button:IsShown()) then
-					button:Show()
-				end
-			end 
+		if Auras.debuffsFirst then 
+			visible = visible + IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible) 
+			visible = visible + IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
+		else 
+			visible = visible + IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
+			visible = visible + IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible)
 		end 
 
 		-- Hide superflous buttons
@@ -535,14 +559,7 @@ local Update = function(self, event, unit)
 			Buffs:PreUpdate(unit)
 		end
 
-		local visible = 0
-		local filter = Buffs.filter
-
-		-- Iterate helpful auras
-		for i = 1, BUFF_MAX_DISPLAY do 
-		end	
-
-		-- Hide superflous buttons
+		local visible = IterateBuffs(Buffs, unit, Buffs.buffFilter or Buffs.auraFilter or Buffs.filter, Buffs.BuffFilter or Buffs.AuraFilter, visible)
 		if (visible == 0) then 
 			if Buffs:IsShown() then
 				Buffs:Hide()
@@ -573,14 +590,7 @@ local Update = function(self, event, unit)
 			Debuffs:PreUpdate(unit)
 		end
 
-		local visible = 0
-		local filter = Debuffs.filter
-
-		-- Iterate helpful auras
-		for i = 1, DEBUFF_MAX_DISPLAY do 
-		end	
-
-		-- Hide superflous buttons
+		local visible = IterateDebuffs(Debuffs, unit, Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter, Debuffs.DebuffFilter or Debuffs.AuraFilter, visible) 
 		if (visible == 0) then 
 			if Debuffs:IsShown() then
 				Debuffs:Hide()
@@ -702,5 +712,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 12)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 14)
 end 
