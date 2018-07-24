@@ -4,12 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.16] 2018-07-24
+### Changed
+- Actionbutton grids will now be hidden for empty buttons, unless you've currently got a spell or item on the cursor.
+- Now hiding the whole interface until 1.5 seconds after you've entered the world, to avoid seeing "flickering" from the textures and elements not created before this point.
+
 ## [1.0.15] 2018-07-24
 ### Changed
 - Actionbuttons will now remain visible when a spell flyout is open or when spells are currently dragged using the mouse cursor.
 - Actionbuttons that contain flyoutbars will now have a yellow arrow indicating that. 
-- Actionbutton grids will now be hidden for empty buttons, unless you've currently got a spell or item on the cursor.
-- Now hiding the whole interface until 1.5 seconds after you've entered the world, to avoid seeing "flickering" from the textures and elements not created before this point.
 
 ## [1.0.14] 2018-07-24
 ### Fixed
