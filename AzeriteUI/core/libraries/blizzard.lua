@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 7)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 8)
 if (not LibBlizzard) then	
 	return
 end
@@ -604,6 +604,7 @@ LibBlizzard.DisableUIWidget = function(self, name, ...)
 	-- Makes it much simpler during development, 
 	-- and much easier in the future to upgrade.
 	if (not UIWidgets[name]) then 
+		print(("LibBlizzard: The UI widget '%s' does not exist."):format(name))
 		return 
 	end 
 	local dependency = UIWidgetDependency[name]
@@ -622,6 +623,7 @@ end
 LibBlizzard.DisableUIMenuOption = function(self, option_shrink, option_name)
 	local option = _G[option_name]
 	if not(option) or not(option.IsObjectType) or not(option:IsObjectType("Frame")) then
+		print(("LibBlizzard: The menu option '%s' does not exist."):format(option_name))
 		return
 	end
 	option:SetParent(UIHider)
@@ -643,6 +645,7 @@ end
 --local panel = { byID = {}, byName = {} }
 
 LibBlizzard.DisableUIMenuPage = function(self, panel_id, panel_name)
+	local button,window
 	-- remove an entire blizzard options panel, 
 	-- and disable its automatic cancel/okay functionality
 	-- this is needed, or the option will be reset when the menu closes
@@ -652,6 +655,7 @@ LibBlizzard.DisableUIMenuPage = function(self, panel_id, panel_name)
 		if category then
 			category:SetScale(0.00001)
 			category:SetAlpha(0)
+			button = true
 		end
 	end
 	if panel_name then
@@ -664,8 +668,15 @@ LibBlizzard.DisableUIMenuPage = function(self, panel_id, panel_name)
 			panel.cancel = function() end
 			panel.okay = function() end
 			panel.refresh = function() end
+			window = true
 		end
 	end
+	if (panel_id and not button) then
+		print(("LibBlizzard: The panel button with id '%d' does not exist."):format(panel_id))
+	end 
+	if (panel_name and not window) then
+		print(("LibBlizzard: The menu panel named '%s' does not exist."):format(panel_name))
+	end 
 end
 
 -- Module embedding

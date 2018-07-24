@@ -96,30 +96,26 @@ local ActionButton = {}
 
 -- Called by mouseover scripts
 ActionButton.UpdateMouseOver = function(self)
-	local Border = self.Border
-	local Darken = self.Darken 
-	local Glow = self.Glow
 	local colors = self.colors
-
 	if self.isMouseOver then 
-		if Darken then 
-			Darken:SetAlpha(Darken.highlight)
+		if self.Darken then 
+			self.Darken:SetAlpha(self.Darken.highlight)
 		end 
-		if Border then 
-			Border:SetVertexColor(colors.highlight[1], colors.highlight[2], colors.highlight[3])
+		if self.Border then 
+			self.Border:SetVertexColor(colors.highlight[1], colors.highlight[2], colors.highlight[3], 1)
 		end 
-		if Glow then 
-			Glow:Show()
+		if self.Glow then 
+			self.Glow:Show()
 		end 
 	else 
-		if Darken then 
-			Darken:SetAlpha(self.Darken.normal)
+		if self.Darken then 
+			self.Darken:SetAlpha(self.Darken.normal)
 		end 
-		if Border then 
-			Border:SetVertexColor(colors.ui.stone[1], colors.ui.stone[2], colors.ui.stone[3])
+		if self.Border then 
+			self.Border:SetVertexColor(colors.ui.stone[1], colors.ui.stone[2], colors.ui.stone[3], 1)
 		end 
-		if Glow then 
-			Glow:Hide()
+		if self.Glow then 
+			self.Glow:Hide()
 		end 
 	end 
 end 
@@ -420,19 +416,21 @@ ActionBarMain.SpawnButtons = function(self)
 	-- Mainbar, hidden part
 	for id = 8,12 do 
 		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, 1, id) 
-		button:SetAlpha(0)
+		button:GetPager():SetAlpha(0)
 
 		buttons[#buttons + 1] = button
 		hoverButtons[#hoverButtons + 1] = button 
+		hoverButtons[button] = true
 	end 
 
 	-- "Bottomleft"
 	for id = 1,6 do 
 		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
-		button:SetAlpha(0)
+		button:GetPager():SetAlpha(0)
 
 		buttons[#buttons + 1] = button
 		hoverButtons[#hoverButtons + 1] = button 
+		hoverButtons[button] = true
 	end 
 
 	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
@@ -443,29 +441,12 @@ ActionBarMain.SpawnButtons = function(self)
 		self.elapsed = (self.elapsed or 0) - elapsed
 
 		if (self.elapsed <= 0) then
-
-			local flyout
-			local forced = self.forced
-			local mouseover = self:IsMouseOver(0,0,0,0)
-
-			if ((not forced) or (not mouseover)) then 
-				for id,button in ipairs(hoverButtons) do 
-					local actionType, id = GetActionInfo(button.buttonAction)
-					if (actionType == "flyout") then
-						if (SpellFlyout and SpellFlyout:IsShown() and (SpellFlyout:GetParent() == button)) then
-							flyout = true 
-							break
-						end
-					end 
-				end 
-			end
-
-			if forced or flyout or mouseover then
+			if self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
 					self.alpha = 1
 					for id,button in ipairs(hoverButtons) do 
-						button:SetAlpha(self.alpha)
+						button:GetPager():SetAlpha(self.alpha)
 					end 
 				end 
 			else 
@@ -475,7 +456,6 @@ ActionBarMain.SpawnButtons = function(self)
 						self.fadeOutTime = fadeOutTime
 					end 
 				end 
-
 				if self.fadeOutTime then 
 					self.fadeOutTime = self.fadeOutTime - elapsed
 					if self.fadeOutTime > 0 then 
@@ -486,14 +466,16 @@ ActionBarMain.SpawnButtons = function(self)
 					end 
 
 					for id,button in ipairs(hoverButtons) do 
-						button:SetAlpha(self.alpha)
+						button:GetPager():SetAlpha(self.alpha)
 					end 
 				end 
 			end 
-
 			self.elapsed = .05
 		end 
 	end)
+
+	-- Set this to initiate the first fade-out
+	hoverFrame.isMouseOver = true 
 
 	hoverFrame:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "ACTIONBAR_SHOWGRID") then 
@@ -502,13 +484,14 @@ ActionBarMain.SpawnButtons = function(self)
 			self.forced = nil
 		end 
 	end)
-
 	hoverFrame:RegisterEvent("ACTIONBAR_HIDEGRID")
 	hoverFrame:RegisterEvent("ACTIONBAR_SHOWGRID")
 
-	--SPELL_FLYOUT_UPDATE
-	SpellFlyout:HookScript("OnShow", function() hoverFrame.flyout = true end)
-	SpellFlyout:HookScript("OnHide", function() hoverFrame.flyout = nil end)
+	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
+		if hoverButtons[self] then 
+			hoverFrame.flyout = self:HasFlyoutShown()
+		end 
+	end)
 
 end 
 

@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 19)
+local LibActionButton = CogWheel:Set("LibActionButton", 22)
 if (not LibActionButton) then	
 	return
 end
@@ -43,11 +43,13 @@ local type = type
 -- Doing it this way to make the transition to library later on easier
 LibActionButton.embeds = LibActionButton.embeds or {} 
 LibActionButton.buttons = LibActionButton.buttons or {} 
+LibActionButton.allbuttons = LibActionButton.allbuttons or {} 
 LibActionButton.callbacks = LibActionButton.callbacks or {} 
 LibActionButton.elements = LibActionButton.elements or {} -- global buttontype registry
 LibActionButton.numButtons = LibActionButton.numButtons or 0 -- total number of spawned buttons 
 
 -- Shortcuts
+local AllButtons = LibActionButton.allbuttons
 local Buttons = LibActionButton.buttons
 local Callbacks = LibActionButton.callbacks
 local Templates = LibActionButton.elements
@@ -356,10 +358,17 @@ end
 
 -- This will cause multiple updates when library is updated. Hmm....
 hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
-	if Buttons[self] then
+	if AllButtons[self] then
 		self:UpdateFlyout()
 	end
 end)
+
+Button.HasFlyoutShown = function(self)
+	local buttonAction = self:GetAction()
+	if HasAction(buttonAction) then
+		return (GetActionInfo(buttonAction) == "flyout") and (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self)
+	end 
+end
 
 Button.UpdateFlyout = function(self)
 
@@ -372,34 +381,31 @@ Button.UpdateFlyout = function(self)
 	end 
 
 	if self.FlyoutArrow then 
+
 		local buttonAction = self:GetAction()
 		if HasAction(buttonAction) then
 
 			local actionType = GetActionInfo(buttonAction)
 			if (actionType == "flyout") then
 
-				local arrowDistance
-				if ((SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or (GetMouseFocus() == self)) then
-					arrowDistance = 5
-				else
-					arrowDistance = 2
-				end
-
 				self.FlyoutArrow:Show()
 				self.FlyoutArrow:ClearAllPoints()
 
 				local direction = self:GetAttribute("flyoutDirection")
 				if (direction == "LEFT") then
-					self.FlyoutArrow:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
+					self.FlyoutArrow:SetPoint("LEFT", 0, 0)
 					SetClampedTextureRotation(self.FlyoutArrow, 270)
+
 				elseif (direction == "RIGHT") then
-					self.FlyoutArrow:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
+					self.FlyoutArrow:SetPoint("RIGHT", 0, 0)
 					SetClampedTextureRotation(self.FlyoutArrow, 90)
+
 				elseif (direction == "DOWN") then
-					self.FlyoutArrow:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
+					self.FlyoutArrow:SetPoint("BOTTOM", 0, 0)
 					SetClampedTextureRotation(self.FlyoutArrow, 180)
+
 				else
-					self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
+					self.FlyoutArrow:SetPoint("TOP", 1, 0)
 					SetClampedTextureRotation(self.FlyoutArrow, 0)
 				end
 
@@ -481,6 +487,7 @@ end
 LibActionButton.CreateButtonOverlayGlow = function(self, button)
 
 	local overlayGlow = CreateOverlayGlow(button)
+	overlayGlow:Hide()
 	overlayGlow:SetFrameLevel(button:GetFrameLevel() + 10)
 
 	local frameWidth, frameHeight = button:GetSize()
@@ -543,6 +550,7 @@ LibActionButton.CreateFlyoutArrow = function(self, button)
 	flyoutArrow:SetDrawLayer("OVERLAY", 1)
 	flyoutArrow:SetTexture([[Interface\Buttons\ActionBarFlyoutButton]])
 	flyoutArrow:SetTexCoord(.625, .984375, .7421875, .828125)
+	flyoutArrow:SetPoint("TOP", 0, 2)
 	button.FlyoutArrow = flyoutArrow
 
 	-- blizzard code bugs out without these
@@ -579,6 +587,7 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, overrideN
 		Buttons[self] = {}
 	end 
 	Buttons[self][button] = buttonType
+	AllButtons[button] = buttonType
 
 	-- Add any methods from the optional template.
 	-- *we're now allowing modules to overwrite methods.

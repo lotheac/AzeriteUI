@@ -340,12 +340,43 @@ ActionButton.UpdateUsable = function(self)
 
 end 
 
+local gridCounter = 0
+ActionButton.ShowGrid = function(self)
+	self.gridCounter = (self.gridCounter or 0) + 1
+	if (self.gridCounter >= 1) then
+		if self:IsShown() then
+			self:SetAlpha(1)
+		end
+	end
+end 
+
+ActionButton.HideGrid = function(self)
+	if (self.gridCounter and (self.gridCounter > 0)) then
+		self.gridCounter = self.gridCounter - 1
+	end
+	if ((self.gridCounter or 0) == 0) then
+		if (self:IsShown() and (not HasAction(self.buttonAction)) and (not self.showGrid)) then
+			self:SetAlpha(0)
+		end
+	end
+end 
+
+ActionButton.UpdateGrid = function(self)
+	if self.showGrid then
+		self:SetAlpha(1)
+	elseif (((self.gridCounter or 0) == 0) and self:IsShown() and (not HasAction(self.buttonAction))) then
+		self:SetAlpha(0)
+	end
+end
 
 ActionButton.Update = function(self)
 
 	if HasAction(self.buttonAction) then 
+		self.hasAction = true
 		self.Icon:SetTexture(GetActionTexture(self.buttonAction))
+		self:SetAlpha(1)
 	else
+		self.hasAction = false
 		self.Icon:SetTexture(nil) 
 	end 
 
@@ -354,7 +385,9 @@ ActionButton.Update = function(self)
 	self:UpdateCooldown()
 	self:UpdateFlash()
 	self:UpdateUsable()
+	self:UpdateGrid()
 	self:UpdateOverlayGlow()
+	self:UpdateFlyout()
 
 	-- Allow modules to add in methods this way
 	if self.PostUpdate then 
@@ -689,6 +722,12 @@ local Update = function(self, event, ...)
 	elseif (event == "ACTIONBAR_UPDATE_USABLE") then
 		self:UpdateUsable()
 
+	elseif (event == "ACTIONBAR_SHOWGRID") then
+		self:ShowGrid()
+
+	elseif (event == "ACTIONBAR_HIDEGRID") then
+		self:HideGrid()
+
 	elseif (event == "CURRENT_SPELL_CAST_CHANGED") then
 		self:UpdateAction()
 
@@ -739,6 +778,8 @@ local Enable = function(self)
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
+	self:RegisterEvent("ACTIONBAR_HIDEGRID", Proxy)
+	self:RegisterEvent("ACTIONBAR_SHOWGRID", Proxy)
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
 	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Proxy)
 	self:RegisterEvent("LOSS_OF_CONTROL_UPDATE", Proxy)
@@ -756,6 +797,8 @@ local Disable = function(self)
 	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
+	self:UnregisterEvent("ACTIONBAR_HIDEGRID", Proxy)
+	self:UnregisterEvent("ACTIONBAR_SHOWGRID", Proxy)
 	self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
 	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Proxy)
 	self:UnregisterEvent("LOSS_OF_CONTROL_UPDATE", Proxy)
@@ -769,4 +812,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 16)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 17)

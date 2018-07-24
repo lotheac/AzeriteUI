@@ -1,7 +1,10 @@
 local ADDON = ...
 
 -- Wooh! 
-local AzeriteUI = CogWheel("LibModule"):NewModule("AzeriteUI", "LibDB", "LibEvent", "LibBlizzard")
+local AzeriteUI = CogWheel("LibModule"):NewModule("AzeriteUI", "LibDB", "LibEvent", "LibBlizzard", "LibFrame")
+
+-- Hide the entire UI from the start
+AzeriteUI:GetFrame("UICenter"):SetAlpha(0)
 
 -- Tell the back-end what addon to look for before 
 -- initializing this module and all its submodules. 
@@ -13,6 +16,7 @@ AzeriteUI:SetAddon(ADDON)
 -- Tell the backend where our saved variables are found.
 -- *it's important that we're doing this here, before any module configs are created.
 AzeriteUI:RegisterSavedVariablesGlobal("AzeriteUI_DB")
+
 
 -- Lua API
 local _G = _G
@@ -41,7 +45,7 @@ AzeriteUI.OnEnable = function(self)
 	self:DisableUIWidget("ActionBars")
 	self:DisableUIWidget("Alerts")
 	self:DisableUIWidget("Auras")
-	self:DisableUIWidget("CaptureBars")
+	--self:DisableUIWidget("CaptureBars")
 	self:DisableUIWidget("CastBars")
 	self:DisableUIWidget("Chat")
 	self:DisableUIWidget("LevelUpDisplay")
@@ -50,7 +54,7 @@ AzeriteUI.OnEnable = function(self)
 	self:DisableUIWidget("OrderHall")
 	self:DisableUIWidget("Tutorials")
 	self:DisableUIWidget("UnitFrames")
-	self:DisableUIWidget("Warnings")
+	--self:DisableUIWidget("Warnings")
 	self:DisableUIWidget("WorldMap")
 	self:DisableUIWidget("WorldState")
 	self:DisableUIWidget("ZoneText")
@@ -59,31 +63,8 @@ AzeriteUI.OnEnable = function(self)
 	-- Disable complete interface options menu pages we don't need
 	------------------------------------------------------------------------------------
 	self:DisableUIMenuPage(5, "InterfaceOptionsActionBarsPanel")
-	self:DisableUIMenuPage(11, "InterfaceOptionsBuffsPanel")
+	--self:DisableUIMenuPage(11, "InterfaceOptionsBuffsPanel")
 	
-
-	-- Disable select interface options we don't need
-	------------------------------------------------------------------------------------
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelBottomLeft") -- Actionbars
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelBottomRight") -- Actionbars
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelRight") -- Actionbars
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelRightTwo") -- Actionbars
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelLockActionBars") -- Actionbars
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelPickupActionKeyDropDown") -- Actionbars
-	--self:DisableUIMenuOption(true, "InterfaceOptionsActionBarsPanelAlwaysShowActionBars") -- Actionbars
-	self:DisableUIMenuOption(true, "InterfaceOptionsDisplayPanelShowClock") -- Minimap
-	self:DisableUIMenuOption(true, "InterfaceOptionsObjectivesPanelWatchFrameWidth") -- ObjectiveTracker
-	self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelTargetOfTarget") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsUnitFramePanelPartyPets") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsUnitFramePanelFullSizeFocusFrame") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsUnitFramePanelArenaEnemyFrames") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsUnitFramePanelArenaEnemyCastBar") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsUnitFramePanelArenaEnemyPets") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelTargetOfTarget") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelEnemyCastBars") -- UnitFrames
-	self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelEnemyCastBarsOnPortrait") -- UnitFrames
-	--self:DisableUIMenuOption(true, "InterfaceOptionsCombatPanelEnemyCastBarsOnNameplates") -- UnitFrames
-
 
 	-- Working around Blizzard bugs and issues I've discovered
 	------------------------------------------------------------------------------------
@@ -104,4 +85,35 @@ AzeriteUI.OnEnable = function(self)
 	--local screenWidth, screenHeight = LibFrame:GetScreenSize()
 	--CogWheel("LibFrame"):SetTargetScale( 1920/1440 )
 	CogWheel("LibFrame"):SetTargetScale( 1 )
+
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("PLAYER_LEAVING_WORLD", "OnEvent")
+end 
+
+AzeriteUI.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_ENTERING_WORLD") then 
+		self.frame = self.frame or CreateFrame("Frame")
+		self.frame:SetScript("OnUpdate", function(self, elapsed) 
+			self.elapsed = (self.elapsed or 0) + elapsed
+			if self.elapsed < .05 then 
+				return 
+			end 
+			self.alpha = (self.alpha or 0) + self.elapsed/1.5
+			if self.alpha > 1 then 
+				AzeriteUI:GetFrame("UICenter"):SetAlpha(1)
+				self.alpha = 0
+				self:SetScript("OnUpdate", nil)
+				return 
+			else 
+				AzeriteUI:GetFrame("UICenter"):SetAlpha(self.alpha)
+			end 
+			self.elapsed = 0
+		end)
+	else 
+		if self.frame then 
+			self.frame:SetScript("OnUpdate", nil)
+			self.alpha = 0
+		end
+		AzeriteUI:GetFrame("UICenter"):SetAlpha(0)
+	end 
 end 
