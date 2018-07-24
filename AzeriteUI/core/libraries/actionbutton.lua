@@ -357,7 +357,6 @@ end
 -- This will cause multiple updates when library is updated. Hmm....
 hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
 	if Buttons[self] then
-		print("calling")
 		self:UpdateFlyout()
 	end
 end)
@@ -380,7 +379,7 @@ Button.UpdateFlyout = function(self)
 			if (actionType == "flyout") then
 
 				local arrowDistance
-				if (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or GetMouseFocus() == self then
+				if ((SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or (GetMouseFocus() == self)) then
 					arrowDistance = 5
 				else
 					arrowDistance = 2
@@ -538,9 +537,10 @@ LibActionButton.CreateButtonCooldowns = function(self, button)
 end
 
 LibActionButton.CreateFlyoutArrow = function(self, button)
-	local flyoutArrow = button:CreateTexture()
+	local flyoutArrow = (button.Overlay or button):CreateTexture()
 	flyoutArrow:Hide()
 	flyoutArrow:SetSize(23,11)
+	flyoutArrow:SetDrawLayer("OVERLAY", 1)
 	flyoutArrow:SetTexture([[Interface\Buttons\ActionBarFlyoutButton]])
 	flyoutArrow:SetTexCoord(.625, .984375, .7421875, .828125)
 	button.FlyoutArrow = flyoutArrow

@@ -444,16 +444,31 @@ ActionBarMain.SpawnButtons = function(self)
 
 		if (self.elapsed <= 0) then
 
-			if self:IsMouseOver(0,0,0,0) then
+			local flyout
+			local forced = self.forced
+			local mouseover = self:IsMouseOver(0,0,0,0)
+
+			if ((not forced) or (not mouseover)) then 
+				for id,button in ipairs(hoverButtons) do 
+					local actionType, id = GetActionInfo(button.buttonAction)
+					if (actionType == "flyout") then
+						if (SpellFlyout and SpellFlyout:IsShown() and (SpellFlyout:GetParent() == button)) then
+							flyout = true 
+							break
+						end
+					end 
+				end 
+			end
+
+			if forced or flyout or mouseover then
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
 					self.alpha = 1
 					for id,button in ipairs(hoverButtons) do 
 						button:SetAlpha(self.alpha)
 					end 
-				end
-			elseif (not self:IsMouseOver(0,0,0,0)) then 
-
+				end 
+			else 
 				if self.isMouseOver then 
 					self.isMouseOver = nil
 					if (not self.fadeOutTime) then 
@@ -479,6 +494,21 @@ ActionBarMain.SpawnButtons = function(self)
 			self.elapsed = .05
 		end 
 	end)
+
+	hoverFrame:SetScript("OnEvent", function(self, event, ...) 
+		if (event == "ACTIONBAR_SHOWGRID") then 
+			self.forced = true
+		elseif (event == "ACTIONBAR_HIDEGRID") then
+			self.forced = nil
+		end 
+	end)
+
+	hoverFrame:RegisterEvent("ACTIONBAR_HIDEGRID")
+	hoverFrame:RegisterEvent("ACTIONBAR_SHOWGRID")
+
+	--SPELL_FLYOUT_UPDATE
+	SpellFlyout:HookScript("OnShow", function() hoverFrame.flyout = true end)
+	SpellFlyout:HookScript("OnHide", function() hoverFrame.flyout = nil end)
 
 end 
 
