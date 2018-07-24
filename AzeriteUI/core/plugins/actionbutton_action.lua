@@ -603,7 +603,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 		return "message", "update"
 	]])
 
-	-- when is this called...?
+	-- when a spell is dropped onto the buttons
 	page:WrapScript(button, "OnReceiveDrag", [[
 		local kind, value, subtype, extra = ...
 		if ((not kind) or (not value)) then 
@@ -613,7 +613,8 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 		local id = self:GetID(); 
 		local action = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
 		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
-		return "action", action
+			return "action", action
+		end 
 	]])
 
 	local driver 
