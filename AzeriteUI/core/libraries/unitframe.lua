@@ -1,22 +1,26 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 30)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 33)
 if (not LibUnitFrame) then	
 	return
 end
 
 local LibEvent = CogWheel("LibEvent")
-assert(LibEvent, "LibChatWindow requires LibEvent to be loaded.")
+assert(LibEvent, "LibUnitFrame requires LibEvent to be loaded.")
 
 local LibFrame = CogWheel("LibFrame")
-assert(LibFrame, "LibChatWindow requires LibFrame to be loaded.")
+assert(LibFrame, "LibUnitFrame requires LibFrame to be loaded.")
+
+local LibWidgetContainer = CogWheel("LibWidgetContainer")
+assert(LibWidgetContainer, "LibUnitFrame requires LibWidgetContainer to be loaded.")
 
 local LibTooltip = CogWheel("LibTooltip")
-assert(LibTooltip, "LibChatWindow requires LibTooltip to be loaded.")
+assert(LibTooltip, "LibUnitFrame requires LibTooltip to be loaded.")
 
 -- Embed needed libraries
 LibEvent:Embed(LibUnitFrame)
 LibFrame:Embed(LibUnitFrame)
+LibFrame:Embed(LibUnitFrame)
 LibTooltip:Embed(LibUnitFrame)
-
+LibWidgetContainer:Embed(LibUnitFrame)
 
 -- Lua API
 local _G = _G
@@ -41,13 +45,13 @@ local ToggleDropDownMenu = _G.ToggleDropDownMenu
 -- Library Registries
 LibUnitFrame.embeds = LibUnitFrame.embeds or {} -- who embeds this?
 LibUnitFrame.frames = LibUnitFrame.frames or  {} -- global unitframe registry
-LibUnitFrame.elements = LibUnitFrame.elements or {} -- global element registry
-LibUnitFrame.callbacks = LibUnitFrame.callbacks or {} -- global frame and element callback registry
-LibUnitFrame.unitEvents = LibUnitFrame.unitEvents or {} -- global frame unitevent registry
-LibUnitFrame.frequentUpdates = LibUnitFrame.frequentUpdates or {} -- global element frequent update registry
-LibUnitFrame.frequentUpdateFrames = LibUnitFrame.frequentUpdateFrames or {} -- global frame frequent update registry
-LibUnitFrame.frameElements = LibUnitFrame.frameElements or {} -- per unitframe element registry
-LibUnitFrame.frameElementsEnabled = LibUnitFrame.frameElementsEnabled or {} -- per unitframe element enabled registry
+--LibUnitFrame.elements = LibUnitFrame.elements or {} -- global element registry
+--LibUnitFrame.callbacks = LibUnitFrame.callbacks or {} -- global frame and element callback registry
+--LibUnitFrame.unitEvents = LibUnitFrame.unitEvents or {} -- global frame unitevent registry
+--LibUnitFrame.frequentUpdates = LibUnitFrame.frequentUpdates or {} -- global element frequent update registry
+--LibUnitFrame.frequentUpdateFrames = LibUnitFrame.frequentUpdateFrames or {} -- global frame frequent update registry
+--LibUnitFrame.frameElements = LibUnitFrame.frameElements or {} -- per unitframe element registry
+--LibUnitFrame.frameElementsEnabled = LibUnitFrame.frameElementsEnabled or {} -- per unitframe element enabled registry
 LibUnitFrame.scriptHandlers = LibUnitFrame.scriptHandlers or {} -- tracked library script handlers
 LibUnitFrame.scriptFrame = LibUnitFrame.scriptFrame -- library script frame, will be created on demand later on
 
@@ -147,7 +151,7 @@ local customClassColors = function()
 		local updateColors = function()
 			Colors.class = prepareGroup(CUSTOM_CLASS_COLORS)
 			for frame in pairs(frames) do 
-				frame:UpdateAllElements("CustomClassColors", frame.unit)
+				frame:OverrideAllElements("CustomClassColors", frame.unit)
 			end 
 		end
 		updateColors()
@@ -220,7 +224,7 @@ end
 
 -- Unitframe Template
 --------------------------------------------------------------------------
-local UnitFrame = LibUnitFrame:CreateFrame("Button")
+local UnitFrame = {} -- LibUnitFrame:CreateFrame("Button")
 local UnitFrame_MT = { __index = UnitFrame }
 
 
@@ -233,26 +237,7 @@ local RegisterUnitEvent = UnitFrame_MT.__index.RegisterUnitEvent
 local UnregisterEvent = UnitFrame_MT.__index.UnregisterEvent
 local UnregisterAllEvents = UnitFrame_MT.__index.UnregisterAllEvents
 
-local EnableUnitFrameFrequent = function(frame, throttle)
-	frequentUpdateFrames[frame] = throttle or .5
-	local timer = 0
-	frame:SetScript("OnUpdate", function(self, elapsed)
-		if (not self.unit) then
-			return
-		end
-		timer = timer + elapsed
-		if (timer > frequentUpdateFrames[self]) then
-			-- Is this really a good thing to do?
-			-- Maybe select just a minor few, 
-			-- or do some checks on the unit or GUID to 
-			-- figure out if we actually need an update?
-			self:UpdateAllElements("FrequentUpdate", self.unit)
-			timer = 0
-		end
-	end)
-end 
-
-local EnableUnitFrameVehicle = function(frame, unit)
+UnitFrame.EnableVehicleSwitcher = function(frame, unit)
 	local other_unit
 
 	if (unit == "pet") then 
@@ -301,238 +286,6 @@ local EnableUnitFrameVehicle = function(frame, unit)
 	RegisterAttributeDriver(vehicleSwitcher, "state-vehicleswitch", ("[unithasvehicleui,@%s] vehicle; novehicle"):format(other_unit or unit))
 end 
 
-local OnUnitFrameUnitChanged = function(frame, unit)
-	if (frame.unit ~= unit) then
-		frame.unit = unit
-		frame.id = tonumber(string_match(unit, "^.-(%d+)"))
-
-		-- Update all unit events
-		for event in pairs(unitEvents) do 
-			local hasEvent, eventUnit = IsEventRegistered(frame, event)
-			if (hasEvent and eventUnit ~= unit) then 
-				-- This erases previously registered unit events
-				RegisterUnitEvent(frame, event, unit)
-			end 
-		end 
-		return true
-	end 
-end 
-
-local OnUnitFrameAttributeChanged = function(frame, attribute, value)
-	if (attribute == "unit") then
-
-		-- replace playerpet with pet
-		value = value:gsub("playerpet", "pet")
-
-		-- Bail out if the unit isn't changed
-		if (frame.unit == value) then 
-			return 
-		end 
-
-		-- Update all elements to the new unit
-		if OnUnitFrameUnitChanged(frame, value) then
-			-- The above updates frame.unit
-			frame:UpdateAllElements("Forced", frame.unit)
-		end 
-	end
-end
-
-local OnUnitFrameEvent = function(frame, event, ...)
-	if (frame:IsVisible() and callbacks[frame] and callbacks[frame][event]) then 
-		local events = callbacks[frame][event]
-		local isUnitEvent = unitEvents[event]
-		for i = 1, #events do
-			if isUnitEvent then 
-				if (event == "PLAYER_TARGET_CHANGED") then 
-					print(event, ...)
-				end 
-				events[i](frame, event, ...)
-			else 
-				events[i](frame, event, frame.unit, ...)
-			end 
-		end
-	end 
-end
-
-UnitFrame.RegisterEvent = function(self, event, func, unitless)
-	if (frequentUpdateFrames[self] and event ~= "UNIT_PORTRAIT_UPDATE" and event ~= "UNIT_MODEL_CHANGED") then 
-		return 
-	end
-	if (not callbacks[self]) then
-		callbacks[self] = {}
-	end
-	if (not callbacks[self][event]) then
-		callbacks[self][event] = {}
-	end
-	
-	local events = callbacks[self][event]
-	if (#events > 0) then
-		for i = #events, 1, -1 do
-			if (events[i] == func) then
-				return
-			end
-		end
-	end
-
-	table_insert(events, func)
-
-	if (not IsEventRegistered(self, event)) then
-		if unitless then 
-			RegisterEvent(self, event)
-		else 
-			unitEvents[event] = true
-			RegisterUnitEvent(self, event)
-		end 
-	end
-end
-
-UnitFrame.UnregisterEvent = function(self, event, func)
-	-- silently fail if the event isn't even registered
-	if not callbacks[self] or not callbacks[self][event] then
-		return
-	end
-
-	local events = callbacks[self][event]
-
-	if #events > 0 then
-		-- find the function's id 
-		for i = #events, 1, -1 do
-			if events[i] == func then
-				events[i] = nil -- remove the function from the event's registry
-				if #events == 0 then
-					UnregisterEvent(self, event) 
-				end
-			end
-		end
-	end
-end
-
-UnitFrame.UnregisterAllEvents = function(self)
-	if not callbacks[self] then 
-		return
-	end
-	for event, funcs in pairs(callbacks[self]) do
-		for i = #funcs, 1, -1 do
-			funcs[i] = nil
-		end
-	end
-	UnregisterAllEvents(self)
-end
-
-UnitFrame.UpdateAllElements = function(self, event, ...)
-	local unit = self.unit
-	if (not UnitExists(unit)) then 
-		return 
-	end
-	if (self.PreUpdate) then
-		self:PreUpdate(event, unit, ...)
-	end
-	if (frameElements[self]) then
-		for element in pairs(frameElementsEnabled[self]) do
-			-- Will run the registered Update function for the element, 
-			-- which isually is the "Proxy" method in my elements. 
-			-- We cannot direcly access the ForceUpdate method, 
-			-- as that is meant for in-module updates to that unique
-			-- instance of the element, and doesn't exist on the template element itself. 
-			elements[element].Update(self, "Forced", self.unit)
-		end
-	end
-	if (self.PostUpdate) then
-		self:PostUpdate(event, unit, ...)
-	end
-end
-
-UnitFrame.EnableElement = function(self, element)
-	if (not frameElements[self]) then
-		frameElements[self] = {}
-		frameElementsEnabled[self] = {}
-	end
-
-	-- don't double enable
-	if frameElementsEnabled[self][element] then 
-		return 
-	end 
-
-	-- upvalues ftw
-	local frameElements = frameElements[self]
-	local frameElementsEnabled = frameElementsEnabled[self]
-	
-	-- avoid duplicates
-	local found
-	for i = 1, #frameElements do
-		if (frameElements[i] == element) then
-			found = true
-			break
-		end
-	end
-	if (not found) then
-		-- insert the element into the list
-		table_insert(frameElements, element)
-	end
-
-	-- attempt to enable the element
-	if elements[element].Enable(self, self.unit) then
-		-- success!
-		frameElementsEnabled[element] = true
-	end
-end
-
-UnitFrame.DisableElement = function(self, element)
-	-- silently fail if the element hasn't been enabled for the frame
-	if ((not frameElementsEnabled[self]) or (not frameElementsEnabled[self][element])) then
-		return
-	end
-	
-	elements[element].Disable(self, self.unit)
-
-	for i = #frameElements[self], 1, -1 do
-		if (frameElements[self][i] == element) then
-			frameElements[self][i] = nil
-		end
-	end
-	
-	frameElementsEnabled[self][element] = nil
-	
-	if (frequentUpdates[self] and frequentUpdates[self][element]) then
-		-- remove the element's frequent update entry
-		frequentUpdates[self][element].elapsed = nil
-		frequentUpdates[self][element].hz = nil
-		frequentUpdates[self][element] = nil
-		
-		-- Remove the frame object's frequent update entry
-		-- if no elements require it anymore.
-		local count = 0
-		for i,v in pairs(frequentUpdates[self]) do
-			count = count + 1
-		end
-		if (count == 0) then
-			frequentUpdates[self] = nil
-		end
-		
-		-- Disable the entire script handler if no elements
-		-- on any frames require frequent updates. 
-		count = 0
-		for i,v in pairs(frequentUpdates) do
-			count = count + 1
-		end
-		if (count == 0) then
-			if LibUnitFrame:GetScript("OnUpdate") then
-				LibUnitFrame:SetScript("OnUpdate", nil)
-			end
-		end
-	end
-end
-
-UnitFrame.EnableFrequentUpdates = function(self, element, frequency)
-	if (not frequentUpdates[self]) then
-		frequentUpdates[self] = {}
-	end
-	frequentUpdates[self][element] = { elapsed = 0, hz = tonumber(frequency) or .5 }
-	if (not LibUnitFrame:GetScript("OnUpdate")) then
-		LibUnitFrame:SetScript("OnUpdate", OnUpdate)
-	end
-end
-
 -- Return or create the library default tooltip
 -- This is shared by all unitframes, unless these methods 
 -- are specifically overwritten by the modules.
@@ -541,18 +294,37 @@ UnitFrame.GetTooltip = function(self)
 end 
 
 UnitFrame.OnEnter = function(self)
+	self.isMouseOver = true
+
 	local tooltip = self:GetTooltip()
 	tooltip:Hide()
 	tooltip:SetDefaultAnchor(self)
 	tooltip:SetMinimumWidth(160)
 	tooltip:SetUnit(self.unit)
+
+	if self.PostEnter then 
+		self:PostEnter()
+	end 
 end
 
 UnitFrame.OnLeave = function(self)
+	self.isMouseOver = nil
+
 	local tooltip = self:GetTooltip()
 	tooltip:Hide()
+
+	if self.PostLeave then 
+		self:PostLeave()
+	end 
 end
 
+UnitFrame.OverrideAllElements = function(self, event, ...)
+	local unit = self.unit
+	if (not UnitExists(unit)) then 
+		return 
+	end
+	return self:UpdateAllElements(event, ...)
+end
 
 
 -- Library API
@@ -585,13 +357,17 @@ end
 
 -- spawn and style a new unitframe
 LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibilityDriver, ...)
-	local frame = setmetatable(LibUnitFrame:CreateFrame("Button", nil, parent, "SecureUnitButtonTemplate"), UnitFrame_MT)
-	frame:SetFrameStrata("LOW")
 
+	local frame = LibUnitFrame:CreateWidgetContainer("Button", nil, parent, "SecureUnitButtonTemplate", unit, styleFunc, ...)
+	for method,func in pairs(UnitFrame) do 
+		frame[method] = func
+	end 
+
+	frame.id = tonumber(string_match(unit, "^.-(%d+)"))
+	frame.requireUnit = true
 	frame.unit = unit 
 	frame.realunit = unit
-	frame.id = tonumber(string_match(unit, "^.-(%d+)"))
-	frame.colors = Colors
+	frame.colors = frame.colors or Colors
 
 	frame:SetAttribute("unit", unit) 
 	frame:SetAttribute("*type1", "target")
@@ -599,58 +375,40 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 
 	frame:SetScript("OnEnter", UnitFrame.OnEnter)
 	frame:SetScript("OnLeave", UnitFrame.OnLeave)
-	
+	--frame:SetScript("OnAttributeChanged", UnitFrame.OnLeave)
 	frame:RegisterForClicks("AnyUp")
-	
-	if styleFunc then
-		styleFunc(frame, frame.unit, frame.id, ...) 
-	end
-	
-	for element in pairs(elements) do
-		frame:EnableElement(element, frame.unit)
-	end
-
-	frame:SetScript("OnEvent", OnUnitFrameEvent)
-	frame:SetScript("OnAttributeChanged", OnUnitFrameAttributeChanged)
-	frame:HookScript("OnShow", UnitFrame.UpdateAllElements) 
-
-	-- Not sure all needs this one
-	-- But player, pet and all other units that exist before targeted do, 
-	-- or certain stuff like player specialization and similar won't be updated, 
-	-- as registering for their change event isn't enough, they need an initial update too!
-	frame:RegisterEvent("PLAYER_ENTERING_WORLD", UnitFrame.UpdateAllElements, true)
 
 	if (unit == "player") then 
-		EnableUnitFrameVehicle(frame, unit)
+		frame:EnableVehicleSwitcher(unit)
 
 	elseif (unit == "pet") then 
-		EnableUnitFrameVehicle(frame, unit)
+		frame:EnableVehicleSwitcher(unit)
 
 	elseif (unit == "target") then
-		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.UpdateAllElements, true)
+		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit == "mouseover") then
-		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT", UnitFrame.UpdateAllElements, true)
+		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit == "focus") then
-		frame:RegisterEvent("PLAYER_FOCUS_CHANGED", UnitFrame.UpdateAllElements, true)
+		frame:RegisterEvent("PLAYER_FOCUS_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("boss%d?$")) then
-		--EnableUnitFrameFrequent(frame)
-		frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", UnitFrame.UpdateAllElements, true)
-		frame:RegisterEvent("UNIT_TARGETABLE_CHANGED", UnitFrame.UpdateAllElements, true)
+		--frame:EnableFrameFrequent(.5, "unit")
+		frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", UnitFrame.OverrideAllElements, true)
+		frame:RegisterEvent("UNIT_TARGETABLE_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("arena%d?$")) then
-		frame:RegisterEvent("ARENA_OPPONENT_UPDATE", UnitFrame.UpdateAllElements)
+		frame:RegisterEvent("ARENA_OPPONENT_UPDATE", UnitFrame.OverrideAllElements)
 
 	elseif (unit:match("party%d?$")) then 
-		EnableUnitFrameVehicle(frame, unit)
+		frame:EnableVehicleSwitcher(unit)
 
 	elseif (unit:match("raid%d?$")) then 
-		EnableUnitFrameVehicle(frame, unit)
+		frame:EnableVehicleSwitcher(unit)
 
 	elseif (unit:match("%w+target")) then
-		EnableUnitFrameFrequent(frame)
+		frame:EnableFrameFrequent(.5, "unit")
 	end
 
 	-- Allow custom drivers to be used, put in basic ones otherwise
@@ -670,8 +428,13 @@ end
 LibUnitFrame.SpawnHeader = function(self, visibility_macro, parent, styleFunc)
 end
 
+-- Make this a proxy for development purposes
+LibUnitFrame.RegisterElement = function(self, ...)
+	LibWidgetContainer:RegisterElement(...)
+end 
+
 -- register a widget/element
-LibUnitFrame.RegisterElement = function(self, elementName, enableFunc, disableFunc, updateFunc, version)
+LibUnitFrame.RegisterElement2 = function(self, elementName, enableFunc, disableFunc, updateFunc, version)
 	check(elementName, 1, "string")
 	check(enableFunc, 2, "function")
 	check(disableFunc, 3, "function")

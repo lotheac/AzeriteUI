@@ -7,7 +7,7 @@ end
 
 local UnitFrameTarget = AzeriteUI:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local WhiteList = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras").WhiteList
+local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
 
 -- Lua API
 local _G = _G
@@ -144,54 +144,6 @@ local OverrideHealthValue = function(element, unit, min, max, disconnected, dead
 	else 
 		return OverrideValue(element, unit, min, max, disconnected, dead, tapped)
 	end 
-end 
-
-local BuffFilter = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
-
-	-- ALways whitelisted auras, boss debuffs and stealable for mages
-	if WhiteList[spellId] or isBossDebuff or (PlayerClass == "MAGE" and isStealable) then 
-		return true 
-	end 
-
-	-- Try to hide non-player auras outdoors
-	if (not isOwnedByPlayer) and (not IsInInstance()) then 
-		return 
-	end 
-
-	-- Hide static and very long ones
-	if (not duration) or (duration > 60) then 
-		return 
-	end 
-
-	-- show our own short ones
-	if (isOwnedByPlayer and duration and (duration > 0) and (duration < 60)) then 
-		return true
-	end 
-	
-	
-end 
-
-local DebuffFilter = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
-
-	if WhiteList[spellId] or isBossDebuff then 
-		return true 
-	end 
-
-	-- Try to hide non-player auras outdoors
-	if (not isOwnedByPlayer) and (not IsInInstance()) then 
-		return 
-	end 
-
-	-- Hide static and very long ones
-	if (not duration) or (duration > 60) then 
-		return 
-	end 
-
-	-- show our own short ones
-	if (isOwnedByPlayer and duration and (duration > 0) and (duration < 60)) then 
-		return true
-	end 
-
 end 
 
 local PostCreateAuraButton = function(element, button)
@@ -591,13 +543,22 @@ local Style = function(self, unit, id, ...)
 	level.Badge = levelBadge
 
 	-- Skull texture for bosses, high level and dead units  
-	local levelSkull = overlay:CreateTexture()
-	levelSkull:SetDrawLayer("BORDER")
-	levelSkull:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
-	levelSkull:SetSize(40,40)
-	levelSkull:SetTexture(getPath("icon_skull"))
-	level.Skull = levelSkull
+	local skull = overlay:CreateTexture()
+	skull:SetDrawLayer("BORDER")
+	skull:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
+	skull:SetSize(40,40)
+	skull:SetTexture(getPath("icon_skull"))
+	level.Skull = skull
 
+	-- Skull texture for bosses, high level and dead units  
+	local dead = overlay:CreateTexture()
+	dead:SetDrawLayer("BORDER")
+	dead:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
+	dead:SetSize(40,40)
+	dead:SetTexture(getPath("icon_skull_dead"))
+	dead:Hide()
+	level.Dead = dead
+	
 	self.Level = level
 
 
@@ -606,26 +567,26 @@ local Style = function(self, unit, id, ...)
 
 	self.Classification = {}
 
-	local isBoss = overlay:CreateTexture()
-	isBoss:SetTexture(getPath("icon_boss_red"))
-	isBoss:SetSize(56, 56)
-	isBoss:SetPoint("TOPRIGHT", 60, -67)
-	isBoss:SetVertexColor(182/255, 183/255, 181/255)
-	self.Classification.Boss = isBoss
+	local boss = overlay:CreateTexture()
+	boss:SetTexture(getPath("icon_classification_boss"))
+	boss:SetSize(84,84)
+	boss:SetPoint("CENTER", self, "BOTTOMRIGHT", 30, -1)
+	boss:SetVertexColor(182/255, 183/255, 181/255)
+	self.Classification.Boss = boss
 
-	local isElite = overlay:CreateTexture()
-	isElite:SetTexture(getPath("icon_elite_gold"))
-	isElite:SetSize(56, 56)
-	isElite:SetPoint("TOPRIGHT", 60, -67)
-	isElite:SetVertexColor(182/255, 183/255, 181/255)
-	self.Classification.Elite = isElite
+	local elite = overlay:CreateTexture()
+	elite:SetTexture(getPath("icon_classification_elite"))
+	elite:SetSize(84,84)
+	elite:SetPoint("CENTER", self, "BOTTOMRIGHT", 30, -1)
+	elite:SetVertexColor(182/255, 183/255, 181/255)
+	self.Classification.Elite = elite
 
-	local isRare = overlay:CreateTexture()
-	isRare:SetTexture(getPath("icon_rare_blue"))
-	isRare:SetSize(56, 56)
-	isRare:SetPoint("TOPRIGHT", 60, -67)
-	isRare:SetVertexColor(182/255, 183/255, 181/255)
-	self.Classification.Rare = isRare
+	local rare = overlay:CreateTexture()
+	rare:SetTexture(getPath("icon_classification_rare"))
+	rare:SetSize(84,84)
+	rare:SetPoint("CENTER", self, "BOTTOMRIGHT", 30, -1)
+	rare:SetVertexColor(182/255, 183/255, 181/255)
+	self.Classification.Rare = rare
 
 
 	-- Targeting
@@ -634,26 +595,26 @@ local Style = function(self, unit, id, ...)
 
 	self.Targeted = {}
 
-	local youByFriend = overlay:CreateTexture()
-	youByFriend:SetTexture(getPath("icon_stoneye"))
-	youByFriend:SetSize(67, 67)
-	youByFriend:SetPoint("TOPRIGHT", 29, 43)
-	youByFriend:SetVertexColor(227/255, 231/255, 216/255)
-	self.Targeted.YouByFriend = youByFriend
+	local friend = overlay:CreateTexture()
+	friend:SetTexture(getPath("icon_target_green"))
+	friend:SetSize(96,48)
+	friend:SetPoint("CENTER", self, "TOPRIGHT", -10, 12)
+	friend:SetVertexColor(227/255, 231/255, 216/255)
+	self.Targeted.YouByFriend = friend
 
-	local youByEnemy = overlay:CreateTexture()
-	youByEnemy:SetTexture(getPath("icon_stoneye2"))
-	youByEnemy:SetSize(67, 67)
-	youByEnemy:SetPoint("TOPRIGHT", 29, 43)
-	youByEnemy:SetVertexColor(227/255, 231/255, 216/255)
-	self.Targeted.YouByEnemy = youByEnemy
+	local enemy = overlay:CreateTexture()
+	enemy:SetTexture(getPath("icon_target_red"))
+	enemy:SetSize(96,48)
+	enemy:SetPoint("CENTER", self, "TOPRIGHT", -10, 12)
+	enemy:SetVertexColor(227/255, 231/255, 216/255)
+	self.Targeted.YouByEnemy = enemy
 
-	local petByEnemy = overlay:CreateTexture()
-	petByEnemy:SetTexture(getPath("icon_stoneye2"))
-	petByEnemy:SetSize(67, 67)
-	petByEnemy:SetPoint("TOPRIGHT", 29, 43)
-	petByEnemy:SetVertexColor(227/255, 231/255, 216/255)
-	self.Targeted.PetByEnemy = petByEnemy
+	local pet = overlay:CreateTexture()
+	pet:SetTexture(getPath("icon_target_blue"))
+	pet:SetSize(96,48)
+	pet:SetPoint("CENTER", self, "TOPRIGHT", -10, 12)
+	pet:SetVertexColor(227/255, 231/255, 216/255)
+	self.Targeted.PetByEnemy = pet
 
 
 	-- Auras
@@ -679,8 +640,8 @@ local Style = function(self, unit, id, ...)
 
 	-- Filter methods
 	auras.AuraFilter = nil -- general aura filter function, called when the below aren't there
-	auras.BuffFilter = BuffFilter -- buff specific filter function
-	auras.DebuffFilter = DebuffFilter -- debuff specific filter function
+	auras.BuffFilter = Auras.BuffFilter -- buff specific filter function
+	auras.DebuffFilter = Auras.DebuffFilter -- debuff specific filter function
 
 	-- Aura tooltip position
 	auras.tooltipDefaultPosition = nil 

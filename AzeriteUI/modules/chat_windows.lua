@@ -6,6 +6,7 @@ if (not AzeriteUI) then
 end
 
 local ChatWindows = AzeriteUI:NewModule("ChatWindows", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
+local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
 local _G = _G
@@ -21,16 +22,22 @@ local IsShiftKeyDown = _G.IsShiftKeyDown
 local UIFrameFadeRemoveFrame = _G.UIFrameFadeRemoveFrame
 local UIFrameIsFading = _G.UIFrameIsFading
 local UnitAffectingCombat = _G.UnitAffectingCombat
+local VoiceChat_IsLoggedIn = _G.C_VoiceChat and _G.C_VoiceChat.IsLoggedIn
+
+local alphaLocks = {}
+local scaffolds = {}
 
 
 
+-- Utility Functions
+----------------------------------------------------------
 
 -- Proxy function to get media from our local media folder
 local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s]]):format(ADDON, fileName)
 end 
 	
-ChatWindows.UpdateWindowAlpha = function(self, frame)
+ChatWindows.UpdateChatWindowAlpha = function(self, frame)
 	local editBox = self:GetChatWindowCurrentEditBox(frame)
 	local alpha
 	if editBox:IsShown() then
@@ -49,12 +56,8 @@ ChatWindows.UpdateWindowAlpha = function(self, frame)
 	end
 end 
 
--- Temporary windows (like whisper windows, etc)
--- This overrides the normal PostCreateChatWindow
-ChatWindows.PostCreateTemporaryChatWindow = function(self, frame, ...)
-	local chatType, chatTarget, sourceChatFrame, selectWindow = ...
-
-	self:PostCreateChatWindow(frame)
+-- Meant to update down button and scrollbar
+ChatWindows.UpdateChatWindowButtons = function(self)
 end 
 
 ChatWindows.UpdateChatWindowScales = function(self)
@@ -76,11 +79,72 @@ ChatWindows.UpdateChatWindowScales = function(self)
 end 
 
 ChatWindows.UpdateChatWindowPositions = function(self)
-
 end 
 
-local alphaLocks = {}
-local scaffolds = {}
+-- Meant to update the main window buttons
+ChatWindows.UpdateMainWindowButtons = function(self)
+
+	local show
+
+	local frame = self:GetSelectedChatFrame()
+	if frame and frame.isDocked then 
+		local editBox = self:GetChatWindowEditBox(frame)
+		show = editBox and editBox:IsShown()
+	end 
+
+	local channelButton = self:GetChatWindowChannelButton()
+	local deafenButton = self:GetChatWindowVoiceDeafenButton()
+	local muteButton =self:GetChatWindowVoiceMuteButton()
+	local menuButton = self:GetChatWindowMenuButton()
+
+	if show then 
+		if channelButton then 
+			channelButton:Show()
+		end 
+		if VoiceChat_IsLoggedIn() then 
+			if deafenButton then 
+				deafenButton:Show()
+			end 
+			if muteButton then 
+				muteButton:Show()
+			end 
+		else 
+			if deafenButton then 
+				deafenButton:Hide()
+			end 
+			if muteButton then 
+				muteButton:Hide()
+			end 
+		end 
+		if menuButton then 
+			menuButton:Show()
+		end
+
+	else
+		if channelButton then 
+			channelButton:Hide()
+		end 
+		if deafenButton then 
+			deafenButton:Hide()
+		end 
+		if muteButton then 
+			muteButton:Hide()
+		end 
+		if menuButton then 
+			menuButton:Hide()
+		end 
+	end 
+
+end
+
+-- Temporary windows (like whisper windows, etc)
+-- This overrides the normal PostCreateChatWindow
+ChatWindows.PostCreateTemporaryChatWindow = function(self, frame, ...)
+	local chatType, chatTarget, sourceChatFrame, selectWindow = ...
+
+	self:PostCreateChatWindow(frame)
+end 
+
 ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	-- Window
@@ -96,16 +160,6 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	FCF_SetWindowColor(frame, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(frame, 0, 1)
 	FCF_UpdateButtonSide(frame)
-
-	--if (frame:GetParent() == UIParent) then
-	--	frame:SetParent(self:GetFrame("UICenter"))
-	--end
-
-	--hooksecurefunc(frame, "SetParent", function(editBox, parent) 
-	--	if (parent == UIParent) then
-	--		frame:SetParent(self:GetFrame("UICenter"))
-	--	end
-	--end)
 
 
 	-- Tabs
@@ -125,8 +179,6 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	local tabText = self:GetChatWindowTabText(frame) 
 	tabText:Hide()
-
-	-- Create our own text replacement
 
 	-- Hook all tab sizes to slightly smaller than ChatFrame1's chat
 	hooksecurefunc(tabText, "Show", function() 
@@ -152,8 +204,6 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	-- Toggle tab text visibility on hover
 	tab:HookScript("OnEnter", function() tabText:Show() end)
 	tab:HookScript("OnLeave", function() tabText:Hide() end)
-
-
 	tab:HookScript("OnClick", function() 
 		-- We need to hide both tabs and button frames here, 
 		-- but it must depend on visible editBoxes. 
@@ -229,10 +279,8 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 		end
 	end)
 
-	--if (editBox:GetParent() == UIParent) then
 	if (editBox:GetParent() ~= frame) then
 		editBox:SetParent(frame)
-			--editBox:SetParent(self:GetFrame("UICenter"))
 	end
 
 	hooksecurefunc(editBox, "SetParent", function(editBox, parent) 
@@ -248,6 +296,7 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	------------------------------
 
 	local buttonFrame = self:GetChatWindowButtonFrame(frame)
+	buttonFrame:SetWidth(48)
 	for tex in self:GetChatWindowButtonFrameTextures(frame) do 
 		tex:SetTexture(nil)
 		tex:SetAlpha(0)
@@ -262,12 +311,9 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 				buttonFrame:SetAlpha(1)
 			end
 			if frame.isDocked then
-				local menuButton = self:GetChatWindowMenuButton(frame)
-				if menuButton then 
-					ChatFrameMenuButton:Show()
-				end 
+				self:UpdateMainWindowButtons(true)
 			end
-			self:UpdateWindowAlpha(frame)
+			self:UpdateChatWindowAlpha(frame)
 
 			-- Hook all editbox chat sizes to the same as ChatFrame1
 			local font, size, style = ChatFrame1:GetFontObject():GetFont()
@@ -300,12 +346,9 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 				buttonFrame:Hide()
 			end
 			if frame.isDocked then
-				local menuButton = self:GetChatWindowMenuButton(frame)
-				if menuButton then 
-					menuButton:Hide()
-				end 
+				self:UpdateMainWindowButtons(false)
 			end
-			self:UpdateWindowAlpha(frame)
+			self:UpdateChatWindowAlpha(frame)
 		end
 	end)
 
@@ -332,19 +375,45 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	buttonFrame:Hide()
 
 
+	-- Frame specific buttons
+	------------------------------
+
+	local scrollToBottomButton = self:GetChatWindowScrollToBottomButton(frame)
+	if scrollToBottomButton then 
+		self:SetUpButton(scrollToBottomButton, 1.25, getPath("icon_chat_down"))
+		scrollToBottomButton:SetPoint("BOTTOMRIGHT", frame.ResizeButton, "TOPRIGHT", -9, -11)
+	end 
+
+	local scrollBar = self:GetChatWindowScrollBar(frame)
+	if scrollBar then 
+		scrollBar:SetWidth(32)
+	end
+
+	local scrollThumb = self:GetChatWindowScrollBarThumbTexture(frame)
+	if scrollThumb then 
+		scrollThumb:SetWidth(32)
+	end
+
+	FCF_UpdateScrollbarAnchors(frame)
+
 end 
 
-ChatWindows.OnInit = function(self)
+
+ChatWindows.SetUpAlphaScripts = function(self)
 
 	_G.CHAT_FRAME_BUTTON_FRAME_MIN_ALPHA = 0
 
 	-- avoid mouseover alpha change, yet keep the background textures
-	local alphaProxy = function(...) self:UpdateWindowAlpha(...) end
+	local alphaProxy = function(...) self:UpdateChatWindowAlpha(...) end
 	
 	hooksecurefunc("FCF_FadeInChatFrame", alphaProxy)
 	hooksecurefunc("FCF_FadeOutChatFrame", alphaProxy)
 	hooksecurefunc("FCF_SetWindowAlpha", alphaProxy)
 	
+end 
+
+ChatWindows.SetUpScrollScripts = function(self)
+
 	-- allow SHIFT + MouseWheel to scroll to the top or bottom
 	hooksecurefunc("FloatingChatFrame_OnMouseScroll", function(self, delta)
 		if delta < 0 then
@@ -357,6 +426,26 @@ ChatWindows.OnInit = function(self)
 			end
 		end
 	end)
+
+	hooksecurefunc("FCF_UpdateScrollbarAnchors", function(self)
+		if self.ScrollBar then
+			self.ScrollBar:ClearAllPoints()
+			self.ScrollBar:SetPoint("TOPLEFT", self, "TOPRIGHT", -13, -4)
+	
+			if self.ScrollToBottomButton and self.ScrollToBottomButton:IsShown() then
+				self.ScrollBar:SetPoint("BOTTOM", self.ScrollToBottomButton, "TOP", -13, 5)
+			
+			elseif self.ResizeButton and self.ResizeButton:IsShown() then
+				self.ScrollBar:SetPoint("BOTTOM", self.ResizeButton, "TOP", -13, 5)
+			else
+				self.ScrollBar:SetPoint("BOTTOMLEFT", self, "BOTTOMRIGHT", -13, 5)
+			end
+		end
+	end)
+	
+end 
+
+ChatWindows.SetUpMainFrames = function(self)
 
 	-- Create a holder frame for our main chat window,
 	-- which we'll use to move and size the window without 
@@ -377,33 +466,111 @@ ChatWindows.OnInit = function(self)
 	FCF_SetWindowAlpha(ChatFrame1, 0, 1)
 	FCF_UpdateButtonSide(ChatFrame1)
 
-	-- ChatFrame1 Menu Button
-	local menuButton = self:GetChatWindowMenuButton()
-	menuButton:Hide()
-	menuButton:ClearAllPoints()
-	menuButton:SetPoint("BOTTOM", _G["ChatFrame1ButtonFrameUpButton"], "TOP", 0, 0) 
-	menuButton:HookScript("OnShow", function(menuButton)
-		local displayMenuButton
-		local frame = self:GetSelectedChatFrame()
-		if frame then
-			local editBox = self:GetChatWindowCurrentEditBox(frame)
-			if (editBox and editBox:IsShown()) then
-				displayMenuButton = true
-			end
-		end
-		if not displayMenuButton then
-			menuButton:Hide()
-		end
+end 
+
+ChatWindows.SetUpButton = function(self, button, sizeMod, texture)
+	local normal = button:GetNormalTexture()
+	normal:SetTexture(texture or getPath("point_block"))
+	normal:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	normal:ClearAllPoints()
+	normal:SetPoint("CENTER", 0, 0)
+	normal:SetSize(64*sizeMod,64*sizeMod)
+
+	local highlight = button:GetHighlightTexture()
+	highlight:SetTexture(texture or getPath("point_block"))
+	highlight:SetVertexColor(1,1,1,.075)
+	highlight:ClearAllPoints()
+	highlight:SetPoint("CENTER", 0, 0)
+	highlight:SetSize(24*sizeMod,24*sizeMod)
+	highlight:SetBlendMode("ADD")
+
+	local pushed = button:GetPushedTexture()
+	pushed:SetTexture(texture or getPath("point_block"))
+	pushed:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	pushed:ClearAllPoints()
+	pushed:SetPoint("CENTER", -1, -2)
+	pushed:SetSize(64*sizeMod,64*sizeMod)
+
+	local disabled = button:GetDisabledTexture()
+	if disabled then 
+		disabled:SetTexture(texture or getPath("point_block"))
+		disabled:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+		disabled:SetDesaturated(true)
+		disabled:ClearAllPoints()
+		disabled:SetPoint("CENTER", 0, 0)
+		disabled:SetSize(64*sizeMod,64*sizeMod)
+	end 
+
+	local flash = button.Flash
+	if flash then 
+		flash:SetTexture(texture or getPath("point_block"))
+		flash:SetVertexColor(1,1,1,.075)
+		flash:ClearAllPoints()
+		flash:SetPoint("CENTER", 0, 0)
+		flash:SetSize(64*sizeMod,64*sizeMod)
+		flash:SetBlendMode("ADD")
+	end 
+
+	button:HookScript("OnMouseDown", function() 
+		highlight:SetPoint("CENTER", -1, -2) 
+		if flash then 
+			flash:SetPoint("CENTER", -1, -2) 
+		end 
 	end)
 
-	--if (menuButton:GetParent() == UIParent) then
-	--	menuButton:SetParent(self:GetFrame("UICenter"))
-	--end
+	button:HookScript("OnMouseUp", function() 
+		highlight:SetPoint("CENTER", 0, 0) 
+		if flash then 
+			flash:SetPoint("CENTER", 0, 0) 
+		end 
+	end)
+end 
 
-	--hooksecurefunc(menuButton, "SetParent", function(menuButton, parent) 
-	--	if (parent == UIParent) then
-	--		menuButton:SetParent(self:GetFrame("UICenter"))
-	--	end
-	--end)
+ChatWindows.SetUpMainButtons = function(self)
 
+	-- ChatFrame1 specific buttons
+	local channelButton = self:GetChatWindowChannelButton()
+	if channelButton then 
+		self:SetUpButton(channelButton, 1.25)
+	end 
+
+	local deafenButton = self:GetChatWindowVoiceDeafenButton()
+	if deafenButton then 
+		self:SetUpButton(deafenButton, 1.25)
+	end 
+
+	local muteButton = self:GetChatWindowVoiceMuteButton()
+	if muteButton then 
+		self:SetUpButton(muteButton, 1.25)
+	end 
+
+	local menuButton = self:GetChatWindowMenuButton()
+	if menuButton then 
+		self:SetUpButton(menuButton, 1.25, getPath("config_button_bright"))
+	end 
+	
+end 
+
+
+ChatWindows.OnEvent = function(self, event, ...)
+	self:UpdateMainWindowButtons()
+end 
+
+ChatWindows.OnInit = function(self)
+	self:SetUpAlphaScripts()
+	self:SetUpScrollScripts()
+	self:SetUpMainFrames()
+	self:SetUpMainButtons()
+end 
+
+ChatWindows.OnEnable = function(self)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_LOGIN", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_LOGOUT", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_MUTED_CHANGED", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_SILENCED_CHANGED", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_DEAFENED_CHANGED", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_CHANNEL_MEMBER_MUTE_FOR_ME_CHANGED", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_CHANNEL_MEMBER_MUTE_FOR_ALL_CHANGED", "OnEvent")
+	self:RegisterEvent("VOICE_CHAT_CHANNEL_MEMBER_SILENCED_CHANGED", "OnEvent")
 end 

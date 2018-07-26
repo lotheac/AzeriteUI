@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 26)
+local LibTooltip = CogWheel:Set("LibTooltip", 27)
 if (not LibTooltip) then	
 	return
 end
@@ -38,6 +38,7 @@ local math_floor = math.floor
 local pairs = pairs
 local select = select 
 local setmetatable = setmetatable
+local string_find = string.find
 local string_format = string.format
 local string_gsub = string.gsub
 local string_join = string.join
@@ -688,14 +689,20 @@ Tooltip.UpdatePosition = function(self)
 		position = { unpack(defaultAnchor) }
 	end 
 
-	-- Add the offset only if there is one
-	local offset = self:GetPositionOffset()
-	if (offset > 0) then 
-		if (type(position[#position]) == "number") then 
-			position[#position] = position[#position] + offset
-		else
-			position[#position + 1] = 0
-			position[#position + 1] = offset
+	-- only check for offsets when the bottom is the anchor, 
+	-- since the bars currently only are shown there
+	local point = position[1]
+	if ((type(point) == "string") and (string_find(point, "BOTTOM"))) then 
+
+		-- Add the offset only if there is one
+		local offset = self:GetPositionOffset()
+		if (offset > 0) then 
+			if (type(position[#position]) == "number") then 
+				position[#position] = position[#position] + offset
+			else
+				position[#position + 1] = 0
+				position[#position + 1] = offset
+			end 
 		end 
 	end 
 

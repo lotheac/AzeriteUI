@@ -160,7 +160,15 @@ local Aura_UpdateTimer = function(button, elapsed)
 			button.timeLeft = button.expirationTime - GetTime()
 
 			if (button.timeLeft > 0) then
-				button.Time:SetFormattedText(formatTime(button.timeLeft))
+				if button.timeLeft >= (MINUTE*10) then 
+					if button._owner.showLongCooldownValues then 
+						button.Time:SetFormattedText(formatTime(button.timeLeft))
+					else
+						button.Time:SetText("")
+					end 
+				else
+					button.Time:SetFormattedText(formatTime(button.timeLeft))
+				end 
 
 				if button._owner.PostUpdateButton then
 					button._owner:PostUpdateButton(button, "Timer")
@@ -712,5 +720,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 14)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 15)
 end 

@@ -51,7 +51,9 @@ end
 local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 
 	local value = element.Value or element:IsObjectType("FontString") and element 
-	if value.showDeficit then 
+	if value.showPercent then 
+		value:SetFormattedText("%d%%", min/max*100)
+	elseif value.showDeficit then 
 		value:SetFormattedText(short(max - min))
 	else 
 		value:SetFormattedText(short(min))
@@ -175,5 +177,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 7)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 8)
 end 

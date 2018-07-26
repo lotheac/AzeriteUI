@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.17] 2018-07-25
+### Added
+- Added some button textures to the various chat frame buttons.
+- Added library to handle widget containers and element plugins. This is now used as a template for all unitframes. 
+
+### Changed
+- Updated the experience- and artifact power bar textures.
+- Updated the target unit frame's unit classification- and targeting icons.
+- The main chat window icons are now only visible when the editbox of the main frame is visible. 
+- Moved aura filter methods to a single file to better be able to streamline the experience in upcoming updates. 
+
+### Removed 
+- Removed some redundant or outdated image files. 
+
 ## [1.0.16] 2018-07-24
 ### Changed
 - Actionbutton grids will now be hidden for empty buttons, unless you've currently got a spell or item on the cursor.

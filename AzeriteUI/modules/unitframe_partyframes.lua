@@ -7,6 +7,7 @@ end
 
 local UnitFrameParty = AzeriteUI:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
 
 -- Lua API
 local _G = _G

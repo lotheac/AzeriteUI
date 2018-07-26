@@ -39,6 +39,7 @@ core\libraries\mover.lua
 core\libraries\bagbutton.lua
 core\libraries\actionbutton.lua
 core\libraries\actionbar.lua
+core\libraries\widgetcontainer.lua
 core\libraries\unitframe.lua
 core\libraries\blizzard.lua
 core\libraries\slash.lua

@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 24)
+local LibFrame = CogWheel:Set("LibFrame", 27)
 if (not LibFrame) then	
 	return
 end
@@ -67,9 +67,7 @@ LibFrame.keyWords = LibFrame.keyWords or { [KEYWORD_DEFAULT] = function() return
 LibFrame.frames = LibFrame.frames or {}
 LibFrame.fontStrings = LibFrame.fontStrings or {}
 LibFrame.textures = LibFrame.textures or {}
-LibFrame.frameData = LibFrame.frameData or {}
 LibFrame.embeds = LibFrame.embeds or {}
-LibFrame.unitEvents = LibFrame.unitEvents or {}
 LibFrame.eventFrame = LibFrame.eventFrame or CreateFrame("Frame")
 
 -- Speed shortcut
@@ -79,7 +77,6 @@ local textures = LibFrame.textures
 local fontStrings = LibFrame.fontStrings
 local keyWords = LibFrame.keyWords
 local uiCenterFrame = LibFrame.frame
-local unitEvents = LibFrame.unitEvents
 
 -- Frame meant for events, timers, etc
 local Frame = CreateFrame("Frame", nil, WorldFrame) -- parented to world frame to keep running even if the UI is hidden
@@ -101,6 +98,11 @@ end
 -- Translate keywords to frame handles used for anchoring.
 local parseAnchor = function(anchor)
 	return anchor and (keyWords[anchor] and keyWords[anchor]() or _G[anchor] and _G[anchor] or anchor) or KEYWORD_DEFAULT and keyWords[KEYWORD_DEFAULT]() or WorldFrame
+end
+
+-- Translates keywords and parses normal frames, but doesn't include the defaults and fallbacks
+local parseAnchorStrict = function(anchor)
+	return anchor and (keyWords[anchor] and keyWords[anchor]() or _G[anchor] and _G[anchor] or anchor) 
 end
 
 -- Embed source methods into target.
@@ -175,8 +177,10 @@ local frameWidgetPrototype = {
 local framePrototype
 framePrototype = {
 	CreateFrame = function(self, frameType, frameName, template) 
+
 		local frame = embed(CreateFrame(frameType or "Frame", frameName, self, template), framePrototype)
 		frames[frame] = true
+
 		return frame
 	end,
 	CreateFontString = function(self, ...)
@@ -223,8 +227,20 @@ end
 
 -- Create a frame with certain extra methods we like to have
 LibFrame.CreateFrame = function(self, frameType, frameName, parent, template) 
+
+	-- Do some argument handling to allow the directly embedded version to skip 
+	-- the 'parent' argument in the same manner the inherited frame method does.
+	-- Because we don't really want two different syntaxes. 
+	local parsedAnchor = parseAnchorStrict(parent)
+	if (not parsedAnchor) then 
+		parsedAnchor = self.IsObjectType and parseAnchor(self) or parseAnchor(parent)
+		if (type(parent) == "string") and (not template) then 
+			template = parent 
+		end 
+	end
+
 	-- Create the new frame and copy our custom methods in
-	local frame = embed(CreateFrame(frameType or "Frame", frameName, parseAnchor(parent), template), framePrototype)
+	local frame = embed(CreateFrame(frameType or "Frame", frameName, parsedAnchor, template), framePrototype)
 
 	-- Add the frame to our registry
 	frames[frame] = true

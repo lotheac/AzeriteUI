@@ -1,4 +1,4 @@
-local LibChatWindow, version = CogWheel:Set("LibChatWindow", 14)
+local LibChatWindow, version = CogWheel:Set("LibChatWindow", 18)
 if (not LibChatWindow) then	
 	return
 end
@@ -312,11 +312,23 @@ LibChatWindow.GetChatWindowTabTextures = function(self, frame)
 end 
 
 LibChatWindow.GetChatWindowMenuButton = function(self)
-	return _G["ChatFrameMenuButton"]
+	return _G.ChatFrameMenuButton
+end 
+
+LibChatWindow.GetChatWindowChannelButton = function(self)
+	return _G.ChatFrameChannelButton
+end 
+
+LibChatWindow.GetChatWindowVoiceDeafenButton = function(self)
+	return _G.ChatFrameToggleVoiceDeafenButton
+end 
+
+LibChatWindow.GetChatWindowVoiceMuteButton = function(self)
+	return _G.ChatFrameToggleVoiceMuteButton
 end 
 
 LibChatWindow.GetChatWindowFriendsButton = function(self)
-	return _G["FriendsMicroButton"]
+	return _G.FriendsMicroButton
 end 
 
 LibChatWindow.GetChatWindowClickAnywhereButton = function(self, frame)
@@ -345,6 +357,18 @@ LibChatWindow.GetChatWindowCurrentEditBox = function(self, frame)
 		end
 		return _G[frame:GetName().."EditBox"]
 	end
+end 
+
+LibChatWindow.GetChatWindowScrollToBottomButton = function(self, frame)
+	return frame.ScrollToBottomButton
+end 
+
+LibChatWindow.GetChatWindowScrollBar = function(self, frame)
+	return frame.ScrollBar
+end 
+
+LibChatWindow.GetChatWindowScrollBarThumbTexture = function(self, frame)
+	return frame.ScrollBar.ThumbTexture
 end 
 
 LibChatWindow.GetChatWindowTab = function(self, frame)
@@ -453,10 +477,16 @@ local embedMethods = {
 	-- returns specific objects
 	GetChatWindowClickAnywhereButton = true, 
 	GetChatWindowButtonFrame = true,
+	GetChatWindowChannelButton = true, 
 	GetChatWindowEditBox = true, 
 	GetChatWindowMenuButton = true, 
+	GetChatWindowScrollToBottomButton = true, 
+	GetChatWindowScrollBar = true, 
+	GetChatWindowScrollBarThumbTexture = true, 
 	GetChatWindowTab = true, 
 	GetChatWindowTabText = true, 
+	GetChatWindowVoiceDeafenButton = true, 
+	GetChatWindowVoiceMuteButton = true, 
 
 	-- texture iterators (for tex in self:<Method>() do )
 	GetChatWindowTextures = true, 

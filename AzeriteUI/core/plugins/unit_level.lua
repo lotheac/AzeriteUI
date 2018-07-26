@@ -25,10 +25,10 @@ local Update = function(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
-	-- Badge and skull textures
-	-- We will toggle them if they exist, 
-	-- or ignore them otherwise. 
+	-- Badge, dead skull and high level skull textures
+	-- We will toggle them if they exist or ignore them otherwise. 
 	local badge = element.Badge
+	local dead = element.Dead
 	local skull = element.Skull
 
 	-- Damn you blizzard and your effective level nonsense!
@@ -38,8 +38,16 @@ local Update = function(self, event, unit)
 	-- Showing a skull badge for dead units
 	if UnitIsDeadOrGhost(unit) then 
 		element:SetText("")
-		if skull then 
-			skull:Show()
+
+		-- use the dead skull first, 
+		-- fallback to high level skull if dead skull doesn't exist
+		if dead then 
+			dead:Show()
+			if skull then 
+				skull:Hide()
+			end
+		elseif skull then 
+			skull:Show()			
 		end 
 		if badge then 
 			badge:Show()
@@ -60,6 +68,9 @@ local Update = function(self, event, unit)
 		if skull then 
 			skull:Hide()
 		end 
+		if dead then 
+			dead:Hide()
+		end
 
 	-- Hide capped and above, if so chosen ny the module
 	elseif (element.hideCapped and (unitEffectiveLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()])) then 
@@ -70,6 +81,9 @@ local Update = function(self, event, unit)
 		if skull then 
 			skull:Hide()
 		end 
+		if dead then 
+			dead:Hide()
+		end
 
 	-- Hide floored units (level 1 mobs and criters)
 	elseif (element.hideFloored and (unitEffectiveLevel == 1)) then 
@@ -80,6 +94,9 @@ local Update = function(self, event, unit)
 		if skull then 
 			skull:Hide()
 		end 
+		if dead then 
+			dead:Hide()
+		end
 
 	-- Normal creatures in a level range we can read
 	elseif (unitEffectiveLevel > 0) then 
@@ -108,6 +125,9 @@ local Update = function(self, event, unit)
 		if skull then 
 			skull:Hide()
 		end 
+		if dead then 
+			dead:Hide()
+		end
 
 	-- Remaining creatures are boss level or too high to read (??)
 	-- So we're giving these a skull.
@@ -118,6 +138,9 @@ local Update = function(self, event, unit)
 		if badge then 
 			badge:Show()
 		end 
+		if dead then 
+			dead:Hide()
+		end
 		element:SetText("")
 	end 
 
@@ -159,5 +182,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Level", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("Level", Enable, Disable, Proxy, 4)
 end 

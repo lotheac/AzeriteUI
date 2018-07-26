@@ -1,4 +1,4 @@
-local LibMessage = CogWheel:Set("LibMessage", 1)
+local LibMessage = CogWheel:Set("LibMessage", 4)
 if (not LibMessage) then	
 	return
 end
@@ -195,6 +195,30 @@ LibMessage.Fire = function(self, message, ...)
 	end
 end
 
+LibMessage.SendMessage = function(self, message, ...)
+	check(message, 1, "string")
+
+	local messages = events[message] 
+	if (not messages) then
+		return 
+	end
+
+	for module, moduleMessages in pairs(messages) do 
+		for index,func in ipairs(moduleMessages) do
+			if (type(func) == "string") then
+				if module[func] then
+					module[func](module, message, ...)
+				else
+					return error(("The module '%s' has no method named '%s'!"):format(tostring(module), func))
+				end
+			else
+				func(module, message, ...)
+			end
+		end
+	end 
+	
+end
+
 LibMessage.RegisterMessage = function(self, message, func, ...)
 	check(message, 1, "string")
 	check(func, 2, "string", "function", "nil")
@@ -289,7 +313,8 @@ end
 
 -- Module embedding
 local embedMethods = {
-	Fire = true,
+	--Fire = true,
+	SendMessage = true,
 	IsMessageRegistered = true,
 	RegisterMessage = true,
 	UnregisterMessage = true,

@@ -63,7 +63,6 @@ AzeriteUI.OnEnable = function(self)
 	-- Disable complete interface options menu pages we don't need
 	------------------------------------------------------------------------------------
 	self:DisableUIMenuPage(5, "InterfaceOptionsActionBarsPanel")
-	--self:DisableUIMenuPage(11, "InterfaceOptionsBuffsPanel")
 	
 
 	-- Working around Blizzard bugs and issues I've discovered
@@ -114,6 +113,6 @@ AzeriteUI.OnEvent = function(self, event, ...)
 			self.frame:SetScript("OnUpdate", nil)
 			self.alpha = 0
 		end
-		AzeriteUI:GetFrame("UICenter"):SetAlpha(0)
+		self:GetFrame("UICenter"):SetAlpha(0)
 	end 
 end 

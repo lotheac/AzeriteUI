@@ -425,6 +425,11 @@ LibActionButton.CreateButtonLayers = function(self, button)
 	icon:SetAllPoints()
 	button.Icon = icon
 
+	local slot = button:CreateTexture()
+	slot:SetDrawLayer("BACKGROUND", 1)
+	slot:SetAllPoints()
+	button.Slot = slot
+
 	local flash = button:CreateTexture()
 	flash:SetDrawLayer("ARTWORK", 2)
 	flash:SetAllPoints(icon)

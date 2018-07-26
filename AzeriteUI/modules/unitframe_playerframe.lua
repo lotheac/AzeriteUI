@@ -7,7 +7,7 @@ end
 
 local UnitFramePlayer = AzeriteUI:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local WhiteList = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras").WhiteList
+local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
 
 -- Lua API
 local _G = _G
@@ -132,63 +132,6 @@ local OverridePowerColor = function(element, unit, min, max, powerType, powerID,
 		r, g, b = unpack(powerType and self.colors.power[powerType .. "_CRYSTAL"] or self.colors.power[powerType] or self.colors.power.UNUSED)
 	end
 	element:SetStatusBarColor(r, g, b)
-end 
-
-local UpdatePowerValue = function(element, unit, min, max, powerType, powerID)
-end 
-
-local UpdateHealthColor = function(element, unit, min, max)
-end 
-
-local UpdategHealthValue = function(element, unit, min, max)
-end 
-
-
-local BuffFilter = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
-
-	-- ALways whitelisted auras, boss debuffs and stealable for mages
-	if WhiteList[spellId] or isBossDebuff or (PlayerClass == "MAGE" and isStealable) then 
-		return true 
-	end 
-
-	-- Try to hide non-player auras outdoors
-	if (not isOwnedByPlayer) and (not IsInInstance()) then 
-		return 
-	end 
-
-	-- Hide static and very long ones
-	if (not duration) or (duration > 60) then 
-		return 
-	end 
-
-	-- show our own short ones
-	if (isOwnedByPlayer and duration and (duration > 0) and (duration < 60)) then 
-		return true
-	end 
-	
-end 
-
-local DebuffFilter = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
-
-	if WhiteList[spellId] or isBossDebuff then 
-		return true 
-	end 
-
-	-- Try to hide non-player auras outdoors
-	if (not isOwnedByPlayer) and (not IsInInstance()) then 
-		return 
-	end 
-
-	-- Hide static and very long ones
-	if (not duration) or (duration > 60) then 
-		return 
-	end 
-
-	-- show our own short ones
-	if (isOwnedByPlayer and duration and (duration > 0) and (duration < 60)) then 
-		return true
-	end 
-	
 end 
 
 
@@ -546,9 +489,9 @@ local Style = function(self, unit, id, ...)
 	
 	-- Filter methods
 	auras.AuraFilter = nil -- general aura filter function, called when the below aren't there
-	auras.BuffFilter = BuffFilter -- buff specific filter function
-	auras.DebuffFilter = DebuffFilter -- debuff specific filter function
-	
+	auras.BuffFilter = Auras.BuffFilter -- buff specific filter function
+	auras.DebuffFilter = Auras.DebuffFilter -- debuff specific filter function
+			
 	-- Aura tooltip position
 	auras.tooltipDefaultPosition = nil 
 	auras.tooltipPoint = "BOTTOMLEFT"
