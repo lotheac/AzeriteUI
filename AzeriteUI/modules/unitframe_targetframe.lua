@@ -194,11 +194,11 @@ local PostCreateAuraButton = function(element, button)
 	local border = button.Overlay:CreateFrame("Frame")
 	border:SetPoint("TOPLEFT", -14 *sizeMod, 14 *sizeMod)
 	border:SetPoint("BOTTOMRIGHT", 14 *sizeMod, -14 *sizeMod)
-	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	border:SetBackdrop({
 		edgeFile = getPath("tooltip_border"),
 		edgeSize = 32 *sizeMod
 	})
+	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 	-- This one we reference, for magic school coloring later on
 	button.Border = border
@@ -546,7 +546,7 @@ local Style = function(self, unit, id, ...)
 	local skull = overlay:CreateTexture()
 	skull:SetDrawLayer("BORDER")
 	skull:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
-	skull:SetSize(40,40)
+	skull:SetSize(64,64)
 	skull:SetTexture(getPath("icon_skull"))
 	level.Skull = skull
 
@@ -554,7 +554,7 @@ local Style = function(self, unit, id, ...)
 	local dead = overlay:CreateTexture()
 	dead:SetDrawLayer("BORDER")
 	dead:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
-	dead:SetSize(40,40)
+	dead:SetSize(64,64)
 	dead:SetTexture(getPath("icon_skull_dead"))
 	dead:Hide()
 	level.Dead = dead
@@ -629,7 +629,10 @@ local Style = function(self, unit, id, ...)
 	auras.spacingV = 4 -- vertical/row spacing between aura buttons
 	auras.growthX = "LEFT" -- auras grow to the left
 	auras.growthY = "DOWN" -- rows grow downwards (we just have a single row, though)
-	auras.maxButtons = nil -- when set will limit the number of buttons regardless of space available
+	auras.maxVisible = 7 -- when set will limit the number of buttons regardless of space available
+	auras.maxBuffs = 3 -- maximum number of visible buffs
+	auras.maxDebuffs = nil -- maximum number of visible debuffs
+	auras.debuffsFirst = false -- show debuffs before buffs
 	auras.showCooldownSpiral = false -- don't show the spiral as a timer
 	auras.showCooldownTime = true -- show timer numbers
 
@@ -654,6 +657,7 @@ local Style = function(self, unit, id, ...)
 	self.Auras = auras
 	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
 	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+
 
 
 	-- Texts

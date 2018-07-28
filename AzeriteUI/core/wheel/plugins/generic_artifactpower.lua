@@ -1,4 +1,12 @@
 
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
+
+-- WoW Client Constants
+if (not LibClientBuild:IsBuild("8.0.1")) then 
+	return 
+end 
+
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -11,7 +19,6 @@ local Item = _G.Item
 local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
 local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
 local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
-
 
 local short = function(value)
 	value = tonumber(value)
@@ -44,9 +51,9 @@ if (gameLocale == "zhCN") then
 end 
 
 
-local UpdateValue = function(element, min, max)
+local UpdateValue = function(element, min, max, level)
 	if element.OverrideValue then
-		return element:OverrideValue(unit, min, max)
+		return element:OverrideValue(min, max, level)
 	end
 
 	local value = element.Value or element:IsObjectType("FontString") and element 
@@ -149,5 +156,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 7)
+	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 9)
 end 

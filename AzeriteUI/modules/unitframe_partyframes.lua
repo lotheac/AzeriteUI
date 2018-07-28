@@ -281,6 +281,11 @@ local Style = function(self, unit, id, ...)
 	roleDPS:SetPoint("CENTER", 0, 0)
 	self.GroupRole.Damager = roleDPS
 
+
+	-- Range
+	-----------------------------------------------------------
+	self.Range = { outsideAlpha = .35 }
+	
 end 
 
 UnitFrameParty.OnInit = function(self)

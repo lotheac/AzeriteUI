@@ -401,8 +401,6 @@ local Style = function(self, unit, id, ...)
 	-- Frame
 	-----------------------------------------------------------
 
-	local sizeMod = 1.08
-
 	-- Place this at the player orb/crystal, 
 	-- to make that area clickable like a portrait would be.
 	self:SetSize(103, 103) 
@@ -444,7 +442,7 @@ local Style = function(self, unit, id, ...)
 	-- Cast Bar
 	-----------------------------------------------------------
 	local cast = backdrop:CreateStatusBar()
-	cast:SetSize(87*sizeMod, 10*sizeMod)
+	cast:SetSize(111,14)
 	cast:Place("CENTER", "UICenter", "CENTER", 0, -133)
 	cast:SetStatusBarTexture(getPath("cast_bar"))
 	cast:SetStatusBarColor(70/255, 255/255, 131/255, .69) 
@@ -454,8 +452,8 @@ local Style = function(self, unit, id, ...)
 
 	local castBg = cast:CreateTexture()
 	castBg:SetDrawLayer("BACKGROUND")
-	castBg:SetSize(151*sizeMod,73*sizeMod)
-	castBg:SetPoint("CENTER", 0, -2*sizeMod)
+	castBg:SetSize(193,93)
+	castBg:SetPoint("CENTER", 1, -2)
 	castBg:SetTexture(getPath("cast_back"))
 	castBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
@@ -464,13 +462,13 @@ local Style = function(self, unit, id, ...)
 	castValue:SetDrawLayer("OVERLAY")
 	castValue:SetJustifyH("CENTER")
 	castValue:SetJustifyV("MIDDLE")
-	castValue:SetFontObject(AzeriteFont13_Outline)
+	castValue:SetFontObject(AzeriteFont14_Outline)
 	castValue:SetShadowOffset(0, 0)
 	castValue:SetShadowColor(0, 0, 0, 0)
 	castValue:SetTextColor(240/255, 240/255, 240/255, .7)
 
 	local castName = cast:CreateFontString()
-	castName:SetPoint("TOP", cast, "BOTTOM", 0, -12*sizeMod)
+	castName:SetPoint("TOP", cast, "BOTTOM", 0, -12)
 	castName:SetDrawLayer("BORDER")
 	castName:SetJustifyH("CENTER")
 	castName:SetJustifyV("MIDDLE")

@@ -1,4 +1,4 @@
-local LibClientBuild = CogWheel:Set("LibClientBuild", 18)
+local LibClientBuild = CogWheel:Set("LibClientBuild", 19)
 if (not LibClientBuild) then
 	return
 end
@@ -132,14 +132,16 @@ local builds = {
 		["7.3.2"] 	= 25549, -- 25326
 		["7.3.5"] 	= 25860, -- latest: 26972
 
-	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, -- live: 27144 - ptr: 27144 - beta: 27144 - lowest available still: 27101
+	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, -- live: 27178 - ptr: 27178 - beta: 27178 - lowest available still: 27101 (?)
 		["8.0.1"] 	= 27101  
 
 }
 
--- [patchName] = "x.x.x"
+-- *this requires both the build number to be high enough 
+--  and that the patch version matches what is listed here.
+-- 		Example: 
+-- 		["Battle for Azeroth"] = "8.0.1", ["BfA"] = "8.0.1", ["8.0.1"] = "8.0.1"
 local patchExceptions = {
-	["Battle for Azeroth"] = "8.0.1", ["BfA"] = "8.0.1", ["8.0.1"] = "8.0.1"
 }
 
 for version, build in pairs(builds) do

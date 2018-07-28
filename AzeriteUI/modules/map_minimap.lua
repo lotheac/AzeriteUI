@@ -515,8 +515,7 @@ local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 	end 
 end
 
-local AP_OverrideValue = function(element, min, max)
-	print(element, min, max, restedLeft, restedTimeLeft)
+local AP_OverrideValue = function(element, min, max, level)
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value.showDeficit then 
 		value:SetFormattedText(short(max - min))
@@ -853,6 +852,7 @@ Minimap.SetUpMinimap = function(self)
 	innerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
 	innerRing.colorStanding = true -- color the bar according to your standing when tracking reputation
 	innerRing.colorValue = true -- color the value string same color as the bar
+	innerRing.OverrideValue = AP_OverrideValue
 
 	-- inner ring value text
 	local innerRingValue = innerRing:CreateFontString()
@@ -903,17 +903,17 @@ Minimap.SetUpMinimap = function(self)
 	innerPercent:SetDrawLayer("OVERLAY")
 	innerPercent:SetJustifyH("CENTER")
 	innerPercent:SetJustifyV("MIDDLE")
-	innerPercent:SetFontObject(AzeriteFont13_Outline)
+	innerPercent:SetFontObject(AzeriteFont15_Outline)
 	innerPercent:SetShadowOffset(0, 0)
 	innerPercent:SetShadowColor(0, 0, 0, 0)
-	innerPercent:SetPoint("CENTER", 1, -64)
+	innerPercent:SetPoint("CENTER", 2, -64)
 	innerRing.Value.Percent = innerPercent
 
 	local outerPercent = toggle:CreateFontString()
 	outerPercent:SetDrawLayer("OVERLAY")
 	outerPercent:SetJustifyH("CENTER")
 	outerPercent:SetJustifyV("MIDDLE")
-	outerPercent:SetFontObject(AzeriteFont13_Outline)
+	outerPercent:SetFontObject(AzeriteFont16_Outline)
 	outerPercent:SetShadowOffset(0, 0)
 	outerPercent:SetShadowColor(0, 0, 0, 0)
 	outerPercent:SetPoint("CENTER", 1, -1)

@@ -10,89 +10,8 @@
 ## X-Donate: PayPal:azerite@cogwerkz.org
 ## X-Category: Interface Enhancements
 
-
-#########################################################
-#   Do NOT change the order of anything in this file!   #
-#########################################################
-
-# because libstub is so last year
-core\wheel.lua
-
-# libraries running the interface
-core\libraries\clientbuild.lua
-core\libraries\locale.lua
-core\libraries\hook.lua
-core\libraries\securehook.lua
-core\libraries\message.lua
-core\libraries\event.lua
-core\libraries\db.lua
-core\libraries\module.lua
-core\libraries\frame.lua
-core\libraries\orb.lua
-core\libraries\statusbar.lua
-core\libraries\spinbar.lua
-core\libraries\sound.lua
-core\libraries\tooltipscanner.lua
-core\libraries\tooltip.lua
-core\libraries\fader.lua
-core\libraries\mover.lua
-core\libraries\bagbutton.lua
-core\libraries\actionbutton.lua
-core\libraries\actionbar.lua
-core\libraries\widgetcontainer.lua
-core\libraries\unitframe.lua
-core\libraries\blizzard.lua
-core\libraries\slash.lua
-core\libraries\quest.lua
-core\libraries\bonusquest.lua
-core\libraries\chatbubble.lua
-core\libraries\chatframe.lua
-core\libraries\minimap.lua
-core\libraries\nameplates.lua
-
-# custom addon events
-core\customevents.lua
-
-# generic plugins
-core\plugins\generic_artifactpower.lua
-core\plugins\generic_clock.lua
-core\plugins\generic_coordinates.lua
-core\plugins\generic_difficulty.lua
-core\plugins\generic_framerate.lua
-core\plugins\generic_groupfinder.lua
-core\plugins\generic_honor.lua
-core\plugins\generic_latency.lua
-core\plugins\generic_mail.lua
-core\plugins\generic_reputation.lua
-core\plugins\generic_xp.lua
-core\plugins\generic_zone.lua
-
-# unit specific plugins
-core\plugins\unit_absorb.lua
-core\plugins\unit_auras.lua
-core\plugins\unit_cast.lua
-core\plugins\unit_classification.lua
-core\plugins\unit_classpower.lua
-core\plugins\unit_combat.lua
-core\plugins\unit_extrapower.lua
-core\plugins\unit_grouprole.lua
-core\plugins\unit_health.lua
-core\plugins\unit_level.lua
-core\plugins\unit_name.lua
-core\plugins\unit_portrait.lua
-core\plugins\unit_power.lua
-core\plugins\unit_raidrole.lua
-core\plugins\unit_spec.lua
-core\plugins\unit_targeted.lua
-
-# actionbutton types
-core\plugins\actionbutton_action.lua
-core\plugins\actionbutton_custom.lua
-core\plugins\actionbutton_item.lua
-core\plugins\actionbutton_macro.lua
-core\plugins\actionbutton_pet.lua
-core\plugins\actionbutton_spell.lua
-core\plugins\actionbutton_stance.lua
+# libraries and plugins
+core\wheel\wheel.xml
 
 # custom color library
 core\colors.lua
@@ -126,6 +45,7 @@ modules\actionbar_main.lua
 modules\blizzard_gamemenu.lua
 modules\blizzard_interface_styling.lua
 modules\blizzard_micromenu.lua
+modules\blizzard_mirrortimers.lua
 modules\blizzard_popups_styling.lua
 modules\blizzard_tooltips_styling.lua
 modules\chat_bubbles.lua

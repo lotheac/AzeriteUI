@@ -1,0 +1,88 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+	<!-- because libstub is so last year -->
+	<Script file="wheel.lua"/>
+
+	<!-- libraries running the interface -->
+	<Script file="libraries\clientbuild.lua"/>
+	<Script file="libraries\locale.lua"/>
+	<Script file="libraries\hook.lua"/>
+	<Script file="libraries\securehook.lua"/>
+	<Script file="libraries\message.lua"/>
+	<Script file="libraries\event.lua"/>
+	<Script file="libraries\db.lua"/>
+	<Script file="libraries\module.lua"/>
+	<Script file="libraries\frame.lua"/>
+	<Script file="libraries\orb.lua"/>
+	<Script file="libraries\statusbar.lua"/>
+	<Script file="libraries\spinbar.lua"/>
+	<Script file="libraries\sound.lua"/>
+	<Script file="libraries\tooltipscanner.lua"/>
+	<Script file="libraries\tooltip.lua"/>
+	<Script file="libraries\fader.lua"/>
+	<Script file="libraries\mover.lua"/>
+	<Script file="libraries\shine.lua"/>
+	<Script file="libraries\bagbutton.lua"/>
+	<Script file="libraries\actionbutton.lua"/>
+	<Script file="libraries\actionbar.lua"/>
+	<Script file="libraries\widgetcontainer.lua"/>
+	<Script file="libraries\unitframe.lua"/>
+	<Script file="libraries\blizzard.lua"/>
+	<Script file="libraries\slash.lua"/>
+	<Script file="libraries\quest.lua"/>
+	<Script file="libraries\bonusquest.lua"/>
+	<Script file="libraries\chatbubble.lua"/>
+	<Script file="libraries\chatframe.lua"/>
+	<Script file="libraries\minimap.lua"/>
+	<Script file="libraries\nameplates.lua"/>
+
+	<!-- load and run the taint killer library -->
+	<Script file="libraries\taint.lua"/> 
+
+	<!-- custom events for the plugins and modules  -->
+	<Script file="customevents.lua"/>
+
+	<!-- generic plugins -->
+	<Script file="plugins\generic_artifactpower.lua"/>
+	<Script file="plugins\generic_clock.lua"/>
+	<Script file="plugins\generic_coordinates.lua"/>
+	<Script file="plugins\generic_difficulty.lua"/>
+	<Script file="plugins\generic_framerate.lua"/>
+	<Script file="plugins\generic_groupfinder.lua"/>
+	<Script file="plugins\generic_honor.lua"/>
+	<Script file="plugins\generic_latency.lua"/>
+	<Script file="plugins\generic_mail.lua"/>
+	<Script file="plugins\generic_reputation.lua"/>
+	<Script file="plugins\generic_xp.lua"/>
+	<Script file="plugins\generic_zone.lua"/>
+
+	<!-- unit specific plugins -->
+	<Script file="plugins\unit_absorb.lua"/>
+	<Script file="plugins\unit_auras.lua"/>
+	<Script file="plugins\unit_cast.lua"/>
+	<Script file="plugins\unit_classification.lua"/>
+	<Script file="plugins\unit_classpower.lua"/>
+	<Script file="plugins\unit_combat.lua"/>
+	<Script file="plugins\unit_extrapower.lua"/>
+	<Script file="plugins\unit_grouprole.lua"/>
+	<Script file="plugins\unit_health.lua"/>
+	<Script file="plugins\unit_level.lua"/>
+	<Script file="plugins\unit_name.lua"/>
+	<Script file="plugins\unit_portrait.lua"/>
+	<Script file="plugins\unit_power.lua"/>
+	<Script file="plugins\unit_range.lua"/>
+	<Script file="plugins\unit_raidrole.lua"/>
+	<Script file="plugins\unit_spec.lua"/>
+	<Script file="plugins\unit_targeted.lua"/>
+	<Script file="plugins\unit_threat.lua"/>
+
+	<!-- actionbutton types -->
+	<Script file="plugins\actionbutton_action.lua"/>
+	<Script file="plugins\actionbutton_custom.lua"/>
+	<Script file="plugins\actionbutton_item.lua"/>
+	<Script file="plugins\actionbutton_macro.lua"/>
+	<Script file="plugins\actionbutton_pet.lua"/>
+	<Script file="plugins\actionbutton_spell.lua"/>
+	<Script file="plugins\actionbutton_stance.lua"/>
+
+</Ui>

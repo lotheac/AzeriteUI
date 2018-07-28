@@ -12,11 +12,9 @@ local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
 -- Lua API
 local _G = _G
 local unpack = unpack
-local string_format = string.format
 
 -- WoW Strings
 local DEAD = _G.DEAD
-
 
 -- Cast Bar Map
 -- (Texture Size 128x32, Growth: RIGHT)
@@ -148,7 +146,7 @@ local Style = function(self, unit, id, ...)
 		id = counter 
 	end 
 
-	local width, height = 96, 36
+	local width, height = 136, 47 -- 96, 36
 	local spacing = 30 + 14 + 6
 
 	self:SetSize(width, height)
@@ -181,14 +179,14 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------	
 
 	local health = content:CreateStatusBar()
-	health:SetSize(75, 13)
-	health:Place("BOTTOM", 0, 0)
+	health:SetSize(111,14)
+	health:Place("CENTER", 0, 0)
 	health:SetOrientation("LEFT") -- set the bar to grow towards the right.
 	health:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
 	health:SetSmoothingFrequency(.5) -- set the duration of the smoothing.
 	health:SetStatusBarTexture(getPath("cast_bar"))
 	health:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
-	health.colorTapped = false -- color tap denied units 
+	health.colorTapped = true -- color tap denied units 
 	health.colorDisconnected = true -- color disconnected units
 	health.colorClass = true -- color players by class 
 	health.colorReaction = true -- color NPCs by their reaction standing with us
@@ -198,8 +196,8 @@ local Style = function(self, unit, id, ...)
 
 	local healthBg = health:CreateTexture()
 	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetSize(130, 84)
-	healthBg:SetPoint("CENTER", 0, -2)
+	healthBg:SetSize(193,93)
+	healthBg:SetPoint("CENTER", 1, -2)
 	healthBg:SetTexture(getPath("cast_back"))
 	healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	self.Health.Bg = healthBg
@@ -209,11 +207,11 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------	
 
 	local absorb = content:CreateStatusBar()
-	absorb:SetSize(75, 13)
+	absorb:SetSize(111,14)
 	absorb:SetStatusBarTexture(getPath("cast_bar"))
 	absorb:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
 	absorb:SetFrameLevel(health:GetFrameLevel() + 2)
-	absorb:Place("BOTTOM", 0, 0)
+	absorb:Place("CENTER", 0, 0)
 	absorb:SetOrientation("RIGHT") -- grow the bar towards the left (grows from the end of the health)
 	absorb:SetStatusBarColor(1, 1, 1, .25) -- make the bar fairly transparent, it's just an overlay after all. 
 	self.Absorb = absorb
@@ -222,15 +220,16 @@ local Style = function(self, unit, id, ...)
 	-- Cast Bar
 	-----------------------------------------------------------
 	local cast = content:CreateStatusBar()
-	cast:SetSize(75, 13)
+	cast:SetSize(111,14)
 	cast:SetStatusBarTexture(getPath("cast_bar"))
 	cast:SetSparkMap(map.cast) -- set the map the spark follows along the bar.
 	cast:SetFrameLevel(health:GetFrameLevel() + 1)
-	cast:Place("BOTTOM", 0, 0)
+	cast:Place("CENTER", 0, 0)
 	cast:SetOrientation("LEFT") 
 	cast:SetStatusBarColor(1, 1, 1, .15) 
 	cast:DisableSmoothing(true) 
 	self.Cast = cast
+
 
 
 	-- Auras
@@ -238,14 +237,17 @@ local Style = function(self, unit, id, ...)
 
 	local auras = content:CreateFrame("Frame")
 	auras:Place("RIGHT", health, "LEFT", -26, -1)
-	auras:SetSize(36*6 + 8*5, 36) -- auras will be aligned in the available space, this size gives us 7x1 auras
+	auras:SetSize(36*6 + 8*5, 36) -- auras will be aligned in the available space
 
 	auras.auraSize = 34 -- too much?
 	auras.spacingH = 4 -- horizontal/column spacing between buttons
 	auras.spacingV = 4 -- vertical/row spacing between aura buttons
 	auras.growthX = "LEFT" -- auras grow to the left
 	auras.growthY = "DOWN" -- rows grow downwards (we just have a single row, though)
-	auras.maxButtons = nil -- when set will limit the number of buttons regardless of space available
+	auras.maxVisible = 6 -- when set will limit the number of buttons regardless of space available
+	auras.maxBuffs = 3 -- maximum number of visible buffs
+	auras.maxDebuffs = nil -- maximum number of visible debuffs
+	auras.debuffsFirst = false -- show debuffs before buffs
 	auras.showCooldownSpiral = false -- don't show the spiral as a timer
 	auras.showCooldownTime = true -- show timer numbers
 
@@ -277,7 +279,7 @@ local Style = function(self, unit, id, ...)
 
 	-- Unit Name
 	local name = overlay:CreateFontString()
-	name:SetPoint("BOTTOMRIGHT", health, "TOPRIGHT", 0, 16)
+	name:SetPoint("BOTTOMRIGHT", health, "TOPRIGHT", -10, 16)
 	name:SetDrawLayer("OVERLAY")
 	name:SetJustifyH("CENTER")
 	name:SetJustifyV("TOP")
@@ -288,13 +290,13 @@ local Style = function(self, unit, id, ...)
 	self.Name = name
 
 	local healthVal = overlay:CreateFontString()
-	healthVal:SetPoint("CENTER", health, "CENTER", 0, 0)
+	healthVal:SetPoint("RIGHT", health, "RIGHT", -10, 0)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(AzeriteFont11_Outline)
-	healthVal:SetShadowOffset(-.85, -.85)
-	healthVal:SetShadowColor(0, 0, 0, .75)
+	healthVal:SetFontObject(AzeriteFont14_Outline)
+	healthVal:SetShadowOffset(0, 0)
+	healthVal:SetShadowColor(0, 0, 0, 0)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
 	self.Health.Value = healthVal
 	self.Health.OverrideValue = OverrideHealthValue

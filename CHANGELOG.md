@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.18] 2018-07-28
+### Added
+- Added styling to Blizzard popup windows.
+- Added styling to Blizzard mirror timers.
+- Added styling to Blizzard start timers.
+- Added a toned down dead and empty skull for the level display of dead units.
+
+### Changed
+- Upgraded the high level skull texture for bosses or very high level units.
+- Modified boss unit frames to match target of target- and pet- unitframes in size and look. 
+- Modified arena enemy unit frames to match target of target- and pet- unitframes in size and look. 
+- Modified the player cast bar to match the previously listed frames in size and style.
+- Increased XP- and ArtifactPower percentage text font sizes.
+
 ## [1.0.17] 2018-07-25
 ### Added
 - Added some button textures to the various chat frame buttons.

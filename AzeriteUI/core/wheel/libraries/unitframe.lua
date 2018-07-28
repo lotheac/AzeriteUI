@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 33)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 34)
 if (not LibUnitFrame) then	
 	return
 end
@@ -110,14 +110,13 @@ end
 -- Default Color Table
 --------------------------------------------------------------------------
 local Colors = {
-	health = prepare( 25/255, 178/255, 25/255 ),
-	disconnected = prepare( 153/255, 153/255, 153/255 ),
-	tapped = prepare( 153/255, 153/255, 153/255 ),
-	dead = prepare( 153/255, 153/255, 153/255 ),
-	xp = prepare( 18/255, 179/255, 21/255 ),
-	rested = prepare( 23/255, 93/255, 180/255 ),
-	restedbonus = prepare( 192/255, 111/255, 255/255 ),
 	artifact = prepare( 229/255, 204/255, 127/255 ),
+	class = prepareGroup(RAID_CLASS_COLORS),
+	dead = prepare( 153/255, 153/255, 153/255 ),
+	debuff = prepareGroup(DebuffTypeColor),
+	disconnected = prepare( 153/255, 153/255, 153/255 ),
+	health = prepare( 25/255, 178/255, 25/255 ),
+	power = {},
 	quest = {
 		red = prepare( 204/255, 25/255, 25/255 ),
 		orange = prepare( 255/255, 128/255, 25/255 ),
@@ -125,10 +124,17 @@ local Colors = {
 		green = prepare( 25/255, 178/255, 25/255 ),
 		gray = prepare( 153/255, 153/255, 153/255 )
 	},
-	class = prepareGroup(RAID_CLASS_COLORS),
 	reaction = prepareGroup(FACTION_BAR_COLORS),
-	debuff = prepareGroup(DebuffTypeColor),
-	power = {}
+	rested = prepare( 23/255, 93/255, 180/255 ),
+	restedbonus = prepare( 192/255, 111/255, 255/255 ),
+	tapped = prepare( 153/255, 153/255, 153/255 ),
+	threat = {
+		[0] = prepare( GetThreatStatusColor(0) ),
+		[1] = prepare( GetThreatStatusColor(1) ),
+		[2] = prepare( GetThreatStatusColor(2) ),
+		[3] = prepare( GetThreatStatusColor(3) )
+	},
+	xp = prepare( 18/255, 179/255, 21/255 )
 }
 
 -- Power bar colors need special handling, 
@@ -144,6 +150,7 @@ for powerType, powerColor in pairs(PowerBarColor) do
 		end  
 	end 
 end 
+
 
 -- Add support for custom class colors
 local customClassColors = function()
