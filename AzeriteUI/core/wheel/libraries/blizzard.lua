@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 8)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 9)
 if (not LibBlizzard) then	
 	return
 end
@@ -237,6 +237,9 @@ UIWidgets["ActionBars"] = function(self)
 	TalentMicroButtonAlert:UnregisterAllEvents()
 	TalentMicroButtonAlert:SetParent(UIHider)
 
+	MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
+	MainMenuBarVehicleLeaveButton:SetParent(UIHider)
+
 	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarRight"] = nil
 	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarLeft"] = nil
 	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomLeft"] = nil
@@ -324,17 +327,15 @@ end
 
 UIWidgets["Minimap"] = function(self)
 
-	local GameTimeFrame = _G.GameTimeFrame
-
-	GameTimeFrame:SetParent(UIHider)
-	GameTimeFrame:UnregisterAllEvents()
+	_G.GameTimeFrame:SetParent(UIHider)
+	_G.GameTimeFrame:UnregisterAllEvents()
 
 	_G.MinimapBorder:SetParent(UIHider)
 	_G.MinimapBorderTop:SetParent(UIHider)
 	_G.MinimapCluster:SetParent(UIHider)
 	_G.MiniMapMailBorder:SetParent(UIHider)
 	_G.MiniMapMailFrame:SetParent(UIHider)
-	_G.MinimapBackdrop:SetParent(UIHider) -- MinimapCompassTexture
+	_G.MinimapBackdrop:SetParent(UIHider) 
 	_G.MinimapNorthTag:SetParent(UIHider)
 	_G.MiniMapTracking:SetParent(UIHider)
 	_G.MiniMapTrackingButton:SetParent(UIHider)

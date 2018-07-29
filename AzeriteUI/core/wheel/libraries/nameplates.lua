@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 12)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 13)
 if (not LibNamePlate) then	
 	return
 end

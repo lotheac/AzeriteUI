@@ -99,8 +99,8 @@ BlizzardMirrorTimers.StyleTimer = function(self, frame)
 	bar:SetFrameLevel(frame:GetFrameLevel() + 5)
 
 	-- Add our own custom backdrop
-	local backdrop = frame:CreateTexture()
-	backdrop:SetDrawLayer("BACKGROUND")
+	local backdrop = bar:CreateTexture()
+	backdrop:SetDrawLayer("BACKGROUND", -5)
 	backdrop:SetPoint("CENTER", bar, "CENTER", 1, -2)
 	backdrop:SetSize(193,93)
 	backdrop:SetTexture(getPath("cast_back"))

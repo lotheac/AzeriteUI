@@ -72,6 +72,19 @@ L["Main Menu"] = true
 L["<Left-click> to toggle menu."] = true
 
 
+-- Various Button Tooltips
+--------------------------------------------
+L["<Left-click> to leave the vehicle."] = true
+
+
+-- Minimap Compass Abbreviations
+--------------------------------------------
+L["N"] = true -- abbreviation for "North"
+L["E"] = true -- abbreviation for "East"
+L["S"] = true -- abbreviation for "South"
+L["W"] = true -- abbreviation for "West"
+
+
 -- Keybind Abbreviations
 --------------------------------------------
 L["Alt"] = "A"

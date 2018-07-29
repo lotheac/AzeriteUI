@@ -13,7 +13,7 @@ VehicleHUD.OnInit = function(self)
 	end
 
 	local holder = self:CreateFrame("Frame", nil, "UICenter")
-	holder:Place("CENTER", "UIParent", "CENTER", 424, 0)
+	holder:Place("CENTER", "UICenter", "CENTER", 424, 0)
 	holder:SetWidth(content:GetWidth())
 	holder:SetHeight(content:GetHeight())
 

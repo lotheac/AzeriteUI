@@ -75,16 +75,6 @@ AzeriteUI.OnEnable = function(self)
 	-- In other words: without it both the pet bar and pet unitframe will fail after a /reload
 	SetActionBarToggles(nil, nil, nil, nil, nil)
 
-
-	-- Setup some global options in the back-end
-	------------------------------------------------------------------------------------
-
-	-- Setting this makes it "perfect" even through window size changes?
-	-- Appears that LibFrame multiples this with the effective UI scale? ( Why don't I know, I wrote it, rofl!?! )
-	--local screenWidth, screenHeight = LibFrame:GetScreenSize()
-	--CogWheel("LibFrame"):SetTargetScale( 1920/1440 )
-	CogWheel("LibFrame"):SetTargetScale( 1 )
-
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	self:RegisterEvent("PLAYER_LEAVING_WORLD", "OnEvent")
 end 

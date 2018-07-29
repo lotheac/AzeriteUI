@@ -399,6 +399,49 @@ ActionBarMain.GetPetBattleController = function(self)
 	return self.petBattleController
 end
 
+ActionBarMain.SpawnVehicleExitButton = function(self)
+
+	local button = self:CreateFrame("Button", nil, "UICenter", "SecureActionButtonTemplate")
+	button:SetFrameStrata("MEDIUM")
+	button:SetFrameLevel(100)
+	button:SetSize(32,32)
+	button:SetAttribute("type", "macro")
+	button:SetAttribute("macrotext", "/leavevehicle [target=vehicle,exists,canexitvehicle]")
+
+	-- This assumes our predefined minimap size, 
+	-- should rewrite it to react to actual sizes.
+	button:Place("CENTER", "Minimap", "TOPLEFT", 14, -36)
+
+	-- Put our texture on the button
+	button.texture = button:CreateTexture()
+	button.texture:SetSize(80,80)
+	button.texture:SetPoint("CENTER", 0, 0)
+	button.texture:SetTexture(getPath("icon_exit_flight"))
+
+	button:SetScript("OnEnter", function(button)
+		local tooltip = self:GetActionButtonTooltip()
+		tooltip:Hide()
+		tooltip:SetDefaultAnchor(button)
+		tooltip:AddLine(LEAVE_VEHICLE)
+		tooltip:AddLine(L["<Left-click> to leave the vehicle."], Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		tooltip:Show()
+	end)
+
+	button:SetScript("OnLeave", function(button) 
+		local tooltip = self:GetActionButtonTooltip()
+		tooltip:Hide()
+	end)
+
+	-- Register a visibility driver
+	RegisterAttributeDriver(button, "state-visibility", "[target=vehicle,exists,canexitvehicle] show; hide")
+
+	self.VehicleExitButton = button
+end
+
+ActionBarMain.SpawnTaxiExitButton = function(self)
+
+end
+
 ActionBarMain.SpawnButtons = function(self)
 	local db = self.db
 
@@ -411,7 +454,7 @@ ActionBarMain.SpawnButtons = function(self)
 		buttons[#buttons + 1] = button
 	end
 
-	local hoverButtons = {}
+	local hoverButtons1, hoverButtons2 = {}, {}
 
 	-- Mainbar, hidden part
 	for id = 8,12 do 
@@ -419,8 +462,8 @@ ActionBarMain.SpawnButtons = function(self)
 		button:GetPager():SetAlpha(0)
 
 		buttons[#buttons + 1] = button
-		hoverButtons[#hoverButtons + 1] = button 
-		hoverButtons[button] = true
+		hoverButtons1[#hoverButtons1 + 1] = button 
+		hoverButtons1[button] = true
 	end 
 
 	-- "Bottomleft"
@@ -429,15 +472,22 @@ ActionBarMain.SpawnButtons = function(self)
 		button:GetPager():SetAlpha(0)
 
 		buttons[#buttons + 1] = button
-		hoverButtons[#hoverButtons + 1] = button 
-		hoverButtons[button] = true
+		hoverButtons2[#hoverButtons2 + 1] = button 
+		hoverButtons2[button] = true
 	end 
 
+
 	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
-	local hoverFrame = self:CreateFrame("Frame")
-	hoverFrame:SetPoint("TOPLEFT", hoverButtons[1], "TOPLEFT", 0, 0)
-	hoverFrame:SetPoint("BOTTOMRIGHT", hoverButtons[#hoverButtons], "BOTTOMRIGHT", 0, 0)
-	hoverFrame:SetScript("OnUpdate", function(self, elapsed) 
+
+	local hoverFrame1 = self:CreateFrame("Frame")
+	hoverFrame1:SetPoint("TOPLEFT", hoverButtons1[1], "TOPLEFT", 0, 0)
+	hoverFrame1:SetPoint("BOTTOMRIGHT", hoverButtons1[#hoverButtons1], "BOTTOMRIGHT", 0, 0)
+
+	local hoverFrame2 = self:CreateFrame("Frame")
+	hoverFrame2:SetPoint("TOPLEFT", hoverButtons2[1], "TOPLEFT", 0, 0)
+	hoverFrame2:SetPoint("BOTTOMRIGHT", hoverButtons2[#hoverButtons2], "BOTTOMRIGHT", 0, 0)
+
+	hoverFrame1:SetScript("OnUpdate", function(self, elapsed) 
 		self.elapsed = (self.elapsed or 0) - elapsed
 
 		if (self.elapsed <= 0) then
@@ -445,7 +495,7 @@ ActionBarMain.SpawnButtons = function(self)
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
 					self.alpha = 1
-					for id,button in ipairs(hoverButtons) do 
+					for id, button in ipairs(hoverButtons1) do
 						button:GetPager():SetAlpha(self.alpha)
 					end 
 				end 
@@ -464,8 +514,44 @@ ActionBarMain.SpawnButtons = function(self)
 						self.alpha = 0
 						self.fadeOutTime = nil
 					end 
+					for id, button in ipairs(hoverButtons1) do
+						button:GetPager():SetAlpha(self.alpha)
+					end 
+				end 
+			end 
+			self.elapsed = .05
+		end 
+	end)
 
-					for id,button in ipairs(hoverButtons) do 
+
+	hoverFrame2:SetScript("OnUpdate", function(self, elapsed) 
+		self.elapsed = (self.elapsed or 0) - elapsed
+
+		if (self.elapsed <= 0) then
+			if self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
+				if (not self.isMouseOver) then 
+					self.isMouseOver = true
+					self.alpha = 1
+					for id, button in ipairs(hoverButtons2) do
+						button:GetPager():SetAlpha(self.alpha)
+					end 
+				end 
+			else 
+				if self.isMouseOver then 
+					self.isMouseOver = nil
+					if (not self.fadeOutTime) then 
+						self.fadeOutTime = fadeOutTime
+					end 
+				end 
+				if self.fadeOutTime then 
+					self.fadeOutTime = self.fadeOutTime - elapsed
+					if self.fadeOutTime > 0 then 
+						self.alpha = self.fadeOutTime / fadeOutTime
+					else 
+						self.alpha = 0
+						self.fadeOutTime = nil
+					end 
+					for id, button in ipairs(hoverButtons2) do
 						button:GetPager():SetAlpha(self.alpha)
 					end 
 				end 
@@ -475,21 +561,36 @@ ActionBarMain.SpawnButtons = function(self)
 	end)
 
 	-- Set this to initiate the first fade-out
-	hoverFrame.isMouseOver = true 
-
-	hoverFrame:SetScript("OnEvent", function(self, event, ...) 
+	hoverFrame1.isMouseOver = true 
+	hoverFrame2.isMouseOver = true 
+	
+	hoverFrame1:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "ACTIONBAR_SHOWGRID") then 
 			self.forced = true
 		elseif (event == "ACTIONBAR_HIDEGRID") then
 			self.forced = nil
 		end 
 	end)
-	hoverFrame:RegisterEvent("ACTIONBAR_HIDEGRID")
-	hoverFrame:RegisterEvent("ACTIONBAR_SHOWGRID")
+
+	hoverFrame2:SetScript("OnEvent", function(self, event, ...) 
+		if (event == "ACTIONBAR_SHOWGRID") then 
+			self.forced = true
+		elseif (event == "ACTIONBAR_HIDEGRID") then
+			self.forced = nil
+		end 
+	end)
+
+	hoverFrame1:RegisterEvent("ACTIONBAR_HIDEGRID")
+	hoverFrame1:RegisterEvent("ACTIONBAR_SHOWGRID")
+
+	hoverFrame2:RegisterEvent("ACTIONBAR_HIDEGRID")
+	hoverFrame2:RegisterEvent("ACTIONBAR_SHOWGRID")
 
 	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
-		if hoverButtons[self] then 
-			hoverFrame.flyout = self:HasFlyoutShown()
+		if hoverButtons1[self] then 
+			hoverFrame1.flyout = self:HasFlyoutShown()
+		elseif hoverButtons2[self] then 
+			hoverFrame2.flyout = self:HasFlyoutShown()
 		end 
 	end)
 
@@ -520,6 +621,7 @@ ActionBarMain.OnInit = function(self)
 
 	-- Spawn the buttons
 	self:SpawnButtons()
+	self:SpawnVehicleExitButton()
 
 	-- Update saved settings
 	self:UpdateBindings()

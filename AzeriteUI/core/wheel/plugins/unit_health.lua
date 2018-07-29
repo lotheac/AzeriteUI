@@ -107,6 +107,8 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 		r, g, b = unpack(self.colors.disconnected)
 	elseif (element.colorDead and dead) then
 		r, g, b = unpack(self.colors.dead)
+	elseif (element.colorCivilian and UnitIsPlayer(unit) and UnitIsFriend("player", unit)) then 
+		r, g, b = unpack(self.colors.reaction.civilian)
 	elseif (element.colorClass and UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
 		r, g, b = unpack(self.colors.class[class])
@@ -196,5 +198,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 10)
 end 

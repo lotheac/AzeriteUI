@@ -278,7 +278,8 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	health:Hide()
 	health.colorTapped = true
 	health.colorDisconnected = true
-	health.colorClass = true
+	health.colorClass = true -- color players in their class colors
+	health.colorCivilian = true -- color friendly players as civilians
 	health.colorReaction = true
 	health.colorHealth = true
 	health.colorThreat = true

@@ -1,4 +1,4 @@
-local LibChatBubble = CogWheel:Set("LibChatBubble", 2)
+local LibChatBubble = CogWheel:Set("LibChatBubble", 3)
 if (not LibChatBubble) then	
 	return
 end
@@ -153,9 +153,9 @@ LibChatBubble.InitBubble = function(self, bubble)
 	
 	customBubble.text = customBubble:CreateFontString()
 	customBubble.text:SetPoint("BOTTOMLEFT", 12, 12)
-	customBubble.text:SetFontObject(ChatFontNormal)
-	customBubble.text:SetShadowOffset(-.75, -.75)
-	customBubble.text:SetShadowColor(0, 0, 0, 1)
+	customBubble.text:SetFontObject(ChatFontNormal) -- we sure?
+	customBubble.text:SetShadowOffset(0, 0)
+	customBubble.text:SetShadowColor(0, 0, 0, 0)
 	
 	for i = 1, bubble:GetNumRegions() do
 		local region = select(i, bubble:GetRegions())

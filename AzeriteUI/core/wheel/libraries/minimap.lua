@@ -1,5 +1,5 @@
-local Version = 22 -- This library's version 
-local MapVersion = 22 -- Minimap library version the minimap created by this is compatible with
+local Version = 23 -- This library's version 
+local MapVersion = 23 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -49,6 +49,8 @@ local unpack = unpack
 -- WoW API
 local CreateFrame = _G.CreateFrame
 local GetCursorPosition = _G.GetCursorPosition
+local GetCVar = _G.GetCVar
+local GetPlayerFacing = _G.GetPlayerFacing
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 
 -- WoW Objects
@@ -58,13 +60,50 @@ local WorldFrame = _G.WorldFrame
 LibMinimap.embeds = LibMinimap.embeds or {} -- modules embedding this library
 LibMinimap.private = LibMinimap.private or {} -- private registry of various frames and elements
 LibMinimap.callbacks = LibMinimap.callbacks or {} -- events registered by the elements
+
+-- Do we even use these? Copy&Paste gone wrong?
+LibMinimap.embedMethods = LibMinimap.embedMethods or {} -- embedded module methods added by elements or modules
+LibMinimap.embedMethodVersions = LibMinimap.embedMethodVersions or {} -- version registry for added module methods
+
+-- Element handling. Transition to LibWidgetContainer soon?
 LibMinimap.elements = LibMinimap.elements or {} -- registered module element templates
 LibMinimap.elementPool = LibMinimap.elementPool or {} -- pool of element instances
 LibMinimap.elementPoolEnabled = LibMinimap.elementPoolEnabled or {} -- per module registry of element having been enabled
 LibMinimap.elementProxy = LibMinimap.elementProxy or {} -- event handler for a module's registered elements
 LibMinimap.elementObjects = LibMinimap.elementObjects or {} -- pool of unique objects created by the elements
-LibMinimap.embedMethods = LibMinimap.embedMethods or {} -- embedded module methods added by elements or modules
-LibMinimap.embedMethodVersions = LibMinimap.embedMethodVersions or {} -- version registry for added module methods
+
+-- The minimap button bag
+LibMinimap.buttonBag = LibMinimap.buttonBag or LibFrame:CreateFrame("Frame", nil, LibFrame:CreateFrame("Frame")) -- two layers to make sure it's gone
+LibMinimap.baggedButtonsChecked = LibMinimap.baggedButtonsChecked or {} -- buttons already checked
+LibMinimap.baggedButtonsHidden = LibMinimap.baggedButtonsHidden or {} -- buttons we have hidden 
+LibMinimap.baggedButtonsIgnored = LibMinimap.baggedButtonsIgnored or {} -- buttons we're ignoring
+LibMinimap.numBaggedButtons = LibMinimap.numBaggedButtons or 0 -- current count of hidden buttons
+
+-- Button bag icon list imported from GUI4's last updated list from Feb 1st 2018.
+-- Not really sure about these, might change to hiding all.
+do 
+	-- Should we hide these too maybe? Just enslave them to our upcoming system?
+	LibMinimap.baggedButtonsIgnored["MBB_MinimapButtonFrame"] = true
+	LibMinimap.baggedButtonsIgnored["MinimapButtonFrame"] = true
+
+	LibMinimap.baggedButtonsIgnored["BookOfTracksFrame"] = true
+	LibMinimap.baggedButtonsIgnored["CartographerNotesPOI"] = true
+	LibMinimap.baggedButtonsIgnored["DA_Minimap"] = true
+	--LibMinimap.baggedButtonsIgnored["FishingExtravaganzaMini"] = true
+	LibMinimap.baggedButtonsIgnored["FWGMinimapPOI"] = true
+	LibMinimap.baggedButtonsIgnored["GatherArchNote"] = true
+	LibMinimap.baggedButtonsIgnored["GatherMatePin"] = true
+	LibMinimap.baggedButtonsIgnored["GatherNote"] = true
+	LibMinimap.baggedButtonsIgnored["HandyNotesPin"] = true
+	--LibMinimap.baggedButtonsIgnored["MiniMapPing"] = true
+	LibMinimap.baggedButtonsIgnored["MiniNotePOI"] = true
+	LibMinimap.baggedButtonsIgnored["poiMinimap"] = true
+	LibMinimap.baggedButtonsIgnored["QuestPointerPOI"] = true
+	LibMinimap.baggedButtonsIgnored["RecipeRadarMinimapIcon"] = true
+	LibMinimap.baggedButtonsIgnored["TDial_TrackButton"] = true
+	LibMinimap.baggedButtonsIgnored["TDial_TrackingIcon"] = true
+	LibMinimap.baggedButtonsIgnored["ZGVMarker"] = true
+end 
 
 -- Do not define this on creation, only retrieve it from older library versions. 
 -- The existence of this indicates an initialized map. 
@@ -91,8 +130,11 @@ local ElementPool = LibMinimap.elementPool
 local ElementPoolEnabled = LibMinimap.elementPoolEnabled
 local ElementProxy = LibMinimap.elementProxy
 local ElementObjects = LibMinimap.elementObjects
+local Frame = LibMinimap.frame
 
 
+-- Utility Functions
+---------------------------------------------------------
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -579,7 +621,9 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 end 
 
 LibMinimap.SetMinimapSize = function(self, ...)
-	return self:SyncMinimap(true) and Private.MapHolder:SetSize(...)
+	self:SyncMinimap(true)
+	Private.MapHolder:SetSize(...)
+	LibMinimap:UpdateCompass()
 end 
 
 LibMinimap.SetMinimapPosition = function(self, ...)
@@ -679,6 +723,327 @@ end
 LibMinimap.GetMinimapTooltip = function(self)
 	return self:GetTooltip("CG_MinimapTooltip") or self:CreateTooltip("CG_MinimapTooltip")
 end
+
+LibMinimap.RemoveButton = function(self, button)
+
+	if self.baggedButtonsHidden[button] then 
+		return 
+	end 
+
+	-- Increase the button counter
+	self.numBaggedButtons = self.numBaggedButtons + 1
+
+	-- Store the button's original data
+	self.baggedButtonsHidden[button] = {
+		parent = button:GetParent(),
+		position = { button:GetPoint() },
+		size = { button:GetSize() }
+	}
+
+	-- Grab it!
+	button:SetParent(self.buttonBag)
+	button:SetSize(24,24)
+	button:ClearAllPoints() 
+	button:SetPoint("CENTER", 0, 0)
+
+end
+
+LibMinimap.RestoreButton = function(self, button)
+	local data = self.baggedButtonsHidden[button]
+	if (not data) then 
+		return 
+	end 
+
+	-- Decrease the button counter
+	self.numBaggedButtons = self.numBaggedButtons - 1
+
+	-- Release the button 
+	-- and return it to its original position
+	button:SetParent(data.parent)
+	button:SetSize(unpack(data.size))
+	button:ClearAllPoints() 
+	button:SetPoint(unpack(data.position))
+
+	-- Delete the entry
+	self.baggedButtonsHidden[button] = nil
+
+end 
+
+LibMinimap.ParseButton = function(self, button)
+	if button and not(self.baggedButtonsChecked[button]) and (button.HasScript and button:HasScript("OnClick")) then 
+
+		local name = button.GetName and button:GetName()
+		if (not name) or (not self.baggedButtonsIgnored[name]) then 
+			self:RemoveButton(button)
+		end 
+
+		-- We've checked this, never do it again!
+		self.baggedButtonsChecked[button] = true
+	end
+end 
+
+LibMinimap.OnUpdate = function(_, elapsed)
+
+	-- Yes, we're doing this
+	local self = LibMinimap
+
+	if (self.enableCompass and self.rotateMinimap) then 
+		self:UpdateCompass()
+	end 
+
+	-- Throttle it down, don't waste resources
+	self.elapsed = (self.elapsed or 0) - elapsed
+	if (self.elapsed > 0) then 
+		return 
+	end 
+
+	local numMinimapChildren = Minimap:GetNumChildren()
+	if (self.numMinimapChildren ~= numMinimapChildren) then
+		for i = 1, numMinimapChildren do
+			self:ParseButton((select(i, Minimap:GetChildren())))
+		end
+		self.numMinimapChildren = numMinimapChildren
+	end
+
+	local numMinimapBackdropChildren = MinimapBackdrop:GetNumChildren()
+	if (self.numMinimapBackdropChildren ~= numMinimapBackdropChildren) then
+		for i = 1, numMinimapBackdropChildren do
+			self:ParseButton((select(i, MinimapBackdrop:GetChildren())))
+		end
+		self.numMinimapBackdropChildren = numMinimapBackdropChildren
+	end
+
+	-- Don't really need to check for this very often
+	-- It's not a problem that the user see the buttons disappear
+	self.elapsed = 5
+end
+
+LibMinimap.EvaluateNeedForOnUpdate = function(self)
+	if (self.allowMinimapButtons or (self.enableCompass and self.rotateMinimap)) then 
+		if (not Frame:GetScript("OnUpdate")) then 
+			Frame:SetScript("OnUpdate", self.OnUpdate)
+		end 
+	else 
+		if (Frame:GetScript("OnUpdate")) then 
+			Frame:SetScript("OnUpdate", nil)
+		end 
+	end 
+end 
+
+LibMinimap.UpdateMinimapButtonBag = function(self)
+
+	-- Restore any hidden buttons 
+	if self.allowMinimapButtons then 
+		for button in pairs(self.baggedButtonsHidden) do 
+			self:RestoreButton(button)
+		end 
+	end 
+	
+end
+
+LibMinimap.UpdateCompass = function()
+
+	local compassFrame = LibMinimap:GetCompassFrame()
+	if (not compassFrame) then 
+		return
+	end
+
+	local radius = LibMinimap.compassRadius
+	if (not radius) then 
+		local width = compassFrame:GetWidth()
+		if (not width) then 
+			return 
+		end 
+		radius = width/2
+	end 
+
+	local inset = LibMinimap.compassRadiusInset
+	if inset then 
+		radius = radius - inset
+	end 
+
+	local playerFacing = GetPlayerFacing()
+	if (playerFacing) then 
+		compassFrame:SetAlpha(1)
+	else
+		compassFrame:SetAlpha(0)
+	end 
+
+	local angle = (LibMinimap.rotateMinimap and playerFacing) and -playerFacing or 0
+
+	compassFrame.east:SetPoint("CENTER", radius*math.cos(angle), radius*math.sin(angle))
+	compassFrame.north:SetPoint("CENTER", radius*math.cos(angle + math.pi/2), radius*math.sin(angle + math.pi/2))
+	compassFrame.west:SetPoint("CENTER", radius*math.cos(angle + math.pi), radius*math.sin(angle + math.pi))
+	compassFrame.south:SetPoint("CENTER", radius*math.cos(angle + math.pi*3/2), radius*math.sin(angle + math.pi*3/2))
+end
+
+LibMinimap.CreateCompassFrame = function(self)
+	if (not LibMinimap.compassFrame) then
+		local compassFrame = LibMinimap:SyncMinimap(true) and Private.MapOverlay:CreateFrame("Frame")
+		compassFrame:Hide()
+		compassFrame:SetAllPoints()
+
+		local north = compassFrame:CreateFontString()
+		north:SetDrawLayer("ARTWORK", 1)
+		north:SetFontObject(Game13Font_o1)
+		north:SetShadowOffset(0,0)
+		north:SetShadowColor(0,0,0,0)
+		north:SetText("N")
+		compassFrame.north = north
+
+		local east = compassFrame:CreateFontString()
+		east:SetDrawLayer("ARTWORK", 1)
+		east:SetFontObject(Game13Font_o1)
+		east:SetShadowOffset(0,0)
+		east:SetShadowColor(0,0,0,0)
+		east:SetText("E")
+		compassFrame.east = east
+
+		local south = compassFrame:CreateFontString()
+		south:SetDrawLayer("ARTWORK", 1)
+		south:SetFontObject(Game13Font_o1)
+		south:SetShadowOffset(0,0)
+		south:SetShadowColor(0,0,0,0)
+		south:SetText("S")
+		compassFrame.south = south
+
+		local west = compassFrame:CreateFontString()
+		west:SetDrawLayer("ARTWORK", 1)
+		west:SetFontObject(Game13Font_o1)
+		west:SetShadowOffset(0,0)
+		west:SetShadowColor(0,0,0,0)
+		west:SetText("W")
+		compassFrame.west = west
+
+		LibMinimap.compassFrame = compassFrame
+	end
+	return LibMinimap.compassFrame
+end 
+
+LibMinimap.GetCompassFrame = function(self)
+	return LibMinimap.compassFrame
+end 
+
+LibMinimap.SetMinimapCompassRadius = function(self, radius)
+	check(radius, 1, "number", "nil")
+	LibMinimap.compassRadius = radius
+	LibMinimap:UpdateCompass()
+end 
+
+LibMinimap.SetMinimapCompassRadiusInset = function(self, inset)
+	check(inset, 1, "number", "nil")
+	LibMinimap.compassRadiusInset = inset
+	LibMinimap:UpdateCompass()
+end 
+
+LibMinimap.SetMinimapCompassText = function(self, north, east, south, west)
+	check(north, 1, "string", "nil")
+	check(east, 2, "string", "nil")
+	check(south, 3, "string", "nil")
+	check(west, 4, "string", "nil")
+
+	local compassFrame = LibMinimap:GetCompassFrame() or LibMinimap:CreateCompassFrame()
+	compassFrame.north:SetText(north or "")
+	compassFrame.east:SetText(east or "")
+	compassFrame.south:SetText(south or "")
+	compassFrame.west:SetText(west or "")
+end
+
+LibMinimap.SetMinimapCompassTextColor = function(self, r, g, b, a)
+	check(r, 1, "number")
+	check(g, 2, "number")
+	check(b, 3, "number")
+	check(a, 4, "number", "nil")
+
+	local compassFrame = LibMinimap:GetCompassFrame() or LibMinimap:CreateCompassFrame()
+	compassFrame.north:SetTextColor(r, g, b, a or 1)
+	compassFrame.east:SetTextColor(r, g, b, a or 1)
+	compassFrame.south:SetTextColor(r, g, b, a or 1)
+	compassFrame.west:SetTextColor(r, g, b, a or 1)
+end
+
+LibMinimap.SetMinimapCompassTextFontObject = function(self, fontObject)
+	check(fontObject, 1, "table")
+
+	local compassFrame = LibMinimap:GetCompassFrame() or LibMinimap:CreateCompassFrame()
+	compassFrame.north:SetFontObject(fontObject)
+	compassFrame.east:SetFontObject(fontObject)
+	compassFrame.south:SetFontObject(fontObject)
+	compassFrame.west:SetFontObject(fontObject)
+end
+
+LibMinimap.SetMinimapCompassEnabled = function(self, enableCompass)
+	check(enableCompass, 1, "boolean", "nil")
+
+	-- Store the setting locally
+	LibMinimap.enableCompass = enableCompass
+
+	if enableCompass then 
+		-- Hide blizzard textires
+		MinimapCompassTexture:SetAlpha(0)
+		MinimapNorthTag:SetAlpha(0)
+
+		-- Get or create our compass frame
+		local compassFrame = LibMinimap:GetCompassFrame() or LibMinimap:CreateCompassFrame()
+		compassFrame:Show()
+		
+		-- Get the current rotation setting and store it locally
+		LibMinimap.rotateMinimap = GetCVar("rotateMinimap") == "1"
+
+		-- Rotate it properly
+		LibMinimap:UpdateCompass()
+
+		-- Watch out for changes to the rotation setting
+		LibMinimap:RegisterEvent("CVAR_UPDATE", "OnEvent")
+	else 
+
+		-- Hide our frame if it exists
+		local compassFrame = LibMinimap:GetCompassFrame()
+		if compassFrame then 
+			compassFrame:Hide()
+		end 
+
+		-- Show the blizzard textures again
+		MinimapCompassTexture:SetAlpha(1)
+		MinimapNorthTag:SetAlpha(1)
+
+		-- Remove the event
+		if LibMinimap:IsEventRegistered("CVAR_UPDATE", "OnEvent") then 
+			LibMinimap:UnregisterEvent("CVAR_UPDATE", "OnEvent")
+		end
+	end 
+
+	-- Evaulate the need for an update handler
+	LibMinimap:EvaluateNeedForOnUpdate()
+
+end
+
+LibMinimap.SetMinimapAllowAddonButtons = function(self, allow)
+	check(allow, 1, "boolean", "nil")
+
+	LibMinimap.allowMinimapButtons = allow
+
+	-- Update the button bag, restore buttons if needed
+	LibMinimap:UpdateMinimapButtonBag()
+
+	-- Evaulate the need for an update handler
+	LibMinimap:EvaluateNeedForOnUpdate()
+end
+
+LibMinimap.OnEvent = function(self, event, ...)
+	if (event == "CVAR_UPDATE") then 
+
+		-- Store the setting locally
+		self.rotateMinimap = GetCVar("rotateMinimap") == "1"
+
+		-- Evaulate the need for an update handler
+		self:EvaluateNeedForOnUpdate()
+
+		-- Update the compass 
+		self:UpdateCompass()
+	end
+end 
+
 
 
 -- Element Updates
@@ -824,21 +1189,29 @@ LibMinimap.RegisterElement = function(self, elementName, enableFunc, disableFunc
 	end 
 end
 
+
 -- Module embedding
 local embedMethods = {
-	SyncMinimap = true, 
-	SetMinimapSize = true, 
-	SetMinimapPosition = true, 
-	SetMinimapBlips = true, 
-	SetMinimapMaskTexture = true, 
-	SetMinimapArchBlobAlpha = true, 
-	SetMinimapBlobAlpha = true, 
-	SetMinimapQuestBlobAlpha = true, 
-	SetMinimapTaskBlobAlpha = true, 
-	GetMinimapHandler = true,
-	GetMinimapTooltip = true, 
 	EnableMinimapElement = true, 
 	DisableMinimapElement = true,
+	GetMinimapTooltip = true, 
+	SetMinimapArchBlobAlpha = true, 
+	SetMinimapAllowAddonButtons = true,
+	SetMinimapBlips = true, 
+	SetMinimapBlobAlpha = true,
+	SetMinimapCompassEnabled = true,  
+	SetMinimapCompassRadius = true,
+	SetMinimapCompassRadiusInset = true,
+	SetMinimapCompassText = true,
+	SetMinimapCompassTextColor = true,
+	SetMinimapCompassTextFontObject = true,
+	GetMinimapHandler = true,
+	SetMinimapMaskTexture = true, 
+	SetMinimapPosition = true, 
+	SetMinimapQuestBlobAlpha = true, 
+	SetMinimapSize = true, 
+	SetMinimapTaskBlobAlpha = true, 
+	SyncMinimap = true, 
 	UpdateAllMinimapElements = true
 }
 

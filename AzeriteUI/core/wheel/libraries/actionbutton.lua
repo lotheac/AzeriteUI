@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 22)
+local LibActionButton = CogWheel:Set("LibActionButton", 24)
 if (not LibActionButton) then	
 	return
 end
@@ -165,8 +165,9 @@ Button.GetSpellID = function(self)
 	return nil
 end
 
+-- Proxy this to the library tooltip method
 Button.GetTooltip = function(self)
-	return LibActionButton:GetTooltip("CG_ActionButtonTooltip") or LibActionButton:CreateTooltip("CG_ActionButtonTooltip")
+	return LibActionButton:GetActionButtonTooltip()
 end
 
 local maxAlpha, maxAntAlpha = .5, .5
@@ -464,11 +465,11 @@ LibActionButton.CreateButtonKeybind = function(self, button)
 	local keybind = (button.Overlay or button):CreateFontString()
 	keybind:SetDrawLayer("OVERLAY", 2)
 	keybind:SetPoint("TOPRIGHT", -2, -1)
-	keybind:SetFontObject(GameFontNormal)
+	keybind:SetFontObject(Game12Font_o1)
 	keybind:SetJustifyH("CENTER")
 	keybind:SetJustifyV("BOTTOM")
 	keybind:SetShadowOffset(0, 0)
-	keybind:SetShadowColor(0, 0, 0, 1)
+	keybind:SetShadowColor(0, 0, 0, 0)
 	keybind:SetTextColor(230/255, 230/255, 230/255, .75)
 	button.Keybind = keybind
 
@@ -479,11 +480,11 @@ LibActionButton.CreateButtonCount = function(self, button)
 	local count = (button.Overlay or button):CreateFontString()
 	count:SetDrawLayer("OVERLAY", 1)
 	count:SetPoint("BOTTOMRIGHT", -2, 1)
-	count:SetFontObject(GameFontNormal)
+	count:SetFontObject(Game12Font_o1)
 	count:SetJustifyH("CENTER")
 	count:SetJustifyV("BOTTOM")
 	count:SetShadowOffset(0, 0)
-	count:SetShadowColor(0, 0, 0, 1)
+	count:SetShadowColor(0, 0, 0, 0)
 	count:SetTextColor(250/255, 250/255, 250/255, .85)
 	button.Count = count
 
@@ -524,11 +525,11 @@ LibActionButton.CreateButtonCooldowns = function(self, button)
 	local cooldownCount = (button.Overlay or button):CreateFontString()
 	cooldownCount:SetDrawLayer("ARTWORK", 1)
 	cooldownCount:SetPoint("CENTER", 1, 0)
-	cooldownCount:SetFontObject(GameFontNormal)
+	cooldownCount:SetFontObject(Game12Font_o1)
 	cooldownCount:SetJustifyH("CENTER")
 	cooldownCount:SetJustifyV("MIDDLE")
 	cooldownCount:SetShadowOffset(0, 0)
-	cooldownCount:SetShadowColor(0, 0, 0, 1)
+	cooldownCount:SetShadowColor(0, 0, 0, 0)
 	cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
 	button.CooldownCount = cooldownCount
 
@@ -685,6 +686,10 @@ LibActionButton.GetAllActionButtonsByType = function(self, buttonType)
 	end 
 end 
 
+LibActionButton.GetActionButtonTooltip = function(self)
+	return LibActionButton:GetTooltip("CG_ActionButtonTooltip") or LibActionButton:CreateTooltip("CG_ActionButtonTooltip")
+end
+
 -- register a widget/element
 LibActionButton.RegisterElement = function(self, buttonType, spawnFunc, enableFunc, disableFunc, updateFunc, version)
 	check(buttonType, 1, "string")
@@ -763,6 +768,7 @@ end
 -- Module embedding
 local embedMethods = {
 	SpawnActionButton = true,
+	GetActionButtonTooltip = true, 
 	GetAllActionButtonsOrdered = true,
 	GetAllActionButtonsByType = true
 }

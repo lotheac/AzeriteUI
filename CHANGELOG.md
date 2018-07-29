@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.19] 2018-07-29
+### Added 
+- Added a custom vehicle exit button. A flight stop button is in the works!
+- Added a North tag to the minimap.
+
+### Changed
+- Attempting an experimental change where the hidden action bar row is split into two sections, each reacting separately to mouseovers. The purpose is to limit number of fade-ins for those with a lesser number of total buttons used.  
+- Friendly players will now get their nameplates colored as civilians, and not their class color which would make them appear as enemy players. 
+- Relocated mirror- and start timer backdrop textures to the bar frame, not the timer frame, in an attempt to avoid the "hovering empty bar" bug.
+- Rewrote the frame library's scale handling. All sizes are now relative to a virtual screen height of 1080, regardless or resolution or display size. Ratio will be the same as your window or monitor, except when the width is equal to or above three times a 16:10 monitor whereas it will be treated as a triple monitor setup and center the user interface on the middle monitor. 
+
+### Fixed
+- Vehicle unit frames should now be working. 
+
+### Removed
+- Removed the Blizzard vehicle exit and flight stop buttons.
+
 ## [1.0.18] 2018-07-28
 ### Added
 - Added styling to Blizzard popup windows.

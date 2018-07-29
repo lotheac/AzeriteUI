@@ -8,6 +8,10 @@ local Minimap = AzeriteUI:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap"
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 local L = CogWheel("LibLocale"):GetLocale("AzeriteUI")
 
+-- Don't grab buttons if these are active
+local MBB = Minimap:IsAddOnEnabled("MBB") 
+local MBF = Minimap:IsAddOnEnabled("MinimapButtonFrame")
+
 -- Lua API
 local _G = _G
 local date = date
@@ -588,7 +592,7 @@ Minimap.SetUpMinimap = function(self)
 	
 	-- Reposition minimap tooltip 
 	local tooltip = self:GetMinimapTooltip()
-	tooltip:SetDefaultPosition("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -48, 147)
+	--tooltip:SetDefaultPosition("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -48, 147)
 	
 
 	-- Blips
@@ -613,6 +617,21 @@ Minimap.SetUpMinimap = function(self)
 	-- Using tested versions from DiabolicUI, which makes the map IMO much more readable. 
 	self:SetMinimapBlobAlpha(0, 127, 0, 0) -- blobInside, blobOutside, ringOutside, ringInside
 
+
+	-- Minimap Buttons
+	----------------------------------------------------
+	-- We don't want them, simple as that.
+	-- Will add in support for MBB later one, or make our own system. 
+	self:SetMinimapAllowAddonButtons(false)
+
+
+	-- Minimap Compass
+	----------------------------------------------------
+	self:SetMinimapCompassEnabled(true)
+	self:SetMinimapCompassText(L["N"]) -- only setting the North tag text, as we don't want a full compass ( order is NESW )
+	self:SetMinimapCompassTextFontObject(AzeriteFont12_Outline) -- small font
+	self:SetMinimapCompassTextColor(Colors.normal[1], Colors.normal[2], Colors.normal[3], .75) -- yellow coloring
+	self:SetMinimapCompassRadiusInset(10) -- move the text 10 points closer to the center of the map
 
 
 	-- Widgets
@@ -882,7 +901,7 @@ Minimap.SetUpMinimap = function(self)
 	-- Toggle button for ring frame
 	local toggle = Handler:CreateOverlayFrame()
 	toggle:SetFrameLevel(toggle:GetFrameLevel() + 10) -- need this above the ring frame and the rings
-	toggle:SetPoint("CENTER", Handler, "BOTTOM", 1, -6)
+	toggle:SetPoint("CENTER", Handler, "BOTTOM", 2, -6)
 	toggle:SetSize(56,56)
 	toggle:EnableMouse(true)
 	toggle:SetScript("OnEnter", Toggle_OnEnter)
