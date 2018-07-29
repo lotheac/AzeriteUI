@@ -165,20 +165,24 @@ end
 -- Castbar updates. Only called when the bar is visible. 
 local PostUpdateCast = function(cast, unit)
 	local colors = cast._owner.colors
-	if (cast.interrupt) then 
+	if cast.interrupt then 
+		cast:SetSize(68,9) 
+		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -10)
 		cast:SetStatusBarTexture(getPath("cast_bar"))
 		cast:SetStatusBarColor(colors.quest.red[1], colors.quest.red[2], colors.quest.red[3]) 
-		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -10)
 
+		cast.Bg:SetSize(cast:GetSize())
 		cast.Bg:SetTexture(getPath("cast_bar"))
 
 		cast.Border:Hide()
 		cast.Glow:Hide()
-	else 
+	else
+		cast:SetSize(80,10) 
+		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -6)
 		cast:SetStatusBarTexture(getPath("nameplate_bar"))
 		cast:SetStatusBarColor(colors.cast[1], colors.cast[2], colors.cast[3]) 
-		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -6)
 
+		cast.Bg:SetSize(cast:GetSize())
 		cast.Bg:SetTexture(getPath("nameplate_solid"))
 
 		cast.Border:Show() 
@@ -294,7 +298,6 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	health:SetOrientation("LEFT")
 	health:SetSmoothingFrequency(.1)
 	health:SetSparkMap(map.plate)
-	health:SetAlpha(.85)
 	health:Hide()
 	health.colorTapped = true
 	health.colorDisconnected = true
@@ -351,7 +354,7 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	castBorder:SetSize(84,14)
 	castBorder:SetPoint("CENTER", 0, 0)
 	castBorder:SetTexture(getPath("cast_bar"))
-	castBorder:SetVertexColor(0, 0, 0, .82)
+	castBorder:SetVertexColor(0, 0, 0, 1 or .82)
 	cast.Border = castBorder
 
 	local castGlow = cast:CreateTexture()
@@ -362,10 +365,11 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	castGlow:SetVertexColor(0, 0, 0, .25)
 	cast.Glow = castGlow
 
+		
 	local castShield = cast:CreateTexture()
 	castShield:SetDrawLayer("BACKGROUND", -2)
-	castShield:SetSize(146,76) 
-	castShield:SetPoint("CENTER", 1, -1) -- 1, -1
+	castShield:SetSize(124,69) 
+	castShield:SetPoint("CENTER", 0, -1)
 	castShield:SetTexture(getPath("cast_back_spiked")) 
 	castShield:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	cast.Shield = castShield

@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 36)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 37)
 if (not LibStatusBar) then	
 	return
 end
@@ -694,17 +694,17 @@ end
 
 StatusBar.SetSize = function(self, ...)
 	Bars[self].scaffold:SetSize(...)
-	Update(self)
+	--Update(self)
 end
 
 StatusBar.SetWidth = function(self, ...)
 	Bars[self].scaffold:SetWidth(...)
-	Update(self)
+	--Update(self)
 end
 
 StatusBar.SetHeight = function(self, ...)
 	Bars[self].scaffold:SetHeight(...)
-	Update(self)
+	--Update(self)
 end
 
 StatusBar.GetHeight = function(self, ...)

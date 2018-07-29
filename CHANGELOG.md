@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.20] 2018-07-30
+## [1.0.21] 2018-07-29
+### Changed
+- Corrected changelog date for the previous entry, as it was in the actual future. 
+- Changed the size and alignment of the protected nameplate cast border to fit the health bar better.
+- Removed some more redundant statusbar library callbacks, as they could potentially cause endless loops and stack overflows.
+
+## [1.0.20] 2018-07-29
 ### Added
 - Added red coloring and a spiked shield border to nameplate castbars when the cast is uninterruptable.
 
