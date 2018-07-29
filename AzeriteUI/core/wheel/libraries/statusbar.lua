@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 35)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 36)
 if (not LibStatusBar) then	
 	return
 end
@@ -582,7 +582,9 @@ StatusBar.SetStatusBarTexture = function(self, ...)
 	else
 		Bars[self].bar:SetTexture(...)
 	end
-	Update(self)
+	-- Causes a stack overflow if the texture is changed in PostUpdate, 
+	-- as could easily be the case with some bars. 
+	--Update(self)
 end
 
 StatusBar.SetFlippedHorizontally = function(self, reversed)

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.20] 2018-07-30
+### Added
+- Added red coloring and a spiked shield border to nameplate castbars when the cast is uninterruptable.
+
+### Fixed
+- Fixed a bug preventing you from canceling your own buffs, even when out of combat.
+
 ## [1.0.19] 2018-07-29
 ### Added 
 - Added a custom vehicle exit button. A flight stop button is in the works!

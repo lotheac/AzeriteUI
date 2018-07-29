@@ -52,7 +52,7 @@ end
 local Aura = LibFrame:CreateFrame("Button")
 local Aura_MT = { __index = Aura }
 
-local Aura_OnClick = function(self, buttonPressed, down)
+local Aura_OnClick = function(button, buttonPressed, down)
 	if button.OnClick then 
 		return button:OnClick(buttonPressed, down)
 	end 
@@ -720,5 +720,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 15)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 16)
 end 

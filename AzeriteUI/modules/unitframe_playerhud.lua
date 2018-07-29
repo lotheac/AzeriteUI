@@ -457,6 +457,18 @@ local Style = function(self, unit, id, ...)
 	castBg:SetTexture(getPath("cast_back"))
 	castBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
+	local castShield = cast:CreateTexture()
+	castShield:SetDrawLayer("BACKGROUND")
+	castShield:SetSize(193,93)
+	castShield:SetPoint("CENTER", 1, -2)
+	castShield:SetTexture(getPath("cast_back_spiked"))
+	castShield:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	cast.Shield = castShield
+
+	-- Not going to work this into the plugin, so we just hook it here.
+	hooksecurefunc(cast.Shield, "Show", function() castBg:Hide() end)
+	hooksecurefunc(cast.Shield, "Hide", function() castBg:Show() end)
+
 	local castValue = cast:CreateFontString()
 	castValue:SetPoint("CENTER", 0, 0)
 	castValue:SetDrawLayer("OVERLAY")

@@ -163,7 +163,27 @@ local PostUpdateHealth = function(health, unit, currentHealth, maxHealth)
 end 
 
 -- Castbar updates. Only called when the bar is visible. 
-local PostUpdateCast = function(cast, unit, duration)
+local PostUpdateCast = function(cast, unit)
+	local colors = cast._owner.colors
+	if (cast.interrupt) then 
+		cast:SetStatusBarTexture(getPath("cast_bar"))
+		cast:SetStatusBarColor(colors.quest.red[1], colors.quest.red[2], colors.quest.red[3]) 
+		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -10)
+
+		cast.Bg:SetTexture(getPath("cast_bar"))
+
+		cast.Border:Hide()
+		cast.Glow:Hide()
+	else 
+		cast:SetStatusBarTexture(getPath("nameplate_bar"))
+		cast:SetStatusBarColor(colors.cast[1], colors.cast[2], colors.cast[3]) 
+		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -6)
+
+		cast.Bg:SetTexture(getPath("nameplate_solid"))
+
+		cast.Border:Show() 
+		cast.Glow:Show()
+	end 
 end
 
 -- Unitname updates. Usually also called after reaction or faction updates. 
@@ -307,181 +327,48 @@ NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
 	healthGlow:SetTexture(getPath("nameplate_solid"))
 	healthGlow:SetVertexColor(0, 0, 0, .25)
 	
-
-	--local healthGlow = health:CreateTexture()
-	--healthGlow:SetDrawLayer("BACKGROUND", -2)
-	--healthGlow:SetSize(84,14)
-	--healthGlow:SetPoint("CENTER", 0, 0)
-	--healthGlow:SetTexture(getPath("nameplate_solid"))
-	--healthGlow:SetVertexColor(0, 0, 0, .75)
-
-	-- Health bar
 	local cast = health:CreateStatusBar()
 	cast:SetSize(80,10)
 	cast:SetPoint("TOP", health, "BOTTOM", 0, -6)
-	cast:SetStatusBarTexture(getPath("nameplate_bar"))
-	cast:SetStatusBarColor(70/255, 255/255, 131/255, .69) 
+	cast:SetStatusBarTexture(getPath("cast_bar"))
+	cast:SetStatusBarColor(Colors.cast[1], Colors.cast[2], Colors.cast[3], 1) 
 	cast:SetOrientation("LEFT")
 	cast:SetSmoothingFrequency(.1)
 	cast:SetSparkMap(map.plate)
+	cast.PostUpdate = PostUpdateCast
 	plate.Cast = cast
 
 	local castBg = cast:CreateTexture()
-	castBg:SetDrawLayer("BACKGROUND", 0)
+	castBg:SetDrawLayer("BACKGROUND", -1)
 	castBg:SetSize(80,10)
 	castBg:SetPoint("CENTER", 0, 0)
-	castBg:SetTexture(getPath("nameplate_bar"))
+	castBg:SetTexture(getPath("cast_bar"))
 	castBg:SetVertexColor(.15, .15, .15, .82)
+	cast.Bg = castBg
 
 	local castBorder = cast:CreateTexture()
-	castBorder:SetDrawLayer("BACKGROUND", -1)
+	castBorder:SetDrawLayer("BACKGROUND", -3)
 	castBorder:SetSize(84,14)
 	castBorder:SetPoint("CENTER", 0, 0)
-	castBorder:SetTexture(getPath("nameplate_solid"))
+	castBorder:SetTexture(getPath("cast_bar"))
 	castBorder:SetVertexColor(0, 0, 0, .82)
+	cast.Border = castBorder
 
 	local castGlow = cast:CreateTexture()
-	castGlow:SetDrawLayer("BACKGROUND", -2)
+	castGlow:SetDrawLayer("BACKGROUND", -4)
 	castGlow:SetSize(88,18)
 	castGlow:SetPoint("CENTER", 0, 0)
-	castGlow:SetTexture(getPath("nameplate_solid"))
+	castGlow:SetTexture(getPath("cast_bar"))
 	castGlow:SetVertexColor(0, 0, 0, .25)
+	cast.Glow = castGlow
 
-	
-	do 
-		return 
-	end 
-
-	-- Embed our own stuff
-
-	-- Support for WeakAuras personal resource display attachment! :) 
-	-- (We're pretty much faking it, pretending to be KUINamePlates)
-	if WEAKAURAS then
-		local background = plate:CreateFrame("Frame")
-		background:SetFrameLevel(1)
-
-		local anchor = plate:CreateFrame("Frame")
-		anchor:SetPoint("TOPLEFT", plate.Health, 0, 0)
-		anchor:SetPoint("BOTTOMRIGHT", plate.Cast, 0, 0)
-
-		baseFrame.kui = background
-		baseFrame.kui.bg = anchor
-	end
-
-	-- Mouse hover highlight
-	local Highlight = Health:CreateTexture()
-	Highlight:Hide()
-	Highlight:SetAllPoints()
-	Highlight:SetBlendMode("ADD")
-	Highlight:SetColorTexture(1, 1, 1, 1/4)
-	Highlight:SetDrawLayer("BACKGROUND", 1) 
-
-	-- Unit Level
-	local Level = Health:CreateFontString()
-	Level:SetDrawLayer("OVERLAY")
-	Level:SetFontObject(DiabolicFont_SansBold10)
-	Level:SetTextColor(plate.colors.highlight[1], plate.colors.highlight[2], plate.colors.highlight[3])
-	Level:SetJustifyV("TOP")
-	Level:SetHeight(10)
-	Level:SetPoint("TOPLEFT", Health, "TOPRIGHT", 4, -(Health:GetHeight() - Level:GetHeight())/2)
-
-
-	-- Icons
-	local EliteIcon = Health:CreateTexture()
-	EliteIcon:Hide()
-
-	local RaidIcon = Health:CreateTexture()
-	RaidIcon:Hide()
-
-	local BossIcon = Health:CreateTexture()
-	BossIcon:SetSize(18, 18)
-	BossIcon:SetTexture(BOSS_TEXTURE)
-	BossIcon:SetPoint("TOPLEFT", plate.Health, "TOPRIGHT", 2, 2)
-	BossIcon:Hide()
-
-	-- Auras
-	local Auras = plate:CreateFrame()
-	Auras:Hide() 
-	Auras:SetPoint(unpack(widgetConfig.auras.place))
-	Auras:SetWidth(widgetConfig.auras.rowsize * widgetConfig.auras.button.size[1] + ((widgetConfig.auras.rowsize - 1) * widgetConfig.auras.padding))
-	Auras:SetHeight(widgetConfig.auras.button.size[2])
-
-	local cc = widgetConfig.cc -- adding a tiny amount of speed
-	local CC = plate:CreateFrame()
-	CC:Hide() 
-	CC:SetPoint(unpack(cc.place))
-	CC:SetSize(unpack(cc.size))
-
-	CC.Glow = CC:CreateFrame()
-	CC.Glow:SetFrameLevel(CC:GetFrameLevel())
-	CC.Glow:SetSize(unpack(cc.glow.size))
-	CC.Glow:SetPoint(unpack(cc.glow.place))
-	CC.Glow:SetBackdrop(cc.glow.backdrop)
-	CC.Glow:SetBackdropColor(0, 0, 0, 0)
-	CC.Glow:SetBackdropBorderColor(unpack(cc.glow.borderColor)) 
-
-	CC.Scaffold = CC:CreateFrame()
-	CC.Scaffold:SetFrameLevel(CC:GetFrameLevel() + 1)
-	CC.Scaffold:SetAllPoints()
-
-	CC.Border = CC:CreateFrame("Frame")
-	CC.Border:SetFrameLevel(CC:GetFrameLevel() + 2)
-	CC.Border:SetSize(unpack(cc.border.size))
-	CC.Border:SetPoint(unpack(cc.border.place))
-	CC.Border:SetBackdrop(cc.border.backdrop) 
-	CC.Border:SetBackdropColor(0, 0, 0, 0)
-	CC.Border:SetBackdropBorderColor(unpack(cc.border.borderColor))
-
-	CC.Icon = CC.Scaffold:CreateTexture() 
-	CC.Icon:SetDrawLayer("BACKGROUND") 
-	CC.Icon:SetSize(unpack(cc.icon.size))
-	CC.Icon:SetPoint(unpack(cc.icon.place))
-	CC.Icon:SetTexCoord(unpack(cc.icon.texCoord))
-	
-	CC.Icon.Shade = CC.Scaffold:CreateTexture() 
-	CC.Icon.Shade:SetDrawLayer("BORDER") 
-	CC.Icon.Shade:SetSize(unpack(cc.icon.shade.size)) 
-	CC.Icon.Shade:SetPoint(unpack(cc.icon.shade.place)) 
-	CC.Icon.Shade:SetTexture(cc.icon.shade.path) 
-	CC.Icon.Shade:SetVertexColor(unpack(cc.icon.shade.color)) 
-
-	CC.Overlay = CC:CreateFrame("Frame") 
-	CC.Overlay:SetFrameLevel(CC:GetFrameLevel() + 3)
-	CC.Overlay:SetAllPoints() 
-
-	CC.Time = CC.Overlay:CreateFontString() 
-	CC.Time:SetDrawLayer("OVERLAY") 
-	CC.Time:SetTextColor(unpack(C.General.OffWhite)) 
-	CC.Time:SetFontObject(cc.time.fontObject)
-	CC.Time:SetShadowOffset(unpack(cc.time.shadowOffset))
-	CC.Time:SetShadowColor(unpack(cc.time.shadowColor))
-	CC.Time:SetPoint(unpack(cc.time.place))
-
-	CC.Count = CC.Overlay:CreateFontString() 
-	CC.Count:SetDrawLayer("OVERLAY") 
-	CC.Count:SetTextColor(unpack(C.General.Normal)) 
-	CC.Count:SetFontObject(cc.count.fontObject)
-	CC.Count:SetShadowOffset(unpack(cc.count.shadowOffset))
-	CC.Count:SetShadowColor(unpack(cc.count.shadowColor))
-	CC.Count:SetPoint(unpack(cc.count.place))
-
-	-- Overrides
-	Level.Override = UpdateLevel
-
-	-- Post updates
-	Health.PostUpdate = PostUpdateHealth
-
-
-	plate.CC = CC
-	plate.Health = Health
-	plate.Cast = Cast
-	plate.Auras = Auras
-	plate.Highlight = Highlight
-	plate.Level = Level
-	plate.EliteIcon = EliteIcon
-	plate.RaidIcon = RaidIcon
-	plate.BossIcon = BossIcon
-	plate.Auras = Auras
+	local castShield = cast:CreateTexture()
+	castShield:SetDrawLayer("BACKGROUND", -2)
+	castShield:SetSize(146,76) 
+	castShield:SetPoint("CENTER", 1, -1) -- 1, -1
+	castShield:SetTexture(getPath("cast_back_spiked")) 
+	castShield:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	cast.Shield = castShield
 
 end
 

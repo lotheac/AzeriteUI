@@ -640,7 +640,7 @@ Minimap.SetUpMinimap = function(self)
 	-- Mail
 	local mail = Handler:CreateBorderFrame()
 	mail:SetSize(43, 32) 
-	mail:Place("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -25, 75) 
+	mail:Place("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -35, 45) -- -25, 75
 
 	local icon = mail:CreateTexture()
 	icon:SetDrawLayer("ARTWORK")

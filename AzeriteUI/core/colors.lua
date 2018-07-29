@@ -54,6 +54,7 @@ end
 
 --Colors.health = prepare(191/255, 0/255, 18/255)
 Colors.health = prepare(191/255, 0/255, 38/255)
+Colors.cast = prepare(70/255, 255/255, 131/255)
 Colors.disconnected = prepare(120/255, 120/255, 120/255)
 Colors.tapped = prepare(161/255, 141/255, 120/255)
 Colors.dead = prepare(73/255, 25/255, 9/255)

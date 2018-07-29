@@ -206,7 +206,7 @@ Update = function(self, event, unit, ...)
 		element.max = max
 		element.delay = 0
 		element.casting = true
-		element.interrupt = notInterruptable
+		element.interrupt = notInterruptible
 		element.tradeskill = isTradeSkill
 		element.total = nil
 		element.starttime = nil
@@ -220,12 +220,8 @@ Update = function(self, event, unit, ...)
 		if element.Shield then 
 			if element.interrupt and not UnitIsUnit(unit ,"player") then
 				element.Shield:Show()
-				element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-				element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 			else
 				element.Shield:Hide()
-				element.Glow:SetVertexColor(0, 0, 0, .75)
-				element.Shadow:SetVertexColor(0, 0, 0, 1)
 			end
 		end
 
@@ -277,23 +273,19 @@ Update = function(self, event, unit, ...)
 		if element.casting then
 			local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
 			if name then
-				element.interrupt = notInterruptable
+				element.interrupt = notInterruptible
 			end
 		elseif element.channeling then
 			local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
 			if name then
-				element.interrupt = notInterruptable
+				element.interrupt = notInterruptible
 			end
 		end
 		if element.Shield then 
 			if element.interrupt and not UnitIsUnit(unit ,"player") then
 				element.Shield:Show()
-				element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-				element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 			else
 				element.Shield:Hide()
-				element.Glow:SetVertexColor(0, 0, 0, .75)
-				element.Shadow:SetVertexColor(0, 0, 0, 1)
 			end
 		end
 	
@@ -301,23 +293,19 @@ Update = function(self, event, unit, ...)
 		if element.casting then
 			local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
 			if name then
-				element.interrupt = notInterruptable
+				element.interrupt = notInterruptible
 			end
 		elseif element.channeling then
 			local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo(unit)
 			if name then
-				element.interrupt = notInterruptable
+				element.interrupt = notInterruptible
 			end
 		end
 		if element.Shield then 
 			if element.interrupt and not UnitIsUnit(unit ,"player") then
 				element.Shield:Show()
-				element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-				element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 			else
 				element.Shield:Hide()
-				element.Glow:SetVertexColor(0, 0, 0, .75)
-				element.Shadow:SetVertexColor(0, 0, 0, 1)
 			end
 		end
 	
@@ -355,7 +343,7 @@ Update = function(self, event, unit, ...)
 		element.max = max
 		element.delay = 0
 		element.channeling = true
-		element.interrupt = notInterruptable
+		element.interrupt = notInterruptible
 
 		element.casting = nil
 		element.castID = nil
@@ -369,12 +357,8 @@ Update = function(self, event, unit, ...)
 		if element.Shield then 
 			if element.interrupt and not UnitIsUnit(unit ,"player") then
 				element.Shield:Show()
-				element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-				element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 			else
 				element.Shield:Hide()
-				element.Glow:SetVertexColor(0, 0, 0, .75)
-				element.Shadow:SetVertexColor(0, 0, 0, 1)
 			end
 		end
 
@@ -420,7 +404,6 @@ Update = function(self, event, unit, ...)
 		element:Hide()
 	end
 
-
 	if element.PostUpdate then 
 		return element:PostUpdate(unit)
 	end 
@@ -441,7 +424,7 @@ if (not ENGINE_801) then
 		end
 	
 		if (event == "UNIT_SPELLCAST_START") then
-			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptable = UnitCastingInfo(unit)
+			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
 			if (not name) then
 				element:Hide()
 				element:SetValue(0, true)
@@ -459,7 +442,7 @@ if (not ENGINE_801) then
 			element.max = max
 			element.delay = 0
 			element.casting = true
-			element.interrupt = notInterruptable
+			element.interrupt = notInterruptible
 			element.tradeskill = isTradeSkill
 			element.total = nil
 			element.starttime = nil
@@ -473,12 +456,8 @@ if (not ENGINE_801) then
 			if element.Shield then 
 				if element.interrupt and not UnitIsUnit(unit, "player") then
 					element.Shield:Show()
-					element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-					element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 				else
 					element.Shield:Hide()
-					element.Glow:SetVertexColor(0, 0, 0, .75)
-					element.Shadow:SetVertexColor(0, 0, 0, 1)
 				end
 			end
 	
@@ -528,53 +507,45 @@ if (not ENGINE_801) then
 			
 		elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then	
 			if element.casting then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptable = UnitCastingInfo(unit)
+				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
 				if name then
-					element.interrupt = notInterruptable
+					element.interrupt = notInterruptible
 				end
 	
 			elseif element.channeling then
 				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
 				if name then
-					element.interrupt = notInterruptable
+					element.interrupt = notInterruptible
 				end
 			end
 	
 			if element.Shield then 
 				if element.interrupt and not UnitIsUnit(unit ,"player") then
 					element.Shield:Show()
-					element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-					element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 				else
 					element.Shield:Hide()
-					element.Glow:SetVertexColor(0, 0, 0, .75)
-					element.Shadow:SetVertexColor(0, 0, 0, 1)
 				end
 			end
 		
 		elseif (event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
 			if element.casting then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptable = UnitCastingInfo(unit)
+				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
 				if name then
-					element.interrupt = notInterruptable
+					element.interrupt = notInterruptible
 				end
 	
 			elseif element.channeling then
 				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
 				if name then
-					element.interrupt = notInterruptable
+					element.interrupt = notInterruptible
 				end
 			end
 	
 			if element.Shield then 
 				if element.interrupt and not UnitIsUnit(unit ,"player") then
 					element.Shield:Show()
-					element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-					element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 				else
 					element.Shield:Hide()
-					element.Glow:SetVertexColor(0, 0, 0, .75)
-					element.Shadow:SetVertexColor(0, 0, 0, 1)
 				end
 			end
 		
@@ -612,7 +583,7 @@ if (not ENGINE_801) then
 			element.max = max
 			element.delay = 0
 			element.channeling = true
-			element.interrupt = notInterruptable
+			element.interrupt = notInterruptible
 	
 			element.casting = nil
 			element.castID = nil
@@ -626,17 +597,12 @@ if (not ENGINE_801) then
 			if element.Shield then 
 				if element.interrupt and not UnitIsUnit(unit ,"player") then
 					element.Shield:Show()
-					element.Glow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
-					element.Shadow:SetVertexColor(widgetConfig.cast.color[1], widgetConfig.cast.color[2], widgetConfig.cast.color[3], 1)
 				else
 					element.Shield:Hide()
-					element.Glow:SetVertexColor(0, 0, 0, .75)
-					element.Shadow:SetVertexColor(0, 0, 0, 1)
 				end
 			end
 	
 			element:Show()
-			
 			
 		elseif (event == "UNIT_SPELLCAST_CHANNEL_UPDATE") then
 			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
@@ -740,5 +706,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 7)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 8)
 end 
