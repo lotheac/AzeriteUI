@@ -214,6 +214,9 @@ local PostUpdateTextures = function(self)
 		healthBg:SetTexture(getPath("hp_cap_case"))
 		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
+		local threat = self.Threat
+		threat:SetTexture(getPath("hp_cap_case_glow"))
+
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case"))
 		powerFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
@@ -242,6 +245,9 @@ local PostUpdateTextures = function(self)
 		healthBg:SetTexture(getPath("hp_mid_case"))
 		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
+		local threat = self.Threat
+		threat:SetTexture(getPath("hp_mid_case_glow"))
+
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case"))
 		powerFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
@@ -269,6 +275,9 @@ local PostUpdateTextures = function(self)
 		local healthBg = self.Health.Bg
 		healthBg:SetTexture(getPath("hp_low_case"))
 		healthBg:SetVertexColor(unpack(Colors.ui.wood))
+
+		local threat = self.Threat
+		threat:SetTexture(getPath("hp_low_case_glow"))
 
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case_low"))
@@ -348,6 +357,16 @@ local Style = function(self, unit, id, ...)
 	self.Health.Bg = healthBg
 
 
+	-- Threat
+	-----------------------------------------------------------	
+	local threat = backdrop:CreateTexture()
+	threat:SetDrawLayer("BACKGROUND", -2)
+	threat:SetSize(716, 188)
+	threat:SetPoint("CENTER", 1, -.5 +.5)
+	threat:SetAlpha(.75)
+	self.Threat = threat
+
+	
 	-- Absorb Bar
 	-----------------------------------------------------------	
 
@@ -504,7 +523,7 @@ local Style = function(self, unit, id, ...)
 	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
 	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 
-	local auraTooltip = UnitFramePlayer:CreateTooltip("AzeriteUI_PlayerAuraTooltip")
+	--local auraTooltip = UnitFramePlayer:CreateTooltip("AzeriteUI_PlayerAuraTooltip")
 
 
 	-- Texts

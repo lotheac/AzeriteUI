@@ -238,7 +238,7 @@ ActionButton.PostCreate = function(self, ...)
 
 	self.OverlayGlow:ClearAllPoints()
 	self.OverlayGlow:SetPoint("CENTER", self, "CENTER", 0, 0)
-	self.OverlayGlow:SetSize(buttonSize * 1.25, buttonSize * 1.25)
+	self.OverlayGlow:SetSize(buttonSize * 1.05, buttonSize * 1.05) -- 1.6 outside
 	--self.OverlayGlow:SetPoint("TOPLEFT", self, "TOPLEFT", -buttonSize*.2, buttonSize*.2)
 	--self.OverlayGlow:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", buttonSize*.2, -buttonSize*.2)
 	--self.OverlayGlow:SetPoint("TOPLEFT", self, "TOPLEFT", -buttonSize*.2, buttonSize*.2)

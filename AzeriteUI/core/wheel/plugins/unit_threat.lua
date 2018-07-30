@@ -30,7 +30,7 @@ local Update = function(self, event, unit)
 	-- BUG: Non-existent '*target' or '*pet' units cause UnitThreatSituation() errors (thank you oUF!)
 	if UnitExists(unit) then
 		local feedbackUnit = element.feedbackUnit
-		if (feedbackUnit and feedbackUnit ~= unit and UnitExists(feedbackUnit)) then
+		if (feedbackUnit and (feedbackUnit ~= unit) and UnitExists(feedbackUnit)) then
 			status = UnitThreatSituation(feedbackUnit, unit)
 		else
 			status = UnitThreatSituation(unit)
@@ -39,11 +39,11 @@ local Update = function(self, event, unit)
 
 	local r, g, b
 	if (status and (status > 0)) then
-		r, g, b = self.colors.threat[status]
+		r, g, b = self.colors.threat[status][1], self.colors.threat[status][2], self.colors.threat[status][3]
 
 		element:UpdateColor(unit, status, r, g, b)
 
-		if (not element:IsShown()) then 
+		if (not element:IsShown()) then
 			element:Show()
 		end 
 	else
@@ -91,5 +91,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Threat", Enable, Disable, Proxy, 1)
+	Lib:RegisterElement("Threat", Enable, Disable, Proxy, 3)
 end 

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.22] 2018-07-30
+### Added
+- Added threat textures for player- and target unit frame health bars. Power/Mana- and portrait coloring coming!
+
+### Changed
+- Slightly reduced the size of the spell activation highlights as they were completely covering the button border texture.
+
+### Fixed
+- Added missing events to properly update spell activation overlay glows on the actionbuttons.
+
 ## [1.0.21] 2018-07-29
 ### Changed
 - Corrected changelog date for the previous entry, as it was in the actual future. 

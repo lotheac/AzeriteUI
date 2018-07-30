@@ -240,6 +240,11 @@ local PostUpdateTextures = function(self)
 			local healthVal = self.Health.Value
 			healthVal:Show()
 
+			local threat = self.Threat
+			threat:SetSize(694, 190)
+			threat:SetPoint("CENTER", -.5, 1 +1)
+			threat:SetTexture(getPath("hp_boss_case_glow"))
+	
 			local cast = self.Cast
 			cast:SetSize(533, 40)
 			cast:Place("TOPRIGHT", -27, -27)
@@ -270,6 +275,11 @@ local PostUpdateTextures = function(self)
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
+
+			local threat = self.Threat
+			threat:SetSize(716, 188)
+			threat:SetPoint("CENTER", -1, .5  +1)
+			threat:SetTexture(getPath("hp_cap_bar_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(385, 40)
@@ -302,6 +312,11 @@ local PostUpdateTextures = function(self)
 			local healthVal = self.Health.Value
 			healthVal:Show()
 
+			local threat = self.Threat
+			threat:SetSize(716, 188)
+			threat:SetPoint("CENTER", -1, -.5 +1)
+			threat:SetTexture(getPath("hp_mid_case_glow"))
+
 			local cast = self.Cast
 			cast:SetSize(385, 37)
 			cast:Place("TOPRIGHT", -27, -27)
@@ -332,6 +347,11 @@ local PostUpdateTextures = function(self)
 
 			local healthVal = self.Health.Value
 			healthVal:Hide()
+
+			local threat = self.Threat
+			threat:SetSize(98,96)
+			threat:SetPoint("CENTER", 0, 1 +1)
+			threat:SetTexture(getPath("hp_critter_case_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(40, 36)
@@ -364,6 +384,11 @@ local PostUpdateTextures = function(self)
 			healthBg:SetPoint("CENTER", -1, -.5)
 			healthBg:SetTexture(getPath("hp_low_case"))
 			healthBg:SetVertexColor(unpack(Colors.ui.wood))
+
+			local threat = self.Threat
+			threat:SetSize(716, 188)
+			threat:SetPoint("CENTER", -1, -.5  +1)
+			threat:SetTexture(getPath("hp_low_case_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(385, 37)
@@ -437,9 +462,19 @@ local Style = function(self, unit, id, ...)
 	self.Health = health
 
 	local healthBg = health:CreateTexture()
-	healthBg:SetDrawLayer("BACKGROUND")
+	healthBg:SetDrawLayer("BACKGROUND", -1)
 	healthBg:SetTexCoord(1,0,0,1)
 	self.Health.Bg = healthBg
+
+	
+	-- Threat
+	-----------------------------------------------------------	
+	local threat = backdrop:CreateTexture()
+	threat:SetDrawLayer("BACKGROUND", -2)
+	threat:SetTexCoord(1,0,0,1)
+	threat:SetAlpha(.75)
+	threat.feedbackUnit = "player"
+	self.Threat = threat
 
 
 	-- Absorb Bar

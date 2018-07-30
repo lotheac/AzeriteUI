@@ -788,7 +788,10 @@ local Enable = function(self)
 	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
 	self:RegisterEvent("UPDATE_BINDINGS", Proxy)
 	--self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
+	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Proxy)
+	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
 	self:RegisterEvent("SPELL_UPDATE_CHARGES", Proxy)
+	
 
 end
 
@@ -807,9 +810,11 @@ local Disable = function(self)
 	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
 	self:UnregisterEvent("UPDATE_BINDINGS", Proxy)
 	--self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
+	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Proxy)
+	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
 	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Proxy)
 	
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 17)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 19)
