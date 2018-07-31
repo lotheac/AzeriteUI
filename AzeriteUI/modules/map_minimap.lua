@@ -132,7 +132,7 @@ local PlayerHasXP = function()
 	local playerLevel = UnitLevel("player")
 	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
 	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
-	local hasXP = (not IsXPUserDisabled()) and (playerLevel < playerMax) or (playerLevel < expacMax) 
+	local hasXP = (not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax))
 	return hasXP
 end
 
@@ -991,14 +991,15 @@ Minimap.UpdateInformationDisplay = function(self)
 end 
 
 Minimap.OnEvent = function(self, event, ...)
-	if (event == "PLAYER_ENTERING_WORLD") or (event == "VARIABLES_LOADED") then 
-		self:UpdateMinimapMask()
-		self:UpdateMinimapSize()
-		self:UpdateInformationDisplay()
-		self:UpdateBars()
-	elseif (event == "PLAYER_TARGET_CHANGED") then 
-		self:UpdateInformationDisplay()
+
+	if (event == "PLAYER_TARGET_CHANGED") then 
+		return self:UpdateInformationDisplay()
 	end 
+
+	self:UpdateMinimapMask()
+	self:UpdateMinimapSize()
+	self:UpdateInformationDisplay()
+	self:UpdateBars()
 end 
 
 
@@ -1084,8 +1085,14 @@ end
 
 Minimap.OnEnable = function(self)
 	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
+	self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
+	self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
+	self:RegisterEvent("PLAYER_ALIVE", "OnEvent")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent") -- don't we always need this? :)
+	self:RegisterEvent("PLAYER_FLAGS_CHANGED", "OnEvent")
+	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent") -- changing alpha on this
+	self:RegisterEvent("PLAYER_XP_UPDATE", "OnEvent")
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent") -- size and mask must be updated after this
 
 	-- Enable all minimap elements

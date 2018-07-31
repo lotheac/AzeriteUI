@@ -14,6 +14,7 @@ local _G = _G
 local unpack = unpack
 
 -- WoW API
+local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
 local GetExpansionLevel = _G.GetExpansionLevel
 local GetQuestGreenRange = _G.GetQuestGreenRange
 local IsXPUserDisabled = _G.IsXPUserDisabled
@@ -45,7 +46,7 @@ local map = {
 
 	-- Power Crystal Map
 	-- (Texture Size 256x256, Growth: UP)
-	-- (topOffset = left - bottomOffset = right)
+	-- (top = left side   bottom = right side)
 	crystal = {
 		top = {
 			{ keyPercent =   0/256, offset =  -65/256 }, 
@@ -96,6 +97,15 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
+-- Figure out if the player has a XP bar
+local PlayerHasXP = function()
+	local playerLevel = UnitLevel("player")
+	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
+	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
+	local hasXP = (not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax))
+	return hasXP
+end
+
 
 -- Callbacks
 -----------------------------------------------------------------
@@ -132,6 +142,34 @@ local OverridePowerColor = function(element, unit, min, max, powerType, powerID,
 		r, g, b = unpack(powerType and self.colors.power[powerType .. "_CRYSTAL"] or self.colors.power[powerType] or self.colors.power.UNUSED)
 	end
 	element:SetStatusBarColor(r, g, b)
+end 
+
+local Threat_UpdateColor = function(element, unit, status, r, g, b)
+	element.health:SetVertexColor(r, g, b)
+	element.power:SetVertexColor(r, g, b)
+	if element.mana then 
+		element.mana:SetVertexColor(r, g, b)
+	end 
+end
+
+local Threat_IsShown = function(element)
+	return element.health:IsShown()
+end 
+
+local Threat_Show = function(element)
+	element.health:Show()
+	element.power:Show()
+	if element.mana then 
+		element.mana:Show()
+	end 
+end 
+
+local Threat_Hide = function(element)
+	element.health:Hide()
+	element.power:Hide()
+	if element.mana then 
+		element.mana:Hide()
+	end
 end 
 
 
@@ -205,7 +243,7 @@ end
 local PostUpdateTextures = function(self)
 
 	-- War Seasoned
-	if (LEVEL >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
+	if (not PlayerHasXP()) then 
 		local health = self.Health
 		health:SetSize(385, 40)
 		health:SetStatusBarTexture(getPath("hp_cap_bar"))
@@ -215,7 +253,7 @@ local PostUpdateTextures = function(self)
 		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local threat = self.Threat
-		threat:SetTexture(getPath("hp_cap_case_glow"))
+		threat.health:SetTexture(getPath("hp_cap_case_glow"))
 
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case"))
@@ -246,7 +284,7 @@ local PostUpdateTextures = function(self)
 		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local threat = self.Threat
-		threat:SetTexture(getPath("hp_mid_case_glow"))
+		threat.health:SetTexture(getPath("hp_mid_case_glow"))
 
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case"))
@@ -277,7 +315,7 @@ local PostUpdateTextures = function(self)
 		healthBg:SetVertexColor(unpack(Colors.ui.wood))
 
 		local threat = self.Threat
-		threat:SetTexture(getPath("hp_low_case_glow"))
+		threat.health:SetTexture(getPath("hp_low_case_glow"))
 
 		local powerFg = self.Power.Fg
 		powerFg:SetTexture(getPath("pw_crystal_case_low"))
@@ -357,16 +395,7 @@ local Style = function(self, unit, id, ...)
 	self.Health.Bg = healthBg
 
 
-	-- Threat
-	-----------------------------------------------------------	
-	local threat = backdrop:CreateTexture()
-	threat:SetDrawLayer("BACKGROUND", -2)
-	threat:SetSize(716, 188)
-	threat:SetPoint("CENTER", 1, -.5 +.5)
-	threat:SetAlpha(.75)
-	self.Threat = threat
 
-	
 	-- Absorb Bar
 	-----------------------------------------------------------	
 
@@ -385,7 +414,8 @@ local Style = function(self, unit, id, ...)
 	local power = backdrop:CreateStatusBar()
 	power:SetSize(120, 140)
 	power:Place("BOTTOMLEFT", -101, 38)
-	power:SetStatusBarTexture(getPath("pw_crystal_bar"))
+	power:SetStatusBarTexture(getPath("power_crystal_front"))
+	power:SetTexCoord(50/255, 206/255, 37/255, 219/255)
 	power:SetOrientation("UP") -- set the bar to grow towards the top.
 	power:SetSparkMap(map.crystal) -- set the map the spark follows along the bar.
 	power.ignoredResource = "MANA" -- make the bar hide when MANA is the primary resource. 
@@ -394,9 +424,9 @@ local Style = function(self, unit, id, ...)
 
 	local powerBg = power:CreateTexture()
 	powerBg:SetDrawLayer("BACKGROUND", -2)
-	powerBg:SetSize(131, 153)
+	powerBg:SetSize(120/157*256, 140/183*256)
 	powerBg:SetPoint("CENTER", 0, 0)
-	powerBg:SetTexture(getPath("pw_crystal_back"))
+	powerBg:SetTexture(getPath("power_crystal_back"))
 	powerBg:SetVertexColor(1, 1, 1, .85) 
 
 	local powerFg = power:CreateTexture()
@@ -411,10 +441,11 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------
 	
 	-- Only create this for actual mana classes
-	if (PlayerClass == "DRUID") or (PlayerClass == "MONK")  or (PlayerClass == "PALADIN")
-	or (PlayerClass == "SHAMAN") or (PlayerClass == "PRIEST")
-	or (PlayerClass == "MAGE") or (PlayerClass == "WARLOCK") then
+	local hasMana = (PlayerClass == "DRUID") or (PlayerClass == "MONK")  or (PlayerClass == "PALADIN")
+				 or (PlayerClass == "SHAMAN") or (PlayerClass == "PRIEST")
+				 or (PlayerClass == "MAGE") or (PlayerClass == "WARLOCK") 
 
+	if hasMana then 
 		local extraPower = backdrop:CreateOrb()
 		extraPower:SetSize(103, 103) -- 113,113 
 		extraPower:Place("BOTTOMLEFT", -97 +5, 22 + 5) -- -97,22 
@@ -440,21 +471,59 @@ local Style = function(self, unit, id, ...)
 		extraPowerFg:SetDrawLayer("BORDER")
 		extraPowerFg:SetSize(188, 188)
 		extraPowerFg:SetPoint("CENTER", 0, 0)
-		
-		local extraPowerVal = extraPower:CreateFontString()
-		extraPowerVal:SetPoint("CENTER", 3, 0)
-		extraPowerVal:SetDrawLayer("OVERLAY")
-		extraPowerVal:SetJustifyH("CENTER")
-		extraPowerVal:SetJustifyV("MIDDLE")
-		extraPowerVal:SetFontObject(AzeriteFont18_Outline)
-		extraPowerVal:SetShadowOffset(0, 0)
-		extraPowerVal:SetShadowColor(0, 0, 0, 0)
-		extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
-	
+
 		self.ExtraPower.Border = extraPowerFg
-		self.ExtraPower.Value = extraPowerVal
-		self.ExtraPower.UpdateValue = OverrideValue
 	end 
+
+
+	-- Threat
+	-----------------------------------------------------------	
+	local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
+
+	local threatHealth = backdrop:CreateTexture()
+	threatHealth:SetDrawLayer("BACKGROUND", -2)
+	threatHealth:SetSize(716, 188)
+	threatHealth:SetPoint("CENTER", 1, -1)
+	threatHealth:SetAlpha(.75)
+	threats.health = threatHealth
+
+	local threatPowerFrame = backdrop:CreateFrame("Frame")
+	threatPowerFrame:SetFrameLevel(backdrop:GetFrameLevel())
+
+	local threatPower = threatPowerFrame:CreateTexture()
+	threatPower:SetPoint("CENTER", power, "CENTER", 0, 0)
+	threatPower:SetDrawLayer("BACKGROUND", -2)
+	threatPower:SetSize(120/157*256, 140/183*256)
+	threatPower:SetAlpha(.75)
+	threatPower:SetTexture(getPath("power_crystal_glow"))
+	threatPower._owner = self.Power
+	threats.power = threatPower
+
+	-- Hook the power visibility to the power crystal
+	self.Power:HookScript("OnShow", function() threatPowerFrame:Show() end)
+	self.Power:HookScript("OnHide", function() threatPowerFrame:Hide() end)
+
+	if hasMana then 
+
+		local threatManaFrame = backdrop:CreateFrame("Frame")
+		threatManaFrame:SetFrameLevel(backdrop:GetFrameLevel())
+
+		local threatMana = threatManaFrame:CreateTexture()
+		threatMana:SetDrawLayer("BACKGROUND", -2)
+		threatMana:SetPoint("CENTER", self.ExtraPower, "CENTER", 0, 0)
+		threatMana:SetSize(188, 188)
+		threatMana:SetAlpha(.75)
+		threatMana:SetTexture(getPath("orb_case_glow"))
+		threatMana._owner = self.ExtraPower
+		threats.mana = threatMana
+
+		self.ExtraPower:HookScript("OnShow", function() threatManaFrame:Show() end)
+		self.ExtraPower:HookScript("OnHide", function() threatManaFrame:Hide() end)
+	end
+
+	self.Threat = threats
+	self.Threat.OverrideColor = Threat_UpdateColor
+
 
 
 	-- Cast Bar
@@ -568,6 +637,21 @@ local Style = function(self, unit, id, ...)
 	self.Power.Value = powerVal
 	self.Power.UpdateValue = OverrideValue
 
+	if hasMana then 
+		local extraPowerVal = self.ExtraPower:CreateFontString()
+		extraPowerVal:SetPoint("CENTER", 3, 0)
+		extraPowerVal:SetDrawLayer("OVERLAY")
+		extraPowerVal:SetJustifyH("CENTER")
+		extraPowerVal:SetJustifyV("MIDDLE")
+		extraPowerVal:SetFontObject(AzeriteFont18_Outline)
+		extraPowerVal:SetShadowOffset(0, 0)
+		extraPowerVal:SetShadowColor(0, 0, 0, 0)
+		extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
+	
+		self.ExtraPower.Value = extraPowerVal
+		self.ExtraPower.UpdateValue = OverrideValue
+	end 
+
 	-- Update textures according to player level
 	PostUpdateTextures(self)
 end 
@@ -583,10 +667,10 @@ UnitFramePlayer.OnEvent = function(self, event, ...)
 				LEVEL = level
 			end
 		end
-
-		-- Update textures according to player level
-		PostUpdateTextures(self.frame)
 	end
+
+	-- Update textures according to player level
+	PostUpdateTextures(self.frame)
 end
 
 UnitFramePlayer.OnInit = function(self)
@@ -595,5 +679,10 @@ UnitFramePlayer.OnInit = function(self)
 end 
 
 UnitFramePlayer.OnEnable = function(self)
+	self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
+	self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
+	self:RegisterEvent("PLAYER_ALIVE", "OnEvent")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
+	self:RegisterEvent("PLAYER_XP_UPDATE", "OnEvent")
 end 

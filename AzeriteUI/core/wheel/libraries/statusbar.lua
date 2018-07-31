@@ -321,7 +321,6 @@ local Update = function(self, elapsed)
 		-- Hashed tables are just such a nice way to get post updates done faster :) 
 		UpdateByGrowthDirection[orientation](self, mult, displaySize, width, height, sparkOffsetTop, sparkOffsetBottom)
 
-
 		if elapsed then
 			local currentAlpha = spark:GetAlpha()
 			local range = data.sparkMaxAlpha - data.sparkMinAlpha

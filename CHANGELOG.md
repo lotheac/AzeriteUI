@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.23] 2018-07-31
+### Added
+- Added threat textures for player power crystal, player mana orb and target portrait frame. The display should be much more balanced and consistent now. 
+
+### Changed
+- The chat emote / language button now has a different texture. 
+- Reduced the chat button size with 20% of their previous size - or 25% the current size, all depending on which size you wish to relate that number to. 
+- Players that have manually disabled experience gains will now get the level capped version of the player frame. This also applies to the target frame when they are targeting themselves. Idea is to make twinks feel more epic. It is currently not decided whether or not we're going to apply this to all players with experience gains removed while inside a twinked battleground. 
+
+### Fixed
+- Rewrote the health coloring plugin to accomodate for the rare cases where the class of a player isn't available.
+
 ## [1.0.22] 2018-07-30
 ### Added
 - Added threat textures for player- and target unit frame health bars. Power/Mana- and portrait coloring coming!

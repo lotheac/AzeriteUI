@@ -14,8 +14,10 @@ local _G = _G
 local unpack = unpack
 
 -- WoW API
+local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
 local GetExpansionLevel = _G.GetExpansionLevel
 local GetQuestGreenRange = _G.GetQuestGreenRange
+local IsXPUserDisabled = _G.IsXPUserDisabled
 local UnitExists = _G.UnitExists
 local UnitIsConnected = _G.UnitIsConnected
 local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
@@ -146,6 +148,25 @@ local OverrideHealthValue = function(element, unit, min, max, disconnected, dead
 	end 
 end 
 
+local Threat_UpdateColor = function(element, unit, status, r, g, b)
+	element.health:SetVertexColor(r, g, b)
+	element.portrait:SetVertexColor(r, g, b)
+end
+
+local Threat_IsShown = function(element)
+	return element.health:IsShown()
+end 
+
+local Threat_Show = function(element)
+	element.health:Show()
+	element.portrait:Show()
+end 
+
+local Threat_Hide = function(element)
+	element.health:Hide()
+	element.portrait:Hide()
+end 
+
 local PostCreateAuraButton = function(element, button)
 	
 	-- Downscale factor of the border backdrop
@@ -209,6 +230,14 @@ end
 local PostUpdateAuraButton = function(element, button)
 end
 
+-- Figure out if the player has a XP bar
+local PlayerHasXP = function()
+	local playerLevel = UnitLevel("player")
+	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
+	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
+	local hasXP = (not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax))
+	return hasXP
+end
 
 -- Style Post Updates
 -- Styling function applying sizes and textures 
@@ -241,9 +270,9 @@ local PostUpdateTextures = function(self)
 			healthVal:Show()
 
 			local threat = self.Threat
-			threat:SetSize(694, 190)
-			threat:SetPoint("CENTER", -.5, 1 +1)
-			threat:SetTexture(getPath("hp_boss_case_glow"))
+			threat.health:SetSize(694, 190)
+			threat.health:SetPoint("CENTER", -.5, 1 +1)
+			threat.health:SetTexture(getPath("hp_boss_case_glow"))
 	
 			local cast = self.Cast
 			cast:SetSize(533, 40)
@@ -257,7 +286,7 @@ local PostUpdateTextures = function(self)
 		end
 
 	-- War Seasoned / Capped  
-	elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) then 
+	elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) or (UnitIsUnit("target", "player") and (not PlayerHasXP())) then 
 		if (TARGET_STYLE ~= "CAP") then 
 			TARGET_STYLE = "CAP"
 
@@ -277,9 +306,9 @@ local PostUpdateTextures = function(self)
 			healthVal:Show()
 
 			local threat = self.Threat
-			threat:SetSize(716, 188)
-			threat:SetPoint("CENTER", -1, .5  +1)
-			threat:SetTexture(getPath("hp_cap_bar_glow"))
+			threat.health:SetSize(716, 188)
+			threat.health:SetPoint("CENTER", -1, .5  +1)
+			threat.health:SetTexture(getPath("hp_cap_bar_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(385, 40)
@@ -313,9 +342,9 @@ local PostUpdateTextures = function(self)
 			healthVal:Show()
 
 			local threat = self.Threat
-			threat:SetSize(716, 188)
-			threat:SetPoint("CENTER", -1, -.5 +1)
-			threat:SetTexture(getPath("hp_mid_case_glow"))
+			threat.health:SetSize(716, 188)
+			threat.health:SetPoint("CENTER", -1, -.5 +1)
+			threat.health:SetTexture(getPath("hp_mid_case_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(385, 37)
@@ -349,9 +378,9 @@ local PostUpdateTextures = function(self)
 			healthVal:Hide()
 
 			local threat = self.Threat
-			threat:SetSize(98,96)
-			threat:SetPoint("CENTER", 0, 1 +1)
-			threat:SetTexture(getPath("hp_critter_case_glow"))
+			threat.health:SetSize(98,96)
+			threat.health:SetPoint("CENTER", 0, 1 +1)
+			threat.health:SetTexture(getPath("hp_critter_case_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(40, 36)
@@ -386,9 +415,9 @@ local PostUpdateTextures = function(self)
 			healthBg:SetVertexColor(unpack(Colors.ui.wood))
 
 			local threat = self.Threat
-			threat:SetSize(716, 188)
-			threat:SetPoint("CENTER", -1, -.5  +1)
-			threat:SetTexture(getPath("hp_low_case_glow"))
+			threat.health:SetSize(716, 188)
+			threat.health:SetPoint("CENTER", -1, -.5  +1)
+			threat.health:SetTexture(getPath("hp_low_case_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(385, 37)
@@ -467,16 +496,6 @@ local Style = function(self, unit, id, ...)
 	self.Health.Bg = healthBg
 
 	
-	-- Threat
-	-----------------------------------------------------------	
-	local threat = backdrop:CreateTexture()
-	threat:SetDrawLayer("BACKGROUND", -2)
-	threat:SetTexCoord(1,0,0,1)
-	threat:SetAlpha(.75)
-	threat.feedbackUnit = "player"
-	self.Threat = threat
-
-
 	-- Absorb Bar
 	-----------------------------------------------------------	
 
@@ -542,6 +561,29 @@ local Style = function(self, unit, id, ...)
 	portraitFg:SetPoint("TOPRIGHT", 123, 61)
 	portraitFg:SetSize(187, 187)
 	self.Portrait.Fg = portraitFg
+
+
+	-- Threat
+	-----------------------------------------------------------	
+	local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
+	threats.feedbackUnit = "player"
+
+	local threatHealth = backdrop:CreateTexture()
+	threatHealth:SetDrawLayer("BACKGROUND", -2)
+	threatHealth:SetTexCoord(1,0,0,1)
+	threatHealth:SetAlpha(.75)
+	threats.health = threatHealth
+
+	local threatPortrait = backdrop:CreateTexture()
+	threatPortrait:SetDrawLayer("BACKGROUND", -2)
+	threatPortrait:SetAlpha(.75)
+	threatPortrait:SetTexture(getPath("portrait_frame_glow"))
+	threatPortrait:SetSize(187, 187)
+	threatPortrait:SetPoint("CENTER", portraitFg, "CENTER", 0, 0)
+	threats.portrait = threatPortrait
+
+	self.Threat = threats
+	self.Threat.OverrideColor = Threat_UpdateColor
 
 
 	-- Unit Level

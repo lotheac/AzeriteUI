@@ -46,6 +46,7 @@ local Update = function(self, event, unit)
 		if (not element:IsShown()) then
 			element:Show()
 		end 
+
 	else
 		if element:IsShown() then 
 			element:Hide()

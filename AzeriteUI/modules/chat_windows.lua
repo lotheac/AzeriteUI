@@ -569,6 +569,8 @@ ChatWindows.SetUpMainFrames = function(self)
 end 
 
 ChatWindows.SetUpButton = function(self, button, sizeMod, texture)
+	sizeMod = sizeMod/1.25
+
 	local normal = button:GetNormalTexture()
 	normal:SetTexture(texture or getPath("point_block"))
 	normal:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
@@ -646,7 +648,7 @@ ChatWindows.SetUpMainButtons = function(self)
 
 	local menuButton = self:GetChatWindowMenuButton()
 	if menuButton then 
-		self:SetUpButton(menuButton, 1.25, getPath("config_button_bright"))
+		self:SetUpButton(menuButton, 1.25, getPath("config_button_emotes"))
 	end 
 	
 end 

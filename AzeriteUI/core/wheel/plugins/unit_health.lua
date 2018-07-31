@@ -100,27 +100,31 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 		return element:OverrideColor(unit, min, max, disconnected, dead, tapped)
 	end
 	local self = element._owner
-	local r, g, b
+	local color, r, g, b
 	if (element.colorTapped and tapped) then
-		r, g, b = unpack(self.colors.tapped)
+		color = self.colors.tapped
 	elseif (element.colorDisconnected and disconnected) then
-		r, g, b = unpack(self.colors.disconnected)
+		color = self.colors.disconnected
 	elseif (element.colorDead and dead) then
-		r, g, b = unpack(self.colors.dead)
+		color = self.colors.dead
 	elseif (element.colorCivilian and UnitIsPlayer(unit) and UnitIsFriend("player", unit)) then 
-		r, g, b = unpack(self.colors.reaction.civilian)
+		color = self.colors.reaction.civilian
 	elseif (element.colorClass and UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
-		r, g, b = unpack(self.colors.class[class])
+		color = class and self.colors.class[class]
 	else 
 		local threat = UnitThreatSituation("player", unit)
 		if (element.colorThreat and threat and (threat > 0)) then
-			r, g, b = unpack(self.colors.threat[threat])
+			color = self.colors.threat[threat]
 		elseif (element.colorReaction and UnitReaction(unit, "player")) then
-			r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
-		else
-			r, g, b = unpack(self.colors.health)
+			color = self.colors.reaction[UnitReaction(unit, "player")]
 		end
+	end
+	if color then 
+		r, g, b = color[1], color[2], color[3]
+	end 
+	if (not r) then 
+		r, g, b = self.colors.health[1], self.colors.health[2], self.colors.health[3]
 	end
 	element:SetStatusBarColor(r, g, b)
 	if element.PostUpdateColor then 
@@ -198,5 +202,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 10)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 11)
 end 
