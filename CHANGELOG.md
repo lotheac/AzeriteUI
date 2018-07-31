@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.24] 2018-07-31
+### Fixed
+- Fixed a nil bug occurring when opening to some addon menus.
+
 ## [1.0.23] 2018-07-31
 ### Added
 - Added threat textures for player power crystal, player mana orb and target portrait frame. The display should be much more balanced and consistent now. 

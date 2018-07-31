@@ -1,4 +1,4 @@
-local LibTaint = CogWheel:Set("LibTaint", 1)
+local LibTaint = CogWheel:Set("LibTaint", 3)
 if (not LibTaint) then	
 	return
 end
@@ -18,7 +18,7 @@ local fixes = {
 	tradeSkillRows = 1,
 	namePlateMotionDropdown = 1,
 	nonEnglishShipyardMap = 1,
-	openToAddonCategory = 1,
+	openToAddonCategory = 2,
 	uiFrameFlash = 1,
 	petJournalLinks = 1,
 	addonListTooltip = 1,
@@ -144,7 +144,8 @@ local fixes = {
 		-- Fix InterfaceOptionsFrame_OpenToCategory not actually opening the category (and not even scrolling to it)
 		-- Confirmed still broken in 6.2.2.20490 (6.2.2a)
 		if (not LibTaint.fixes.openToAddonCategory) or (LibTaint.fixes.openToAddonCategory < fixes.openToAddonCategory) then 
-			local get_panel_name = function(panel)
+			local get_panel_name
+			get_panel_name = function(panel)
 				local tp = type(panel)
 				local cat = INTERFACEOPTIONS_ADDONCATEGORIES
 				if tp == "string" then
@@ -172,9 +173,13 @@ local fixes = {
 				end
 			end
 			local InterfaceOptionsFrame_OpenToCategory_Fix = function(panel)
-				if doNotRun or InCombatLockdown() then return end
+				if (doNotRun or InCombatLockdown()) then 
+					return 
+				end
 				local panelName = get_panel_name(panel)
-				if not panelName then return end -- if its not part of our list return early
+				if (not panelName) then 
+					return 
+				end 
 				local noncollapsedHeaders = {}
 				local shownpanels = 0
 				local mypanel
