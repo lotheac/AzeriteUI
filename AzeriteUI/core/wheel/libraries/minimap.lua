@@ -863,10 +863,10 @@ LibMinimap.UpdateCompass = function()
 	end 
 
 	local playerFacing = GetPlayerFacing()
-	if (playerFacing) then 
-		compassFrame:SetAlpha(1)
-	else
+	if (not playerFacing or (compassFrame.supressCompass)) then 
 		compassFrame:SetAlpha(0)
+	else
+		compassFrame:SetAlpha(1)
 	end 
 
 	local angle = (LibMinimap.rotateMinimap and playerFacing) and -playerFacing or 0

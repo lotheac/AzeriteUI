@@ -36,7 +36,6 @@ locale\zhCN.lua
 locale\zhTW.lua
 
 # interface core
-core\taint.lua
 core\main.lua
 core\menu.lua
 

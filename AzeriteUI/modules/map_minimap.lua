@@ -4,6 +4,7 @@ if (not AzeriteUI) then
 	return 
 end
 
+local LibMinimap = CogWheel("LibMinimap")
 local Minimap = AzeriteUI:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 local L = CogWheel("LibLocale"):GetLocale("AzeriteUI")
@@ -640,7 +641,7 @@ Minimap.SetUpMinimap = function(self)
 	-- Mail
 	local mail = Handler:CreateBorderFrame()
 	mail:SetSize(43, 32) 
-	mail:Place("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -35, 45) -- -25, 75
+	mail:Place("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -31, 35) -- -25, 75
 
 	local icon = mail:CreateTexture()
 	icon:SetDrawLayer("ARTWORK")
@@ -695,7 +696,7 @@ Minimap.SetUpMinimap = function(self)
 	Handler.ClockFrame = clockFrame
 
 	local clock = clockFrame:CreateFontString()
-	clock:SetPoint("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -23, -8) 
+	clock:SetPoint("BOTTOMRIGHT", Handler, "BOTTOMLEFT", -13, -8) 
 	clock:SetDrawLayer("OVERLAY")
 	clock:SetJustifyH("RIGHT")
 	clock:SetJustifyV("BOTTOM")
@@ -779,12 +780,26 @@ Minimap.SetUpMinimap = function(self)
 
 	-- Ring frame
 	local ringFrame = Handler:CreateBorderFrame()
+	ringFrame:Hide()
 	ringFrame:SetAllPoints() -- set it to cover the map
 	ringFrame:EnableMouse(true) -- make sure minimap blips and their tooltips don't punch through
-	ringFrame:SetShown(db.stickyBars) 
 	ringFrame:SetScript("OnEnter", RingFrame_OnEnter)
 	ringFrame:SetScript("OnLeave", RingFrame_OnLeave)
+	ringFrame:HookScript("OnShow", function() 
+		local compassFrame = LibMinimap:GetCompassFrame()
+		if compassFrame then 
+			compassFrame.supressCompass = true
+		end 
+	end)
+	ringFrame:HookScript("OnHide", function() 
+		local compassFrame = LibMinimap:GetCompassFrame()
+		if compassFrame then 
+			compassFrame.supressCompass = nil
+		end 
+	end)
 
+	-- Wait with this until now to trigger compass visibility changes
+	ringFrame:SetShown(db.stickyBars) 
 
 	-- ring frame backdrops
 	local ringFrameBg = ringFrame:CreateTexture()
@@ -823,15 +838,6 @@ Minimap.SetUpMinimap = function(self)
 	rested:Hide()
 	outerRing.Rested = rested
 
-	-- outer ring backdrop
-	--local outerRingBackdrop = ringFrame:CreateTexture()
-	--outerRingBackdrop:SetPoint("CENTER", 0, 0)
-	--outerRingBackdrop:SetSize(211,211)
-	--outerRingBackdrop:SetTexture(getPath("xp_barbg"))
-	--outerRingBackdrop:SetVertexColor(.5, .5, .5, .5)
-	--outerRingBackdrop:SetDrawLayer("BACKGROUND", 2)
-	--outerRing.Background = outerRingBackdrop
-
 	-- outer ring value text
 	local outerRingValue = outerRing:CreateFontString()
 	outerRingValue:SetPoint("TOP", ringFrameBg, "CENTER", 0, -2)
@@ -846,11 +852,11 @@ Minimap.SetUpMinimap = function(self)
 
 	-- outer ring value description text
 	local outerRingValueDescription = outerRing:CreateFontString()
-	outerRingValueDescription:SetPoint("TOP", outerRingValue, "BOTTOM", 0, 0)
+	outerRingValueDescription:SetPoint("TOP", outerRingValue, "BOTTOM", 1, 0)
 	outerRingValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
 	outerRingValueDescription:SetJustifyH("CENTER")
 	outerRingValueDescription:SetJustifyV("TOP")
-	outerRingValueDescription:SetFontObject(AzeriteFont11_Outline)
+	outerRingValueDescription:SetFontObject(AzeriteFont12_Outline)
 	outerRingValueDescription:SetShadowOffset(0, 0)
 	outerRingValueDescription:SetShadowColor(0, 0, 0, 0)
 	outerRing.Value.Description = outerRingValueDescription
@@ -1026,14 +1032,10 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
 			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
 			Handler.XP.Value:ClearAllPoints()
-			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
-			Handler.XP.Value:SetFontObject(AzeriteFont15_Outline) 
+			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
+			Handler.XP.Value:SetFontObject(AzeriteFont16_Outline) 
 			Handler.XP.Value.Description:Hide()
 			Handler.XP.OverrideValue = XP_OverrideValue
-			--Handler.XP.Value.Percent
-		
-			--Handler.ArtifactPower.Value
-			--Handler.ArtifactPower.Value.Percent
 
 			self:EnableMinimapElement("ArtifactPower")
 			self:EnableMinimapElement("XP")
@@ -1045,7 +1047,7 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-single"))
 			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-single"))
 			Handler.XP.Value:ClearAllPoints()
-			Handler.XP.Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 0, -2)
+			Handler.XP.Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
 			Handler.XP.Value:SetFontObject(AzeriteFont24_Outline) 
 			Handler.XP.Value.Description:Show()
 

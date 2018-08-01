@@ -308,7 +308,7 @@ local PostUpdateTextures = function(self)
 			local threat = self.Threat
 			threat.health:SetSize(716, 188)
 			threat.health:SetPoint("CENTER", -1, .5  +1)
-			threat.health:SetTexture(getPath("hp_cap_bar_glow"))
+			threat.health:SetTexture(getPath("hp_cap_case_glow"))
 
 			local cast = self.Cast
 			cast:SetSize(385, 40)
@@ -595,7 +595,7 @@ local Style = function(self, unit, id, ...)
 	level:SetDrawLayer("BORDER")
 	level:SetJustifyH("CENTER")
 	level:SetJustifyV("MIDDLE")
-	level:SetFontObject(AzeriteFont11_Outline)
+	level:SetFontObject(AzeriteFont12_Outline)
 	level:SetShadowOffset(0, 0)
 	level:SetShadowColor(0, 0, 0, 0)
 
@@ -742,11 +742,11 @@ local Style = function(self, unit, id, ...)
 
 	-- Unit Name
 	local name = overlay:CreateFontString()
-	name:SetPoint("TOPRIGHT", -53, 16)
+	name:SetPoint("TOPRIGHT", -40, 18)
 	name:SetDrawLayer("OVERLAY")
 	name:SetJustifyH("CENTER")
 	name:SetJustifyV("TOP")
-	name:SetFontObject(AzeriteFont16_Outline)
+	name:SetFontObject(AzeriteFont18_Outline)
 	name:SetShadowOffset(0, 0)
 	name:SetShadowColor(0, 0, 0, 0)
 	name:SetTextColor(240/255, 240/255, 240/255, .75)

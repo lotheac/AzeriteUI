@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 14)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 15)
 if (not LibNamePlate) then	
 	return
 end
@@ -1235,13 +1235,13 @@ end
 -- This is where a name plate is first created, 
 -- but it hasn't been assigned a unit (Legion) or shown yet.
 LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
-	local plate = setmetatable(self:CreateFrame("Frame", "Lib" .. (name or baseFrame:GetName()), WorldFrame), NamePlate_MT)
+	local plate = setmetatable(self:CreateFrame("Frame", "CG_" .. (name or baseFrame:GetName()), WorldFrame), NamePlate_MT)
 	plate.frameLevel = FRAMELEVEL_CURRENT -- storing the framelevel
 	plate.targetAlpha = 0
 	plate.currentAlpha = 0
 	plate.colors = Colors
 	plate:Hide()
-	plate:SetFrameStrata("LOW")
+	plate:SetFrameStrata("BACKGROUND")
 	plate:SetAlpha(plate.currentAlpha)
 	plate:SetFrameLevel(plate.frameLevel)
 	plate:SetScale(LibNamePlate.SCALE)

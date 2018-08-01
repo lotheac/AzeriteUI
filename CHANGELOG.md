@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.26] 2018-08-01
+### Changed
+- Moved nameplates to the BACKGROUND strata, to avoid them overlapping the unitframes and other elements.
+- Minimap northtag is now hidden while the XP- and Artifact Power bars are visible.
+- Adjusted positions of minimap texts like the time, zone name, latency and so on. Also adjusted the overlay ring bar texts. 
+- Moved the new mail icon slightly down and closer to the minimap texts.
+- Slightly increased the font size of the unit name in the target unit frame, and moved it slightly up and right towards the portrait.
+- Slighlty increased the font size of the unit level in the target unit frame. 
+
+### Fixed
+- Found and fixed the wrongly named texture path that was causing a big black box instead of a threat texture around the target frame health bar of enemies with a level capped border texture. No more black box!
+
+### Removed
+- Removed a redundant file that was re-applying the faulty taint fix that created taints instead of removing them. We got two bugs for the price of one, when we actually wanted none. Fixed. 
+
 ## [1.0.25] 2018-08-01
 ### Changed
 - Changed the Shaman class color to a non-Mana blue. 

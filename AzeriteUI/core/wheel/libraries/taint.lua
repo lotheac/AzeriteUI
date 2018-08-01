@@ -1,4 +1,4 @@
-local LibTaint = CogWheel:Set("LibTaint", 4)
+local LibTaint = CogWheel:Set("LibTaint", 6)
 if (not LibTaint) then	
 	return
 end
