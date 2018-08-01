@@ -123,6 +123,15 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
+-- Figure out if the player has a XP bar
+local PlayerHasXP = function()
+	local playerLevel = UnitLevel("player")
+	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
+	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
+	local hasXP = (not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax))
+	return hasXP
+end
+
 
 -- Callbacks
 -----------------------------------------------------------------
@@ -228,15 +237,6 @@ end
 
 -- Anything to post update at all?
 local PostUpdateAuraButton = function(element, button)
-end
-
--- Figure out if the player has a XP bar
-local PlayerHasXP = function()
-	local playerLevel = UnitLevel("player")
-	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
-	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
-	local hasXP = (not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax))
-	return hasXP
 end
 
 -- Style Post Updates

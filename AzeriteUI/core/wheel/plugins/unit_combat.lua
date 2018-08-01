@@ -1,4 +1,3 @@
-
 -- Lua API
 local _G = _G
 
@@ -47,6 +46,9 @@ local Enable = function(self)
 		else
 			element:Hide()
 		end
+		if element.Glow then 
+			element.Glow:Hide()
+		end
 
 		self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)
 		self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
@@ -60,6 +62,10 @@ local Disable = function(self)
 	if element then
 		element:Hide()
 
+		if element.Glow then 
+			element.Glow:Hide()
+		end
+
 		self:UnregisterEvent("PLAYER_REGEN_DISABLED", Proxy)
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", Proxy)
 	end
@@ -67,5 +73,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Combat", Enable, Disable, Proxy, 1)
+	Lib:RegisterElement("Combat", Enable, Disable, Proxy, 2)
 end 

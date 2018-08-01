@@ -132,9 +132,11 @@ TooltipStyling.PostCreateTooltip = function(self, tooltip)
 
 	-- Unit tooltips
 	tooltip.colorUnitClass = true -- color the unit class on the info line
+	tooltip.colorUnitPetRarity = true -- color unit names by combat pet rarity
 	tooltip.colorUnitNameClass = true -- color unit names by player class
 	tooltip.colorUnitNameReaction = true -- color unit names by NPC standing
 	tooltip.colorHealthClass = true -- color health bars by player class
+	tooltip.colorHealthPetRarity = true -- color health by combat pet rarity
 	tooltip.colorHealthReaction = true -- color health bars by NPC standing 
 	tooltip.colorHealthTapped = true -- color health bars if unit is tap denied
 	tooltip.colorPower = true -- color power bars by power type

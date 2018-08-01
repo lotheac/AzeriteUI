@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.25] 2018-08-01
+### Changed
+- Changed the Shaman class color to a non-Mana blue. 
+- Made the neutral reaction color more yellow.
+- Unitframe tooltips from battle pets should now have their unit names and health bars colored according to the battle pet's rarity.  
+
+### Fixed
+- Removed a taint fix related to chat frames and overlay glows that created taints instead of fixing them. 
+
 ## [1.0.24] 2018-07-31
 ### Fixed
 - Fixed a nil bug occurring when opening to some addon menus.

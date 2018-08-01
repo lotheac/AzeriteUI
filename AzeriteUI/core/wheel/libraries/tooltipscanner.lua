@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 9)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 11)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -12,8 +12,10 @@ local pairs = pairs
 local select = select
 local string_find = string.find
 local string_gsub = string.gsub
+local string_lower = string.lower
 local string_join = string.join
 local string_match = string.match
+local string_sub = string.sub
 local tonumber = tonumber
 local type = type
 
@@ -552,6 +554,26 @@ LibTooltipScanner.GetTooltipDataForUnit = function(self, unit, tbl)
 			tbl.isPet = true
 			tbl.level = battlePetLevel
 			tbl.effectiveLevel = battlePetLevel
+
+			local line = _G[ScannerName.."TextLeft1"]
+			if line then 
+				msg = line:GetText()
+				if msg then 
+					msg = string_lower(msg)
+					if string_find(msg, "^|cff") then 
+						local color = string_sub(msg, 3, 10)
+						if color then 
+							for i,colors in ipairs(ITEM_QUALITY_COLORS) do 
+								if (colors.color:GenerateHexColor() == color) then 
+									tbl.petRarity = i + 1
+									tbl.rarity = i
+									break
+								end 
+							end 
+						end 
+					end 
+				end 
+			end 
 
 		-- NPCs
 		else 

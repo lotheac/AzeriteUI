@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 27)
+local LibTooltip = CogWheel:Set("LibTooltip", 28)
 if (not LibTooltip) then	
 	return
 end
@@ -300,6 +300,7 @@ local Colors = {
 	-- class and reaction
 	class = prepareGroup(RAID_CLASS_COLORS),
 	reaction = prepareGroup(FACTION_BAR_COLORS),
+	quality = prepareGroup(ITEM_QUALITY_COLORS),
 	
 	-- magic school coloring
 	debuff = prepareGroup(DebuffTypeColor),
@@ -604,20 +605,41 @@ Tooltip.GetUnitHealthColor = function(self, unit)
 		return self:OverideUnitHealthColor(unit)
 	end
 	local r, g, b
-	if ((not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)) then
-		r, g, b = unpack(self.colors.tapped)
-	elseif (not UnitIsConnected(unit)) then
-		r, g, b = unpack(self.colors.disconnected)
-	elseif (UnitIsDeadOrGhost(unit)) then
-		r, g, b = unpack(self.colors.dead)
-	elseif (UnitIsPlayer(unit)) then
-		local _, class = UnitClass(unit)
-		r, g, b = unpack(self.colors.class[class])
-	elseif (UnitReaction(unit, "player")) then
-		r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
-	else
-		r, g, b = 1, 1, 1
-	end
+	if self.data then 
+		if (self.data.isPet and self.data.petRarity) then 
+			r, g, b = unpack(self.colors.quality[self.data.petRarity - 1])
+		else
+			if ((not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)) then
+				r, g, b = unpack(self.colors.tapped)
+			elseif (not UnitIsConnected(unit)) then
+				r, g, b = unpack(self.colors.disconnected)
+			elseif (UnitIsDeadOrGhost(unit)) then
+				r, g, b = unpack(self.colors.dead)
+			elseif (UnitIsPlayer(unit)) then
+				local _, class = UnitClass(unit)
+				r, g, b = unpack(self.colors.class[class])
+			elseif (UnitReaction(unit, "player")) then
+				r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
+			else
+				r, g, b = 1, 1, 1
+			end
+		end 
+	else 
+		if ((not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)) then
+			r, g, b = unpack(self.colors.tapped)
+		elseif (not UnitIsConnected(unit)) then
+			r, g, b = unpack(self.colors.disconnected)
+		elseif (UnitIsDeadOrGhost(unit)) then
+			r, g, b = unpack(self.colors.dead)
+		elseif (UnitIsPlayer(unit)) then
+			local _, class = UnitClass(unit)
+			r, g, b = unpack(self.colors.class[class])
+		elseif (UnitReaction(unit, "player")) then
+			r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
+		else
+			r, g, b = 1, 1, 1
+		end
+	end 
 	if self.PostUpdateUnitHealthColor then
 		return self:PostUpdateUnitHealthColor(unit)
 	end
@@ -1072,7 +1094,7 @@ Tooltip.SetUnit = function(self, unit)
 				if self.showLevelWithName then 
 					self:AddLine(levelText .. colors.quest.gray.colorCode .. ": |r" .. data.name, r, g, b, true)
 				else 
-					self:AddDoubleLine(data.name, levelText, r, g, b, true)
+					self:AddDoubleLine(data.name, levelText, r, g, b, nil, nil, nil, true)
 				end 
 			else
 				self:AddLine(data.name, r, g, b, true)
@@ -1536,6 +1558,11 @@ Tooltip.OnHide = function(self)
 	-- Clear all bar types when hiding the tooltip
 	for i,bar in ipairs(self.bars) do 
 		bar.barType = nil
+	end 
+
+	-- Clear all data when hiding the tooltip
+	for i,v in pairs(self.data) do 
+		self.data[i] = nil
 	end 
 
 	-- Reset the layout

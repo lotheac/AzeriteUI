@@ -221,11 +221,11 @@ local PostCreateAuraButton = function(element, button)
 	local border = button.Overlay:CreateFrame("Frame")
 	border:SetPoint("TOPLEFT", -14 *sizeMod, 14 *sizeMod)
 	border:SetPoint("BOTTOMRIGHT", 14 *sizeMod, -14 *sizeMod)
-	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	border:SetBackdrop({
 		edgeFile = getPath("tooltip_border"),
 		edgeSize = 32 *sizeMod
 	})
+	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 	-- This one we reference, for magic school coloring later on
 	button.Border = border
@@ -543,12 +543,20 @@ local Style = function(self, unit, id, ...)
 
 	-- Combat Indicator
 	local combat = overlay:CreateTexture()
+	combat:SetDrawLayer("OVERLAY", -1)
 	combat:SetSize(80,80)
 	combat:SetPoint("CENTER", self, "BOTTOMLEFT", -41, 22) 
 	combat:SetTexture(getPath("icon-combat"))
 	combat:SetVertexColor(Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75)
 
+	local combatGlow = overlay:CreateTexture()
+	combatGlow:SetDrawLayer("OVERLAY", -1)
+	combatGlow:SetSize(80,80)
+	combatGlow:SetPoint("CENTER", combat, "CENTER", 0, 0) 
+	combatGlow:SetTexture(getPath("icon-combat-glow"))
+
 	self.Combat = combat
+	self.Combat.Glow = combatGlow
 
 
 	-- Auras

@@ -94,7 +94,7 @@ local UpdateValue = function(element, unit, min, max, disconnected, dead, tapped
 		end
 	end
 end 
-
+--UnitIsBattlePet
 local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped)
 	if element.OverrideColor then
 		return element:OverrideColor(unit, min, max, disconnected, dead, tapped)
