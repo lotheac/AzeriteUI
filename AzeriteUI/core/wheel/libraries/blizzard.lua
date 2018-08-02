@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 9)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 10)
 if (not LibBlizzard) then	
 	return
 end
@@ -510,50 +510,6 @@ UIWidgets["UnitFrames"] = function(self)
 end
 
 UIWidgets["WorldMap"] = function(self)
-	local CanAbandonQuest = _G.CanAbandonQuest
-	local GetQuestLogIndexByID = _G.GetQuestLogIndexByID
-	local GetQuestLogPushable = _G.GetQuestLogPushable
-	local IsInGroup = _G.IsInGroup
-	local UIDropDownMenu_AddButton = _G.UIDropDownMenu_AddButton
-	local UIDropDownMenu_CreateInfo = _G.UIDropDownMenu_CreateInfo
-	local UIDropDownMenu_Initialize = _G.UIDropDownMenu_Initialize
-	local QuestMapQuestOptions_AbandonQuest = _G.QuestMapQuestOptions_AbandonQuest
-	local QuestMapQuestOptionsDropDown = _G.QuestMapQuestOptionsDropDown
-
-	-- Remove the blizzard tracking options from the WorldMapFrame, 
-	-- since we're replacing this tracking system with our own.
-	_G.QuestMapQuestOptions_TrackQuest = function() end
-
-	-- Replace the WorldMap questlog dropdown with one without "Track Quest".
-	_G.QuestMapQuestOptionsDropDown_Initialize = function(self)
-		local questLogIndex = GetQuestLogIndexByID(self.questID)
-		local info = UIDropDownMenu_CreateInfo()
-		info.isNotRadio = true
-		info.notCheckable = true
-
-		info.text = SHARE_QUEST
-		info.func = function(_, questID) QuestMapQuestOptions_ShareQuest(questID) end
-		info.arg1 = self.questID
-
-		if ( not GetQuestLogPushable(questLogIndex) or not IsInGroup() ) then
-			info.disabled = 1
-		end
-
-		UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL)
-
-		if CanAbandonQuest(self.questID) then
-			info.text = ABANDON_QUEST
-			info.func = function(_, questID) QuestMapQuestOptions_AbandonQuest(questID) end
-			info.arg1 = self.questID
-			info.disabled = nil
-			UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL)
-		end
-	end
-
-	QuestMapQuestOptionsDropDown.questID = 0
-
-	UIDropDownMenu_Initialize(QuestMapQuestOptionsDropDown, QuestMapQuestOptionsDropDown_Initialize, "MENU")
-
 end 
 
 UIWidgets["WorldState"] = function(self)

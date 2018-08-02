@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.27] 2018-08-02
+### Changed
+- Threat coloring is now only visible in grouped instances.
+- Class resources are now only visible when the target can be attacked.
+- Chat frames, breath timers and Azerite styled tooltips should now follow the rest of the non-Blizzard parts in scaling.
+
+### Fixed
+- Fixed an issue where sometimes after a major lagspike the minimap post update could attempt to resize it in combat and cause a taint. 
+
 ## [1.0.26] 2018-08-01
 ### Changed
 - Moved nameplates to the BACKGROUND strata, to avoid them overlapping the unitframes and other elements.

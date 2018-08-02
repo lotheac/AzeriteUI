@@ -5,7 +5,7 @@ if (not AzeriteUI) then
 	return 
 end
 
-local ChatWindows = AzeriteUI:NewModule("ChatWindows", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
+local ChatWindows = AzeriteUI:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
@@ -163,20 +163,71 @@ ChatWindows.UpdateChatWindowButtons = function(self, frame)
 	end
 end 
 
+ChatWindows.UpdateChatWindowScale = function(self, frame)
+	local targetScale = self:GetFrame("UICenter"):GetEffectiveScale()
+	local parentScale = frame:GetParent():GetScale()
+	local scale = targetScale / parentScale
+
+	frame:SetScale(scale)
+
+	local buttonFrame = self:GetChatWindowButtonFrame(frame)
+	local scrollToBottomButton = self:GetChatWindowScrollToBottomButton(frame)
+	if buttonFrame then 
+		buttonFrame:SetWidth(48/scale)
+		buttonFrame:SetScale(scale)
+	end 
+
+	-- Chat tabs are direct descendants of the general dock manager, 
+	-- which in turn is a direct descendant of UIParent
+	local windowTab = self:GetChatWindowTab(frame)
+	if windowTab then 
+		windowTab:SetScale(scale)
+	end 
+
+	-- The editbox is a child of the chat frame
+	local editBox = self:GetChatWindowEditBox(frame)
+	if editBox then 
+		editBox:SetScale(1)
+	end 
+
+	local scrollBar = self:GetChatWindowScrollBar(frame)
+	local scrollThumb = self:GetChatWindowScrollBarThumbTexture(frame)
+	if scrollBar then 
+		scrollBar:SetScale(scale)
+	end
+
+end
+
 ChatWindows.UpdateChatWindowScales = function(self)
-	local scale = UIParent:GetEffectiveScale() / self:GetFrame("UICenter"):GetEffectiveScale()
+
+	local targetScale = self:GetFrame("UICenter"):GetEffectiveScale()
+	local parentScale = UIParent:GetScale()
+	local scale = targetScale / parentScale
+
+	local channelButton = self:GetChatWindowChannelButton()
+	if channelButton then 
+		channelButton:SetScale(scale)
+	end 
+
+	local deafenButton = self:GetChatWindowVoiceDeafenButton()
+	if deafenButton then 
+		deafenButton:SetScale(scale)
+	end 
+
+	local muteButton =self:GetChatWindowVoiceMuteButton()
+	if muteButton then 
+		muteButton:SetScale(scale)
+	end 
+
+	local menuButton = self:GetChatWindowMenuButton()
+	if menuButton then 
+		menuButton:SetScale(scale)
+	end 
 
 	for _,frameName in self:GetAllChatWindows() do 
 		local frame = _G[frameName]
 		if frame then 
-			local parent = frame:GetParent()
-			local w,h = parent:GetSize()
-			local point, anchor, rpoint, x, y = parent:GetPoint()
-
-			frame:SetScale(scale)
-			frame:SetSize(w, h)
-			frame:ClearAllPoints()
-			frame:SetPoint(point, anchor, rpoint, x/scale, y/scale)
+			self:UpdateChatWindowScale(frame)
 		end 
 	end 
 end 
@@ -266,6 +317,9 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 	-- Set the frame's alpha and color
 	FCF_SetWindowColor(frame, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(frame, 0, 1)
+
+	-- Update the scale of this window
+	self:UpdateChatWindowScale(frame)
 
 
 	-- Tabs
@@ -400,8 +454,10 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 	-- ButtonFrame
 	------------------------------
+
 	local buttonFrame = self:GetChatWindowButtonFrame(frame)
 	buttonFrame:SetWidth(48)
+
 	for tex in self:GetChatWindowButtonFrameTextures(frame) do 
 		tex:SetTexture(nil)
 		tex:SetAlpha(0)
@@ -555,7 +611,7 @@ ChatWindows.SetUpMainFrames = function(self)
 	-- when the font is originally defined, 
 	-- and any scaling later on is applied to that pixel font, 
 	-- not to the original vector font. 
-	local frame = self:CreateFrame("Frame")
+	local frame = self:CreateFrame("Frame", nil, "UICenter")
 	frame:SetPoint("LEFT", 85, 0)
 	frame:SetSize(519, 196)
 
@@ -656,6 +712,11 @@ end
 
 ChatWindows.OnEvent = function(self, event, ...)
 	self:UpdateMainWindowButtonDisplay()
+
+	-- Do this cause taint? Shouldn't, but you never know. 
+	if ((event == "CG_INTERFACE_SCALE_UPDATE") or (event == "CG_WORLD_SCALE_UPDATE")) then 
+		self:UpdateChatWindowScales()
+	end 
 end 
 
 ChatWindows.OnInit = function(self)
@@ -663,6 +724,7 @@ ChatWindows.OnInit = function(self)
 	self:SetUpScrollScripts()
 	self:SetUpMainFrames()
 	self:SetUpMainButtons()
+	self:UpdateChatWindowScales()
 end 
 
 ChatWindows.OnEnable = function(self)
@@ -675,4 +737,6 @@ ChatWindows.OnEnable = function(self)
 	self:RegisterEvent("VOICE_CHAT_CHANNEL_MEMBER_MUTE_FOR_ME_CHANGED", "OnEvent")
 	self:RegisterEvent("VOICE_CHAT_CHANNEL_MEMBER_MUTE_FOR_ALL_CHANGED", "OnEvent")
 	self:RegisterEvent("VOICE_CHAT_CHANNEL_MEMBER_SILENCED_CHANGED", "OnEvent")
+	self:RegisterMessage("CG_INTERFACE_SCALE_UPDATE", "OnEvent")
+	self:RegisterMessage("CG_WORLD_SCALE_UPDATE", "OnEvent")
 end 

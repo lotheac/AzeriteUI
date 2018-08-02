@@ -4,7 +4,7 @@ if (not AzeriteUI) then
 	return 
 end
 
-local BlizzardMirrorTimers = AzeriteUI:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent")
+local BlizzardMirrorTimers = AzeriteUI:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent", "LibFrame")
 local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
 
 -- Lua API
@@ -81,6 +81,7 @@ BlizzardMirrorTimers.StyleTimer = function(self, frame)
 	local timer = self.timers[frame]
 
 	local frame = timer.frame -- now why, just why?
+	frame:SetParent(self:GetFrame("UICenter")) -- no taints from this, right?
 	frame:SetFrameLevel(frame:GetFrameLevel() + 10)
 
 	-- Just get rid of everything. Everything!
@@ -157,6 +158,7 @@ BlizzardMirrorTimers.StyleMirrorTimers = function(self)
 
 		-- Initial styling of newly discovered mirror timers
 		if (frame and (not timers[frame])) then 
+
 			name  = "MirrorTimer"..i
 
 			timers[frame] = {}

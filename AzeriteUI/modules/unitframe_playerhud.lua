@@ -501,6 +501,9 @@ local Style = function(self, unit, id, ...)
 	classPower:SetSize(2,2) -- minimum size, this is really just an anchor
 	classPower:Place("CENTER", "UICenter", "CENTER", 0, 0) -- center it smack in the middle of the screen
 
+	-- Only show it on hostile targets
+	classPower.hideWhenUnattackable = true
+
 	-- Maximum points displayed regardless 
 	-- of max value and available point frames.
 	-- This does not affect runes, which still require 6 frames.

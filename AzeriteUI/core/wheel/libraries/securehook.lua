@@ -1,4 +1,4 @@
-local LibSecureHook = CogWheel:Set("LibSecureHook", 3)
+local LibSecureHook = CogWheel:Set("LibSecureHook", 5)
 if (not LibSecureHook) then	
 	return
 end
@@ -90,7 +90,7 @@ LibSecureHook.SetSecureHook = function(self, ...)
 		local global, hook, uniqueID = ...
 
 		check(global, 1, "string")
-		check(hook, 2, "function")
+		check(hook, 2, "function", "string")
 		check(uniqueID, 3, "string", "nil")
 
 		local ref = _G[global]
@@ -103,10 +103,18 @@ LibSecureHook.SetSecureHook = function(self, ...)
 			local list = { list = {}, unique = {} }
 			local call = function(...)
 				for id,func in pairs(list.unique) do 
-					func(...)
+					if (type(func) == "string") then 
+						self[func](self, id, ...)
+					else
+						func(...)
+					end 
 				end 
 				for _,func in ipairs(list.list) do 
-					func(...)
+					if (type(func) == "string") then 
+						self[func](self, global, ...)
+					else
+						func(...)
+					end 
 				end 
 			end 
 			hooksecurefunc(global, call)
@@ -136,7 +144,7 @@ LibSecureHook.SetSecureHook = function(self, ...)
 
 		check(global, 1, "table")
 		check(method, 2, "string")
-		check(hook, 3, "function")
+		check(hook, 3, "function", "string")
 		check(uniqueID, 4, "string", "nil")
 
 		local ref = global[method]
@@ -149,10 +157,20 @@ LibSecureHook.SetSecureHook = function(self, ...)
 			local list = { list = {}, unique = {} }
 			local call = function(...)
 				for id,func in pairs(list.unique) do 
-					func(...)
+					if (type(func) == "string") then 
+						self[func](self, id, ...)
+					else
+						func(...)
+					end 
+	
 				end 
 				for _,func in ipairs(list.list) do 
-					func(...)
+					if (type(func) == "string") then 
+						self[func](self, method, ...)
+					else
+						func(...)
+					end 
+	
 				end 
 			end 
 			hooksecurefunc(global, method, call)

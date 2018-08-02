@@ -964,10 +964,14 @@ Minimap.UpdateMinimapMask = function(self)
 end 
 
 -- Set the size and position 
+-- Can't change this in combat, will cause taint!
 Minimap.UpdateMinimapSize = function(self)
+	if InCombatLockdown() then 
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	end
+
 	self:SetMinimapSize(213, 213) 
 	self:SetMinimapPosition("BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -58, 59) 
-	--self:SetMinimapPosition("BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -53, 59) 
 end 
 
 -- Update alpha of information area
@@ -1002,8 +1006,12 @@ Minimap.OnEvent = function(self, event, ...)
 		return self:UpdateInformationDisplay()
 	end 
 
-	self:UpdateMinimapMask()
+	if (event == "PLAYER_REGEN_ENABLED") then 
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	end
+
 	self:UpdateMinimapSize()
+	self:UpdateMinimapMask()
 	self:UpdateInformationDisplay()
 	self:UpdateBars()
 end 

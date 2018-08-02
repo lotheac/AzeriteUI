@@ -479,6 +479,7 @@ local Style = function(self, unit, id, ...)
 	-- Threat
 	-----------------------------------------------------------	
 	local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
+	threats.hideSolo = true
 
 	local threatHealth = backdrop:CreateTexture()
 	threatHealth:SetDrawLayer("BACKGROUND", -2)

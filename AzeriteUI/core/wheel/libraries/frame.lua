@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 33)
+local LibFrame = CogWheel:Set("LibFrame", 37)
 if (not LibFrame) then	
 	return
 end
@@ -61,7 +61,7 @@ do
 	local width, height = WorldFrame:GetSize()
 
 	-- Round to nearest integer, 
-	-- as blizzard values tend to be inaccurate.
+	-- as blizz values tend to be inaccurate.
 	width = (width + .5) - width%1
 	height = (height + .5) - height%1
 
@@ -104,11 +104,15 @@ local VisibilityFrame = LibFrame.frameParent
 local Frame = CreateFrame("Frame", nil, WorldFrame) -- parented to world frame to keep running even if the UI is hidden
 local FrameMethods = getmetatable(Frame).__index
 
-local blizzardCreateFontString = FrameMethods.CreateFontString
-local blizzardCreateTexture = FrameMethods.CreateTexture
-local blizzardRegisterEvent = FrameMethods.RegisterEvent
-local blizzardUnregisterEvent = FrameMethods.UnregisterEvent
-local blizzardIsEventRegistered = FrameMethods.IsEventRegistered
+local blizzCreateFontString = FrameMethods.CreateFontString
+local blizzCreateTexture = FrameMethods.CreateTexture
+local blizzRegisterEvent = FrameMethods.RegisterEvent
+local blizzUnregisterEvent = FrameMethods.UnregisterEvent
+local blizzIsEventRegistered = FrameMethods.IsEventRegistered
+
+local blizzSetSize = FrameMethods.SetSize
+local blizzSetWidth = FrameMethods.SetWidth
+local blizzSetHeight = FrameMethods.SetHeight
 
 
 -- Utility Functions
@@ -207,12 +211,12 @@ framePrototype = {
 		return frame
 	end,
 	CreateFontString = function(self, ...)
-		local fontString = embed(blizzardCreateFontString(self, ...), frameWidgetPrototype)
+		local fontString = embed(blizzCreateFontString(self, ...), frameWidgetPrototype)
 		fontStrings[fontString] = true
 		return fontString
 	end,
 	CreateTexture = function(self, ...)
-		local texture = embed(blizzardCreateTexture(self, ...), frameWidgetPrototype)
+		local texture = embed(blizzCreateTexture(self, ...), frameWidgetPrototype)
 		textures[texture] = true
 		return texture
 	end
@@ -291,7 +295,7 @@ LibFrame.UpdateDisplaySize = function(self, width, height)
 	end 
 
 	-- Round to nearest integer, 
-	-- as blizzard values tend to be inaccurate.
+	-- as blizz values tend to be inaccurate.
 	width = (width + .5) - width%1
 	height = (height + .5) - height%1
 
@@ -330,8 +334,20 @@ LibFrame.UpdateVisibility = function(self)
 	end 
 end 
 
+LibFrame.UpdateMinimapVisibility = function(self)
+	-- Was the map shown?
+	local shown = Minimap:IsShown()
+
+	-- Don't allow the map to be forced back in when the UI is hidden 
+	if (self.minimapLibraryHidden and shown) then 
+		Minimap:Hide()
+	end 
+
+	-- Still update the variable(?)
+	self.minimapUserHidden = not shown
+end
+
 LibFrame.OnEvent = function(self, event, ...)
-	
 	-- Always update the visibility, don't want to get stuck with no UI!
 	-- *this is just alpha, doesn't require us to be out of combat.
 	self:UpdateVisibility()
@@ -360,31 +376,22 @@ LibFrame.Enable = function(self)
 	-- New system only needs to capture changes and events
 	-- affecting display size or the cinematic frame visibility.
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+
+	-- Register for changes to the parent frames
+	self:RegisterMessage("CG_WORLD_SCALE_UPDATE", "OnEvent")
+	self:RegisterMessage("CG_INTERFACE_SCALE_UPDATE", "OnEvent")
 	
 	-- Could it be enough to just track frame changes and not events?
-	self:SetHook(WorldFrame, "OnSizeChanged", function() self:UpdateDisplaySize() end, "LibFrame_WorldFrame_OnSizeChanged")
-	self:SetHook(CinematicFrame, "OnShow", function() self:UpdateVisibility() end, "LibFrame_CinematicFrame_OnShow")
-	self:SetHook(CinematicFrame, "OnHide", function() self:UpdateVisibility() end, "LibFrame_CinematicFrame_OnHide")
-	self:SetSecureHook("SetUIVisibility", function() self:UpdateVisibility() end, "LibFrame_SetUIVisibility")
-	self:SetSecureHook("ToggleMinimap", function() 
-
-		-- Was the map shown?
-		local shown = Minimap:IsShown()
-
-		-- Don't allow the map to be forced back in when the UI is hidden 
-		if (self.minimapLibraryHidden and shown) then 
-			Minimap:Hide()
-		end 
-
-		-- Still update the variable(?)
-		self.minimapUserHidden = not shown
-
-	end, "LibFrame_ToggleMinimap")
+	self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
+	self:SetHook(CinematicFrame, "OnShow", "UpdateVisibility", "LibFrame_CinematicFrame_OnShow")
+	self:SetHook(CinematicFrame, "OnHide", "UpdateVisibility", "LibFrame_CinematicFrame_OnHide")
+	self:SetSecureHook("SetUIVisibility", "UpdateVisibility", "LibFrame_SetUIVisibility")
+	self:SetSecureHook("ToggleMinimap", "UpdateMinimapVisibility", "LibFrame_ToggleMinimap")
 
 end 
 
 LibFrame:UnregisterAllEvents()
-LibFrame:RegisterEvent("PLAYER_ENTERING_WORLD", "Enable")
+LibFrame:Enable()
 
 
 -- Module embedding

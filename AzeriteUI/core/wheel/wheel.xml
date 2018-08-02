@@ -10,6 +10,7 @@
 	<Script file="libraries\securehook.lua"/>
 	<Script file="libraries\message.lua"/>
 	<Script file="libraries\event.lua"/>
+	<Script file="libraries\scale.lua"/>
 	<Script file="libraries\db.lua"/>
 	<Script file="libraries\module.lua"/>
 	<Script file="libraries\frame.lua"/>

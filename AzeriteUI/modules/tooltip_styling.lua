@@ -124,7 +124,10 @@ end
 -- This will be called by the library upon creating new tooltips.
 TooltipStyling.PostCreateTooltip = function(self, tooltip)
 
-	-- tooltip flags are not implemented yet!
+	-- many tooltip flags are not implemented yet!
+
+	-- Turn off UIParent scale matching
+	tooltip:SetCValue("autoCorrectScale", false)
 
 	-- What items will be displayed automatically when available
 	tooltip.showHealthBar =  true

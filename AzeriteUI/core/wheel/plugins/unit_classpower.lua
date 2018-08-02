@@ -33,6 +33,7 @@ local GetRuneCooldown = _G.GetRuneCooldown
 local GetSpecialization = _G.GetSpecialization
 local IsPlayerSpell = _G.IsPlayerSpell
 local UnitAffectingCombat = _G.UnitAffectingCombat
+local UnitCanAttack = _G.UnitCanAttack
 local UnitHasVehiclePlayerFrameUI = _G.UnitHasVehiclePlayerFrameUI
 local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
@@ -166,10 +167,11 @@ local Generic = setmetatable({
 		local color = self.colors.power[powerType] 
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.maxDisplayed or element.max or max
-	
+
 		-- Has the module chosen to only show this with an active target,
 		-- or has the module chosen to hide all when empty?
 		if (element.hideWhenNoTarget and (not UnitExists("target"))) 
+		or (element.hideWhenUnattackable and (not UnitCanAttack("player", "target"))) 
 		or (element.hideWhenEmpty and (min == 0)) then 
 			for i = 1, maxDisplayed do
 				local point = element[i]
@@ -681,10 +683,11 @@ ClassPower.Stagger = setmetatable({
 
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.maxDisplayed or element.max or max
-	
+
 		-- Has the module chosen to only show this with an active target,
 		-- or has the module chosen to hide all when empty?
-		if (element.hideWhenNoTarget and (not UnitExists("target"))) 
+		if (element.hideWhenNoTarget and (not UnitExists("target")))
+		or (element.hideWhenUnattackable and (not UnitCanAttack("player", "target"))) 
 		or (element.hideWhenEmpty and (min == 0)) then 
 			for i = 1, maxDisplayed do
 				local point = element[i]
@@ -915,5 +918,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 14)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 15)
 end 

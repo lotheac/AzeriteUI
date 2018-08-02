@@ -1,4 +1,4 @@
-local LibHook = CogWheel:Set("LibHook", 1)
+local LibHook = CogWheel:Set("LibHook", 3)
 if (not LibHook) then	
 	return
 end
@@ -65,7 +65,7 @@ end
 LibHook.SetHook = function(self, frame, handler, hook, uniqueID)
 	check(frame, 1, "table")
 	check(handler, 2, "string")
-	check(hook, 3, "function")
+	check(hook, 3, "function", "string")
 
 	if (not Hooks[frame]) then 
 		Hooks[frame] = {}
@@ -78,10 +78,18 @@ LibHook.SetHook = function(self, frame, handler, hook, uniqueID)
 		local hookList = Hooks[frame][handler]
 		frame:HookScript(handler, function(...)
 			for id,func in pairs(hookList.unique) do 
-				func(...)
+				if (type(func) == "string") then 
+					self[func](self, id, ...)
+				else
+					func(...)
+				end 
 			end 
 			for _,func in ipairs(hookList.list) do 
-				func(...)
+				if (type(func) == "string") then 
+					self[func](self, handler, ...)
+				else
+					func(...)
+				end 
 			end 
 		end)
 	end 
