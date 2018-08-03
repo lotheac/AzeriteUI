@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 37)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 38)
 if (not LibUnitFrame) then	
 	return
 end

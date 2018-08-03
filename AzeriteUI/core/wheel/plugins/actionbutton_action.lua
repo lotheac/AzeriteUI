@@ -817,4 +817,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 19)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 21)

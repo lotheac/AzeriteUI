@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 28)
+local LibTooltip = CogWheel:Set("LibTooltip", 29)
 if (not LibTooltip) then	
 	return
 end
@@ -987,6 +987,14 @@ Tooltip.SetAction = function(self, slot)
 		self:Hide()
 		return
 	end
+
+	-- Switch to item function if the action is an item
+	local actionType, id = GetActionInfo(slot)
+	if (actionType == "item") then 
+		return self:SetActionItem(slot)
+	end 
+
+	-- Continue normally if it's a normal character action
 	local data = self:GetTooltipDataForAction(slot, self.data)
 	if data then 
 
@@ -1000,7 +1008,7 @@ Tooltip.SetAction = function(self, slot)
 
 		-- Action Title
 		if data.schoolType then 
-			self:AddDoubleLine(data.name, data.schoolType, colors.title[1], colors.title[2], colors.title[3], colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true, true	)
+			self:AddDoubleLine(data.name, data.schoolType, colors.title[1], colors.title[2], colors.title[3], colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true, true)
 		else 
 			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
 		end 
@@ -1051,6 +1059,139 @@ Tooltip.SetAction = function(self, slot)
 
 		self:Show()
 	end 
+end 
+
+Tooltip.SetActionItem = function(self, slot)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+	local data = self:GetTooltipDataForActionItem(slot, self.data)
+	if data then 
+
+		-- Because a millionth of a second matters.
+		local colors = self.colors
+
+		local offwhiteR, offwhiteG, offwhiteB = colors.offwhite[1], colors.offwhite[2], colors.offwhite[3]
+
+		-- Shouldn't be any bars here, but if for some reason 
+		-- the tooltip wasn't properly hidden before this, 
+		-- we make sure the bars are reset!
+		self:ClearStatusBars(true) -- suppress layout updates
+
+		-- item name and item level on top
+		if data.itemLevel then 
+			self:AddDoubleLine(data.itemName, data.itemLevel, colors.quality[data.itemRarity][1], colors.quality[data.itemRarity][2], colors.quality[data.itemRarity][3], colors.normal[1], colors.normal[2], colors.normal[3], true)
+		else 
+			self:AddLine(data.itemName, colors.quality[data.itemRarity][1], colors.quality[data.itemRarity][2], colors.quality[data.itemRarity][3], true)
+		end 
+
+		-- item bind status
+		if data.itemIsBound then 
+			self:AddLine(data.itemBind, offwhiteR, offwhiteG, offwhiteB)
+		end 
+
+		-- item unique status
+
+
+		-- item equip location and type
+		if (data.itemEquipLoc and (data.itemEquipLoc ~= "")) then 
+			local itemType
+			if data.itemType then 
+				if data.itemEquipLoc ~= "INVTYPE_TRINKET" and data.itemEquipLoc ~= "INVTYPE_FINGER" and data.itemEquipLoc ~= "INVTYPE_NECK" then 
+					itemType = data.itemSubType or data.itemType
+				end 
+			end 
+			if (itemType) then
+				self:AddDoubleLine(_G[data.itemEquipLoc], itemType, offwhiteR, offwhiteG, offwhiteB, offwhiteR, offwhiteG, offwhiteB)
+			else 
+				self:AddLine(_G[data.itemEquipLoc], offwhiteR, offwhiteG, offwhiteB)
+			end 
+
+		elseif (data.itemType or data.itemSubType) then 
+			self:AddLine(data.itemSubType or data.itemType, offwhiteR, offwhiteG, offwhiteB)
+		end 
+
+		-- damage and speed
+		if (data.itemDamageMin and data.itemDamageMax) then 
+			if data.itemSpeed then 
+				self:AddDoubleLine(string_format(DAMAGE_TEMPLATE, math_floor(data.itemDamageMin), math_floor(data.itemDamageMax)), string_format("%s %s", ITEM_MOD_CR_SPEED_SHORT, data.itemSpeed), colors.highlight[1], colors.highlight[2], colors.highlight[3], offwhiteR, offwhiteG, offwhiteB)
+				
+			else 
+				self:AddLine(string_format(DAMAGE_TEMPLATE, math_floor(data.itemDamageMin), math_floor(data.itemDamageMax)), colors.highlight[1], colors.highlight[2], colors.highlight[3])
+			end 
+		end 
+
+		-- damage pr second
+		if data.itemDPS then 
+			self:AddLine(string_format(DPS_TEMPLATE, string_format("%.1f", data.itemDPS+.05)), colors.highlight[1], colors.highlight[2], colors.highlight[3])
+		end 
+
+		local stat1R, stat1G, stat1B = colors.normal[1], colors.normal[2], colors.normal[3]
+		local statR, statG, statB = colors.quest.green[1], colors.quest.green[2], colors.quest.green[3] 
+		
+		-- armor 
+		if (data.itemArmor and (data.itemArmor ~= 0)) then 
+			self:AddLine(string_format("%s %s", (data.itemArmor > 0) and ("+"..tostring(data.itemArmor)) or tostring(data.itemArmor), RESISTANCE0_NAME), offwhiteR, offwhiteG, offwhiteB)
+		end 
+		
+		-- block 
+		if data.itemBlock and (data.itemBlock ~= 0) then 
+			self:AddLine(string_format("%s %s", (data.itemBlock > 0) and ("+"..tostring(data.itemBlock)) or tostring(data.itemBlock), ITEM_MOD_BLOCK_RATING_SHORT), offwhiteR, offwhiteG, offwhiteB)
+		end 
+
+		-- parry?
+
+		-- primary stat
+		if data.primaryStatValue and (data.primaryStatValue ~= 0) then 
+			self:AddLine(string_format("%s %s", (data.primaryStatValue > 0) and ("+"..tostring(data.primaryStatValue)) or tostring(data.primaryStatValue), data.primaryStat), stat1R, stat1G, stat1B)
+
+		end 
+
+		-- stamina
+		if data.itemStamina and (data.itemStamina ~= 0) then 
+			self:AddLine(string_format("%s %s", (data.itemStamina > 0) and ("+"..tostring(data.itemStamina)) or tostring(data.itemStamina), ITEM_MOD_STAMINA_SHORT), stat1R, stat1G, stat1B)
+
+		end 
+
+		-- secondary stats
+		if data.sorted2ndStats then 
+			for _,stat in ipairs(data.sorted2ndStats) do 
+				self:AddLine(stat, colors.quest.green[1], colors.quest.green[2], colors.quest.green[3])
+			end 
+		end 
+
+		-- no benefit stats
+		if data.uselessStats then 
+			for key,value in pairs(data.uselessStats) do 
+				self:AddLine(string_format("%s %s", (value > 0) and ("+"..tostring(value)) or tostring(value), _G[key]), colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3])
+			end 
+		end 
+
+		-- use effect
+		-- equip effect
+		-- description
+
+		-- durability
+		if data.itemDurability then 
+			self:AddLine(string_format(DURABILITY_TEMPLATE, data.itemDurability, data.itemDurabilityMax), offwhiteR, offwhiteG, offwhiteB)
+		end 
+
+
+		-- sell value
+
+
+		self:Show()
+	end 
+end
+
+Tooltip.SetItem = function(self, item)
+end 
+
+Tooltip.SetItemID = function(self, itemID)
+end 
+
+Tooltip.SetItemLink = function(self, itemLink)
 end 
 
 Tooltip.SetUnit = function(self, unit)
@@ -1187,6 +1328,14 @@ Tooltip.SetUnitAura = function(self, unit, auraID, filter)
 
 			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
 
+			if data.description then 
+				self:AddLine(data.description, colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true)
+			end 
+
+			if data.timeRemaining then 
+				self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
+			end 
+
 			self:Show()
 		end 
 	end 
@@ -1248,6 +1397,13 @@ Tooltip.SetUnitDebuff = function(self, unit, debuffID, filter)
 
 			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
 
+			if data.description then 
+				self:AddLine(data.description, colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true)
+			end 
+
+			if data.timeRemaining then 
+				self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
+			end 
 
 			self:Show()
 		end 

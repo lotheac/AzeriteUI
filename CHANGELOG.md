@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.28] 2018-08-03
+### Added
+- Added health percentage on the target unit frame for bosses.
+- Added item tooltips for actionbuttons containing items and not actions or spells.
+
+### Changed
+- The small boss only unit frames now display a health number when at full health, but a percentage value only once the fight has begun and their health started dropping. Gotta see when they hit those magic percentages linked to their abilities! 
+
 ## [1.0.27] 2018-08-02
 ### Changed
 - Threat coloring is now only visible in grouped instances.

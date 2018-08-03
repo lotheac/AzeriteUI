@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 11)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 12)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -11,6 +11,7 @@ local error = error
 local pairs = pairs
 local select = select
 local string_find = string.find
+local string_format = string.format
 local string_gsub = string.gsub
 local string_lower = string.lower
 local string_join = string.join
@@ -29,9 +30,14 @@ local GetActionLossOfControlCooldown = _G.GetActionLossOfControlCooldown
 local GetActionText = _G.GetActionText
 local GetActionTexture = _G.GetActionTexture
 local GetDetailedItemLevelInfo = _G.GetDetailedItemLevelInfo 
+local GetGuildBankItemInfo = _G.GetSpecializationRole
 local GetGuildInfo = _G.GetGuildInfo
 local GetItemInfo = _G.GetItemInfo
 local GetItemQualityColor = _G.GetItemQualityColor
+local GetItemStats = _G.GetItemStats
+local GetSpecialization = _G.GetSpecialization
+local GetSpecializationInfo = _G.GetSpecializationInfo
+local GetSpecializationRole = _G.GetSpecializationRole
 local HasAction = _G.HasAction
 local IsActionInRange = _G.IsActionInRange
 local UnitBattlePetLevel = _G.UnitBattlePetLevel
@@ -83,10 +89,16 @@ local Constants = {
 	RechargeTimeRemaining2 = _G.SPELL_RECHARGE_TIME_MIN,
 	RechargeTimeRemaining3 = _G.SPELL_RECHARGE_TIME_SEC,
 
-	ItemAccountBound = _G.ITEM_ACCOUNTBOUND,
-	ItemBnetBound = _G.ITEM_BNETACCOUNTBOUND,
+	ItemBoundAccount = _G.ITEM_ACCOUNTBOUND,
+	ItemBoundBnet = _G.ITEM_BNETACCOUNTBOUND,
+	ItemBoundSoul = _G.ITEM_SOULBOUND,
+	ItemBlock = _G.SHIELD_BLOCK_TEMPLATE,
+	ItemDamage = _G.DAMAGE_TEMPLATE,
+	ItemDurability = _G.DURABILITY_TEMPLATE,
 	ItemLevel = _G.ITEM_LEVEL,
-	ItemSoulBound = _G.ITEM_SOULBOUND,
+	ItemUnique = _G.ITEM_UNIQUE, -- "Unique"
+	ItemUniqueEquip = _G.ITEM_UNIQUE_EQUIPPABLE, -- "Unique-Equipped"
+	ItemUniqueMultiple = _G.ITEM_UNIQUE_MULTIPLE, -- "Unique (%d)"
 	Level = _G.LEVEL,
 
 	RangeCaster = _G.SPELL_RANGE_AREA,
@@ -94,7 +106,6 @@ local Constants = {
 	RangeSpell = _G.SPELL_RANGE, -- SPELL_RANGE_DUAL = "%1$s: %2$s yd range"
 	RangeUnlimited = _G.SPELL_RANGE_UNLIMITED, 
 }
-
 
 -- Listing them for personal reference
 --FRIENDS_LEVEL_TEMPLATE = "Level %d %s"
@@ -172,6 +183,9 @@ local Constants = {
 local Patterns = {
 
 	ContainerSlots = 			"^" .. string_gsub(string_gsub(Constants.ContainerSlots, "%%d", "(%%d+)"), "%%s", "(%.+)"),
+	ItemBlock = 				"^" .. string_gsub(string_gsub(Constants.ItemBlock, "%%d", "(%%d+)"), "%%s", "(%%w)"),
+	ItemDamage = 				"^" .. string_gsub(string_gsub(Constants.ItemDamage, "%%s", "(%%d+)"), "%-", "%%-"),
+	ItemDurability = 			"^" .. string_gsub(Constants.ItemDurability, "%%d", "(%%d+)"),
 	ItemLevel = 				"^" .. string_gsub(Constants.ItemLevel, "%%d", "(%%d+)"),
 	Level = 						   Constants.Level,
 
@@ -190,15 +204,26 @@ local Patterns = {
 	CastTime2 = 				"^" .. string_gsub(Constants.CastTimeSec, "%%%.%dg", "(%.+)"),
 	CastTime3 = 				"^" .. string_gsub(Constants.CastTimeMin, "%%%.%dg", "(%.+)"),
 
-	-- Cooldown/Recharge Remaining
+	-- CooldownRemaining
 	CooldownTimeRemaining1 = 		   string_gsub(Constants.CooldownTimeRemaining1, "%%d", "(%%d+)"), 
 	CooldownTimeRemaining2 = 		   string_gsub(Constants.CooldownTimeRemaining2, "%%d", "(%%d+)"), 
 	CooldownTimeRemaining3 = 		   string_gsub(Constants.CooldownTimeRemaining3, "%%d", "(%%d+)"), 
 
+	-- Item binds 
+	ItemBind1 = 				"^" .. Constants.ItemBoundSoul, 
+	ItemBind2 = 				"^" .. Constants.ItemBoundAccount, 
+	ItemBind3 = 				"^" .. Constants.ItemBoundBnet, 
+
+	-- Item unique status
+	ItemUnique1 = 				"^" .. Constants.ItemUnique,
+	ItemUnique2 = 				"^" .. Constants.ItemUniqueEquip,
+	ItemUnique3 = 				"^" .. string_gsub(Constants.ItemUniqueMultiple, "%%d", "(%%d+)"),
+
+	-- Recharge Remaining
 	RechargeTimeRemaining1 = 	"^" .. string_gsub(Constants.RechargeTimeRemaining1, "%%d", "(%%d+)"), 
 	RechargeTimeRemaining2 = 	"^" .. string_gsub(Constants.RechargeTimeRemaining2, "%%d", "(%%d+)"), 
 	RechargeTimeRemaining3 = 	"^" .. string_gsub(Constants.RechargeTimeRemaining3, "%%d", "(%%d+)"), 
-
+	
 	-- Spell Range
 	Range1 = 					"^" .. Constants.RangeMelee,
 	Range2 = 					"^" .. Constants.RangeUnlimited,
@@ -207,6 +232,46 @@ local Patterns = {
 
 }
 
+
+local isPrimaryStat = {
+	ITEM_MOD_STRENGTH_SHORT = true,
+	ITEM_MOD_AGILITY_SHORT = true,
+	ITEM_MOD_INTELLECT_SHORT = true,
+}
+
+local isSecondaryStat = {
+	ITEM_MOD_CRIT_RATING_SHORT = true, 
+	ITEM_MOD_HASTE_RATING_SHORT = true, 
+	ITEM_MOD_MASTERY_RATING_SHORT = true, 
+	ITEM_MOD_VERSATILITY = true, 
+
+	ITEM_MOD_CR_LIFESTEAL_SHORT = true, 
+	ITEM_MOD_CR_AVOIDANCE_SHORT = true, 
+	ITEM_MOD_CR_SPEED_SHORT = true, 
+
+	ITEM_MOD_DODGE_RATING_SHORT = true, 
+	ITEM_MOD_PARRY_RATING_SHORT = true, 
+
+	ITEM_MOD_BLOCK_VALUE_SHORT = true, 
+	ITEM_MOD_BLOCK_RATING_SHORT = true, 
+}
+
+local sorted2ndStats = {
+	"ITEM_MOD_CRIT_RATING_SHORT", 
+	"ITEM_MOD_HASTE_RATING_SHORT", 
+	"ITEM_MOD_MASTERY_RATING_SHORT", 
+	"ITEM_MOD_VERSATILITY", 
+
+	"ITEM_MOD_CR_LIFESTEAL_SHORT", 
+	"ITEM_MOD_CR_AVOIDANCE_SHORT", 
+	"ITEM_MOD_CR_SPEED_SHORT", 
+
+	"ITEM_MOD_DODGE_RATING_SHORT", 
+	"ITEM_MOD_PARRY_RATING_SHORT", 
+
+	"ITEM_MOD_BLOCK_VALUE_SHORT", 
+	"ITEM_MOD_BLOCK_RATING_SHORT",
+}
 
 
 -- Utility Functions
@@ -236,7 +301,6 @@ local GetBattlePetInfo = function(itemLink)
 end
 
 
-
 -- Library API
 ---------------------------------------------------------
 -- *Methods will return nil if no data was found, 
@@ -264,6 +328,13 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 	--------------------------------------------
 
 	if HasAction(actionSlot) then 
+
+		-- Switch to action item function if the action contains an item
+		local actionType, id = GetActionInfo(actionSlot)
+		if (actionType == "item") then 
+			return self:GetTooltipDataForActionItem(actionSlot)
+		end 
+
 		Scanner:SetAction(actionSlot)
 
 		tbl = tbl or {}
@@ -480,6 +551,229 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 
 end
 
+-- Special combo variant that returns item info from an action slot
+LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
+	Scanner:Hide()
+	Scanner.owner = self
+	Scanner:SetOwner(self, "ANCHOR_NONE")
+
+	--  Blizz Action Tooltip Structure: 
+	--  *the order is consistent, bracketed elements optional
+	--  
+	--------------------------------------------
+	--	Name                    [School/Type] --
+	--	[Cost]                        [Range] --
+	--	[CastTime]             [CooldownTime] --
+	--	[Cooldown/Chargetime remaining      ] -- 
+	--	[                                   ] --
+	--	[            Description            ] --
+	--	[                                   ] --
+	--	[Resource awarded / Max charges     ] --
+	--------------------------------------------
+
+	if HasAction(actionSlot) then 
+		Scanner:SetAction(actionSlot)
+
+		tbl = tbl or {}
+		for i,v in pairs(tbl) do 
+			tbl[i] = nil
+		end 
+
+		local itemName, itemLink = Scanner:GetItem()
+		if (not itemName) then 
+			return 
+		end 
+
+		-- Get some blizzard info about the current item
+		local itemName, _itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, iconFileDataID, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID, isCraftingReagent = GetItemInfo(itemLink)
+
+		local effectiveLevel, previewLevel, origLevel = GetDetailedItemLevelInfo(itemLink)
+		local isBattlePet, battlePetLevel, battlePetRarity = GetBattlePetInfo(itemLink)
+
+		local itemStats = GetItemStats(itemLink)
+
+		local spec = GetSpecialization()
+		local role = GetSpecializationRole(spec)
+		local primaryStat = select(6, GetSpecializationInfo(spec, nil, nil, nil, UnitSex("player")))
+
+		tbl.itemName = itemName -- localized
+		tbl.itemID = tonumber(string_match(itemLink, "item:(%d+)"))
+		tbl.itemString = string_match(itemLink, "item[%-?%d:]+")
+
+		tbl.itemRarity = itemRarity
+		tbl.itemMinLevel = itemMinLevel
+		tbl.itemType = itemType -- localized
+		tbl.itemSubType = itemSubType -- localized
+		tbl.itemStackCount = itemStackCount
+		tbl.itemEquipLoc = itemEquipLoc
+		tbl.itemClassID = itemClassID
+		tbl.itemSubClassID = itemSubClassID
+		tbl.itemBindType = bindType 
+		tbl.itemSetID = itemSetID
+		tbl.isBattlePet = isBattlePet
+		tbl.isCraftingReagent = isCraftingReagent
+		tbl.itemArmor = tonumber(itemStats.RESISTANCE0_NAME)
+		tbl.itemStamina = tonumber(itemStats.ITEM_MOD_STRENGTH_SHORT)
+		tbl.itemDPS = tonumber(itemStats.ITEM_MOD_DAMAGE_PER_SECOND_SHORT)
+		tbl.uselessStats = {}
+		tbl.secondaryStats = {}	
+
+		local primaryKey
+		if (primaryStat == LE_UNIT_STAT_STRENGTH) then 
+			primaryKey = "ITEM_MOD_STRENGTH_SHORT"
+			tbl.primaryStat = ITEM_MOD_STRENGTH_SHORT
+			tbl.primaryStatValue = tonumber(itemStats.ITEM_MOD_STRENGTH_SHORT)
+		elseif (primaryStat == LE_UNIT_STAT_AGILITY) then 
+			primaryKey = "ITEM_MOD_AGILITY_SHORT"
+			tbl.primaryStat = ITEM_MOD_AGILITY_SHORT
+			tbl.primaryStatValue = tonumber(itemStats.ITEM_MOD_AGILITY_SHORT)
+		elseif (primaryStat == LE_UNIT_STAT_INTELLECT) then 
+			primaryKey = "ITEM_MOD_INTELLECT_SHORT"
+			tbl.primaryStat = ITEM_MOD_INTELLECT_SHORT
+			tbl.primaryStatValue = tonumber(itemStats.ITEM_MOD_INTELLECT_SHORT)
+		end 
+
+		local has2ndStats
+		for key,value in pairs(itemStats) do 
+			if (isPrimaryStat[key] and (key ~= primaryKey)) then 
+				tbl.uselessStats[key] = value
+			end 
+			if (isSecondaryStat[key]) then 
+				tbl.secondaryStats[key] = value
+				has2ndStats = true
+			end 
+		end 
+
+		-- make a sort table of secondary stats
+		if has2ndStats then 
+			tbl.sorted2ndStats = {}
+			for i,key in pairs(sorted2ndStats) do 
+				local value = tbl.secondaryStats[key]
+				if value then 
+					tbl.sorted2ndStats[#tbl.sorted2ndStats + 1] = string_format("%s %s", (value > 0) and ("+"..tostring(value)) or tostring(value), _G[key])
+				end 
+			end 
+		end 
+
+
+		local line = _G[ScannerName.."TextLeft2"]
+		if line then
+			local msg = line:GetText()
+			if msg and string_find(msg, Patterns.ItemLevel) then
+				local itemLevel = tonumber(string_match(msg, Patterns.ItemLevel))
+				if (itemLevel and (itemLevel > 0)) then
+					tbl.itemLevel = itemLevel
+				end
+			else
+				-- Check line 3, some artifacts have the ilevel there
+				line = _G[ScannerName.."TextLeft3"]
+				if line then
+					local msg = line:GetText()
+					if msg and string_find(msg, Patterns.ItemLevel) then
+						local itemLevel = tonumber(string_match(msg, Patterns.ItemLevel))
+						if (itemLevel and (itemLevel > 0)) then
+							tbl.itemLevel = itemLevel
+						end
+					end
+				end
+			end
+		end
+
+		local foundItemBlock, foundItemBind, foundItemUnique, foundItemDurability, foundItemDamage, foundItemSpeed
+					
+		local numLines = Scanner:NumLines()
+		for lineIndex = 2,numLines do 
+			local line = _G[ScannerName.."TextLeft"..lineIndex]
+			if line then 
+				local msg = line:GetText()
+				if msg then 
+
+					-- item damage 
+					if ((not foundItemDamage) and (string_find(msg, Patterns.ItemDamage))) then 
+						local min,max = string_match(msg, Patterns.ItemDamage)
+						if (max) then 
+							foundItemDamage = lineIndex
+							tbl.itemDamageMin = tonumber(min)
+							tbl.itemDamageMax = tonumber(max)
+							if (not foundItemSpeed) then 
+								local line = _G[ScannerName.."TextRight"..lineIndex]
+								if line then 
+									local msg = line:GetText()
+									if msg then 
+										local int,float = string_match(msg, "(%d+)%.(%d+)")
+										if int or float then 
+											foundItemSpeed = lineIndex
+											tbl.itemSpeed = int .. "." .. (float or 00)
+										end 
+									end 
+								end 
+							end 
+						end 
+					end 
+
+					-- item durability
+					if ((not foundItemDurability) and (string_find(msg, Patterns.ItemDurability))) then 
+						local min,max = string_match(msg, Patterns.ItemDurability)
+						if (max) then 
+							foundItemDurability = lineIndex
+							tbl.itemDurability = tonumber(min)
+							tbl.itemDurabilityMax = tonumber(max)
+						end 
+					end 
+
+					-- shield block isn't included in the itemstats table for some reason
+					if ((not foundItemBlock) and (string_find(msg, Patterns.ItemBlock))) then 
+						local itemBlock = tonumber(string_match(msg, Patterns.ItemBlock))
+						if (itemBlock and (itemBlock ~= 0)) then 
+							foundItemBlock = lineIndex
+							tbl.itemBlock = itemBlock
+						end 
+					end 
+
+					-- item binds
+					if ((not foundItemBind) and ((bindType == 1) or (bindType == 2) or (bindType == 3))) then 
+						local id = 1
+						while Patterns["ItemBind"..id] do 
+							if (string_find(msg, Patterns["ItemBind"..id])) then 
+							
+								-- found the bind line
+								foundItemBind = lineIndex
+								tbl.itemBind = msg
+								tbl.itemIsBound = true
+	
+								break
+							end 
+							id = id + 1
+						end 
+					end 
+
+					-- item unique stats
+					if (not foundItemUnique) then 
+						local id = 1
+						while Patterns["ItemUnique"..id] do 
+							if (string_find(msg, Patterns["ItemUnique"..id])) then 
+							
+								-- found the unique line
+								foundItemUnique = lineIndex
+								tbl.itemUnique = msg
+								tbl.itemIsUnique = true
+	
+								break
+							end 
+							id = id + 1
+						end 
+					end 
+
+	
+				end 
+			end 
+		end 
+
+
+		return tbl
+	end 
+end 
+
 LibTooltipScanner.GetTooltipDataForPetAction = function(self, actionSlot, tbl)
 	Scanner:Hide()
 	Scanner.owner = self
@@ -637,6 +931,7 @@ LibTooltipScanner.GetTooltipDataForUnit = function(self, unit, tbl)
 end
 
 -- Will only return generic data based on mere itemID, no special instances of the item.
+-- This is basically just a proxy for GetTooltipDataForItemLink. 
 LibTooltipScanner.GetTooltipDataForItemID = function(self, itemID, tbl)
 	Scanner:Hide()
 	Scanner.owner = self
@@ -645,14 +940,7 @@ LibTooltipScanner.GetTooltipDataForItemID = function(self, itemID, tbl)
 	local itemName, _itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, iconFileDataID, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID, isCraftingReagent = GetItemInfo(itemID)
 
 	if itemName then 
-		Scanner:SetItemByID(itemID)
-
-		tbl = tbl or {}
-		for i,v in pairs(tbl) do 
-			tbl[i] = nil
-		end 
-
-		return tbl
+		return self:GetTooltipDataForItemLink(_itemLink, tbl)
 	end
 end
 
@@ -668,14 +956,14 @@ LibTooltipScanner.GetTooltipDataForItemLink = function(self, itemLink, tbl)
 	if itemName then 
 		Scanner:SetHyperlink(itemLink)
 
-		-- Get some blizzard info about the current item
-		local effectiveLevel, previewLevel, origLevel = GetDetailedItemLevelInfo(itemLink)
-		local isBattlePet, battlePetLevel, battlePetRarity = GetBattlePetInfo(itemLink)
-
 		tbl = tbl or {}
 		for i,v in pairs(tbl) do 
 			tbl[i] = nil
 		end 
+
+		-- Get some blizzard info about the current item
+		local effectiveLevel, previewLevel, origLevel = GetDetailedItemLevelInfo(itemLink)
+		local isBattlePet, battlePetLevel, battlePetRarity = GetBattlePetInfo(itemLink)
 
 		tbl.itemID = tonumber(string_match(itemLink, "item:(%d+)"))
 		tbl.itemString = string_match(itemLink, "item[%-?%d:]+")
@@ -826,6 +1114,56 @@ LibTooltipScanner.GetTooltipDataForUnitAura = function(self, unit, auraID, filte
 		tbl.value2 = value2
 		tbl.value3 = value3
 
+		local foundTimeRemaining
+		local numLines = Scanner:NumLines()
+		
+		for lineIndex = 2,numLines do
+			local line = _G[ScannerName.."TextLeft"..lineIndex]
+			if line then
+				local msg = line:GetText()
+				if msg then
+					local isTime
+
+					local id = 1
+					while Patterns["AuraTimeRemaining"..id] do 
+						if (string_find(msg, Patterns["AuraTimeRemaining"..id])) then 
+						
+							-- found the range line
+							foundTimeRemaining = lineIndex
+							tbl.timeRemaining = msg
+
+							break
+						end 
+						id = id + 1
+					end 
+				end
+			end
+		end
+
+		-- Just assume all remaining lines are description, 
+		-- and bunch them together to a single line. 
+		if (numLines > 1) then 
+			for lineIndex = 2, numLines do 
+				if (lineIndex ~= foundTimeRemaining) then 
+					local line = _G[ScannerName.."TextLeft"..lineIndex]
+					if line then 
+						local msg = line:GetText()
+						if msg then
+							if tbl.description then 
+								if (msg == "") then 
+									tbl.description = tbl.description .. "|n|n" -- empty line/space
+								else 
+									tbl.description = tbl.description .. "|n" .. msg -- normal line break
+								end 
+							else 
+								tbl.description = msg -- first line
+							end 
+						end 
+					end 
+				end 
+			end 
+		end 
+
 		return tbl
 	end 
 end 
@@ -955,6 +1293,56 @@ LibTooltipScanner.GetTooltipDataForUnitDebuff = function(self, unit, debuffID, f
 		tbl.value2 = value2
 		tbl.value3 = value3
 
+		local foundTimeRemaining
+		local numLines = Scanner:NumLines()
+		
+		for lineIndex = 2,numLines do
+			local line = _G[ScannerName.."TextLeft"..lineIndex]
+			if line then
+				local msg = line:GetText()
+				if msg then
+					local isTime
+
+					local id = 1
+					while Patterns["AuraTimeRemaining"..id] do 
+						if (string_find(msg, Patterns["AuraTimeRemaining"..id])) then 
+						
+							-- found the range line
+							foundTimeRemaining = lineIndex
+							tbl.timeRemaining = msg
+
+							break
+						end 
+						id = id + 1
+					end 
+				end
+			end
+		end
+
+		-- Just assume all remaining lines are description, 
+		-- and bunch them together to a single line. 
+		if (numLines > 1) then 
+			for lineIndex = 2, numLines do 
+				if (lineIndex ~= foundTimeRemaining) then 
+					local line = _G[ScannerName.."TextLeft"..lineIndex]
+					if line then 
+						local msg = line:GetText()
+						if msg then
+							if tbl.description then 
+								if (msg == "") then 
+									tbl.description = tbl.description .. "|n|n" -- empty line/space
+								else 
+									tbl.description = tbl.description .. "|n" .. msg -- normal line break
+								end 
+							else 
+								tbl.description = msg -- first line
+							end 
+						end 
+					end 
+				end 
+			end 
+		end 
+
 		return tbl
 	end
 end
@@ -963,6 +1351,7 @@ end
 -- Module embedding
 local embedMethods = {
 	GetTooltipDataForAction = true,
+	GetTooltipDataForActionItem = true, 
 	GetTooltipDataForPetAction = true,
 	GetTooltipDataForUnit = true,
 	GetTooltipDataForUnitAura = true, 

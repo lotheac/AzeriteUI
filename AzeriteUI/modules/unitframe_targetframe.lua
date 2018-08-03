@@ -18,6 +18,7 @@ local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
 local GetExpansionLevel = _G.GetExpansionLevel
 local GetQuestGreenRange = _G.GetQuestGreenRange
 local IsXPUserDisabled = _G.IsXPUserDisabled
+local UnitClassification = _G.UnitClassification
 local UnitExists = _G.UnitExists
 local UnitIsConnected = _G.UnitIsConnected
 local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
@@ -149,13 +150,19 @@ end
 
 local OverrideHealthValue = function(element, unit, min, max, disconnected, dead, tapped)
 	if disconnected then 
-		return element.Value:SetText(PLAYER_OFFLINE)
+		element.Percent:SetText("")
+		element.Value:SetText(PLAYER_OFFLINE)
 	elseif dead then 
-		return element.Value:SetText(DEAD)
-	else 
-		return OverrideValue(element, unit, min, max, disconnected, dead, tapped)
+		element.Percent:SetText("")
+		element.Value:SetText(DEAD)
+	else
+	
+		element.Percent:SetFormattedText("%d", min/max*100 - (min/max*100)%1)
+		OverrideValue(element, unit, min, max, disconnected, dead, tapped)
 	end 
 end 
+
+
 
 local Threat_UpdateColor = function(element, unit, status, r, g, b)
 	element.health:SetVertexColor(r, g, b)
@@ -242,7 +249,7 @@ end
 -- Style Post Updates
 -- Styling function applying sizes and textures 
 -- based on what kind of target we have, and its level. 
-local PostUpdateTextures = function(self)
+local PostUpdate = function(self)
 
 	-- Figure out if the various artwork and bar textures need to be updated
 	-- We could put this into element post updates, 
@@ -268,6 +275,9 @@ local PostUpdateTextures = function(self)
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
+
+			local healthPerc = self.Health.Percent
+			healthPerc:Show()
 
 			local threat = self.Threat
 			threat.health:SetSize(694, 190)
@@ -305,6 +315,9 @@ local PostUpdateTextures = function(self)
 			local healthVal = self.Health.Value
 			healthVal:Show()
 
+			local healthPerc = self.Health.Percent
+			healthPerc:Hide()
+
 			local threat = self.Threat
 			threat.health:SetSize(716, 188)
 			threat.health:SetPoint("CENTER", -1, .5  +1)
@@ -340,6 +353,9 @@ local PostUpdateTextures = function(self)
 	
 			local healthVal = self.Health.Value
 			healthVal:Show()
+
+			local healthPerc = self.Health.Percent
+			healthPerc:Hide()
 
 			local threat = self.Threat
 			threat.health:SetSize(716, 188)
@@ -377,6 +393,9 @@ local PostUpdateTextures = function(self)
 			local healthVal = self.Health.Value
 			healthVal:Hide()
 
+			local healthPerc = self.Health.Percent
+			healthPerc:Hide()
+
 			local threat = self.Threat
 			threat.health:SetSize(98,96)
 			threat.health:SetPoint("CENTER", 0, 1 +1)
@@ -407,6 +426,9 @@ local PostUpdateTextures = function(self)
 
 			local healthVal = self.Health.Value
 			healthVal:Show()
+
+			local healthPerc = self.Health.Percent
+			healthPerc:Hide()
 
 			local healthBg = self.Health.Bg
 			healthBg:SetSize(716, 188)
@@ -439,6 +461,12 @@ local PostUpdateTextures = function(self)
 	end 
 	
 end 
+
+local PostUpdateHealthPercent = function(self)
+	local unitLevel = UnitLevel(unit)
+	local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+
+end
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
@@ -568,6 +596,7 @@ local Style = function(self, unit, id, ...)
 	local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
 	threats.feedbackUnit = "player"
 	threats.hideSolo = true
+	threats.fadeOut = 3
 
 	local threatHealth = backdrop:CreateTexture()
 	threatHealth:SetDrawLayer("BACKGROUND", -2)
@@ -764,7 +793,19 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetShadowColor(0, 0, 0, 0)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
 
+	-- Health percentage for bosses
+	local healthPerc = health:CreateFontString()
+	healthPerc:SetPoint("LEFT", 27, 4)
+	healthPerc:SetDrawLayer("OVERLAY")
+	healthPerc:SetJustifyH("CENTER")
+	healthPerc:SetJustifyV("MIDDLE")
+	healthPerc:SetFontObject(AzeriteFont18_Outline)
+	healthPerc:SetShadowOffset(0, 0)
+	healthPerc:SetShadowColor(0, 0, 0, 0)
+	healthPerc:SetTextColor(240/255, 240/255, 240/255, .5)
+	
 	self.Health.Value = healthVal
+	self.Health.Percent = healthPerc
 	self.Health.OverrideValue = OverrideHealthValue
 
 	-- Absorb value
@@ -783,7 +824,7 @@ local Style = function(self, unit, id, ...)
 
 
 	-- Update target frame textures
-	PostUpdateTextures(self)
+	PostUpdate(self)
 
 end
 
@@ -801,7 +842,7 @@ UnitFrameTarget.OnEvent = function(self, event, ...)
 			end
 
 			-- Update target frame textures
-			PostUpdateTextures(self.frame)
+			PostUpdate(self.frame)
 		else
 			-- Play a sound indicating we lost our target
 			self:PlaySoundKitID(SOUNDKIT.INTERFACE_SOUND_LOST_TARGET_UNIT, "SFX")
