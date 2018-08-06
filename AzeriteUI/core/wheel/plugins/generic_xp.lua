@@ -109,12 +109,14 @@ local Update = function(self, event, ...)
 	end 
 
 	if element.Rested then
-		element.Rested:SetMinMaxValues(0, max)
-		element.Rested:SetValue(math_min(max, min + (restedLeft or 0)))
-		
-		if element.colorRested then 
-			local color = self.colors.restedBonus 
-			element.Rested:SetStatusBarColor(color[1], color[2], color[3])
+		if element.Rested:IsObjectType("StatusBar") then 
+			element.Rested:SetMinMaxValues(0, max)
+			element.Rested:SetValue(math_min(max, min + (restedLeft or 0)))
+			
+			if element.colorRested then 
+				local color = self.colors.restedBonus 
+				element.Rested:SetStatusBarColor(color[1], color[2], color[3])
+			end 
 		end 
 
 		if (not element.Rested:IsShown()) then 
@@ -163,6 +165,11 @@ end
 local Disable = function(self)
 	local element = self.XP
 	if element then
+
+		if element.Rested then 
+			element.Rested:Hide()
+		end 
+
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 		self:UnregisterEvent("PLAYER_LOGIN", Proxy)
 		self:UnregisterEvent("PLAYER_ALIVE", Proxy)
@@ -177,5 +184,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 8)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 10)
 end 

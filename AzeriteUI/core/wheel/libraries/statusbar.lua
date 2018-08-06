@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 37)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 38)
 if (not LibStatusBar) then	
 	return
 end
@@ -321,35 +321,13 @@ local Update = function(self, elapsed)
 		-- Hashed tables are just such a nice way to get post updates done faster :) 
 		UpdateByGrowthDirection[orientation](self, mult, displaySize, width, height, sparkOffsetTop, sparkOffsetBottom)
 
-		if elapsed then
-			local currentAlpha = spark:GetAlpha()
-			local range = data.sparkMaxAlpha - data.sparkMinAlpha
-			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
-			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range
-			if (data.sparkDirection == "IN") then
-				if (currentAlpha + alphaChange < targetAlpha) then
-					currentAlpha = currentAlpha + alphaChange
-				else
-					currentAlpha = targetAlpha
-					data.sparkDirection = "OUT"
-				end
-			elseif (data.sparkDirection == "OUT") then
-				if (currentAlpha + alphaChange > targetAlpha) then
-					currentAlpha = currentAlpha - alphaChange
-				else
-					currentAlpha = targetAlpha
-					data.sparkDirection = "IN"
-				end
-			end
-			spark:SetAlpha(currentAlpha)
-		end
 		if (not bar:IsShown()) then
 			bar:Show()
 		end
 	end
 	
 	-- Spark alpha animation
-	if (value == max) or (value == min) or (value/max >= data.sparkMaxPercent) or (value/max <= data.sparkMinPercent) then
+	if ((value == max) or (value == min) or (value/max >= data.sparkMaxPercent) or (value/max <= data.sparkMinPercent)) then
 		if spark:IsShown() then
 			spark:Hide()
 			spark:SetAlpha(data.sparkMinAlpha)
@@ -360,8 +338,7 @@ local Update = function(self, elapsed)
 			local currentAlpha = spark:GetAlpha()
 			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
 			local range = data.sparkMaxAlpha - data.sparkMinAlpha
-			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range
-		
+			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range	
 			if data.sparkDirection == "IN" then
 				if currentAlpha + alphaChange < targetAlpha then
 					currentAlpha = currentAlpha + alphaChange

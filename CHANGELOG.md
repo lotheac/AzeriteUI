@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.29] 2018-08-06
+### Changed
+- Added a slightly fuzzier edge to the XP- and ArtifactPower ring bars to smoothe them out a bit, as the pixelation from Blizzard's cropping and rotation was a bit much. 
+
+### Fixed
+- Minimap should properly hide minimap icons from other addons now. A custom buttonbag and/or MBB integration is in the works, though not fully ready yet.
+
+### Removed
+- Removed the rested bonus XP bar. Will be adding a new indicator soon. 
+
 ## [1.0.28] 2018-08-03
 ### Added
 - Added health percentage on the target unit frame for bosses.

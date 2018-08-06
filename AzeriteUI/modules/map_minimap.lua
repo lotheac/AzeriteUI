@@ -518,6 +518,10 @@ local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 			description:SetText("")
 		end 
 	end 
+	local rested = element.Rested
+	if rested then 
+
+	end
 end
 
 local AP_OverrideValue = function(element, min, max, level)
@@ -553,8 +557,13 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 
 	local percent = value.Percent
 	if percent then 
-		-- removing the percentage sign
-		percent:SetFormattedText("%d", min/max*100)
+		local percValue = math_floor(min/max*100)
+		if (percValue > 0) then 
+			-- removing the percentage sign
+			percent:SetFormattedText("%d", percValue)
+		else 
+			percent:SetText("xp") -- no localization for this
+		end 
 	end 
 
 	if element.colorValue then 
@@ -779,7 +788,7 @@ Minimap.SetUpMinimap = function(self)
 	performanceFrame:SetScript("OnLeave", Performance_OnLeave)
 
 	-- Ring frame
-	local ringFrame = Handler:CreateBorderFrame()
+	local ringFrame = Handler:CreateOverlayFrame()
 	ringFrame:Hide()
 	ringFrame:SetAllPoints() -- set it to cover the map
 	ringFrame:EnableMouse(true) -- make sure minimap blips and their tooltips don't punch through
@@ -803,92 +812,108 @@ Minimap.SetUpMinimap = function(self)
 
 	-- ring frame backdrops
 	local ringFrameBg = ringFrame:CreateTexture()
-	ringFrameBg:SetPoint("CENTER", 0, -2)
-	ringFrameBg:SetSize(410, 410) -- 419,419 
+	ringFrameBg:SetPoint("CENTER", 0, -.5)
+	ringFrameBg:SetSize(413, 410)  
 	ringFrameBg:SetTexture(getPath("minimap-twobars-backdrop"))
 	ringFrameBg:SetDrawLayer("BACKGROUND", 1)
 	ringFrameBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 	ringFrame.Bg = ringFrameBg
 
-	-- outer ring
-	local outerRing = ringFrame:CreateSpinBar()
-	outerRing:SetFrameLevel(outerRing:GetFrameLevel() + 5) -- give room for the rested bar
-	outerRing:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-	outerRing:SetSize(ringFrameBg:GetWidth()/2, ringFrameBg:GetHeight()/2) 
-	outerRing:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
-	outerRing:SetClockwise(true) -- bar runs clockwise
-	outerRing:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
-	outerRing:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
-	outerRing:SetAlpha(.95)
-	outerRing.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
-	outerRing.colorRested = true -- color the rested bonus bar when showing xp
-	outerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
-	outerRing.colorStanding = true -- color the bar according to your standing when tracking reputation
-	outerRing.colorValue = true -- color the value string same color as the bar
-	outerRing.backdropMultiplier = 1/3 -- color the backdrop a darker shade of the outer bar color
+	-- spark sizes/inset from edge:  
+	-- big single ring:  35 / 4
+	-- big thin ring: 20 / 3
+	-- small ring: 29 / 30
 
-	local rested = ringFrame:CreateSpinBar()
-	rested:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-	rested:SetSize(211 *411/419,211 *411/419)
-	rested:SetStatusBarTexture(getPath("minimap-bars-single"))
-	rested:SetAlpha(.95)
-	rested:SetClockwise(true) -- bar runs clockwise
-	rested:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
-	rested:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
-	rested:Hide()
-	outerRing.Rested = rested
+	-- outer ring
+	local ring1 = ringFrame:CreateSpinBar()
+	ring1:SetPoint("CENTER", 0, 1)
+	ring1:SetSize(208,208) 
+	ring1:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
+	ring1:SetSparkOffset(-1/10)
+	ring1:SetSparkFlash(nil, nil, 1, 1)
+	ring1:SetSparkBlendMode("ADD")
+	ring1:SetClockwise(true) -- bar runs clockwise
+	ring1:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
+	ring1:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
+	ring1.showSpark = true
+	ring1.colorXP = true -- color the ring1 when it's showing xp according to normal/rested state
+	--ring1.colorRested = true -- color the rested bonus bar when showing xp
+	ring1.colorPower = true -- color the bar according to its power type when showin artifact power or others 
+	ring1.colorStanding = true -- color the bar according to your standing when tracking reputation
+	ring1.colorValue = true -- color the value string same color as the bar
+	ring1.backdropMultiplier = 1 -- color the backdrop a darker shade of the outer bar color
+	ring1.sparkMultiplier = 1
+
+	--local rested = ringFrame:CreateSpinBar()
+	--rested:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
+	--rested:SetSize(211 *411/419,211 *411/419)
+	--rested:SetStatusBarTexture(getPath("minimap-bars-single"))
+	--rested:SetAlpha(.95)
+	--rested:SetClockwise(true) -- bar runs clockwise
+	--rested:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
+	--rested:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
+	--rested:Hide()
+	--ring1.Rested = rested
+	local rested = ring1:CreateTexture()
+	rested:SetDrawLayer("OVERLAY", 1)
+	rested:SetTexture(getPath("point_gem"))
 
 	-- outer ring value text
-	local outerRingValue = outerRing:CreateFontString()
-	outerRingValue:SetPoint("TOP", ringFrameBg, "CENTER", 0, -2)
-	outerRingValue:SetJustifyH("CENTER")
-	outerRingValue:SetJustifyV("TOP")
-	outerRingValue:SetFontObject(AzeriteFont15_Outline)
-	outerRingValue:SetShadowOffset(0, 0)
-	outerRingValue:SetShadowColor(0, 0, 0, 0)
-	outerRingValue.showDeficit = true -- show what's missing 
-	outerRing.Value = outerRingValue
-	outerRing.OverrideValue = XP_OverrideValue
+	local ring1Value = ring1:CreateFontString()
+	ring1Value:SetPoint("TOP", ringFrameBg, "CENTER", 0, -2)
+	ring1Value:SetJustifyH("CENTER")
+	ring1Value:SetJustifyV("TOP")
+	ring1Value:SetFontObject(AzeriteFont15_Outline)
+	ring1Value:SetShadowOffset(0, 0)
+	ring1Value:SetShadowColor(0, 0, 0, 0)
+	ring1Value.showDeficit = true -- show what's missing 
+	ring1.Value = ring1Value
+	ring1.OverrideValue = XP_OverrideValue
 
 	-- outer ring value description text
-	local outerRingValueDescription = outerRing:CreateFontString()
-	outerRingValueDescription:SetPoint("TOP", outerRingValue, "BOTTOM", 1, 0)
-	outerRingValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
-	outerRingValueDescription:SetJustifyH("CENTER")
-	outerRingValueDescription:SetJustifyV("TOP")
-	outerRingValueDescription:SetFontObject(AzeriteFont12_Outline)
-	outerRingValueDescription:SetShadowOffset(0, 0)
-	outerRingValueDescription:SetShadowColor(0, 0, 0, 0)
-	outerRing.Value.Description = outerRingValueDescription
+	local ring1ValueDescription = ring1:CreateFontString()
+	ring1ValueDescription:SetPoint("TOP", ring1Value, "BOTTOM", 1, 0)
+	ring1ValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
+	ring1ValueDescription:SetJustifyH("CENTER")
+	ring1ValueDescription:SetJustifyV("TOP")
+	ring1ValueDescription:SetFontObject(AzeriteFont12_Outline)
+	ring1ValueDescription:SetShadowOffset(0, 0)
+	ring1ValueDescription:SetShadowColor(0, 0, 0, 0)
+	ring1.Value.Description = ring1ValueDescription
 
 	-- inner ring 
-	local innerRing = ringFrame:CreateSpinBar()
-	innerRing:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-	innerRing:SetSize(ringFrameBg:GetWidth()/2, ringFrameBg:GetHeight()/2)
-	innerRing:SetAlpha(.95)
-	innerRing:SetStatusBarTexture(getPath("minimap-bars-two-inner"))
-	innerRing:SetClockwise(true) -- bar runs clockwise
-	innerRing:SetMinMaxValues(0,100)
-	innerRing:SetValue(45)
-	innerRing:SetDegreeOffset(90*3 - 21) -- bar starts at 21 degrees out from the bottom vertical axis
-	innerRing:SetDegreeSpan(360 - 21*2) -- bar stops at the opposite side of that axis
-	innerRing.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
-	innerRing.colorRested = true -- color the rested bonus bar when showing xp
-	innerRing.colorPower = true -- color the bar according to its power type when showin artifact power or others 
-	innerRing.colorStanding = true -- color the bar according to your standing when tracking reputation
-	innerRing.colorValue = true -- color the value string same color as the bar
-	innerRing.OverrideValue = AP_OverrideValue
+	local ring2 = ringFrame:CreateSpinBar()
+	ring2:SetPoint("CENTER", 0, 1)
+	ring2:SetSize(208,208)
+	ring2:SetStatusBarTexture(getPath("minimap-bars-two-inner"))
+	ring2:SetSparkSize(6, 27 * 208/256)
+	ring2:SetSparkInset(46 * 208/256)
+	ring2:SetSparkOffset(-1/10)
+	ring2:SetSparkFlash(nil, nil, 1, 1)
+	ring2:SetSparkBlendMode("ADD")
+	ring2:SetClockwise(true) -- bar runs clockwise
+	ring2:SetMinMaxValues(0,100)
+	ring2:SetDegreeOffset(90*3 - 21) -- bar starts at 21 degrees out from the bottom vertical axis
+	ring2:SetDegreeSpan(360 - 21*2) -- bar stops at the opposite side of that axis
+	ring2.showSpark = true
+	ring2.sparkMultiplier = 1
+	ring2.colorXP = true -- color the ring1 when it's showing xp according to normal/rested state
+	--ring2.colorRested = true -- color the rested bonus bar when showing xp
+	ring2.colorPower = true -- color the bar according to its power type when showin artifact power or others 
+	ring2.colorStanding = true -- color the bar according to your standing when tracking reputation
+	ring2.colorValue = true -- color the value string same color as the bar
+	ring2.OverrideValue = AP_OverrideValue
 
 	-- inner ring value text
-	local innerRingValue = innerRing:CreateFontString()
-	innerRingValue:SetPoint("BOTTOM", ringFrameBg, "CENTER", 0, 2)
-	innerRingValue:SetJustifyH("CENTER")
-	innerRingValue:SetJustifyV("TOP")
-	innerRingValue:SetFontObject(AzeriteFont15_Outline)
-	innerRingValue:SetShadowOffset(0, 0)
-	innerRingValue:SetShadowColor(0, 0, 0, 0)
-	innerRingValue.showDeficit = true -- show what's missing 
-	innerRing.Value = innerRingValue
+	local ring2Value = ring2:CreateFontString()
+	ring2Value:SetPoint("BOTTOM", ringFrameBg, "CENTER", 0, 2)
+	ring2Value:SetJustifyH("CENTER")
+	ring2Value:SetJustifyV("TOP")
+	ring2Value:SetFontObject(AzeriteFont15_Outline)
+	ring2Value:SetShadowOffset(0, 0)
+	ring2Value:SetShadowColor(0, 0, 0, 0)
+	ring2Value.showDeficit = true -- show what's missing 
+	ring2.Value = ring2Value
 
 	-- extra thin ring (for resting...?)
 	local resting = ringFrame:CreateTexture()
@@ -898,10 +923,10 @@ Minimap.SetUpMinimap = function(self)
 	resting:SetDrawLayer("BACKGROUND", 3)
 	resting:Hide()
 	
-	Handler.XP = outerRing
+	Handler.XP = ring1
 	Handler.XP.PostUpdate = PostUpdate_XP
 
-	Handler.ArtifactPower = innerRing
+	Handler.ArtifactPower = ring2
 	Handler.Resting = resting
 
 	-- Toggle button for ring frame
@@ -931,8 +956,8 @@ Minimap.SetUpMinimap = function(self)
 	innerPercent:SetFontObject(AzeriteFont15_Outline)
 	innerPercent:SetShadowOffset(0, 0)
 	innerPercent:SetShadowColor(0, 0, 0, 0)
-	innerPercent:SetPoint("CENTER", 2, -64)
-	innerRing.Value.Percent = innerPercent
+	innerPercent:SetPoint("CENTER", ringFrameBg, "CENTER", 2, -64)
+	ring2.Value.Percent = innerPercent
 
 	local outerPercent = toggle:CreateFontString()
 	outerPercent:SetDrawLayer("OVERLAY")
@@ -942,7 +967,7 @@ Minimap.SetUpMinimap = function(self)
 	outerPercent:SetShadowOffset(0, 0)
 	outerPercent:SetShadowColor(0, 0, 0, 0)
 	outerPercent:SetPoint("CENTER", 1, -1)
-	outerRing.Value.Percent = outerPercent
+	ring1.Value.Percent = outerPercent
 
 	Handler.Toggle = toggle
 
@@ -1022,8 +1047,8 @@ Minimap.UpdateBars = function(self, event, ...)
 	local hasXP = PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
 
-	--Handler.Honor = outerRing
-	--Handler.Reputation = innerRing
+	--Handler.Honor = ring1
+	--Handler.Reputation = ring2
 
 
 	local Handler = self:GetMinimapHandler()
@@ -1038,13 +1063,15 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-twobars-backdrop"))
 
 			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
-			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
+			Handler.XP:SetSparkSize(6,20 * 208/256)
+			Handler.XP:SetSparkInset(15 * 208/256)
+			--Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
 			Handler.XP.Value:ClearAllPoints()
 			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
 			Handler.XP.Value:SetFontObject(AzeriteFont16_Outline) 
 			Handler.XP.Value.Description:Hide()
 			Handler.XP.OverrideValue = XP_OverrideValue
-
+		
 			self:EnableMinimapElement("ArtifactPower")
 			self:EnableMinimapElement("XP")
 
@@ -1053,7 +1080,9 @@ Minimap.UpdateBars = function(self, event, ...)
 			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-onebar-backdrop"))
 
 			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-single"))
-			Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-single"))
+			Handler.XP:SetSparkSize(6,34 * 208/256)
+			Handler.XP:SetSparkInset(22 * 208/256)
+			--Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-single"))
 			Handler.XP.Value:ClearAllPoints()
 			Handler.XP.Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
 			Handler.XP.Value:SetFontObject(AzeriteFont24_Outline) 

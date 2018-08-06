@@ -1,5 +1,5 @@
-local Version = 23 -- This library's version 
-local MapVersion = 23 -- Minimap library version the minimap created by this is compatible with
+local Version = 24 -- This library's version 
+local MapVersion = 24 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -74,6 +74,8 @@ LibMinimap.elementObjects = LibMinimap.elementObjects or {} -- pool of unique ob
 
 -- The minimap button bag
 LibMinimap.buttonBag = LibMinimap.buttonBag or LibFrame:CreateFrame("Frame", nil, LibFrame:CreateFrame("Frame")) -- two layers to make sure it's gone
+LibMinimap.buttonBag:Hide() -- icons aren't hidden without this /doh
+
 LibMinimap.baggedButtonsChecked = LibMinimap.baggedButtonsChecked or {} -- buttons already checked
 LibMinimap.baggedButtonsHidden = LibMinimap.baggedButtonsHidden or {} -- buttons we have hidden 
 LibMinimap.baggedButtonsIgnored = LibMinimap.baggedButtonsIgnored or {} -- buttons we're ignoring

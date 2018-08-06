@@ -4,7 +4,7 @@
 -- The thread that started it: 
 -- http://www.wowinterface.com/forums/showthread.php?t=45918
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 10)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 12)
 if (not LibSpinBar) then	
 	return
 end
@@ -224,6 +224,46 @@ Quadrant.RotateTexture = function(self, degrees)
 	self:SetPoint(point, offsetX, offsetY)
 	self:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
 
+
+	local data = Bars[self]
+	local bar = data.statusbar
+	local spark = data.spark
+
+	if bar.showSpark then 
+
+		local width, height = data.statusbar:GetSize()
+
+		local sparkRadians = radians + data.sparkOffset*DEGS_TO_RADS*(self.clockwise and -1 or 1)
+
+		local x = (width/2 - data.sparkInset) * math_cos(sparkRadians)
+		local y = (height/2 - data.sparkInset) * math_sin(sparkRadians)
+		-- mainX*(width-data.sparkInset*2), mainY*(height-data.sparkInset*2)
+
+		spark:SetRotation(radians + HALF_PI)
+		spark:ClearAllPoints()
+		spark:SetPoint("CENTER", data.statusbar, "CENTER", x, y)
+
+		-- where's the center of it?
+		--[[
+		if not spark.dummy then 
+			spark.dummy = bar:CreateTexture()
+			spark.dummy:SetSize(2,2)
+			spark.dummy:SetColorTexture(1,1,1)
+		end 
+
+		spark.dummy:ClearAllPoints()
+		spark.dummy:SetPoint("CENTER", spark, "CENTER", 0, 0)
+		]]
+
+		if (not spark:IsShown()) then 
+			spark:Show()
+		end 
+
+	elseif spark:IsShown() then 
+		spark:Hide()
+	end 
+
+
 	-- Tell the environment this was the active quadrant
 	return true
 end
@@ -235,6 +275,7 @@ local Update = function(self, elapsed)
 	local minValue, maxValue = data.barMin, data.barMax
 	local width, height = data.statusbar:GetSize() 
 	local bar = data.bar
+	local spark = data.spark
 	
 	-- Make sure the value is in the visual range
 	if (value > maxValue) then
@@ -307,6 +348,42 @@ local Update = function(self, elapsed)
 			end 
 		end 
 	end
+
+	-- Spark alpha animation
+	if ((value == maxValue) or (value == minValue) or (value/maxValue >= data.sparkMaxPercent) or (value/maxValue <= data.sparkMinPercent)) then
+		if spark:IsShown() then
+			spark:Hide()
+			spark:SetAlpha(data.sparkMinAlpha)
+			data.sparkDirection = "IN"
+		end
+	else
+		if elapsed then
+			local currentAlpha = spark:GetAlpha()
+			local targetAlpha = data.sparkDirection == "IN" and data.sparkMaxAlpha or data.sparkMinAlpha
+			local range = data.sparkMaxAlpha - data.sparkMinAlpha
+			local alphaChange = elapsed/(data.sparkDirection == "IN" and data.sparkDurationIn or data.sparkDurationOut) * range	
+			if data.sparkDirection == "IN" then
+				if currentAlpha + alphaChange < targetAlpha then
+					currentAlpha = currentAlpha + alphaChange
+				else
+					currentAlpha = targetAlpha
+					data.sparkDirection = "OUT"
+				end
+			elseif data.sparkDirection == "OUT" then
+				if currentAlpha + alphaChange > targetAlpha then
+					currentAlpha = currentAlpha - alphaChange
+				else
+					currentAlpha = targetAlpha
+					data.sparkDirection = "IN"
+				end
+			end
+			spark:SetAlpha(currentAlpha)
+		end
+		if (not spark:IsShown()) then
+			spark:Show()
+		end
+	end
+	
 
 	-- Allow modules to add their postupdates here
 	if (self.PostUpdate) then 
@@ -546,6 +623,7 @@ SpinBar.SetStatusBarColor = function(self, ...)
 	for id,bar in ipairs(data.quadrants) do 
 		bar:SetVertexColor(...)
 	end 
+	self:SetSparkColor(...)
 end
 
 SpinBar.SetStatusBarTexture = function(self, path)
@@ -574,6 +652,63 @@ end
 SpinBar.IsClockwise = function(self)
 	return Bars[self].clockwise
 end
+
+SpinBar.SetSparkTexture = function(self, ...)
+	local arg = ...
+	if (type(arg) == "number") then
+		Bars[self].spark:SetColorTexture(...)
+	else
+		Bars[self].spark:SetTexture(...)
+	end
+end
+
+SpinBar.SetSparkColor = function(self, r, g, b)
+	local data = Bars[self]
+	local mult = data.statusbar.sparkMultiplier
+	if mult then 
+		data.spark:SetVertexColor(r*mult, g*mult, b*mult)
+	else 
+		data.spark:SetVertexColor(r, g, b)
+	end 
+end 
+
+SpinBar.SetSparkMinMaxPercent = function(self, min, max)
+	local data = Bars[self]
+	data.sparkMinPercent = min
+	data.sparkMinPercent = max
+end
+
+SpinBar.SetSparkSize = function(self, width, height)
+	local data = Bars[self]
+	data.sparkWidth = width 
+	data.sparkHeight = height
+	data.spark:SetSize(width, height)
+end 
+
+SpinBar.SetSparkInset = function(self, inset)
+	local data = Bars[self]
+	data.sparkInset = inset 
+end 
+
+SpinBar.SetSparkOffset = function(self, offset)
+	local data = Bars[self]
+	data.sparkOffset = offset 
+end 
+
+SpinBar.SetSparkBlendMode = function(self, blendMode)
+	Bars[self].spark:SetBlendMode(blendMode)
+end 
+
+SpinBar.SetSparkFlash = function(self, durationIn, durationOut, minAlpha, maxAlpha)
+	local data = Bars[self]
+	data.sparkDurationIn = durationIn or data.sparkDurationIn
+	data.sparkDurationOut = durationOut or data.sparkDurationOut
+	data.sparkMinAlpha = minAlpha or data.sparkMinAlpha
+	data.sparkMaxAlpha = maxAlpha or data.sparkMaxAlpha
+	data.sparkDirection = "IN"
+	data.spark:SetAlpha(data.sparkMinAlpha)
+end
+
 
 SpinBar.GetParent = function(self)
 	return Bars[self].scaffold:GetParent()
@@ -742,7 +877,16 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 	overlay:SetFrameLevel(scaffold:GetFrameLevel() + 2)
 	overlay:SetAllPoints(scaffold)
 
-
+	-- the spark texture
+	local spark = overlay:CreateTexture()
+	spark:SetDrawLayer("BORDER", 1)
+	spark:SetPoint("CENTER", bar, "CENTER", 0, 0)
+	spark:SetSize(16,32)
+	spark:SetAlpha(1)
+	spark:SetBlendMode("ADD")
+	spark:SetTexture([[Interface\CastingBar\UI-CastingBar-Spark]]) -- 32x32, centered vertical spark being 32x9px, from 0,11px to 32,19px
+	spark:SetTexCoord(7/32, 23/32, 9/32, 21/32)
+	
 	-- Create the 4 quadrants of the bar
 	local quadrants = {}
 	for i = 1,4 do 
@@ -767,6 +911,7 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 		bar:SetSize(1,1)
 		bar:SetDrawLayer("BACKGROUND", 0)
 		bar.quadrantID = i 
+		bar.spark = spark
 
 		-- Reset position, texcoords and rotation.
 		-- Just use the standard method here, 
@@ -816,7 +961,6 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 
 	end 
 
-
 	-- The statusbar is the virtual object that we return to the user.
 	-- This contains all the methods.
 	local statusbar = CreateFrame("Frame", nil, scaffold)
@@ -830,6 +974,7 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 	data.scaffold = scaffold
 	data.overlay = overlay
 	data.statusbar = statusbar
+	data.spark = spark
 
 	-- bar value
 	data.barMin = 0 -- min value
@@ -837,6 +982,19 @@ LibSpinBar.CreateSpinBar = function(self, parent)
 	data.barValue = 0 -- real value
 	data.barDisplayValue = 0 -- displayed value while smoothing
 	data.barSmoothingMode = "bezier-fast-in-slow-out"
+
+	data.showSpark = true
+	data.sparkOffset = 0
+	data.sparkInset = 0 
+	data.sparkWidth = 16 
+	data.sparkHeight = 32
+	data.sparkDirection = "IN"
+	data.sparkDurationIn = .75 
+	data.sparkDurationOut = .55
+	data.sparkMinAlpha = .25
+	data.sparkMaxAlpha = .95
+	data.sparkMinPercent = 1/100
+	data.sparkMaxPercent = 99/100
 
 	-- quadrants and degrees
 	data.quadrants = quadrants
