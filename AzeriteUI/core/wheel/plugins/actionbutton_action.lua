@@ -72,6 +72,27 @@ local formatCooldownTime = function(time)
 		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
 	elseif time > 10 then -- more than 10 seconds
 		return "%d", time - time%1
+	elseif time >= 1 then -- more than 5 seconds
+		return "|cffff8800%d|r", time - time%1
+	elseif time > 0 then
+		return "|cffff0000%d|r", time*10 - time*10%1
+	else
+		return ""
+	end	
+end
+
+local formatCooldownTime2 = function(time)
+	if time > DAY then -- more than a day
+		time = time + DAY/2
+		return "%d%s", time/DAY - time/DAY%1, "d"
+	elseif time > HOUR then -- more than an hour
+		time = time + HOUR/2
+		return "%d%s", time/HOUR - time/HOUR%1, "h"
+	elseif time > MINUTE then -- more than a minute
+		time = time + MINUTE/2
+		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
+	elseif time > 10 then -- more than 10 seconds
+		return "%d", time - time%1
 	elseif time > 5 then -- more than 5 seconds
 		return "|cffff8800%d|r", time - time%1
 	elseif time > 0 then
@@ -817,4 +838,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 21)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 22)

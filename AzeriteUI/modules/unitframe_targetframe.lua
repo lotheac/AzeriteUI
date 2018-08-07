@@ -186,7 +186,7 @@ end
 local PostCreateAuraButton = function(element, button)
 	
 	-- Downscale factor of the border backdrop
-	local sizeMod = 3/4
+	local sizeMod = 2/4
 
 
 	-- Restyle original elements
@@ -197,8 +197,8 @@ local PostCreateAuraButton = function(element, button)
 	local icon = button.Icon
 	icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
 	icon:ClearAllPoints()
-	icon:SetPoint("TOPLEFT", 9*sizeMod, -9*sizeMod)
-	icon:SetPoint("BOTTOMRIGHT", -9*sizeMod, 9*sizeMod)
+	icon:SetPoint("TOPLEFT", 3, -3)
+	icon:SetPoint("BOTTOMRIGHT", -3, 3)
 
 	-- Aura stacks
 	local count = button.Count
@@ -727,13 +727,14 @@ local Style = function(self, unit, id, ...)
 	-- Auras
 	-----------------------------------------------------------
 
+	local aSize, aSpace = 40, 6 -- 42, 4
 	local auras = content:CreateFrame("Frame")
 	auras:Place("TOPRIGHT", health, "BOTTOMRIGHT", -10, -20)
-	auras:SetSize(42*7 + 8*6, 42) -- auras will be aligned in the available space, this size gives us 7x1 auras
+	auras:SetSize(aSize*7 + aSpace*6, aSize) -- auras will be aligned in the available space, this size gives us 7x1 auras
 
-	auras.auraSize = 40 -- too much?
-	auras.spacingH = 4 -- horizontal/column spacing between buttons
-	auras.spacingV = 4 -- vertical/row spacing between aura buttons
+	auras.auraSize = aSize -- too much?
+	auras.spacingH = aSpace -- horizontal/column spacing between buttons
+	auras.spacingV = aSpace -- vertical/row spacing between aura buttons
 	auras.growthX = "LEFT" -- auras grow to the left
 	auras.growthY = "DOWN" -- rows grow downwards (we just have a single row, though)
 	auras.maxVisible = 7 -- when set will limit the number of buttons regardless of space available

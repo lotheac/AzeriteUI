@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.30] 2018-08-07
+### Changed
+- Player and target unit frame aura icons have had their border slightly slimmed down, and their icons slightly fattened up. 
+- Personal Resource Display (personal nameplate) is now always fully opaque when shown, it does not follow the opacity rules applied to the rest of the nameplates. 
+
+### Fixed 
+- Fixed an issue where auras wouldn't probably be hidden when their timer ran out. 
+
 ## [1.0.29] 2018-08-06
 ### Changed
 - Added a slightly fuzzier edge to the XP- and ArtifactPower ring bars to smoothe them out a bit, as the pixelation from Blizzard's cropping and rotation was a bit much. 

@@ -8,6 +8,7 @@
 ## SavedVariables: AzeriteUI_DB
 ## X-Website: https://www.patreon.com/AzeriteUI
 ## X-Donate: PayPal:azerite@cogwerkz.org
+## X-License: All Rights Reserved
 ## X-Category: Interface Enhancements
 
 # libraries and plugins

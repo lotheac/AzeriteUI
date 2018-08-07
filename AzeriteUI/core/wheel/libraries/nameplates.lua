@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 15)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 16)
 if (not LibNamePlate) then	
 	return
 end
@@ -382,7 +382,9 @@ NamePlate.UpdateAlpha = function(self)
 		if (self.OverrideAlpha) then 
 			return self:OverrideAlpha(unit)
 		end 
-		if UnitExists("target") then
+		if UnitIsUnit(unit, "player") then 
+			alphaLevel = 1 -- personal resource display
+		elseif UnitExists("target") then
 			if UnitIsUnit(unit, "target") then
 				alphaLevel = 1
 			elseif UnitIsTrivial(unit) then 

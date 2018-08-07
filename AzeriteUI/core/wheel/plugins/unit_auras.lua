@@ -31,6 +31,27 @@ local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 local formatTime = function(time)
 	if time > DAY then -- more than a day
+		time = time + DAY/2
+		return "%d%s", time/DAY - time/DAY%1, "d"
+	elseif time > HOUR then -- more than an hour
+		time = time + HOUR/2
+		return "%d%s", time/HOUR - time/HOUR%1, "h"
+	elseif time > MINUTE then -- more than a minute
+		time = time + MINUTE/2
+		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
+	elseif time > 10 then -- more than 10 seconds
+		return "%d", time - time%1
+	elseif time >= 1 then -- more than 5 seconds
+		return "|cffff8800%d|r", time - time%1
+	elseif time > 0 then
+		return "|cffff0000%d|r", time*10 - time*10%1
+	else
+		return ""
+	end	
+end
+
+local formatTime2 = function(time)
+	if time > DAY then -- more than a day
 		return "%1d%s", math_ceil(time / DAY), "d"
 	elseif time > HOUR then -- more than an hour
 		return "%1d%s", math_ceil(time / HOUR), "h"
@@ -176,10 +197,12 @@ local Aura_UpdateTimer = function(button, elapsed)
 			else
 				button:SetScript("OnUpdate", nil)
 				Aura_SetCooldownTimer(button, 0,0)
+				
 				button.Time:SetText("")
+				button._owner:ForceUpdate()				
 
-				if button._owner.PostUpdateButton then
-					button._owner:PostUpdateButton(self, "Timer")
+				if (button:IsShown() and button._owner.PostUpdateButton) then
+					button._owner:PostUpdateButton(button, "Timer")
 				end
 			end	
 			button.elapsed = 0
@@ -207,14 +230,13 @@ local Aura_SetTimer = function(button, fullDuration, expirationTime)
 		button.fullDuration = 0
 		button.timeStarted = 0
 		button.timeLeft = 0
+	end
 
-		-- Run module post update
-		if button._owner.PostUpdateButton then
-			button._owner:PostUpdateButton(button, "Timer")
-		end
+	-- Run module post update
+	if (button:IsShown() and button._owner.PostUpdateButton) then
+		button._owner:PostUpdateButton(button, "Timer")
 	end
 end
-
 
 local CreateAuraButton = function(element)
 
@@ -349,6 +371,9 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 
 			-- Stop iteration if we've hit the maximum displayed 
 			if (element.maxVisible and (element.maxVisible == visible)) or (element.maxBuffs and (element.maxBuffs == visibleBuffs)) then 
+				if button:IsShown() then 
+					button:Hide()
+				end
 				break 
 			end 
 
@@ -448,6 +473,9 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 
 			-- Stop iteration if we've hit the maximum displayed 
 			if (element.maxVisible and (element.maxVisible == visible)) or (element.maxDebuffs and (element.maxDebuffs == visibleDebuffs)) then 
+				if button:IsShown() then 
+					button:Hide()
+				end
 				break 
 			end 
 
@@ -516,6 +544,31 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 	return visible, visibleDebuffs
 end 
 
+local EvaluateVisibilities = function(element, visible)
+
+	-- Hide superflous buttons
+	local nextAura = visible + 1
+	local visibleKey = tostring(nextAura)
+	while (element[visibleKey]) do
+		local aura = element[visibleKey]
+		aura:Hide()
+		Aura_SetTimer(aura,0,0)
+		nextAura = nextAura + 1
+		visibleKey = tostring(nextAura)
+	end
+
+	-- Decide visibility of the whole frame
+	if (visible == 0) then 
+		if element:IsShown() then
+			element:Hide()
+		end
+	else 
+		if (not element:IsShown()) then
+			element:Show()
+		end
+	end 
+end
+
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
@@ -529,32 +582,14 @@ local Update = function(self, event, unit)
 
 		local visible = 0
 		if Auras.debuffsFirst then 
-			visible = visible + IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible) 
-			visible = visible + IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
+			visible = IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible) 
+			visible = IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
 		else 
-			visible = visible + IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
-			visible = visible + IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible)
+			visible = IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
+			visible = IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible)
 		end 
 
-		-- Hide superflous buttons
-		if (visible == 0) then 
-			if Auras:IsShown() then
-				Auras:Hide()
-			end
-		else 
-			local nextAura = visible + 1
-			local visibleKey = tostring(nextAura)
-			while (Auras[visibleKey]) do
-				Auras[visibleKey]:Hide()
-				Auras[visibleKey]:SetScript("OnUpdate", nil)
-				Aura_SetTimer(Auras[visibleKey],0,0)
-				nextAura = nextAura + 1
-				visibleKey = tostring(nextAura)
-			end
-			if (not Auras:IsShown()) then
-				Auras:Show()
-			end
-		end 
+		EvaluateVisibilities(Auras, visible)
 
 		if Auras.PostUpdate then 
 			Auras:PostUpdate(unit)
@@ -567,26 +602,9 @@ local Update = function(self, event, unit)
 			Buffs:PreUpdate(unit)
 		end
 
-		local visible = IterateBuffs(Buffs, unit, Buffs.buffFilter or Buffs.auraFilter or Buffs.filter, Buffs.BuffFilter or Buffs.AuraFilter, visible)
-		if (visible == 0) then 
-			if Buffs:IsShown() then
-				Buffs:Hide()
-			end
-		else 
-			local nextAura = visible + 1
-			local visibleKey = tostring(nextAura)
-			while (Buffs[visibleKey]) do
-				Buffs[visibleKey]:Hide()
-				Buffs[visibleKey]:SetScript("OnUpdate", nil)
-				Aura_SetTimer(Buffs[visibleKey],0,0)
-				nextAura = nextAura + 1
-				visibleKey = tostring(nextAura)
-			end
-			if (not Buffs:IsShown()) then
-				Buffs:Show()
-			end
-		end 
-		
+		EvaluateVisibilities(Buffs, 
+		IterateBuffs(Buffs, unit, Buffs.buffFilter or Buffs.auraFilter or Buffs.filter, Buffs.BuffFilter or Buffs.AuraFilter))
+
 		if Buffs.PostUpdate then 
 			Buffs:PostUpdate(unit)
 		end 
@@ -598,25 +616,8 @@ local Update = function(self, event, unit)
 			Debuffs:PreUpdate(unit)
 		end
 
-		local visible = IterateDebuffs(Debuffs, unit, Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter, Debuffs.DebuffFilter or Debuffs.AuraFilter, visible) 
-		if (visible == 0) then 
-			if Debuffs:IsShown() then
-				Debuffs:Hide()
-			end
-		else 
-			local nextAura = visible + 1
-			local visibleKey = tostring(nextAura)
-			while (Debuffs[visibleKey]) do
-				Debuffs[visibleKey]:Hide()
-				Debuffs[visibleKey]:SetScript("OnUpdate", nil)
-				Aura_SetTimer(Debuffs[visibleKey],0,0)
-				nextAura = nextAura + 1
-				visibleKey = tostring(nextAura)
-			end
-			if (not Debuffs:IsShown()) then
-				Debuffs:Show()
-			end
-		end 
+		EvaluateVisibilities(Debuffs, 
+		IterateDebuffs(Debuffs, unit, Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter, Debuffs.DebuffFilter or Debuffs.AuraFilter))
 
 		if Debuffs.PostUpdate then 
 			Debuffs:PostUpdate(unit)
@@ -637,12 +638,6 @@ local Enable = function(self)
 	local Auras = self.Auras
 	local Buffs = self.Buffs
 	local Debuffs = self.Debuffs
-
-	--if self.unit == "player" then 
-	--	for i,v in pairs(self) do 
-	--		print(i)
-	--	end
-	--end 
 
 	if (Auras or Buffs or Debuffs) then
 		local unit = self.unit
@@ -720,5 +715,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 16)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 18)
 end 
