@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.31] 2018-08-08
+### Fixed
+- Having more than 3 friendly auras on the target unit frame should no longer produce a nil bug.
+
 ## [1.0.30] 2018-08-07
 ### Changed
 - Player and target unit frame aura icons have had their border slightly slimmed down, and their icons slightly fattened up. 
