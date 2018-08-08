@@ -371,9 +371,6 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 
 			-- Stop iteration if we've hit the maximum displayed 
 			if (element.maxVisible and (element.maxVisible == visible)) or (element.maxBuffs and (element.maxBuffs == visibleBuffs)) then 
-				if button:IsShown() then 
-					button:Hide()
-				end
 				break 
 			end 
 
@@ -473,9 +470,6 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 
 			-- Stop iteration if we've hit the maximum displayed 
 			if (element.maxVisible and (element.maxVisible == visible)) or (element.maxDebuffs and (element.maxDebuffs == visibleDebuffs)) then 
-				if button:IsShown() then 
-					button:Hide()
-				end
 				break 
 			end 
 
