@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 38)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 40)
 if (not LibStatusBar) then	
 	return
 end
@@ -100,11 +100,11 @@ local UpdateByGrowthDirection = {
 		if data.reversedH then
 			-- bar grows from the left to right
 			-- and the bar is also flipped horizontally 
-			-- (e.g. AzeriteUI target absorbbar)
+			-- (e.g. target absorbbar)
 			SetTexCoord(bar, 1, 1-percentage, 0, 1) 
 		else 
 			-- bar grows from the left to right
-			-- (e.g. AzeriteUI player healthbar)
+			-- (e.g. player healthbar)
 			SetTexCoord(bar, 0, percentage, 0, 1) 
 		end 
 
@@ -128,11 +128,11 @@ local UpdateByGrowthDirection = {
 		if data.reversedH then 
 			-- bar grows from the right to left
 			-- and the bar is also flipped horizontally 
-			-- (e.g. AzeriteUI target healthbar)
+			-- (e.g. target healthbar)
 			SetTexCoord(bar, percentage, 0, 0, 1) 
 		else 
 			-- bar grows from the right to left
-			-- (e.g. AzeriteUI player absorbbar)
+			-- (e.g. player absorbbar)
 			SetTexCoord(bar, 1-percentage, 1, 0, 1)
 		end 
 
@@ -780,6 +780,8 @@ StatusBar.IsObjectType = function(self, type) return type == "StatusBar" or type
 StatusBar.Show = function(self) Bars[self].scaffold:Show() end
 StatusBar.Hide = function(self) Bars[self].scaffold:Hide() end
 StatusBar.IsShown = function(self) return Bars[self].scaffold:IsShown() end
+
+StatusBar.IsForbidden = function(self) return true end
 
 LibStatusBar.CreateStatusBar = function(self, parent)
 

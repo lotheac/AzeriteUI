@@ -4,7 +4,7 @@
 -- The thread that started it: 
 -- http://www.wowinterface.com/forums/showthread.php?t=45918
 
-local LibSpinBar = CogWheel:Set("LibSpinBar", 12)
+local LibSpinBar = CogWheel:Set("LibSpinBar", 14)
 if (not LibSpinBar) then	
 	return
 end
@@ -709,9 +709,8 @@ SpinBar.SetSparkFlash = function(self, durationIn, durationOut, minAlpha, maxAlp
 	data.spark:SetAlpha(data.sparkMinAlpha)
 end
 
-
 SpinBar.GetParent = function(self)
-	return Bars[self].scaffold:GetParent()
+	return Bars[self] and Bars[self].scaffold and Bars[self].scaffold:GetParent()
 end
 
 SpinBar.GetObjectType = function(self) return "SpinBar" end
@@ -720,6 +719,8 @@ SpinBar.IsObjectType = function(self, type) return type == "SpinBar" or type == 
 SpinBar.Show = function(self) Bars[self].scaffold:Show() end
 SpinBar.Hide = function(self) Bars[self].scaffold:Hide() end
 SpinBar.IsShown = function(self) return Bars[self].scaffold:IsShown() end
+
+SpinBar.IsForbidden = function(self) return true end
 
 SpinBar.ClearAllPoints = function(self)
 	Bars[self].scaffold:ClearAllPoints()

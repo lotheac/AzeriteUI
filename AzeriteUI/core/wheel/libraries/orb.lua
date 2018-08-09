@@ -1,4 +1,4 @@
-local LibOrb = CogWheel:Set("LibOrb", 18)
+local LibOrb = CogWheel:Set("LibOrb", 19)
 if (not LibOrb) then	
 	return
 end
@@ -484,6 +484,8 @@ Orb.IsObjectType = function(self, type) return type == "Orb" or type == "StatusB
 Orb.Show = function(self) Orbs[self].scaffold:Show() end
 Orb.Hide = function(self) Orbs[self].scaffold:Hide() end
 Orb.IsShown = function(self) return Orbs[self].scaffold:IsShown() end
+
+Orb.IsForbidden = function(self) return true end
 
 -- Fancy method allowing us to crop the orb's sides
 Orb.SetCrop = function(self, leftCrop, rightCrop)
