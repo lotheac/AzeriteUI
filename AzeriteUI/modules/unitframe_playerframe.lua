@@ -1,13 +1,13 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local UnitFramePlayer = AzeriteUI:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
+local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 
 -- Lua API
 local _G = _G
@@ -683,8 +683,6 @@ local Style = function(self, unit, id, ...)
 	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
 	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 
-	--local auraTooltip = UnitFramePlayer:CreateTooltip("AzeriteUI_PlayerAuraTooltip")
-
 
 	-- Texts
 	-----------------------------------------------------------
@@ -747,7 +745,7 @@ local Style = function(self, unit, id, ...)
 	PostUpdateTextures(self)
 end 
 
-UnitFramePlayer.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_LEVEL_UP") then 
 		local level = ...
 		if (level and (level ~= LEVEL)) then
@@ -764,12 +762,12 @@ UnitFramePlayer.OnEvent = function(self, event, ...)
 	PostUpdateTextures(self.frame)
 end
 
-UnitFramePlayer.OnInit = function(self)
+Module.OnInit = function(self)
 	local playerFrame = self:SpawnUnitFrame("player", "UICenter", Style)
 	self.frame = playerFrame
 end 
 
-UnitFramePlayer.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
 	self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
 	self:RegisterEvent("PLAYER_ALIVE", "OnEvent")

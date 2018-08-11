@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 29)
+local LibTooltip = CogWheel:Set("LibTooltip", 31)
 if (not LibTooltip) then	
 	return
 end
@@ -100,6 +100,10 @@ local TEXT_INSET = 10 -- text insets from tooltip edges
 local RIGHT_PADDING= 40 -- padding between left and right messages
 local LINE_PADDING = 4 -- padding between lines of text
 
+-- Fonts
+local FONT_TITLE = Game15Font_o1 
+local FONT_NORMAL = Game13Font_o1 -- Game12Font_o1
+local FONT_VALUE = Game13Font_o1
 
 -- Utility Functions
 ---------------------------------------------------------
@@ -189,7 +193,7 @@ local createNewLinePair = function(tooltip, lineIndex)
 	local left = tooltip:CreateFontString(tooltipName.."TextLeft"..lineIndex)
 	left:Hide()
 	left:SetDrawLayer("ARTWORK")
-	left:SetFontObject((lineIndex == 1) and Game15Font_o1 or Game12Font_o1)
+	left:SetFontObject((lineIndex == 1) and FONT_TITLE or FONT_NORMAL)
 	left:SetTextColor(tooltip.colors.offwhite[1], tooltip.colors.offwhite[2], tooltip.colors.offwhite[3])
 	left:SetJustifyH("LEFT")
 	left:SetJustifyV("TOP")
@@ -203,7 +207,7 @@ local createNewLinePair = function(tooltip, lineIndex)
 	local right = tooltip:CreateFontString(tooltipName.."TextRight"..lineIndex)
 	right:Hide()
 	right:SetDrawLayer("ARTWORK")
-	right:SetFontObject((lineIndex == 1) and Game15Font_o1 or Game12Font_o1)
+	right:SetFontObject((lineIndex == 1) and FONT_TITLE or FONT_NORMAL)
 	right:SetTextColor(tooltip.colors.offwhite[1], tooltip.colors.offwhite[2], tooltip.colors.offwhite[3])
 	right:SetJustifyH("RIGHT")
 	right:SetJustifyV("TOP") 
@@ -564,7 +568,7 @@ Tooltip.AddBar = function(self, barType)
 
 		-- Add a value string, but let the modules handle it.
 		local value = bar:CreateFontString()
-		value:SetFontObject(Game13Font_o1)
+		value:SetFontObject(FONT_VALUE)
 		value:SetPoint("CENTER", 0, 0)
 		value:SetDrawLayer("OVERLAY")
 		value:SetJustifyH("CENTER")
@@ -1691,6 +1695,10 @@ Tooltip.OnShow = function(self)
 	self:UpdateLayout()
 	self:UpdateBarLayout()
 	self:UpdateBackdropLayout()
+
+	-- Tooltips are put in their owner's strata when shown, 
+	-- so we need to bump them back to where they belong.
+	self:SetFrameStrata("TOOLTIP")
 
 	-- Get rid of the Blizzard GameTooltip if possible
 	if (not GameTooltip:IsForbidden()) and (GameTooltip:IsShown()) then 

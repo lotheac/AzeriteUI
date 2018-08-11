@@ -1,11 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local BlizzardMirrorTimers = AzeriteUI:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent", "LibFrame")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent", "LibFrame")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -14,10 +15,6 @@ local table_insert = table.insert
 local table_sort = table.sort
 local table_wipe = table.wipe
 local unpack = unpack
-
--- WoW API
-
-
 
 -- Utility Functions
 -----------------------------------------------------------------
@@ -35,7 +32,7 @@ local sort = function(a, b)
 	end
 end
 
-BlizzardMirrorTimers.UpdateTimer = function(self, frame)
+Module.UpdateTimer = function(self, frame)
 	local timer = self.timers[frame]
 	local min, max = timer.bar:GetMinMaxValues()
 	local value = timer.bar:GetValue()
@@ -51,7 +48,7 @@ BlizzardMirrorTimers.UpdateTimer = function(self, frame)
 end
 
 -- These aren't secure, no? So it's safe to move whenever?
-BlizzardMirrorTimers.UpdateAnchors = function(self)
+Module.UpdateAnchors = function(self)
 	local timers = self.timers
 	local order = self.order or {}
 
@@ -77,7 +74,7 @@ BlizzardMirrorTimers.UpdateAnchors = function(self)
 	end
 end
 
-BlizzardMirrorTimers.StyleTimer = function(self, frame)
+Module.StyleTimer = function(self, frame)
 	local timer = self.timers[frame]
 
 	local frame = timer.frame -- now why, just why?
@@ -146,7 +143,7 @@ BlizzardMirrorTimers.StyleTimer = function(self, frame)
 	
 end
 
-BlizzardMirrorTimers.StyleMirrorTimers = function(self)
+Module.StyleMirrorTimers = function(self)
 	-- Our timer list
 	local timers = self.timers
 
@@ -175,7 +172,7 @@ BlizzardMirrorTimers.StyleMirrorTimers = function(self)
 	end 
 end
 
-BlizzardMirrorTimers.StyleStartTimers = function(self)
+Module.StyleStartTimers = function(self)
 
 	-- Our timer list
 	local timers = self.timers
@@ -205,7 +202,7 @@ BlizzardMirrorTimers.StyleStartTimers = function(self)
 	end
 end 
 
-BlizzardMirrorTimers.TimerShown = function(self, timerType, ...)
+Module.TimerShown = function(self, timerType, ...)
 	local timers = self.timers
 	local frame, name
 
@@ -293,21 +290,21 @@ BlizzardMirrorTimers.TimerShown = function(self, timerType, ...)
 	self:UpdateAnchors()
 end 
 
-BlizzardMirrorTimers.OnCaptureBarVisible = function(self)
+Module.OnCaptureBarVisible = function(self)
 	self.captureBarVisible = true
 
 	-- update timer anchors
 	self:UpdateAnchors()
 end
 
-BlizzardMirrorTimers.OnCaptureBarHidden = function(self)
+Module.OnCaptureBarHidden = function(self)
 	self.captureBarVisible = nil
 
 	-- update timer anchors
 	self:UpdateAnchors()
 end
 
-BlizzardMirrorTimers.OnInit = function(self)
+Module.OnInit = function(self)
 	self.timers = {}
 
 	self:StyleStartTimers()

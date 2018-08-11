@@ -1,14 +1,14 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local OrderHallHUD = AzeriteUI:NewModule("OrderHallHUD", "LibDB", "LibEvent")
+local Module = Core:NewModule("OrderHallHUD", "LibDB", "LibEvent")
 
-OrderHallHUD.OnInit = function(self)
+Module.OnInit = function(self)
 end 
 
-OrderHallHUD.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 

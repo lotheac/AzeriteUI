@@ -1,4 +1,5 @@
-local Auras = CogWheel("LibDB"):NewDatabase("AzeriteUI: Auras")
+local ADDON = ...
+local Auras = CogWheel("LibDB"):NewDatabase(ADDON..": Auras")
 
 -- Lua API
 local _G = _G

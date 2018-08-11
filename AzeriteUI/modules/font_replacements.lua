@@ -1,14 +1,14 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
 -- Disable font changes for testing
 --do return end 
 
-local BlizzardFonts = AzeriteUI:NewModule("BlizzardFonts", "LibEvent")
+local Module = Core:NewModule("BlizzardFonts", "LibEvent")
 
 -- Lua API
 local _G = _G
@@ -25,7 +25,7 @@ end
 
 -- Change some of the Blizzard font objects to use the fonts we've chosen.
 -- (These are the fonts rendered by the user interface's 2D engine.)
-BlizzardFonts.SetFontObjects = function(self)
+Module.SetFontObjects = function(self)
 
 	-- Various chat constants
 	_G.CHAT_FONT_HEIGHTS = { 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32 }
@@ -45,7 +45,7 @@ BlizzardFonts.SetFontObjects = function(self)
 	_G.ChatBubbleFont:SetShadowColor(0, 0, 0, 0)
 end
 
-BlizzardFonts.SetCombatText = function(self)
+Module.SetCombatText = function(self)
 
 	-- speed!
 	local CombatText_ClearAnimationList = _G.CombatText_ClearAnimationList
@@ -101,24 +101,19 @@ BlizzardFonts.SetCombatText = function(self)
 
 end 
 
--- Fonts (especially game engine fonts) need to be set very early in the loading process, 
--- so for this specific module we'll bypass the normal loading order, and just fire away!
---BlizzardFonts:SetGameEngineFonts()
---BlizzardFonts:SetFontObjects()
-
 -- This new one only affects the style and shadow of the chat font, 
 -- and the size, style and shadow of the chat bubble font.  
-BlizzardFonts:SetFontObjects()
+Module:SetFontObjects()
 
 -- Just modifying floating combat text settings here, nothing else.
 if IsAddOnLoaded("Blizzard_CombatText") then
-	BlizzardFonts:SetCombatText()
+	Module:SetCombatText()
 else
-	BlizzardFonts.HookCombatText = function(self, event, addon, ...)
+	Module.HookCombatText = function(self, event, addon, ...)
 		if (addon == "Blizzard_CombatText") then
 			self:SetCombatText()
 			self:UnregisterEvent("ADDON_LOADED", "HookCombatText")
 		end
 	end
-	BlizzardFonts:RegisterEvent("ADDON_LOADED", "HookCombatText")
+	Module:RegisterEvent("ADDON_LOADED", "HookCombatText")
 end

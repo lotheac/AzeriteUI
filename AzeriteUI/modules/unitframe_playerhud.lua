@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local UnitFramePlayerHUD = AzeriteUI:NewModule("UnitFramePlayerHUD", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("UnitFramePlayerHUD", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -566,7 +566,7 @@ local Style = function(self, unit, id, ...)
 	self.ClassPower.PostUpdate = PostUpdateTextures
 end
 
-UnitFramePlayerHUD.OnInit = function(self)
+Module.OnInit = function(self)
 	local playerHUDFrame = self:SpawnUnitFrame("player", "UICenter", Style)
 	self.frame = playerHUDFrame
 end 

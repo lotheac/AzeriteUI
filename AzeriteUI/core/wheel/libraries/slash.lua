@@ -1,4 +1,4 @@
-local LibSlash = CogWheel:Set("LibSlash", 5)
+local LibSlash = CogWheel:Set("LibSlash", 6)
 if (not LibSlash) then	
 	return
 end
@@ -59,7 +59,7 @@ local parseArguments = function(msg)
 
 	-- If multiple arguments exist, split them into separate return values
 	if string_find(msg, "%s") then
-		return string_split(msg, " ") 
+		return string_split(" ", msg) 
 	else
 		return msg
 	end

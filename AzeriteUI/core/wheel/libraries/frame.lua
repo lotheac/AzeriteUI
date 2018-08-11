@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 37)
+local LibFrame = CogWheel:Set("LibFrame", 39)
 if (not LibFrame) then	
 	return
 end
@@ -143,6 +143,7 @@ end
 -----------------------------------------------------------------
 
 local frameWidgetPrototype = {
+
 	-- Position a widget, and accept keywords as anchors
 	Place = function(self, ...)
 		local numArgs = select("#", ...)

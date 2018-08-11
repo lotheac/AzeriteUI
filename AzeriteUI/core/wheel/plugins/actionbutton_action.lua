@@ -616,7 +616,6 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	button.id = buttonID
 	button.action = 0
 
-
 	-- I don't like exposing these, but it's the simplest way right now
 	button._owner = visibility
 	button._pager = page
@@ -838,4 +837,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 22)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 23)

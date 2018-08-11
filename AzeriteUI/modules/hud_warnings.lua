@@ -1,14 +1,14 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local WarningsHUD = AzeriteUI:NewModule("WarningsHUD", "LibDB", "LibEvent")
+local Module = Core:NewModule("WarningsHUD", "LibDB", "LibEvent")
 
-WarningsHUD.OnInit = function(self)
+Module.OnInit = function(self)
 end 
 
-WarningsHUD.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 

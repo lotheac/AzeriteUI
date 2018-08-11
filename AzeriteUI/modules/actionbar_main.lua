@@ -1,13 +1,13 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local ActionBarMain = AzeriteUI:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibActionButton")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local L = CogWheel("LibLocale"):GetLocale("AzeriteUI")
+local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibActionButton")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
 local _G = _G
@@ -26,15 +26,41 @@ local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
 local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
 
+-- Styling options
+local buttonSize, buttonSpacing, iconSize = 64, 8, 44
+
+-- constant to track combat state
+local IN_COMBAT
 
 -- Default settings
 -- Changing these does NOT change in-game settings
 local defaults = {
-	castOnDown = false,
-	showBinds = true, 
-	showCooldown = true, 
-	showNames = false,
+
+	-- button count modes
+	buttonsPrimary = 1, -- 7, 10, 12
+	buttonsComplimentary = 1, -- 6, 12
+
+	-- enable extra bars
+	enableComplimentary = false, 
+	enableStance = false, 
+	enablePet = false, 
+
+	-- visibility modes	 
+	-- 1= mouseover, 2= +combat 3= always
+	visibilityPrimary = 1,
+	visibilityComplimentary = 1, 
+	visibilityStance = 1, 
+	visibilityPet = 1, 
+
+	-- todo
+	castOnDown = false
+	
+	-- probably not going to implement
+	--showBinds = true, 
+	--showCooldown = true, 
+	--showNames = false,
 }
+
 
 -- Utility Functions
 ----------------------------------------------------
@@ -89,12 +115,18 @@ local shortenKeybind = function(key)
 	end
 end
 
-
 -- ActionButton Template
 ----------------------------------------------------
 local ActionButton = {}
 
--- Called by mouseover scripts
+ActionButton.UpdateBinding = function(self)
+	local Keybind = self.Keybind
+	if Keybind then 
+		local key = self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton")
+		Keybind:SetText(shortenKeybind(key) or "")
+	end 
+end
+
 ActionButton.UpdateMouseOver = function(self)
 	local colors = self.colors
 	if self.isMouseOver then 
@@ -132,31 +164,9 @@ ActionButton.PostUpdate = function(self)
 	self:UpdateMouseOver()
 end 
 
-ActionButton.UpdateBinding = function(self)
-	local Keybind = self.Keybind
-	if Keybind then 
-		local key = self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton")
-		Keybind:SetText(shortenKeybind(key) or "")
-	end 
-end
-
-
--- Todo: make some or most of these layers baseline, 
--- they are required to properly use the button after all.
 ActionButton.PostCreate = function(self, ...)
 
-	local barID, buttonID = ...
-
-	local buttonSize, buttonSpacing,iconSize = 64, 8, 44
-	local fontObject, fontStyle, fontSize = GameFontNormal, "OUTLINE", 14
-
 	self:SetSize(buttonSize,buttonSize)
-
-	if (barID == 1) then 
-		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
-	elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
-		self:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 42 )
-	end 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -296,110 +306,43 @@ ActionButton.PostCreate = function(self, ...)
 
 end 
 
-ActionBarMain.UpdateBindings = function(self)
+-- Module API
+----------------------------------------------------
+Module.ArrangeButtons = function(self)
 
-	-- "BONUSACTIONBUTTON%d" -- pet bar
-	-- "SHAPESHIFTBUTTON%d" -- stance bar
+	local db = self.db
 
-	-- Grab the keybinds
-	for button in self:GetAllActionButtonsByType("action") do 
+	local complimentaryOffset = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 10 or 7
+	local row2mod = -2/5
 
-		local pager = button:GetPager()
-
-		-- clear current overridebindings
-		ClearOverrideBindings(pager) 
-
-		-- retrieve page and button id
+	for id, button in ipairs(self.buttons) do 
 		local buttonID = button:GetID()
-		local barID = button:GetPageID()
-
-		-- figure out the binding action
-		local bindingAction
+		local barID = button:GetPager():GetID()
 		if (barID == 1) then 
-			bindingAction = ("ACTIONBUTTON%d"):format(buttonID)
+
+			if (buttonID < 11) then
+				button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
+			else
+				button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + ((buttonID-2-1 + row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+			end 
 
 		elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR1BUTTON%d"):format(buttonID)
 
-		elseif (barID == BOTTOMRIGHT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR2BUTTON%d"):format(buttonID)
-
-		elseif (barID == RIGHT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR3BUTTON%d"):format(buttonID)
-
-		elseif (barID == LEFT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR4BUTTON%d"):format(buttonID)
+			if (buttonID < 7) then 
+				button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+			else 
+				if (complimentaryOffset < 10) then 
+					button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID-5+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+				else
+					button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+				end 
+			end 
 		end 
-
-		-- store the binding action name on the button
-		button.bindingAction = bindingAction
-
-		-- iterate through the registered keys for the action
-		for keyNumber = 1, select("#", GetBindingKey(bindingAction)) do 
-
-			-- get a key for the action
-			local key = select(keyNumber, GetBindingKey(bindingAction)) 
-			if (key and (key ~= "")) then
-
-				-- this is why we need named buttons
-				SetOverrideBindingClick(pager, false, key, button:GetName()) -- assign the key to our own button
-			end	
-		end
 	end 
 
-	-- Update keybinds for pet battles, 
-	-- so our bars don't steal them.
-	self:GetPetBattleController()
-end 
-
-
-ActionBarMain.GetPetBattleController = function(self)
-	if (not self.petBattleController) then
-
-		-- The blizzard petbattle UI gets its keybinds from the primary action bar, 
-		-- so in order for the petbattle UI keybinds to function properly, 
-		-- we need to temporarily give the primary action bar backs its keybinds.
-		local petbattle = self:CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
-		petbattle:SetAttribute("_onattributechanged", [[
-			if (name == "state-petbattle") then
-				if (value == "petbattle") then
-					for i = 1,6 do
-						local our_button, blizz_button = ("CLICK AzeriteUIActionButton%d:LeftButton"):format(i), ("ACTIONBUTTON%d"):format(i)
-
-						-- Grab the keybinds from our own primary action bar,
-						-- and assign them to the default blizzard bar. 
-						-- The pet battle system will in turn get its bindings 
-						-- from the default blizzard bar, and the magic works! :)
-						
-						for k=1,select("#", GetBindingKey(our_button)) do
-							local key = select(k, GetBindingKey(our_button)) -- retrieve the binding key from our own primary bar
-							self:SetBinding(true, key, blizz_button) -- assign that key to the default bar
-						end
-						
-						-- do the same for the default UIs bindings
-						for k=1,select("#", GetBindingKey(blizz_button)) do
-							local key = select(k, GetBindingKey(blizz_button))
-							self:SetBinding(true, key, blizz_button)
-						end	
-					end
-				else
-					-- Return the key bindings to whatever buttons they were
-					-- assigned to before we so rudely grabbed them! :o
-					self:ClearBindings()
-				end
-			end
-		]])
-
-		-- Do we ever need to update his?
-		RegisterAttributeDriver(petbattle, "state-petbattle", "[petbattle]petbattle;nopetbattle")
-
-		self.petBattleController = petbattle
-	end
-
-	return self.petBattleController
 end
 
-ActionBarMain.SpawnVehicleExitButton = function(self)
+Module.SpawnVehicleExitButton = function(self)
 
 	local button = self:CreateFrame("Button", nil, "UICenter", "SecureActionButtonTemplate")
 	button:SetFrameStrata("MEDIUM")
@@ -423,7 +366,7 @@ ActionBarMain.SpawnVehicleExitButton = function(self)
 		tooltip:Hide()
 		tooltip:SetDefaultAnchor(button)
 		tooltip:AddLine(LEAVE_VEHICLE)
-		tooltip:AddLine(L["<Left-click> to leave the vehicle."], Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		tooltip:AddLine(L["%s to leave the vehicle."]:format(L["<Left-Click>"]), Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
 		tooltip:Show()
 	end)
 
@@ -438,60 +381,52 @@ ActionBarMain.SpawnVehicleExitButton = function(self)
 	self.VehicleExitButton = button
 end
 
-ActionBarMain.SpawnTaxiExitButton = function(self)
-
+Module.SpawnTaxiExitButton = function(self)
 end
 
-ActionBarMain.SpawnButtons = function(self)
+Module.SpawnButtons = function(self)
 	local db = self.db
 
-	local buttons = {}
-	local name = "AzeriteUIActionButton"
+	local buttonsPrimary = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 12 or 7
+	local buttonsComplimentary = db.buttonsComplimentary == 1 and 6 or db.buttonsComplimentary == 2 and 12 or 6
+
+	-- test mode to show all
+	local FORCED = false 
+
+	local buttons = {} -- local button registry
+	local hoverButtons1, hoverButtons2 = {}, {} -- buttons hiding
+	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
 
 	-- Mainbar, visible part
 	for id = 1,7 do
-		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, 1, id, "") 
+		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id, "") 
 		buttons[#buttons + 1] = button
 	end
 
-	local hoverButtons1, hoverButtons2 = {}, {}
-
 	-- Mainbar, hidden part
 	for id = 8,12 do 
-		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, 1, id) 
-		button:GetPager():SetAlpha(0)
+		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
+		if (id > buttonsPrimary) then 
+			button:GetPager():Hide()
+		end 
+		--button:GetPager():SetAlpha(0)
 
 		buttons[#buttons + 1] = button
 		hoverButtons1[#hoverButtons1 + 1] = button 
 		hoverButtons1[button] = true
 	end 
 
-	-- "Bottomleft"
-	for id = 1,6 do 
-		local button = self:SpawnActionButton("action", "UICenter", name..(#buttons + 1), ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
-		button:GetPager():SetAlpha(0)
-
-		buttons[#buttons + 1] = button
-		hoverButtons2[#hoverButtons2 + 1] = button 
-		hoverButtons2[button] = true
-	end 
-
-
-	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
+	-- store the button cache
+	self.buttons = buttons
 
 	local hoverFrame1 = self:CreateFrame("Frame")
-	hoverFrame1:SetPoint("TOPLEFT", hoverButtons1[1], "TOPLEFT", 0, 0)
-	hoverFrame1:SetPoint("BOTTOMRIGHT", hoverButtons1[#hoverButtons1], "BOTTOMRIGHT", 0, 0)
-
-	local hoverFrame2 = self:CreateFrame("Frame")
-	hoverFrame2:SetPoint("TOPLEFT", hoverButtons2[1], "TOPLEFT", 0, 0)
-	hoverFrame2:SetPoint("BOTTOMRIGHT", hoverButtons2[#hoverButtons2], "BOTTOMRIGHT", 0, 0)
-
+	hoverFrame1:SetPoint("BOTTOMLEFT", hoverButtons1[1], "BOTTOMLEFT", 0, 0)
+	hoverFrame1:SetPoint("TOPRIGHT", hoverButtons1[#hoverButtons1], "TOPRIGHT", 0, 0)
 	hoverFrame1:SetScript("OnUpdate", function(self, elapsed) 
 		self.elapsed = (self.elapsed or 0) - elapsed
 
 		if (self.elapsed <= 0) then
-			if self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
+			if FORCED or self.always or (self.incombat and IN_COMBAT) or self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
 					self.alpha = 1
@@ -522,48 +457,6 @@ ActionBarMain.SpawnButtons = function(self)
 			self.elapsed = .05
 		end 
 	end)
-
-
-	hoverFrame2:SetScript("OnUpdate", function(self, elapsed) 
-		self.elapsed = (self.elapsed or 0) - elapsed
-
-		if (self.elapsed <= 0) then
-			if self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
-				if (not self.isMouseOver) then 
-					self.isMouseOver = true
-					self.alpha = 1
-					for id, button in ipairs(hoverButtons2) do
-						button:GetPager():SetAlpha(self.alpha)
-					end 
-				end 
-			else 
-				if self.isMouseOver then 
-					self.isMouseOver = nil
-					if (not self.fadeOutTime) then 
-						self.fadeOutTime = fadeOutTime
-					end 
-				end 
-				if self.fadeOutTime then 
-					self.fadeOutTime = self.fadeOutTime - elapsed
-					if self.fadeOutTime > 0 then 
-						self.alpha = self.fadeOutTime / fadeOutTime
-					else 
-						self.alpha = 0
-						self.fadeOutTime = nil
-					end 
-					for id, button in ipairs(hoverButtons2) do
-						button:GetPager():SetAlpha(self.alpha)
-					end 
-				end 
-			end 
-			self.elapsed = .05
-		end 
-	end)
-
-	-- Set this to initiate the first fade-out
-	hoverFrame1.isMouseOver = true 
-	hoverFrame2.isMouseOver = true 
-	
 	hoverFrame1:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "ACTIONBAR_SHOWGRID") then 
 			self.forced = true
@@ -571,7 +464,60 @@ ActionBarMain.SpawnButtons = function(self)
 			self.forced = nil
 		end 
 	end)
+	hoverFrame1:RegisterEvent("ACTIONBAR_HIDEGRID")
+	hoverFrame1:RegisterEvent("ACTIONBAR_SHOWGRID")
+	hoverFrame1.isMouseOver = true -- Set this to initiate the first fade-out
 
+	-- "Bottomleft"
+	for id = 1,12 do 
+		local button = self:SpawnActionButton("action", "UICenter", ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
+		if (not db.enableComplimentary) or (id > buttonsComplimentary) then 
+			button:GetPager():Hide()
+		end 
+
+		buttons[#buttons + 1] = button
+		hoverButtons2[#hoverButtons2 + 1] = button 
+		hoverButtons2[button] = true
+	end 
+
+	local hoverFrame2 = self:CreateFrame("Frame")
+	hoverFrame2:SetPoint("BOTTOMLEFT", hoverButtons2[1], "BOTTOMLEFT", 0, 0)
+	hoverFrame2:SetPoint("TOPRIGHT", hoverButtons2[#hoverButtons2], "TOPRIGHT", 0, 0)
+	hoverFrame2:SetScript("OnUpdate", function(self, elapsed) 
+		self.elapsed = (self.elapsed or 0) - elapsed
+
+		if (self.elapsed <= 0) then
+			if FORCED or self.always or (self.incombat and IN_COMBAT) or self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
+				if (not self.isMouseOver) then 
+					self.isMouseOver = true
+					self.alpha = 1
+					for id, button in ipairs(hoverButtons2) do
+						button:GetPager():SetAlpha(self.alpha)
+					end 
+				end 
+			else 
+				if self.isMouseOver then 
+					self.isMouseOver = nil
+					if (not self.fadeOutTime) then 
+						self.fadeOutTime = fadeOutTime
+					end 
+				end 
+				if self.fadeOutTime then 
+					self.fadeOutTime = self.fadeOutTime - elapsed
+					if self.fadeOutTime > 0 then 
+						self.alpha = self.fadeOutTime / fadeOutTime
+					else 
+						self.alpha = 0
+						self.fadeOutTime = nil
+					end 
+					for id, button in ipairs(hoverButtons2) do
+						button:GetPager():SetAlpha(self.alpha)
+					end 
+				end 
+			end 
+			self.elapsed = .05
+		end 
+	end)
 	hoverFrame2:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "ACTIONBAR_SHOWGRID") then 
 			self.forced = true
@@ -579,13 +525,10 @@ ActionBarMain.SpawnButtons = function(self)
 			self.forced = nil
 		end 
 	end)
-
-	hoverFrame1:RegisterEvent("ACTIONBAR_HIDEGRID")
-	hoverFrame1:RegisterEvent("ACTIONBAR_SHOWGRID")
-
 	hoverFrame2:RegisterEvent("ACTIONBAR_HIDEGRID")
 	hoverFrame2:RegisterEvent("ACTIONBAR_SHOWGRID")
-
+	hoverFrame2.isMouseOver = true -- Set this to initiate the first fade-out
+	
 	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
 		if hoverButtons1[self] then 
 			hoverFrame1.flyout = self:HasFlyoutShown()
@@ -594,41 +537,249 @@ ActionBarMain.SpawnButtons = function(self)
 		end 
 	end)
 
+	self.hoverFrame1 = hoverFrame1
+	self.hoverFrame2 = hoverFrame2
+
+	-- options proxy
+	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
+	proxy.UpdateFading = function(proxy) self:UpdateFading() end
+	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
+	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", BOTTOMLEFT_ACTIONBAR_PAGE);
+
+	-- Store references to all buttons and their pagers
+	for id,button in ipairs(buttons) do 
+		proxy:SetFrameRef("Button"..id, button)
+		proxy:SetFrameRef("Pager"..id, button:GetPager())
+	end 
+
+	-- store all the saved settings
+	for key,value in pairs(db) do 
+		proxy:SetAttribute(key,value)
+	end 
+
+	-- insert buttons into an indexed table
+	proxy:Execute([=[
+		Buttons = table.new(); 
+		Pagers = table.new();
+
+		local counter = 1; 
+		local button = self:GetFrameRef("Button"..counter);
+		while button do 
+			table.insert(Buttons, button); 
+			table.insert(Pagers, self:GetFrameRef("Pager"..counter)); 
+			counter = counter + 1;
+			button = self:GetFrameRef("Button"..counter);
+		end 
+	]=])
+
+	-- arrange buttons according to the stored settings
+	proxy:SetAttribute("arrangeButtons", [=[
+
+		local UICenter = self:GetFrameRef("UICenter"); 
+
+		local buttonsPrimary = tonumber(self:GetAttribute("buttonsPrimary")) or 1; 
+		local buttonsComplimentary = tonumber(self:GetAttribute("buttonsComplimentary")) or 1; 
+
+		local complimentaryOffset = buttonsPrimary == 1 and 7 or buttonsPrimary == 2 and 10 or buttonsPrimary == 3 and 10 or 7;
+		local buttonSize, buttonSpacing, iconSize = 64, 8, 44; 
+		local row2mod = -2/5 
+
+		for id, button in ipairs(Buttons) do 
+			local buttonID = button:GetID(); 
+			local barID = Pagers[id]:GetID(); 
+
+			if (barID == 1) then 
+
+				button:ClearAllPoints(); 
+				if (buttonID < 11) then
+					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
+				else
+					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + ((buttonID-2-1 + row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+				end 
+
+			elseif (barID == self:GetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE")) then 
+
+				button:ClearAllPoints(); 
+				if (buttonID < 7) then 
+					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+				else 
+					if (complimentaryOffset < 10) then 
+						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-5+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+					else 
+						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+					end 
+				end 
+			end 
+		end 
+	
+	]=])
+
+
+	-- fires when the menu module changes a stored setting
+	proxy:SetAttribute("_onattributechanged", [=[
+		-- 'name' appears to be turned to lowercase by the restricted environment(?), 
+		-- but we're doing it manually anyway, just to avoid problems. 
+		if name then 
+			name = string.lower(name); 
+		end 
+
+		if (name == "change-visibilityprimary") then 
+			self:SetAttribute("visibilityPrimary", tonumber(value)); 
+			self:CallMethod("UpdateFading"); 
+
+		elseif (name == "change-visibilitycomplimentary") then 
+			self:SetAttribute("visibilityComplimentary", tonumber(value)); 
+			self:CallMethod("UpdateFading"); 
+
+		elseif (name == "change-enablecomplimentary") then 
+			local buttonsComplimentary = self:GetAttribute("buttonsComplimentary"); 
+			local numVisible = buttonsComplimentary == 1 and 6 or buttonsComplimentary == 2 and 12 or 6; 
+	
+			if value then 
+				for i = 13,24 do 
+					local pager = Pagers[i]; 
+					if (i > (12 + numVisible)) then 
+						if pager:IsShown() then 
+							pager:Hide(); 
+						end 
+					else 
+						if (not pager:IsShown()) then 
+							pager:Show(); 
+						end 
+					end 
+				end 
+			else
+				for i = 13,24 do 
+					local pager = Pagers[i]; 
+					if pager:IsShown() then 
+						pager:Hide(); 
+					end 
+				end 
+			end 
+
+			self:SetAttribute("enableComplimentary", value); 
+			self:RunAttribute("arrangeButtons"); 
+
+		elseif (name == "change-enablepet") then 
+			self:SetAttribute("enablePet", value); 
+
+		elseif (name == "change-enablestance") then 
+			self:SetAttribute("enableStance", value); 
+
+		elseif (name == "change-buttonsprimary") then 
+			local buttonsPrimary = tonumber(value) or 1; 
+			local numVisible = buttonsPrimary == 1 and 7 or buttonsPrimary == 2 and 10 or buttonsPrimary == 3 and 12 or 7; 
+	
+			for i = 8,12 do 
+				local pager = Pagers[i]; 
+				if (i > numVisible) then 
+					if pager:IsShown() then 
+						pager:Hide(); 
+					end 
+				else 
+					if (not pager:IsShown()) then 
+						pager:Show(); 
+					end 
+				end 
+			end 
+
+			self:SetAttribute("buttonsPrimary", buttonsPrimary); 
+			self:RunAttribute("arrangeButtons"); 
+
+		elseif (name == "change-buttonscomplimentary") then 
+			if self:GetAttribute("enableComplimentary") then 
+				local buttonsComplimentary = tonumber(value); 
+				local numVisible = buttonsComplimentary == 1 and 6 or buttonsComplimentary == 2 and 12 or 6; 
+				for i = 13,24 do 
+					local pager = Pagers[i]; 
+					if (i > (12 + numVisible)) then 
+						if pager:IsShown() then 
+							pager:Hide(); 
+						end 
+					else 
+						if (not pager:IsShown()) then 
+							pager:Show(); 
+						end 
+					end 
+				end 
+			else
+				for i = 13,24 do 
+					local pager = Pagers[i]; 
+					if pager:IsShown() then 
+						pager:Hide(); 
+					end 
+				end 
+			end 
+
+			self:SetAttribute("buttonsComplimentary", buttonsComplimentary); 
+			self:RunAttribute("arrangeButtons"); 
+		end 
+
+	]=])
+
+	self.proxyUpdater = proxy
 end 
 
-ActionBarMain.UpdateSettings = function(self)
+Module.GetSecureUpdater = function(self)
+	return self.proxyUpdater
+end
+
+Module.UpdateFading = function(self)
 	local db = self.db
 
+	self.hoverFrame1.incombat = db.visibilityPrimary == 2
+	self.hoverFrame1.always = db.visibilityPrimary == 3
+
+	self.hoverFrame2.incombat = db.visibilityComplimentary == 2
+	self.hoverFrame2.always = db.visibilityComplimentary == 3
+
+end 
+
+Module.UpdateSettings = function(self, event, ...)
+	if InCombatLockdown() then 
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateSettings")
+	end
+	if (event == "PLAYER_REGEN_ENABLED") then 
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "UpdateSettings")
+	end 
+	local db = self.db
 	for button in self:GetAllActionButtonsOrdered() do 
 		button:RegisterForClicks(db.castOnDown and "AnyDown" or "AnyUp")
 		button:Update()
 	end 
+	self:UpdateFading()
 end 
 
-ActionBarMain.OnEvent = function(self, event, ...)
-
+Module.OnEvent = function(self, event, ...)
 	if (event == "UPDATE_BINDINGS") then 
-		self:UpdateBindings()
-
+		self:UpdateActionButtonBindings()
 	elseif (event == "PLAYER_ENTERING_WORLD") then 
-		self:UpdateBindings()
+		self:UpdateActionButtonBindings()
+	elseif (event == "PLAYER_REGEN_DISABLED") then
+		IN_COMBAT = true 
+	elseif (event == "PLAYER_REGEN_ENABLED") then 
+		IN_COMBAT = false
 	end 
-
 end 
 
-ActionBarMain.OnInit = function(self)
+Module.OnInit = function(self)
 	self.db = self:NewConfig("ActionBars", defaults, "global")
 
 	-- Spawn the buttons
 	self:SpawnButtons()
 	self:SpawnVehicleExitButton()
 
+	-- Arrange buttons 
+	self:ArrangeButtons()
+
 	-- Update saved settings
-	self:UpdateBindings()
+	self:UpdateActionButtonBindings()
 	self:UpdateSettings()
 end 
 
-ActionBarMain.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:RegisterEvent("UPDATE_BINDINGS", "OnEvent")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent")
 end

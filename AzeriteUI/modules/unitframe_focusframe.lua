@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local UnitFrameFocus = AzeriteUI:NewModule("UnitFrameFocus", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("UnitFrameFocus", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -79,7 +79,7 @@ end
 local Style = function(self, unit, id, ...)
 end 
 
-UnitFrameFocus.OnInit = function(self)
+Module.OnInit = function(self)
 	local focusFrame = self:SpawnUnitFrame("focus", "UICenter", Style)
 	self.frame = focusFrame
 end 

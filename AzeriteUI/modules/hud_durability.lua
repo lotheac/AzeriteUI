@@ -1,12 +1,13 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local DurabilityHUD = AzeriteUI:NewModule("DurabilityHUD", "LibFrame")
+local Module = Core:NewModule("DurabilityHUD", "LibFrame")
 
-DurabilityHUD.OnInit = function(self)
+Module.OnInit = function(self)
 	local content = _G.DurabilityFrame
 	if (not content) then
 		return

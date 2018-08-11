@@ -1,14 +1,14 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local WorldStateHUD = AzeriteUI:NewModule("WorldStateHUD", "LibDB", "LibEvent")
+local Module = Core:NewModule("WorldStateHUD", "LibDB", "LibEvent")
 
-WorldStateHUD.OnInit = function(self)
+Module.OnInit = function(self)
 end 
 
-WorldStateHUD.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 

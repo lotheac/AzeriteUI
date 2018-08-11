@@ -1,11 +1,11 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local BlizzardPopupStyling = AzeriteUI:NewModule("BlizzardPopupStyling", "LibEvent", "LibDB", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("BlizzardPopupStyling", "LibEvent", "LibDB", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -22,8 +22,7 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
-
-BlizzardPopupStyling.StylePopUp = function(self, popup)
+Module.StylePopUp = function(self, popup)
 	if (not self.styled) then
 		self.styled = {}
 	end
@@ -46,7 +45,8 @@ BlizzardPopupStyling.StylePopUp = function(self, popup)
 		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
 		edgeFile = getPath("tooltip_border_blizzcompatible"),
 		edgeSize = 32, 
-		tile = true, tileSize = 256, 
+		tile = false, -- tiles don't tile vertically (?)
+		--tile = true, tileSize = 256, 
 		insets = { top = 2.5, bottom = 2.5, left = 2.5, right = 2.5 }
 	})
 	backdrop:SetBackdropColor(.05, .05, .05, .85)
@@ -136,7 +136,7 @@ end
 
 -- Not strictly certain if moving them in combat would taint them, 
 -- but knowing the blizzard UI, I'm not willing to take that chance.
-BlizzardPopupStyling.UpdateLayout = function(self)
+Module.UpdateLayout = function(self)
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end 
@@ -159,7 +159,7 @@ BlizzardPopupStyling.UpdateLayout = function(self)
 	end
 end
 
-BlizzardPopupStyling.StylePopUps = function(self)
+Module.StylePopUps = function(self)
 	for i = 1, STATICPOPUP_NUMDIALOGS do
 		local popup = _G["StaticPopup"..i]
 		if popup then
@@ -169,14 +169,14 @@ BlizzardPopupStyling.StylePopUps = function(self)
 end
 
 
-BlizzardPopupStyling.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_REGEN_ENABLED") then 
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 		self:UpdateLayout()
 	end 
 end 
 
-BlizzardPopupStyling.OnInit = function(self)
+Module.OnInit = function(self)
 
 	-- initial styling (is more needed?)
 	self:StylePopUps() 

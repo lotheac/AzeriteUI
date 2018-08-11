@@ -1,11 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local BlizzardTooltipStyling = AzeriteUI:NewModule("BlizzardTooltipStyling", "LibEvent", "LibDB", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("BlizzardTooltipStyling", "LibEvent", "LibDB", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -74,8 +75,8 @@ local blizzardDrops = {
 	"VoiceMacroMenu"
 }
 
-BlizzardTooltipStyling.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 
 
-BlizzardTooltipStyling.OnInit = function(self)
+Module.OnInit = function(self)
 end 

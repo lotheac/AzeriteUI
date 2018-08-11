@@ -1,13 +1,13 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local UnitFrameParty = AzeriteUI:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
+local Module = Core:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 
 -- Lua API
 local _G = _G
@@ -288,7 +288,7 @@ local Style = function(self, unit, id, ...)
 	
 end 
 
-UnitFrameParty.OnInit = function(self)
+Module.OnInit = function(self)
 
 	-- Create a secure parent to handle visibility changes
 	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")

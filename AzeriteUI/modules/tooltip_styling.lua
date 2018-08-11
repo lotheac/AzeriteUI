@@ -1,11 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local TooltipStyling = AzeriteUI:NewModule("TooltipStyling", "LibEvent", "LibDB", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("TooltipStyling", "LibEvent", "LibDB", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -76,17 +77,18 @@ end
 -- Set defalut values for all our tooltips
 -- The modules can overwrite this by adding their own settings, 
 -- this is just the fallbacks to have a consistent base look.
-TooltipStyling.StyleTooltips = function(self)
+Module.StyleTooltips = function(self)
 
 	self:SetDefaultTooltipBackdrop({
-		bgFile = [[Interface\FrameGeneral\UI-Background-Marble]],
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]], -- [[Interface\FrameGeneral\UI-Background-Marble]],
 		edgeFile = getPath("tooltip_border_blizzcompatible"),
 		edgeSize = 32, 
-		tile = true, tileSize = 256, 
+		tile = false, -- tiles don't tile vertically (?)
+		--tile = true, tileSize = 256, 
 		insets = { top = 2.5, bottom = 2.5, left = 2.5, right = 2.5 }
 	})
-	self:SetDefaultTooltipBackdropColor(1, 1, 1, 1)
-	self:SetDefaultTooltipBackdropBorderColor(1, 1, 1, 1)
+	self:SetDefaultTooltipBackdropColor(.05, .05, .05, .85) -- 1, 1, 1, 1
+	self:SetDefaultTooltipBackdropBorderColor(1, 1, 1, 1) 
 
 	-- Points the backdrop is offset outwards
 	-- (left, right, top, bottom)
@@ -122,7 +124,7 @@ TooltipStyling.StyleTooltips = function(self)
 end 
 
 -- This will be called by the library upon creating new tooltips.
-TooltipStyling.PostCreateTooltip = function(self, tooltip)
+Module.PostCreateTooltip = function(self, tooltip)
 
 	-- many tooltip flags are not implemented yet!
 
@@ -155,29 +157,29 @@ end
 
 -- Add some of our own stuff to our tooltips.
 -- Making this a proxy of the standard post creation method.
-TooltipStyling.PostCreateTooltips = function(self)
+Module.PostCreateTooltips = function(self)
 	self:ForAllTooltips(function(tooltip) 
 		self:PostCreateTooltip(tooltip)
 	end) 
 end 
 
 -- Do some basic styling of blizzard tooltips too
-TooltipStyling.StyleBlizzardTooltips = function(self)
+Module.StyleBlizzardTooltips = function(self)
 	
 end 
 
-TooltipStyling.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_LOGIN") then 
 		self:PostCreateTooltips()
 	end 
 end 
 
-TooltipStyling.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:PostCreateTooltips()
 	self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
 end 
 
-TooltipStyling.OnInit = function(self)
+Module.OnInit = function(self)
 	self:StyleTooltips()
 	self:StyleBlizzardTooltips()
 end 

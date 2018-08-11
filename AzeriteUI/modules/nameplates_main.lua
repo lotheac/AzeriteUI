@@ -1,11 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local NamePlates = AzeriteUI:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -202,7 +203,7 @@ end
 
 -- Called on PLAYER_ENTERING_WORLD by the library, 
 -- but before the library calls its own updates.
-NamePlates.PreUpdateNamePlateOptions = function(self)
+Module.PreUpdateNamePlateOptions = function(self)
 
 	local _, instanceType = IsInInstance()
 	if (instanceType == "none") then
@@ -221,7 +222,7 @@ end
 
 -- Called when certain bindable blizzard settings change, 
 -- or when the VARIABLES_LOADED event fires. 
-NamePlates.PostUpdateNamePlateOptions = function(self, isInInstace)
+Module.PostUpdateNamePlateOptions = function(self, isInInstace)
 
 	-- Make an extra call to the preupdate
 	self:PreUpdateNamePlateOptions()
@@ -285,7 +286,7 @@ end
 
 -- Called after a nameplate is created.
 -- This is where we create our own custom elements.
-NamePlates.PostCreateNamePlate = function(self, plate, baseFrame)
+Module.PostCreateNamePlate = function(self, plate, baseFrame)
 
 	plate:SetSize(80,32)
 	plate.colors = Colors 
@@ -381,7 +382,7 @@ end
 -- Module Updates
 -----------------------------------------------------------------
 
-NamePlates.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_LEVEL_UP") then 
 		local level = ...
 		if (level and (level ~= LEVEL)) then
@@ -395,10 +396,10 @@ NamePlates.OnEvent = function(self, event, ...)
 	end
 end
 
-NamePlates.OnInit = function(self)
+Module.OnInit = function(self)
 	local WEAKAURAS = self:IsAddOnEnabled("WeakAuras")
 end 
 
-NamePlates.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:StartNamePlateEngine()
 end 

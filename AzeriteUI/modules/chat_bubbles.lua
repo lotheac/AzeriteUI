@@ -1,13 +1,14 @@
+local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local ChatBubbles = AzeriteUI:NewModule("ChatBubbles", "LibEvent", "LibChatBubble")
+local Module = Core:NewModule("ChatBubbles", "LibEvent", "LibChatBubble")
 
-ChatBubbles.OnInit = function(self)
+Module.OnInit = function(self)
 end 
 
-ChatBubbles.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 

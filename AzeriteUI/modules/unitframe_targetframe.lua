@@ -1,13 +1,13 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local UnitFrameTarget = AzeriteUI:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local Auras = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras")
+local Module = Core:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 
 -- Lua API
 local _G = _G
@@ -829,7 +829,7 @@ local Style = function(self, unit, id, ...)
 
 end
 
-UnitFrameTarget.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_TARGET_CHANGED") then
 	
 		if UnitExists("target") then
@@ -862,12 +862,12 @@ UnitFrameTarget.OnEvent = function(self, event, ...)
 	end
 end
 
-UnitFrameTarget.OnInit = function(self)
+Module.OnInit = function(self)
 	local targetFrame = self:SpawnUnitFrame("target", "UICenter", Style)
 	self.frame = targetFrame
 end 
 
-UnitFrameTarget.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
 end 

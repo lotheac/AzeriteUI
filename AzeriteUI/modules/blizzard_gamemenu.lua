@@ -1,11 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local BlizzardGameMenu = AzeriteUI:NewModule("BlizzardGameMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("BlizzardGameMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -32,7 +33,7 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
-BlizzardGameMenu.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_REGEN_ENABLED") then 
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 		self:UpdateButtonLayout()
@@ -40,7 +41,7 @@ BlizzardGameMenu.OnEvent = function(self, event, ...)
 end 
 
 -- to avoid potential taint, we safewrap the layout method
-BlizzardGameMenu.UpdateButtonLayout = function(self)
+Module.UpdateButtonLayout = function(self)
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end 
@@ -79,7 +80,7 @@ BlizzardGameMenu.UpdateButtonLayout = function(self)
 
 end
 
-BlizzardGameMenu.StyleButtons = function(self)
+Module.StyleButtons = function(self)
 	local UICenter = self:GetFrame("UICenter")
 
 	local need_addon_watch
@@ -315,7 +316,7 @@ BlizzardGameMenu.StyleButtons = function(self)
 	self:UpdateButtonLayout()
 end
 
-BlizzardGameMenu.StyleWindow = function(self, frame)
+Module.StyleWindow = function(self, frame)
 
 	self.frame:EnableMouse(false) -- only need the mouse on the actual buttons
 	self.frame:SetBackdrop(nil) 
@@ -369,7 +370,7 @@ BlizzardGameMenu.StyleWindow = function(self, frame)
 	]]
 end
 
-BlizzardGameMenu.OnInit = function(self)
+Module.OnInit = function(self)
 	self.frame = GameMenuFrame
 
 	-- does this taint? :/
@@ -445,7 +446,7 @@ BlizzardGameMenu.OnInit = function(self)
 
 end
 
-BlizzardGameMenu.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:StyleWindow()
 	self:StyleButtons()
 end

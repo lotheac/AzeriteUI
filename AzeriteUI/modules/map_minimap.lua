@@ -1,17 +1,17 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
 local LibMinimap = CogWheel("LibMinimap")
-local Minimap = AzeriteUI:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local L = CogWheel("LibLocale"):GetLocale("AzeriteUI")
+local Module = Core:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Don't grab buttons if these are active
-local MBB = Minimap:IsAddOnEnabled("MBB") 
-local MBF = Minimap:IsAddOnEnabled("MinimapButtonFrame")
+local MBB = Module:IsAddOnEnabled("MBB") 
+local MBF = Module:IsAddOnEnabled("MinimapButtonFrame")
 
 -- Lua API
 local _G = _G
@@ -160,7 +160,7 @@ local Latency_OverrideValue = function(element, home, world)
 end 
 
 local Performance_UpdateTooltip = function(self)
-	local tooltip = Minimap:GetMinimapTooltip()
+	local tooltip = Module:GetMinimapTooltip()
 
 	local bandwidthIn, bandwidthOut, latencyHome, latencyWorld = GetNetStats()
 	local fps = GetFramerate()
@@ -188,14 +188,14 @@ local Performance_OnEnter = function(self)
 end 
 
 local Performance_OnLeave = function(self)
-	Minimap:GetMinimapTooltip():Hide()
+	Module:GetMinimapTooltip():Hide()
 	self.UpdateTooltip = nil
 end 
 
 -- This is the XP and AP tooltip (and rep/honor later on) 
 local Toggle_UpdateTooltip = function(self)
 
-	local tooltip = Minimap:GetMinimapTooltip()
+	local tooltip = Module:GetMinimapTooltip()
 	local hasXP = PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
 
@@ -278,7 +278,7 @@ local Toggle_UpdateTooltip = function(self)
 	-- Only adding the sticky toggle to the toggle button for now, not the frame.
 	if MouseIsOver(self) then 
 		tooltip:AddLine(" ")
-		if Minimap.db.stickyBars then 
+		if Module.db.stickyBars then 
 			tooltip:AddLine(L["%s to disable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
 		else 
 			tooltip:AddLine(L["%s to enable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
@@ -312,7 +312,7 @@ end
 local Toggle_UpdateFrame = function(self)
 	local frame = self.Frame
 
-	local db = Minimap.db
+	local db = Module.db
 	if ((db.stickyBars or self.isMouseOver or frame.isMouseOver) and (not frame:IsShown())) then 
 
 		-- Kill off any hide countdowns
@@ -337,7 +337,7 @@ local Toggle_UpdateFrame = function(self)
 end
 
 local Toggle_OnMouseUp = function(self, button)
-	local db = Minimap.db
+	local db = Module.db
 	db.stickyBars = not db.stickyBars
 
 	Toggle_UpdateFrame(self)
@@ -346,7 +346,7 @@ local Toggle_OnMouseUp = function(self, button)
 		self:UpdateTooltip()
 	end 
 
-	if Minimap.db.stickyBars then 
+	if Module.db.stickyBars then 
 		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars enabled."].."|r")
 	else
 		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars disabled."].."|r")
@@ -363,7 +363,7 @@ local Toggle_OnEnter = function(self)
 end
 
 local Toggle_OnLeave = function(self)
-	local db = Minimap.db
+	local db = Module.db
 
 	self.isMouseOver = nil
 	self.UpdateTooltip = nil
@@ -371,7 +371,7 @@ local Toggle_OnLeave = function(self)
 	Toggle_UpdateFrame(self)
 	
 	if (not MouseIsOver(self.Frame)) then 
-		Minimap:GetMinimapTooltip():Hide()
+		Module:GetMinimapTooltip():Hide()
 	end 
 end
 
@@ -389,7 +389,7 @@ local RingFrame_OnEnter = function(self)
 end
 
 local RingFrame_OnLeave = function(self)
-	local db = Minimap.db
+	local db = Module.db
 
 	self.isMouseOver = nil
 	self.UpdateTooltip = nil
@@ -397,12 +397,12 @@ local RingFrame_OnLeave = function(self)
 	Toggle_UpdateFrame(self._owner)
 	
 	if (not MouseIsOver(self._owner)) then 
-		Minimap:GetMinimapTooltip():Hide()
+		Module:GetMinimapTooltip():Hide()
 	end 
 end
 
 local Time_UpdateTooltip = function(self)
-	local tooltip = Minimap:GetMinimapTooltip()
+	local tooltip = Module:GetMinimapTooltip()
 
 	local rt, gt, bt = unpack(Colors.title)
 	local r, g, b = unpack(Colors.normal)
@@ -422,7 +422,7 @@ local Time_UpdateTooltip = function(self)
 	local ls = dateTable.sec
 
 	local lsuffix, ssuffix
-	if Minimap.db.useStandardTime then 
+	if Module.db.useStandardTime then 
 		lh, lsuffix = computeStandardHours(lh)
 		sh, ssuffix = computeStandardHours(sh)
 	end 
@@ -431,18 +431,18 @@ local Time_UpdateTooltip = function(self)
 	tooltip:SetMaximumWidth(280)
 	tooltip:AddLine(TIMEMANAGER_TOOLTIP_TITLE, rt, gt, bt)
 	tooltip:AddLine(" ")
-	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, ls, lsuffix, Minimap.db.useStandardTime, Minimap.db.showSeconds)), rh, gh, bh, r, g, b)
-	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, string_format(getTimeStrings(sh, sm, ss, ssuffix, Minimap.db.useStandardTime, Minimap.db.showSeconds)), rh, gh, bh, r, g, b)
+	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, ls, lsuffix, Module.db.useStandardTime, Module.db.showSeconds)), rh, gh, bh, r, g, b)
+	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, string_format(getTimeStrings(sh, sm, ss, ssuffix, Module.db.useStandardTime, Module.db.showSeconds)), rh, gh, bh, r, g, b)
 	tooltip:AddLine(" ")
 	tooltip:AddLine(L["%s to toggle calendar."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
 
-	if Minimap.db.useServerTime then 
+	if Module.db.useServerTime then 
 		tooltip:AddLine(L["%s to use local time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
 	else 
 		tooltip:AddLine(L["%s to use realm time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
 	end 
 
-	if Minimap.db.useStandardTime then 
+	if Module.db.useStandardTime then 
 		tooltip:AddLine(L["%s to use military (24-hour) time."]:format(green..L["<Right-Click>"]..NC), rh, gh, bh)
 	else 
 		tooltip:AddLine(L["%s to use standard (12-hour) time."]:format(green..L["<Right-Click>"]..NC), rh, gh, bh)
@@ -457,7 +457,7 @@ local Time_OnEnter = function(self)
 end 
 
 local Time_OnLeave = function(self)
-	Minimap:GetMinimapTooltip():Hide()
+	Module:GetMinimapTooltip():Hide()
 	self.UpdateTooltip = nil
 end 
 
@@ -466,32 +466,32 @@ local Time_OnClick = function(self, mouseButton)
 		ToggleCalendar()
 
 	elseif (mouseButton == "MiddleButton") then 
-		Minimap.db.useServerTime = not Minimap.db.useServerTime
+		Module.db.useServerTime = not Module.db.useServerTime
 
-		self.clock.useServerTime = Minimap.db.useServerTime
+		self.clock.useServerTime = Module.db.useServerTime
 		self.clock:ForceUpdate()
 
 		if self.UpdateTooltip then 
 			self:UpdateTooltip()
 		end 
 
-		if Minimap.db.useServerTime then 
+		if Module.db.useServerTime then 
 			print(self._owner.colors.title.colorCode..L["Now using standard realm time."].."|r")
 		else
 			print(self._owner.colors.title.colorCode..L["Now using standard local time."].."|r")
 		end 
 
 	elseif (mouseButton == "RightButton") then 
-		Minimap.db.useStandardTime = not Minimap.db.useStandardTime
+		Module.db.useStandardTime = not Module.db.useStandardTime
 
-		self.clock.useStandardTime = Minimap.db.useStandardTime
+		self.clock.useStandardTime = Module.db.useStandardTime
 		self.clock:ForceUpdate()
 
 		if self.UpdateTooltip then 
 			self:UpdateTooltip()
 		end 
 
-		if Minimap.db.useStandardTime then 
+		if Module.db.useStandardTime then 
 			print(self._owner.colors.title.colorCode..L["Now using standard (12-hour) time."].."|r")
 		else
 			print(self._owner.colors.title.colorCode..L["Now using military (24-hour) time."].."|r")
@@ -500,12 +500,12 @@ local Time_OnClick = function(self, mouseButton)
 end
 
 local Zone_OnEnter = function(self)
-	local tooltip = Minimap:GetMinimapTooltip()
+	local tooltip = Module:GetMinimapTooltip()
 
 end 
 
 local Zone_OnLeave = function(self)
-	Minimap:GetMinimapTooltip():Hide()
+	Module:GetMinimapTooltip():Hide()
 end 
 
 local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
@@ -584,7 +584,7 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 
 end 
 
-Minimap.SetUpMinimap = function(self)
+Module.SetUpMinimap = function(self)
 
 	local db = self.db
 
@@ -975,13 +975,13 @@ end
 
 -- Perform and initial update of all elements, 
 -- as this is not done automatically by the back-end.
-Minimap.EnableAllElements = function(self)
+Module.EnableAllElements = function(self)
 	local Handler = self:GetMinimapHandler()
 	Handler:EnableAllElements()
 end 
 
 -- Set the mask texture
-Minimap.UpdateMinimapMask = function(self)
+Module.UpdateMinimapMask = function(self)
 	-- Transparency in these textures also affect the indoors opacity 
 	-- of the minimap, something changing the map alpha directly does not. 
 	--self:SetMinimapMaskTexture(getPath("minimap_mask_circle"))
@@ -990,7 +990,7 @@ end
 
 -- Set the size and position 
 -- Can't change this in combat, will cause taint!
-Minimap.UpdateMinimapSize = function(self)
+Module.UpdateMinimapSize = function(self)
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end
@@ -1000,7 +1000,7 @@ Minimap.UpdateMinimapSize = function(self)
 end 
 
 -- Update alpha of information area
-Minimap.UpdateInformationDisplay = function(self)
+Module.UpdateInformationDisplay = function(self)
 	-- Do we have a target selected?
 	local hasTarget = UnitExists("target")
 
@@ -1025,7 +1025,7 @@ Minimap.UpdateInformationDisplay = function(self)
 	Handler.PerformanceFrame:SetAlpha(alpha)
 end 
 
-Minimap.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 
 	if (event == "PLAYER_TARGET_CHANGED") then 
 		return self:UpdateInformationDisplay()
@@ -1041,8 +1041,7 @@ Minimap.OnEvent = function(self, event, ...)
 	self:UpdateBars()
 end 
 
-
-Minimap.UpdateBars = function(self, event, ...)
+Module.UpdateBars = function(self, event, ...)
 
 	local hasXP = PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
@@ -1115,14 +1114,14 @@ Minimap.UpdateBars = function(self, event, ...)
 
 end
 
-Minimap.OnInit = function(self)
+Module.OnInit = function(self)
 	self.db = self:NewConfig("Minimap", defaults, "global")
 
 	self:SetUpMinimap()
 	self:UpdateBars()
 end 
 
-Minimap.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
 	self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
 	self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")

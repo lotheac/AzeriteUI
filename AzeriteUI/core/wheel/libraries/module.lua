@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 17)
+local LibModule = CogWheel:Set("LibModule", 19)
 if (not LibModule) then	
 	return
 end
@@ -39,7 +39,6 @@ local IsAddOnLoaded = _G.IsAddOnLoaded
 local IsLoggedIn = _G.IsLoggedIn
 local UnitName = _G.UnitName
 
-
 -- Library registries
 LibModule.addonDependencies = {} -- table holding module/widget/handler dependencies
 LibModule.addonIncompatibilities = {} -- table holding module/widget/handler incompatibilities
@@ -69,7 +68,6 @@ local moduleAddon = LibModule.moduleAddon
 local moduleName = LibModule.moduleName 
 local modules = LibModule.modules
 local parentModule = LibModule.parentModule
-
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -441,8 +439,8 @@ end
 LibModule.GetModule = function(self, name, silentFail)
 	check(name, 1, "string")
 	check(silentFail, 2, "boolean", "nil")
-	if modules[name] then
-		return modules[name]
+	if self.modules[name] then
+		return self.modules[name]
 	end
 	if (not silentFail) then
 		return error(("Bad argument #%d to '%s': No module named '%s' exist!"):format(1, "Get", name))

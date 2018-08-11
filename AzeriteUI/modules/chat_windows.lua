@@ -1,12 +1,12 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local ChatWindows = AzeriteUI:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -39,7 +39,7 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s]]):format(ADDON, fileName)
 end 
 	
-ChatWindows.UpdateChatWindowAlpha = function(self, frame)
+Module.UpdateChatWindowAlpha = function(self, frame)
 	local editBox = self:GetChatWindowCurrentEditBox(frame)
 	local alpha
 	if editBox:IsShown() then
@@ -59,7 +59,7 @@ ChatWindows.UpdateChatWindowAlpha = function(self, frame)
 end 
 
 -- Meant to update down button and scrollbar
-ChatWindows.UpdateChatWindowButtons = function(self, frame)
+Module.UpdateChatWindowButtons = function(self, frame)
 
 	local buttonSide = FCF_GetButtonSide(frame)
 
@@ -163,7 +163,7 @@ ChatWindows.UpdateChatWindowButtons = function(self, frame)
 	end
 end 
 
-ChatWindows.UpdateChatWindowScale = function(self, frame)
+Module.UpdateChatWindowScale = function(self, frame)
 	local targetScale = self:GetFrame("UICenter"):GetEffectiveScale()
 	local parentScale = frame:GetParent():GetScale()
 	local scale = targetScale / parentScale
@@ -198,7 +198,7 @@ ChatWindows.UpdateChatWindowScale = function(self, frame)
 
 end
 
-ChatWindows.UpdateChatWindowScales = function(self)
+Module.UpdateChatWindowScales = function(self)
 
 	local targetScale = self:GetFrame("UICenter"):GetEffectiveScale()
 	local parentScale = UIParent:GetScale()
@@ -232,11 +232,11 @@ ChatWindows.UpdateChatWindowScales = function(self)
 	end 
 end 
 
-ChatWindows.UpdateChatWindowPositions = function(self)
+Module.UpdateChatWindowPositions = function(self)
 end 
 
 -- Meant to update the main window buttons
-ChatWindows.UpdateMainWindowButtonDisplay = function(self)
+Module.UpdateMainWindowButtonDisplay = function(self)
 
 	local show
 
@@ -297,13 +297,13 @@ end
 
 -- Temporary windows (like whisper windows, etc)
 -- This overrides the normal PostCreateChatWindow
-ChatWindows.PostCreateTemporaryChatWindow = function(self, frame, ...)
+Module.PostCreateTemporaryChatWindow = function(self, frame, ...)
 	local chatType, chatTarget, sourceChatFrame, selectWindow = ...
 
 	self:PostCreateChatWindow(frame)
 end 
 
-ChatWindows.PostCreateChatWindow = function(self, frame)
+Module.PostCreateChatWindow = function(self, frame)
 
 	-- Window
 	------------------------------
@@ -568,7 +568,7 @@ ChatWindows.PostCreateChatWindow = function(self, frame)
 
 end 
 
-ChatWindows.SetUpAlphaScripts = function(self)
+Module.SetUpAlphaScripts = function(self)
 
 	_G.CHAT_FRAME_BUTTON_FRAME_MIN_ALPHA = 0
 
@@ -581,7 +581,7 @@ ChatWindows.SetUpAlphaScripts = function(self)
 	
 end 
 
-ChatWindows.SetUpScrollScripts = function(self)
+Module.SetUpScrollScripts = function(self)
 
 	-- allow SHIFT + MouseWheel to scroll to the top or bottom
 	hooksecurefunc("FloatingChatFrame_OnMouseScroll", function(self, delta)
@@ -601,7 +601,7 @@ ChatWindows.SetUpScrollScripts = function(self)
 
 end 
 
-ChatWindows.SetUpMainFrames = function(self)
+Module.SetUpMainFrames = function(self)
 
 	-- Create a holder frame for our main chat window,
 	-- which we'll use to move and size the window without 
@@ -624,7 +624,7 @@ ChatWindows.SetUpMainFrames = function(self)
 
 end 
 
-ChatWindows.SetUpButton = function(self, button, sizeMod, texture)
+Module.SetUpButton = function(self, button, sizeMod, texture)
 	sizeMod = sizeMod/1.25
 
 	local normal = button:GetNormalTexture()
@@ -684,7 +684,7 @@ ChatWindows.SetUpButton = function(self, button, sizeMod, texture)
 	end)
 end 
 
-ChatWindows.SetUpMainButtons = function(self)
+Module.SetUpMainButtons = function(self)
 
 	-- ChatFrame1 specific buttons
 	local channelButton = self:GetChatWindowChannelButton()
@@ -710,7 +710,7 @@ ChatWindows.SetUpMainButtons = function(self)
 end 
 
 
-ChatWindows.OnEvent = function(self, event, ...)
+Module.OnEvent = function(self, event, ...)
 	self:UpdateMainWindowButtonDisplay()
 
 	-- Do this cause taint? Shouldn't, but you never know. 
@@ -719,7 +719,7 @@ ChatWindows.OnEvent = function(self, event, ...)
 	end 
 end 
 
-ChatWindows.OnInit = function(self)
+Module.OnInit = function(self)
 	self:SetUpAlphaScripts()
 	self:SetUpScrollScripts()
 	self:SetUpMainFrames()
@@ -727,7 +727,7 @@ ChatWindows.OnInit = function(self)
 	self:UpdateChatWindowScales()
 end 
 
-ChatWindows.OnEnable = function(self)
+Module.OnEnable = function(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	self:RegisterEvent("VOICE_CHAT_LOGIN", "OnEvent")
 	self:RegisterEvent("VOICE_CHAT_LOGOUT", "OnEvent")

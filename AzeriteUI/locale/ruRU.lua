@@ -1,2 +1,3 @@
-local L = CogWheel("LibLocale"):NewLocale("AzeriteUI", "ruRU")
+local ADDON = ...
+local L = CogWheel("LibLocale"):NewLocale(ADDON, "ruRU")
 

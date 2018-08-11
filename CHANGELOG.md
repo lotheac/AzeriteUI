@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.33] 2018-08-11
+### Added
+- Added an options menu available from right-clicking the cogwheel found in the bottom right corner of the screen. Current options are all related to visibility, button counts and fading settings of the actionbuttons, but more will come! The menu is fully usable even during combat, as it's written mainly using the restricted environment and not regular lua. So you don't have to wait until you're dead to make that bar with your life saving ability visible. 
+
+### Changed
+- Started restructuring the code for easier UI mass production later on. 
+
+### Fixed
+- Fixed an issue that would sometimes cause custom tooltips to be drawn in a lower FrameStrata. All tooltips are always put in the TOOLTIP FrameStrata when shown now.
+- Fixed a bug in the module library that would prevent it from ever returning existing modules. 
+- Fixed a bug in the chat command library that would prevent chat commands from receiving a proper argument list. Lucky for us we're not using any chat commands so far, so technically it was a non issue. 
+
 ## [1.0.32] 2018-08-09
 ### Changed
 - Workaround for Auctionator's dumb coding style and `EnumerateFrames()` usage.

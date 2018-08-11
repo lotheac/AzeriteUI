@@ -25,7 +25,6 @@
 	<Script file="libraries\shine.lua"/>
 	<Script file="libraries\bagbutton.lua"/>
 	<Script file="libraries\actionbutton.lua"/>
-	<Script file="libraries\actionbar.lua"/>
 	<Script file="libraries\widgetcontainer.lua"/>
 	<Script file="libraries\unitframe.lua"/>
 	<Script file="libraries\blizzard.lua"/>

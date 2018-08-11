@@ -1,8 +1,11 @@
-local L = CogWheel("LibLocale"):NewLocale("AzeriteUI", "enUS", true)
+local ADDON = ...
+local L = CogWheel("LibLocale"):NewLocale(ADDON, "enUS", true)
 
 
 -- General Stuff
 --------------------------------------------
+L["Enable"] = true 
+L["Disable"] = true 
 L["<Left-Click>"] = true
 L["<Middle-Click>"] = true
 L["<Right-Click>"] = true
@@ -68,13 +71,38 @@ L["Press %s to copy."] = true
 
 -- Config & Micro Menu
 --------------------------------------------
-L["Main Menu"] = true
-L["<Left-click> to toggle menu."] = true
+-- Config button tooltip
+-- *Doing it this way to keep the localization file generic, 
+--  while making sure the end result still is personalized to the addon.
+L["Main Menu"] = ADDON
+L["Click here to get access to game panels."] = "Click here to get access to the various in-game windows such as the character paperdoll, spellbook, talents and similar, or to change various settings for the actionbars."
+L["%s to toggle Blizzard Menu."] = "%s to toggle Blizzard Micro Menu."
+L["%s to toggle Options Menu."] = "%s to toggle "..ADDON.." Options Menu."
+
+-- Config Menu
+L["Primary Bar"] = true
+L["Button Count"] = true
+L["%d Buttons"] = true
+L["Button Visibility"] = true
+L["MouseOver"] = true
+L["MouseOver + Combat"] = true
+L["Always Visible"] = true
+L["Complimentary Bar"] = true
+L["The Complimentary Action bar can have 6 or 12 buttons, and is the equivalent to the \"BottomLeft MultiActionBar\" in the Blizzard keybinding interface."] = true
+L["Click to enable the Complimentary Action Bar."] = true
+L["Click to disable the Complimentary Action Bar."] = true
+L["Stance Bar"] = true
+L["Click to enable the Stance Bar."] = true
+L["Click to disable the Stance Bar."] = true
+L["Pet Bar"] = true
+L["Click to enable the Pet Action Bar."] = true
+L["Click to disable the Pet Action Bar."] = true
+
 
 
 -- Various Button Tooltips
 --------------------------------------------
-L["<Left-click> to leave the vehicle."] = true
+L["%s to leave the vehicle."] = true
 
 
 -- Minimap Compass Abbreviations

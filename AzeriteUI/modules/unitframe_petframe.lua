@@ -1,13 +1,13 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local UnitFramePet = AzeriteUI:NewModule("UnitFramePet", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
-local WhiteList = CogWheel("LibDB"):GetDatabase("AzeriteUI: Auras").WhiteList
+local Module = Core:NewModule("UnitFramePet", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local WhiteList = CogWheel("LibDB"):GetDatabase(ADDON..": Auras").WhiteList
 
 -- Lua API
 local _G = _G
@@ -177,7 +177,7 @@ local Style = function(self, unit, ...)
 end 
 
 
-UnitFramePet.OnInit = function(self)
+Module.OnInit = function(self)
 	self.frame = self:SpawnUnitFrame("pet", "UICenter", Style, driver)
 end 
 

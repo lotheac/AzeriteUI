@@ -1,4 +1,5 @@
-local Colors = CogWheel("LibDB"):NewDatabase("AzeriteUI: Colors")
+local ADDON = ...
+local Colors = CogWheel("LibDB"):NewDatabase(ADDON..": Colors")
 
 -- Lua API
 local math_floor = math.floor
@@ -119,11 +120,11 @@ Colors.class.UNKNOWN = prepare(195/255, 202/255, 217/255)
 
 -- Stuff we never used
 --Colors.class.PRIEST = prepare(220/255, 235/255, 250/255) 
---Colors.class.DEMONHUNTER = prepare(149/255, 221/255, 18/255) -- AzeriteUI green
---Colors.class.PALADIN = prepare(211/255, 156/255, 42/255)  -- AzeriteUI gold (looks like... ewww not gold)
---Colors.class.PALADIN = prepare(254/255, 245/255, 145/255)  -- AzeriteUI yellow
---Colors.class.ROGUE = prepare(105/255, 73/255, 175/255)  -- AzeriteUI purple
---Colors.class.SHAMAN = prepare(255/255, 190/255, 12/255)  -- AzeriteUI yellow
+--Colors.class.DEMONHUNTER = prepare(149/255, 221/255, 18/255) -- green
+--Colors.class.PALADIN = prepare(211/255, 156/255, 42/255)  -- gold (looks like... ewww not gold)
+--Colors.class.PALADIN = prepare(254/255, 245/255, 145/255)  -- yellow
+--Colors.class.ROGUE = prepare(105/255, 73/255, 175/255)  -- purple
+--Colors.class.SHAMAN = prepare(255/255, 190/255, 12/255)  -- yellow
 
 -- debuffs
 Colors.debuff = {}

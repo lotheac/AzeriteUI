@@ -1,14 +1,14 @@
 local ADDON = ...
 
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local AffixTracker = AzeriteUI:NewModule("AffixTracker", "LibDB", "LibEvent")
+local Module = Core:NewModule("AffixTracker", "LibDB", "LibEvent")
 
-AffixTracker.OnInit = function(self)
+Module.OnInit = function(self)
 end 
 
-AffixTracker.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 

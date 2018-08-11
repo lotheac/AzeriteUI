@@ -1,11 +1,12 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local BlizzardInterfaceStyling = AzeriteUI:NewModule("BlizzardInterfaceStyling", "LibEvent", "LibDB", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase("AzeriteUI: Colors")
+local Module = Core:NewModule("BlizzardInterfaceStyling", "LibEvent", "LibDB", "LibTooltip")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 
 -- Lua API
 local _G = _G
@@ -39,8 +40,8 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
-BlizzardInterfaceStyling.OnEnable = function(self)
+Module.OnEnable = function(self)
 end 
 
-BlizzardInterfaceStyling.OnInit = function(self)
+Module.OnInit = function(self)
 end 

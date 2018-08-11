@@ -1,12 +1,13 @@
 local ADDON = ...
-local AzeriteUI = CogWheel("LibModule"):GetModule("AzeriteUI")
-if (not AzeriteUI) then 
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
 	return 
 end
 
-local VehicleHUD = AzeriteUI:NewModule("VehicleHUD", "LibFrame")
+local Module = Core:NewModule("VehicleHUD", "LibFrame")
 
-VehicleHUD.OnInit = function(self)
+Module.OnInit = function(self)
 	local content = _G.VehicleSeatIndicator
 	if (not content) then
 		return

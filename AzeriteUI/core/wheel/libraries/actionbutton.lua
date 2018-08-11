@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 24)
+local LibActionButton = CogWheel:Set("LibActionButton", 27)
 if (not LibActionButton) then	
 	return
 end
@@ -15,7 +15,6 @@ assert(LibSound, "LibActionButton requires LibSound to be loaded.")
 local LibTooltip = CogWheel("LibTooltip")
 assert(LibTooltip, "LibChatWindow requires LibTooltip to be loaded.")
 
-
 -- Embed event functionality into this
 LibEvent:Embed(LibActionButton)
 LibFrame:Embed(LibActionButton)
@@ -31,6 +30,7 @@ local ipairs = ipairs
 local pairs = pairs
 local select = select
 local setmetatable = setmetatable
+local string_format = string.format
 local string_join = string.join
 local string_match = string.match
 local table_insert = table.insert
@@ -39,13 +39,13 @@ local table_sort = table.sort
 local tostring = tostring
 local type = type
 
-
 -- Doing it this way to make the transition to library later on easier
 LibActionButton.embeds = LibActionButton.embeds or {} 
 LibActionButton.buttons = LibActionButton.buttons or {} 
 LibActionButton.allbuttons = LibActionButton.allbuttons or {} 
 LibActionButton.callbacks = LibActionButton.callbacks or {} 
 LibActionButton.elements = LibActionButton.elements or {} -- global buttontype registry
+LibActionButton.controllers = LibActionButton.controllers or {} -- controllers to return bindings to pet battles, vehicles, etc 
 LibActionButton.numButtons = LibActionButton.numButtons or 0 -- total number of spawned buttons 
 
 -- Shortcuts
@@ -53,14 +53,16 @@ local AllButtons = LibActionButton.allbuttons
 local Buttons = LibActionButton.buttons
 local Callbacks = LibActionButton.callbacks
 local Templates = LibActionButton.elements
-
+local Controllers = LibActionButton.controllers
 
 -- Blizzard Textures
 local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
 local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
 local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
-
+-- Generic format strings for our button names
+local BUTTON_NAME_TEMPLATE_SIMPLE = "%sActionButton"
+local BUTTON_NAME_TEMPLATE_FULL = "%sActionButton%d"
 
 -- Utility Functions
 ----------------------------------------------------
@@ -77,7 +79,6 @@ local check = function(value, num, ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
-
 
 -- Button Template
 ----------------------------------------------------
@@ -327,7 +328,6 @@ local GetOverlayGlow = function()
 	return overlay
 end
 
-
 Button.ShowOverlayGlow = function(self)
 	local OverlayGlow = self.OverlayGlow
 	if OverlayGlow.animOut:IsPlaying() then
@@ -417,6 +417,8 @@ Button.UpdateFlyout = function(self)
 	end 
 end
 
+-- Library API
+----------------------------------------------------
 
 LibActionButton.CreateButtonLayers = function(self, button)
 
@@ -568,128 +570,6 @@ LibActionButton.GetGenericMeta = function(self)
 	return Button_MT
 end
 
-LibActionButton.SpawnActionButton = function(self, buttonType, parent, overrideName, buttonTemplate, ...)
-	check(parent, 1, "string", "table")
-	check(buttonType, 2, "string")
-	check(buttonTemplate, 3, "table", "nil")
-
-	local template = Templates[buttonType]
-
-	if (not template) then 
-		error(("Unknown button type: '%s'"):format(buttonType), 3)
-	end 
-
-	-- Increase the button count
-	LibActionButton.numButtons = LibActionButton.numButtons + 1
-
-	-- Make up an unique name
-	local name = overrideName or "CG_ActionButton"..LibActionButton.numButtons
-
-	-- Retrieve the constructor method for this button type and spawn the button
-	local button = template.Spawn(self, parent, name, buttonTemplate, ...)
-
-	-- Store the button and its type
-	if (not Buttons[self]) then 
-		Buttons[self] = {}
-	end 
-	Buttons[self][button] = buttonType
-	AllButtons[button] = buttonType
-
-	-- Add any methods from the optional template.
-	-- *we're now allowing modules to overwrite methods.
-	if buttonTemplate then
-		for methodName, func in pairs(buttonTemplate) do
-			if (type(func) == "function") then
-				button[methodName] = func
-			end
-		end
-	end
-	
-	-- Call the post create method if it exists, 
-	-- and pass along any remaining arguments.
-	-- This is a good place to add styling.
-	if button.PostCreate then
-		button:PostCreate(...)
-	end
-
-	-- Our own event handler
-	button:SetScript("OnEvent", OnButtonEvent)
-
-	-- Update all elements when shown
-	button:HookScript("OnShow", button.Update)
-	
-	-- Enable the newly created button
-	-- This is where events are registered and set up
-	template.Enable(button)
-
-	-- Run a full initial update
-	button:Update()
-
-	return button
-end
-
-
-local sortByID = function(a,b)
-	if (a) and (b) then 
-		if (a.id) and (b.id) then 
-			return (a.id < b.id)
-		else
-			return a.id and true or false 
-		end 
-	else 
-		return a and true or false
-	end 
-end 
-
--- Returns an iterator for all buttons registered to the module
--- Buttons are returned as the first return value, and ordered by their IDs.
-LibActionButton.GetAllActionButtonsOrdered = function(self)
-	local buttons = Buttons[self]
-	if (not buttons) then 
-		return function() return nil end
-	end 
-
-	local sorted = {}
-	for button,type in pairs(buttons) do 
-		sorted[#sorted + 1] = button
-	end 
-	table_sort(sorted, sortByID)
-
-	local counter = 0
-	return function() 
-		counter = counter + 1
-		return sorted[counter]
-	end 
-end 
-
-
--- Returns an iterator for all buttons of the given type registered to the module.
--- Buttons are returned as the first return value, and ordered by their IDs.
-LibActionButton.GetAllActionButtonsByType = function(self, buttonType)
-	local buttons = Buttons[self]
-	if (not buttons) then 
-		return function() return nil end
-	end 
-
-	local sorted = {}
-	for button,type in pairs(buttons) do 
-		if (type == buttonType) then 
-			sorted[#sorted + 1] = button
-		end 
-	end 
-	table_sort(sorted, sortByID)
-
-	local counter = 0
-	return function() 
-		counter = counter + 1
-		return sorted[counter]
-	end 
-end 
-
-LibActionButton.GetActionButtonTooltip = function(self)
-	return LibActionButton:GetTooltip("CG_ActionButtonTooltip") or LibActionButton:CreateTooltip("CG_ActionButtonTooltip")
-end
-
 -- register a widget/element
 LibActionButton.RegisterElement = function(self, buttonType, spawnFunc, enableFunc, disableFunc, updateFunc, version)
 	check(buttonType, 1, "string")
@@ -764,13 +644,274 @@ LibActionButton.RegisterElement = function(self, buttonType, spawnFunc, enableFu
 	end 
 end
 
+-- Public API
+----------------------------------------------------
+
+local nameHelper = function(self, id)
+	local name
+	if id then 
+		name = string_format(BUTTON_NAME_TEMPLATE_FULL, self:GetOwner():GetName(), id)
+	else 
+		name = string_format(BUTTON_NAME_TEMPLATE_SIMPLE, self:GetOwner():GetName())
+	end 
+	return name
+end
+
+LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTemplate, ...)
+	check(parent, 1, "string", "table")
+	check(buttonType, 2, "string")
+	check(buttonTemplate, 3, "table", "nil")
+
+	local template = Templates[buttonType]
+	if (not template) then 
+		error(("Unknown button type: '%s'"):format(buttonType), 3)
+	end 
+
+	-- Store the button and its type
+	if (not Buttons[self]) then 
+		Buttons[self] = {}
+	end 
+
+	-- Increase the button count
+	LibActionButton.numButtons = LibActionButton.numButtons + 1
+
+	-- Count this addon's buttons 
+	local count = 0 
+	for button in pairs(Buttons[self]) do 
+		count = count + 1
+	end 
+
+	-- Make up an unique name
+	local name = nameHelper(self, count + 1)
+
+	-- Retrieve the constructor method for this button type and spawn the button
+	local button = template.Spawn(self, parent, name, buttonTemplate, ...)
+
+	Buttons[self][button] = buttonType
+	AllButtons[button] = buttonType
+
+	-- Add any methods from the optional template.
+	-- *we're now allowing modules to overwrite methods.
+	if buttonTemplate then
+		for methodName, func in pairs(buttonTemplate) do
+			if (type(func) == "function") then
+				button[methodName] = func
+			end
+		end
+	end
+	
+	-- Call the post create method if it exists, 
+	-- and pass along any remaining arguments.
+	-- This is a good place to add styling.
+	if button.PostCreate then
+		button:PostCreate(...)
+	end
+
+	-- Our own event handler
+	button:SetScript("OnEvent", OnButtonEvent)
+
+	-- Update all elements when shown
+	button:HookScript("OnShow", button.Update)
+	
+	-- Enable the newly created button
+	-- This is where events are registered and set up
+	template.Enable(button)
+
+	-- Run a full initial update
+	button:Update()
+
+	return button
+end
+
+local sortByID = function(a,b)
+	if (a) and (b) then 
+		if (a.id) and (b.id) then 
+			return (a.id < b.id)
+		else
+			return a.id and true or false 
+		end 
+	else 
+		return a and true or false
+	end 
+end 
+
+-- Returns an iterator for all buttons registered to the module
+-- Buttons are returned as the first return value, and ordered by their IDs.
+LibActionButton.GetAllActionButtonsOrdered = function(self)
+	local buttons = Buttons[self]
+	if (not buttons) then 
+		return function() return nil end
+	end 
+
+	local sorted = {}
+	for button,type in pairs(buttons) do 
+		sorted[#sorted + 1] = button
+	end 
+	table_sort(sorted, sortByID)
+
+	local counter = 0
+	return function() 
+		counter = counter + 1
+		return sorted[counter]
+	end 
+end 
+
+-- Returns an iterator for all buttons of the given type registered to the module.
+-- Buttons are returned as the first return value, and ordered by their IDs.
+LibActionButton.GetAllActionButtonsByType = function(self, buttonType)
+	local buttons = Buttons[self]
+	if (not buttons) then 
+		return function() return nil end
+	end 
+
+	local sorted = {}
+	for button,type in pairs(buttons) do 
+		if (type == buttonType) then 
+			sorted[#sorted + 1] = button
+		end 
+	end 
+	table_sort(sorted, sortByID)
+
+	local counter = 0
+	return function() 
+		counter = counter + 1
+		return sorted[counter]
+	end 
+end 
+
+LibActionButton.GetActionButtonTooltip = function(self)
+	return LibActionButton:GetTooltip("CG_ActionButtonTooltip") or LibActionButton:CreateTooltip("CG_ActionButtonTooltip")
+end
+
+LibActionButton.GetActionBarControllerPetBattle = function(self)
+	if ((not Controllers[self]) or (not Controllers[self].petBattle)) then 
+
+		-- Get the generic button name without the ID added
+		local name = nameHelper(self)
+
+		-- The blizzard petbattle UI gets its keybinds from the primary action bar, 
+		-- so in order for the petbattle UI keybinds to function properly, 
+		-- we need to temporarily give the primary action bar backs its keybinds.
+		local petbattle = self:CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
+		petbattle:SetAttribute("_onattributechanged", [[
+			if (name == "state-petbattle") then
+				if (value == "petbattle") then
+					for i = 1,6 do
+						local our_button, blizz_button = ("CLICK ]]..name..[[%d:LeftButton"):format(i), ("ACTIONBUTTON%d"):format(i)
+
+						-- Grab the keybinds from our own primary action bar,
+						-- and assign them to the default blizzard bar. 
+						-- The pet battle system will in turn get its bindings 
+						-- from the default blizzard bar, and the magic works! :)
+						
+						for k=1,select("#", GetBindingKey(our_button)) do
+							local key = select(k, GetBindingKey(our_button)) -- retrieve the binding key from our own primary bar
+							self:SetBinding(true, key, blizz_button) -- assign that key to the default bar
+						end
+						
+						-- do the same for the default UIs bindings
+						for k=1,select("#", GetBindingKey(blizz_button)) do
+							local key = select(k, GetBindingKey(blizz_button))
+							self:SetBinding(true, key, blizz_button)
+						end	
+					end
+				else
+					-- Return the key bindings to whatever buttons they were
+					-- assigned to before we so rudely grabbed them! :o
+					self:ClearBindings()
+				end
+			end
+		]])
+
+		-- Do we ever need to update his?
+		RegisterAttributeDriver(petbattle, "state-petbattle", "[petbattle]petbattle;nopetbattle")
+
+		if (not Controllers[self]) then 
+			Controllers[self] = {}
+		end
+		Controllers[self].petBattle = petbattle
+	end
+	return Controllers[self].petBattle
+end
+
+LibActionButton.GetActionBarControllerVehicle = function(self)
+end
+
+-- Modules should call this at UPDATE_BINDINGS and the first PLAYER_ENTERING_WORLD
+LibActionButton.UpdateActionButtonBindings = function(self)
+
+	-- "BONUSACTIONBUTTON%d" -- pet bar
+	-- "SHAPESHIFTBUTTON%d" -- stance bar
+
+	local mainBarUsed
+	local petBattleUsed, vehicleUsed
+
+	for button in self:GetAllActionButtonsByType("action") do 
+
+		local pager = button:GetPager()
+
+		-- clear current overridebindings
+		ClearOverrideBindings(pager) 
+
+		-- retrieve page and button id
+		local buttonID = button:GetID()
+		local barID = button:GetPageID()
+
+		-- figure out the binding action
+		local bindingAction
+		if (barID == 1) then 
+			bindingAction = ("ACTIONBUTTON%d"):format(buttonID)
+
+			-- We've used the main bar, and need to update the controllers
+			mainBarUsed = true
+
+		elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
+			bindingAction = ("MULTIACTIONBAR1BUTTON%d"):format(buttonID)
+
+		elseif (barID == BOTTOMRIGHT_ACTIONBAR_PAGE) then 
+			bindingAction = ("MULTIACTIONBAR2BUTTON%d"):format(buttonID)
+
+		elseif (barID == RIGHT_ACTIONBAR_PAGE) then 
+			bindingAction = ("MULTIACTIONBAR3BUTTON%d"):format(buttonID)
+
+		elseif (barID == LEFT_ACTIONBAR_PAGE) then 
+			bindingAction = ("MULTIACTIONBAR4BUTTON%d"):format(buttonID)
+		end 
+
+		-- store the binding action name on the button
+		button.bindingAction = bindingAction
+
+		-- iterate through the registered keys for the action
+		for keyNumber = 1, select("#", GetBindingKey(bindingAction)) do 
+
+			-- get a key for the action
+			local key = select(keyNumber, GetBindingKey(bindingAction)) 
+			if (key and (key ~= "")) then
+
+				-- this is why we need named buttons
+				SetOverrideBindingClick(pager, false, key, button:GetName()) -- assign the key to our own button
+			end	
+		end
+	end 
+
+	if (mainBarUsed and not petBattleUsed) then 
+		self:GetActionBarControllerPetBattle()
+	end 
+
+	if (mainBarUsed and not vehicleUsed) then 
+		self:GetActionBarControllerVehicle()
+	end 
+end 
 
 -- Module embedding
 local embedMethods = {
 	SpawnActionButton = true,
 	GetActionButtonTooltip = true, 
 	GetAllActionButtonsOrdered = true,
-	GetAllActionButtonsByType = true
+	GetAllActionButtonsByType = true,
+	GetActionBarControllerPetBattle = true,
+	GetActionBarControllerVehicle = true,
+	UpdateActionButtonBindings = true,
 }
 
 LibActionButton.Embed = function(self, target)

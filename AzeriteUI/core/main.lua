@@ -1,21 +1,18 @@
 local ADDON = ...
 
 -- Wooh! 
-local AzeriteUI = CogWheel("LibModule"):NewModule("AzeriteUI", "LibDB", "LibEvent", "LibBlizzard", "LibFrame")
+local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibEvent", "LibBlizzard", "LibFrame")
 
 -- Hide the entire UI from the start
-AzeriteUI:GetFrame("UICenter"):SetAlpha(0)
+Core:GetFrame("UICenter"):SetAlpha(0)
 
 -- Tell the back-end what addon to look for before 
 -- initializing this module and all its submodules. 
-AzeriteUI:SetAddon(ADDON) 
-
--- Saved variables
---AzeriteUI_DB = {} 
+Core:SetAddon(ADDON) 
 
 -- Tell the backend where our saved variables are found.
 -- *it's important that we're doing this here, before any module configs are created.
-AzeriteUI:RegisterSavedVariablesGlobal("AzeriteUI_DB")
+Core:RegisterSavedVariablesGlobal(ADDON.."_DB")
 
 
 -- Lua API
@@ -26,9 +23,7 @@ local ipairs = ipairs
 local EnableAddOn = _G.EnableAddOn
 local LoadAddOn = _G.LoadAddOn
 
-AzeriteUI.OnInit = function(self)
-	--self:ParseSavedVariables() -- AzeriteUI_DB
-
+Core.OnInit = function(self)
 	-- In case some other jokers have disabled these, we add them back to avoid a World of Bugs.
 	-- RothUI used to remove the two first, and a lot of people missed his documentation on how to get them back. 
 	-- I personally removed the objective's tracker for a while in DiabolicUI, which led to pain. Lots of pain.
@@ -38,7 +33,7 @@ AzeriteUI.OnInit = function(self)
 	end
 end 
 
-AzeriteUI.OnEnable = function(self)
+Core.OnEnable = function(self)
 
 	-- Disable most of the BlizzardUI, to give room for our own!
 	------------------------------------------------------------------------------------
@@ -79,7 +74,7 @@ AzeriteUI.OnEnable = function(self)
 	self:RegisterEvent("PLAYER_LEAVING_WORLD", "OnEvent")
 end 
 
-AzeriteUI.OnEvent = function(self, event, ...)
+Core.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
 		self.frame = self.frame or CreateFrame("Frame")
 		self.frame:SetScript("OnUpdate", function(self, elapsed) 
@@ -89,12 +84,12 @@ AzeriteUI.OnEvent = function(self, event, ...)
 			end 
 			self.alpha = (self.alpha or 0) + self.elapsed/1.5
 			if self.alpha > 1 then 
-				AzeriteUI:GetFrame("UICenter"):SetAlpha(1)
+				Core:GetFrame("UICenter"):SetAlpha(1)
 				self.alpha = 0
 				self:SetScript("OnUpdate", nil)
 				return 
 			else 
-				AzeriteUI:GetFrame("UICenter"):SetAlpha(self.alpha)
+				Core:GetFrame("UICenter"):SetAlpha(self.alpha)
 			end 
 			self.elapsed = 0
 		end)
