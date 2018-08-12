@@ -7,7 +7,9 @@ end
 
 local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibActionButton")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [ActionBarMain]")
 
 -- Lua API
 local _G = _G
@@ -36,28 +38,24 @@ local IN_COMBAT
 -- Changing these does NOT change in-game settings
 local defaults = {
 
-	-- button count modes
-	buttonsPrimary = 1, -- 7, 10, 12
-	buttonsComplimentary = 1, -- 6, 12
+	buttonsPrimary = 1, 
+	buttonsComplimentary = 1, 
 
-	-- enable extra bars
 	enableComplimentary = false, 
 	enableStance = false, 
 	enablePet = false, 
 
-	-- visibility modes	 
-	-- 1= mouseover, 2= +combat 3= always
 	visibilityPrimary = 1,
 	visibilityComplimentary = 1, 
 	visibilityStance = 1, 
 	visibilityPet = 1, 
 
 	-- todo
-	castOnDown = false
-	
-	-- probably not going to implement
-	--showBinds = true, 
-	--showCooldown = true, 
+	castOnDown = false,
+	showBinds = true, 
+	showCooldown = true, 
+	showCooldownCount = true,
+
 	--showNames = false,
 }
 
@@ -166,180 +164,144 @@ end
 
 ActionButton.PostCreate = function(self, ...)
 
-	self:SetSize(buttonSize,buttonSize)
+	self:SetSize(unpack(Layout.ButtonSize))
 
 	-- Assign our own global custom colors
 	self.colors = Colors
 
-
 	-- Restyle the blizz layers
 	-----------------------------------------------------
-
-	self.Icon:SetSize(iconSize,iconSize)
+	self.Icon:SetSize(unpack(Layout.IconSize))
 	self.Icon:ClearAllPoints()
-	self.Icon:SetPoint("CENTER", 0, 0)
-	self.Icon:SetMask(getPath("actionbutton_circular_mask"))
+	self.Icon:SetPoint(unpack(Layout.IconPlace))
+	self.Icon:SetMask(Layout.MaskTexture)
 
-	self.Pushed:SetDrawLayer("ARTWORK", 1)
-	self.Pushed:SetSize(self.Icon:GetSize())
+	self.Pushed:SetDrawLayer(unpack(Layout.PushedDrawLayer))
+	self.Pushed:SetSize(unpack(Layout.PushedSize))
 	self.Pushed:ClearAllPoints()
-	self.Pushed:SetAllPoints(self.Icon)
-	self.Pushed:SetMask(getPath("actionbutton_circular_mask"))
-	self.Pushed:SetColorTexture(1, 1, 1, .15)
-
+	self.Pushed:SetPoint(unpack(Layout.PushedPlace))
+	self.Pushed:SetMask(Layout.MaskTexture)
+	self.Pushed:SetColorTexture(unpack(Layout.PushedColor))
 	self:SetPushedTexture(self.Pushed)
-	self:GetPushedTexture():SetBlendMode("ADD")
+	self:GetPushedTexture():SetBlendMode(Layout.PushedBlendMode)
 		
 	-- We need to put it back in its correct drawlayer, 
 	-- or Blizzard will set it to ARTWORK which can lead 
 	-- to it randomly being drawn behind the icon texture. 
-	self:GetPushedTexture():SetDrawLayer("ARTWORK") 
+	self:GetPushedTexture():SetDrawLayer(unpack(Layout.PushedDrawLayer)) 
 
-	self.Flash:SetDrawLayer("ARTWORK", 2)
-	self.Flash:SetSize(self.Icon:GetSize())
+	self.Flash:SetDrawLayer(unpack(Layout.FlashDrawLayer))
+	self.Flash:SetSize(unpack(Layout.FlashSize))
 	self.Flash:ClearAllPoints()
-	self.Flash:SetAllPoints(self.Icon)
-	self.Flash:SetTexture(BLANK_TEXTURE)
-	self.Flash:SetVertexColor(1, 0, 0, .25)
-	self.Flash:SetMask(getPath("actionbutton_circular_mask"))
+	self.Flash:SetPoint(unpack(Layout.FlashPlace))
+	self.Flash:SetTexture(Layout.FlashTexture)
+	self.Flash:SetVertexColor(unpack(Layout.FlashColor))
+	self.Flash:SetMask(Layout.MaskTexture)
 
-	-- mask textures?
+	self.Cooldown:SetSize(unpack(Layout.CooldownSize))
 	self.Cooldown:ClearAllPoints()
-	self.Cooldown:SetAllPoints(self.Icon)
-	self.Cooldown:SetSwipeTexture(getPath("actionbutton_circular_mask"))
-	self.Cooldown:SetSwipeColor(0, 0, 0, .75)
-	self.Cooldown:SetBlingTexture(getPath("blank"), 0, 0, 0, 0) 
-	self.Cooldown:SetDrawBling(true)
+	self.Cooldown:SetPoint(unpack(Layout.CooldownPlace))
+	self.Cooldown:SetSwipeTexture(Layout.CooldownSwipeTexture)
+	self.Cooldown:SetSwipeColor(unpack(Layout.CooldownSwipeColor))
+	self.Cooldown:SetDrawSwipe(Layout.ShowCooldownSwipe)
+	self.Cooldown:SetBlingTexture(Layout.CooldownBlingTexture, unpack(Layout.CooldownBlingColor)) 
+	self.Cooldown:SetDrawBling(Layout.ShowCooldownBling)
 
+	self.ChargeCooldown:SetSize(unpack(Layout.ChargeCooldownSize))
 	self.ChargeCooldown:ClearAllPoints()
-	self.ChargeCooldown:SetAllPoints(self.Icon)
-	self.ChargeCooldown:SetSwipeTexture(getPath("blank"), 0, 0, 0, 0)
-	self.ChargeCooldown:SetSwipeColor(0, 0, 0, 0)
-	self.ChargeCooldown:SetDrawSwipe(false)
-	self.ChargeCooldown:SetBlingTexture(getPath("blank"), 0, 0, 0, 0) 
-	self.ChargeCooldown:SetDrawBling(false)
+	self.ChargeCooldown:SetPoint(unpack(Layout.ChargeCooldownPlace))
+	self.ChargeCooldown:SetSwipeTexture(Layout.ChargeCooldownSwipeTexture, unpack(Layout.ChargeCooldownSwipeColor))
+	self.ChargeCooldown:SetSwipeColor(unpack(Layout.ChargeCooldownSwipeColor))
+	self.ChargeCooldown:SetDrawSwipe(Layout.ShowChargeCooldownSwipe)
+	self.ChargeCooldown:SetBlingTexture(Layout.ChargeCooldownBlingTexture, unpack(Layout.ChargeCooldownBlingColor)) 
+	self.ChargeCooldown:SetDrawBling(Layout.ShowChargeCooldownBling)
 
 	self.CooldownCount:ClearAllPoints()
-	self.CooldownCount:SetPoint("CENTER", 1, 0)
-	self.CooldownCount:SetFontObject(AzeriteFont16_Outline)
-	self.CooldownCount:SetJustifyH("CENTER")
-	self.CooldownCount:SetJustifyV("MIDDLE")
-	self.CooldownCount:SetShadowOffset(0, 0)
-	self.CooldownCount:SetShadowColor(0, 0, 0, 1)
-	self.CooldownCount:SetTextColor(self.colors.highlight[1], self.colors.highlight[2], self.colors.highlight[3], .85)
+	self.CooldownCount:SetPoint(unpack(Layout.CooldownCountPlace))
+	self.CooldownCount:SetFontObject(Layout.CooldownCountFont)
+	self.CooldownCount:SetJustifyH(Layout.CooldownCountJustifyH)
+	self.CooldownCount:SetJustifyV(Layout.CooldownCountJustifyV)
+	self.CooldownCount:SetShadowOffset(unpack(Layout.CooldownCountShadowOffset))
+	self.CooldownCount:SetShadowColor(unpack(Layout.CooldownCountShadowColor))
+	self.CooldownCount:SetTextColor(unpack(Layout.CooldownCountColor))
 
 	self.Count:ClearAllPoints()
-	self.Count:SetPoint("BOTTOMRIGHT", -3, 3)
-	self.Count:SetFontObject(AzeriteFont18_Outline)
-	self.Count:SetJustifyH("CENTER")
-	self.Count:SetJustifyV("BOTTOM")
-	self.Count:SetShadowOffset(0, 0)
-	self.Count:SetShadowColor(0, 0, 0, 1)
-	self.Count:SetTextColor(self.colors.normal[1], self.colors.normal[2], self.colors.normal[3], .85)
+	self.Count:SetPoint(unpack(Layout.CountPlace))
+	self.Count:SetFontObject(Layout.CountFont)
+	self.Count:SetJustifyH(Layout.CountJustifyH)
+	self.Count:SetJustifyV(Layout.CountJustifyV)
+	self.Count:SetShadowOffset(unpack(Layout.CountShadowOffset))
+	self.Count:SetShadowColor(unpack(Layout.CountShadowColor))
+	self.Count:SetTextColor(unpack(Layout.CountColor))
 
 	self.Keybind:ClearAllPoints()
-	self.Keybind:SetPoint("TOPLEFT", 5, -5)
-	self.Keybind:SetFontObject(AzeriteFont15_Outline)
-	self.Keybind:SetJustifyH("CENTER")
-	self.Keybind:SetJustifyV("BOTTOM")
-	self.Keybind:SetShadowOffset(0, 0)
-	self.Keybind:SetShadowColor(0, 0, 0, 1)
-	self.Keybind:SetTextColor(self.colors.quest.gray[1], self.colors.quest.gray[2], self.colors.quest.gray[3], .75)
+	self.Keybind:SetPoint(unpack(Layout.KeybindPlace))
+	self.Keybind:SetFontObject(Layout.KeybindFont)
+	self.Keybind:SetJustifyH(Layout.KeybindJustifyH)
+	self.Keybind:SetJustifyV(Layout.KeybindJustifyV)
+	self.Keybind:SetShadowOffset(unpack(Layout.KeybindShadowOffset))
+	self.Keybind:SetShadowColor(unpack(Layout.KeybindShadowColor))
+	self.Keybind:SetTextColor(unpack(Layout.KeybindColor))
 
 	self.OverlayGlow:ClearAllPoints()
-	self.OverlayGlow:SetPoint("CENTER", self, "CENTER", 0, 0)
-	self.OverlayGlow:SetSize(buttonSize * 1.05, buttonSize * 1.05) -- 1.6 outside
-	--self.OverlayGlow:SetPoint("TOPLEFT", self, "TOPLEFT", -buttonSize*.2, buttonSize*.2)
-	--self.OverlayGlow:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", buttonSize*.2, -buttonSize*.2)
-	--self.OverlayGlow:SetPoint("TOPLEFT", self, "TOPLEFT", -buttonSize*.2, buttonSize*.2)
-	--self.OverlayGlow:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", buttonSize*.2, -buttonSize*.2)
-	self.OverlayGlow.spark:SetTexture(getPath("IconAlert-Circle"))
-	self.OverlayGlow.innerGlow:SetTexture(getPath("IconAlert-Circle"))
-	self.OverlayGlow.innerGlowOver:SetTexture(getPath("IconAlert-Circle"))
-	self.OverlayGlow.outerGlow:SetTexture(getPath("IconAlert-Circle"))
-	self.OverlayGlow.outerGlowOver:SetTexture(getPath("IconAlert-Circle"))
-	self.OverlayGlow.ants:SetTexture(getPath("IconAlertAnts-Circle"))
-
+	self.OverlayGlow:SetPoint(unpack(Layout.OverlayGlowPlace))
+	self.OverlayGlow:SetSize(unpack(Layout.OverlayGlowSize))
+	self.OverlayGlow.spark:SetTexture(Layout.OverlayGlowSparkTexture)
+	self.OverlayGlow.innerGlow:SetTexture(Layout.OverlayGlowInnerGlowTextureTexture)
+	self.OverlayGlow.innerGlowOver:SetTexture(Layout.OverlayGlowInnerGlowOverTexture)
+	self.OverlayGlow.outerGlow:SetTexture(Layout.OverlayGlowOuterGlowTexture)
+	self.OverlayGlow.outerGlowOver:SetTexture(Layout.OverlayGlowOuterGlowOverTexture)
+	self.OverlayGlow.ants:SetTexture(Layout.OverlayGlowAntsTexture)
+	
 
 	-- Our own style layers
 	-----------------------------------------------------
 
-	local backdrop = self:CreateTexture()
-	backdrop:SetDrawLayer("BACKGROUND", 1)
-	backdrop:SetSize(buttonSize/(122/256),buttonSize/(122/256))
-	backdrop:SetPoint("CENTER", 0, 0)
-	backdrop:SetTexture(getPath("actionbutton-backdrop"))
+	self.Backdrop = self:CreateTexture()
+	self.Backdrop:SetSize(unpack(Layout.BackdropSize))
+	self.Backdrop:SetPoint(unpack(Layout.BackdropPlace))
+	self.Backdrop:SetDrawLayer(unpack(Layout.BackdropDrawLayer))
+	self.Backdrop:SetTexture(Layout.BackdropTexture)
 
-	local darken = self:CreateTexture()
-	darken:SetDrawLayer("BACKGROUND", 3)
-	darken:SetSize(self.Icon:GetSize())
-	darken:SetAllPoints(self.Icon)
-	darken:SetMask(getPath("actionbutton_circular_mask"))
-	darken:SetColorTexture(0, 0, 0)
-	darken.highlight = 0
-	darken.normal = .35
+	self.Darken = self:CreateTexture()
+	self.Darken:SetDrawLayer("BACKGROUND", 3)
+	self.Darken:SetSize(unpack(Layout.IconSize))
+	self.Darken:SetAllPoints(self.Icon)
+	self.Darken:SetMask(Layout.MaskTexture)
+	self.Darken:SetTexture(BLANK_TEXTURE)
+	self.Darken:SetVertexColor(0, 0, 0)
+	self.Darken.highlight = 0
+	self.Darken.normal = .35
 
-	local borderFrame = self:CreateFrame("Frame")
-	borderFrame:SetFrameLevel(self:GetFrameLevel() + 5)
+	self.BorderFrame = self:CreateFrame("Frame")
+	self.BorderFrame:SetFrameLevel(self:GetFrameLevel() + 5)
+	self.BorderFrame:SetAllPoints()
 
+	self.Border = self.BorderFrame:CreateTexture()
+	self.Border:SetPoint(unpack(Layout.BorderPlace))
+	self.Border:SetDrawLayer(unpack(Layout.BorderDrawLayer))
+	self.Border:SetSize(unpack(Layout.BorderSize))
+	self.Border:SetTexture(Layout.BorderTexture)
+	self.Border:SetVertexColor(unpack(Layout.BorderColor))
 
-	local border = borderFrame:CreateTexture()
-	border:SetDrawLayer("BORDER", 1)
-	border:SetSize(buttonSize/(122/256),buttonSize/(122/256))
-	border:SetPoint("CENTER", self, "CENTER", 0, 0)
-	border:SetTexture(getPath("actionbutton-border"))
-	border:SetVertexColor(self.colors.ui.stone[1], self.colors.ui.stone[2], self.colors.ui.stone[3])
-
-	local glow = self.Overlay:CreateTexture()
-	glow:SetDrawLayer("ARTWORK", 1)
-	glow:SetSize(iconSize/(122/256),iconSize/(122/256))
-	glow:SetPoint("CENTER", 0, 0)
-	glow:SetTexture(getPath("actionbutton-glow-white"))
-	glow:SetVertexColor(1, 1, 1, .5)
-	glow:SetBlendMode("ADD")
-	glow:Hide()
-
-	self.Backdrop = backdrop
-	self.Border = border
-	self.Darken = darken
-	self.Glow = glow
+	self.Glow = self.Overlay:CreateTexture()
+	self.Glow:SetDrawLayer(unpack(Layout.GlowDrawLayer))
+	self.Glow:SetSize(unpack(Layout.GlowSize))
+	self.Glow:SetPoint(unpack(Layout.GlowPlace))
+	self.Glow:SetTexture(Layout.GlowTexture)
+	self.Glow:SetVertexColor(unpack(Layout.GlowColor))
+	self.Glow:SetBlendMode(Layout.GlowBlendMode)
+	self.Glow:Hide()
 
 end 
 
 -- Module API
 ----------------------------------------------------
 Module.ArrangeButtons = function(self)
-
-	local db = self.db
-
-	local complimentaryOffset = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 10 or 7
-	local row2mod = -2/5
-
-	for id, button in ipairs(self.buttons) do 
-		local buttonID = button:GetID()
-		local barID = button:GetPager():GetID()
-		if (barID == 1) then 
-
-			if (buttonID < 11) then
-				button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
-			else
-				button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + ((buttonID-2-1 + row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-			end 
-
-		elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
-
-			if (buttonID < 7) then 
-				button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-			else 
-				if (complimentaryOffset < 10) then 
-					button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID-5+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-				else
-					button:Place("BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-				end 
-			end 
-		end 
-	end 
-
+	local Proxy = self:GetSecureUpdater()
+	if Proxy then
+		Proxy:Execute(Proxy:GetAttribute("arrangeButtons"))
+	end
 end
 
 Module.SpawnVehicleExitButton = function(self)
@@ -539,10 +501,13 @@ Module.SpawnButtons = function(self)
 
 	self.hoverFrame1 = hoverFrame1
 	self.hoverFrame2 = hoverFrame2
+	self.hoverButtons1 = hoverButtons1
+	self.hoverButtons2 = hoverButtons2
 
 	-- options proxy
 	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
 	proxy.UpdateFading = function(proxy) self:UpdateFading() end
+	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
 	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
 	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", BOTTOMLEFT_ACTIONBAR_PAGE);
 
@@ -588,9 +553,9 @@ Module.SpawnButtons = function(self)
 			local buttonID = button:GetID(); 
 			local barID = Pagers[id]:GetID(); 
 
-			if (barID == 1) then 
+			button:ClearAllPoints(); 
 
-				button:ClearAllPoints(); 
+			if (barID == 1) then 
 				if (buttonID < 11) then
 					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
 				else
@@ -599,18 +564,72 @@ Module.SpawnButtons = function(self)
 
 			elseif (barID == self:GetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE")) then 
 
-				button:ClearAllPoints(); 
-				if (buttonID < 7) then 
-					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-				else 
-					if (complimentaryOffset < 10) then 
-						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-5+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-					else 
-						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+				-- 7 primary buttons
+				if (buttonsPrimary == 1) then
+					
+					-- 3x2 complimentary buttons
+					if (buttonsComplimentary == 1) then 
+						if (buttonID < 4) then 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+						else
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-2+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+						end
+
+					-- 6x2 complimentary buttons
+					elseif (buttonsComplimentary == 2) then
+						if (buttonID < 7) then 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+						else
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-5+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+						end
+					end 
+
+
+				-- 10 primary buttons
+				elseif (buttonsPrimary == 2) then 
+					
+					-- 6 complimentary buttons
+					if (buttonsComplimentary == 1) then 
+						if (buttonID < 7) then 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+						else 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+						end 
+
+					-- 6x2 complimentary buttons
+					elseif (buttonsComplimentary == 2) then
+						if (buttonID < 7) then 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+						else 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+						end 
+					end 
+
+				-- 10+2 primary buttons
+				elseif (buttonsPrimary == 3) then 
+
+					-- 3x2 complimentary buttons
+					if (buttonsComplimentary == 1) then 
+						if (buttonID < 4) then 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+						else
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-3+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+						end
+
+					-- 6x2 complimentary buttons
+					elseif (buttonsComplimentary == 2) then
+						if (buttonID < 7) then 
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
+						else
+							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+						end
 					end 
 				end 
 			end 
 		end 
+
+		-- lua callback to update the hover frame anchors to the current layout
+		self:CallMethod("UpdateFadeAnchors"); 
 	
 	]=])
 
@@ -687,8 +706,9 @@ Module.SpawnButtons = function(self)
 			self:RunAttribute("arrangeButtons"); 
 
 		elseif (name == "change-buttonscomplimentary") then 
+			local buttonsComplimentary = tonumber(value); 
+
 			if self:GetAttribute("enableComplimentary") then 
-				local buttonsComplimentary = tonumber(value); 
 				local numVisible = buttonsComplimentary == 1 and 6 or buttonsComplimentary == 2 and 12 or 6; 
 				for i = 13,24 do 
 					local pager = Pagers[i]; 
@@ -735,6 +755,69 @@ Module.UpdateFading = function(self)
 
 end 
 
+Module.UpdateFadeAnchors = function(self)
+	local db = self.db
+	local numPrimary = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 12 or 7
+	local numComplimentary = db.buttonsComplimentary == 1 and 6 or db.buttonsComplimentary == 2 and 12 or 6
+
+	self.hoverFrame1:ClearAllPoints()
+	self.hoverFrame2:ClearAllPoints()
+
+	-- 12 main buttons, complimentary tilted towards the left
+	if (db.buttonsPrimary == 3) then 
+
+		-- 2 + 3
+		self.hoverFrame1:SetPoint("BOTTOMLEFT", self.hoverButtons1[1], "BOTTOMLEFT", 0, 0)
+		self.hoverFrame1:SetPoint("BOTTOMRIGHT", self.hoverButtons1[3], "BOTTOMRIGHT", 0, 0)
+		self.hoverFrame1:SetPoint("TOP", self.hoverButtons1[5], "TOP", 0, 0)
+
+		-- 6x2
+		if (db.buttonsComplimentary == 2) then 
+			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[7], "TOPLEFT", 0, 0)
+			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
+
+		-- 3x2
+		else 
+			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[4], "TOPLEFT", 0, 0)
+			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[3], "BOTTOMRIGHT", 0, 0)
+		end 
+
+	-- 10 main buttons, complimentary tilted towards the left
+	elseif (db.buttonsPrimary == 2) then 
+
+		-- 3x1
+		self.hoverFrame1:SetPoint("BOTTOMLEFT", self.hoverButtons1[1], "BOTTOMLEFT", 0, 0)
+		self.hoverFrame1:SetPoint("TOPRIGHT", self.hoverButtons1[3], "TOPRIGHT", 0, 0)
+
+		-- 6x2
+		if (db.buttonsComplimentary == 2) then 
+			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[7], "TOPLEFT", 0, 0)
+			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
+
+		-- 6x1
+		else 
+			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[1], "TOPLEFT", 0, 0)
+			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
+		end 
+
+
+	-- 7 main buttons, complimentary tilted towards the right
+	else 
+
+		-- 6x2
+		if (db.buttonsComplimentary == 2) then 
+			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[1], "BOTTOMRIGHT", 0, 0)
+			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[12], "TOPLEFT", 0, 0)
+
+		-- 3x2
+		else 
+			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[1], "BOTTOMRIGHT", 0, 0)
+			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[6], "TOPLEFT", 0, 0)
+		end 
+
+	end 
+end
+
 Module.UpdateSettings = function(self, event, ...)
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateSettings")
@@ -748,6 +831,7 @@ Module.UpdateSettings = function(self, event, ...)
 		button:Update()
 	end 
 	self:UpdateFading()
+	self:UpdateFadeAnchors()
 end 
 
 Module.OnEvent = function(self, event, ...)

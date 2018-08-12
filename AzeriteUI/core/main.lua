@@ -2,6 +2,7 @@ local ADDON = ...
 
 -- Wooh! 
 local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibEvent", "LibBlizzard", "LibFrame")
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Hide the entire UI from the start
 Core:GetFrame("UICenter"):SetAlpha(0)
@@ -76,6 +77,10 @@ end
 
 Core.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
+		if (not self.frame) then 
+			print(L["Welcome to the UI!"])
+			print(L["Menu button location."])
+		end 
 		self.frame = self.frame or CreateFrame("Frame")
 		self.frame:SetScript("OnUpdate", function(self, elapsed) 
 			self.elapsed = (self.elapsed or 0) + elapsed

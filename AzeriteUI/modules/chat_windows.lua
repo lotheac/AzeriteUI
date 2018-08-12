@@ -309,7 +309,7 @@ Module.PostCreateChatWindow = function(self, frame)
 	------------------------------
 	frame:SetFading(5)
 	frame:SetTimeVisible(15)
-	frame:SetIndentedWordWrap(true)
+	frame:SetIndentedWordWrap(false) -- messy?
 
 	-- just lock all frames away from our important objects
 	frame:SetClampRectInsets(-54, -54, -310, -330)

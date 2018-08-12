@@ -20,8 +20,9 @@ core\colors.lua
 # custom aura lists
 core\auras.lua
 
-# custom fonts objects
+# custom fonts library
 core\fonts.xml
+core\fonts.lua
 
 # localization
 locale\enUS.lua
@@ -35,6 +36,10 @@ locale\ptPT.lua
 locale\ruRU.lua
 locale\zhCN.lua
 locale\zhTW.lua
+
+# interface layout data
+layout\layout_actionbar_main.lua
+layout\layout_unitframe_playerframe.lua 
 
 # interface core
 core\main.lua

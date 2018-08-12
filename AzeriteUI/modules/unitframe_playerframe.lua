@@ -5,9 +5,10 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibTooltip")
+local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibSpinBar", "LibOrb", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [UnitFramePlayer]")
 
 -- Lua API
 local _G = _G
@@ -175,248 +176,93 @@ end
 
 local PostCreateAuraButton = function(element, button)
 	
-	-- Downscale factor of the border backdrop
-	local sizeMod = 2/4
+	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
+	button.Icon:SetSize(unpack(Layout.AuraIconSize))
+	button.Icon:ClearAllPoints()
+	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
 
+	button.Count:SetFontObject(Layout.AuraCountFont)
+	button.Count:ClearAllPoints()
+	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
 
-	-- Restyle original elements
-	----------------------------------------------------
+	button.Time:SetFontObject(Layout.AuraTimeFont)
+	button.Time:ClearAllPoints()
+	button.Time:SetPoint(unpack(Layout.AuraTimePlace))
 
-	-- Spell icon
-	-- We inset the icon, so the border aligns with the button edge
-	local icon = button.Icon
-	icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
-	icon:ClearAllPoints()
-	icon:SetPoint("TOPLEFT", 3, -3)
-	icon:SetPoint("BOTTOMRIGHT", -3, 3)
+	local layer, level = button.Icon:GetDrawLayer()
 
-	-- Aura stacks
-	local count = button.Count
-	count:SetFontObject(AzeriteFont11_Outline)
-	count:ClearAllPoints()
-	count:SetPoint("BOTTOMRIGHT", 2, -2)
+	button.Darken = button:CreateTexture()
+	button.Darken:SetDrawLayer(layer, level + 1)
+	button.Darken:SetSize(button.Icon:GetSize())
+	button.Darken:SetAllPoints(button.Icon)
+	button.Darken:SetColorTexture(0, 0, 0, .25)
 
-	-- Aura time remaining
-	local time = button.Time
-	time:SetFontObject(AzeriteFont14_Outline)
-	--time:ClearAllPoints()
-	--time:SetPoint("CENTER", 0, 0)
-
-
-	-- Create custom elements
-	----------------------------------------------------
-
-	-- Retrieve the icon drawlayer, and put our darkener right above
-	local iconDrawLayer, iconDrawLevel = icon:GetDrawLayer()
-
-	-- Darken the icons slightly, don't want them too bright
-	local darken = button:CreateTexture()
-	darken:SetDrawLayer(iconDrawLayer, iconDrawLevel + 1)
-	darken:SetSize(icon:GetSize())
-	darken:SetAllPoints(icon)
-	darken:SetColorTexture(0, 0, 0, .25)
-
-	-- Create our own custom border.
-	-- Using our new thick tooltip border, just scaled down slightly.
-	local border = button.Overlay:CreateFrame("Frame")
-	border:SetPoint("TOPLEFT", -14 *sizeMod, 14 *sizeMod)
-	border:SetPoint("BOTTOMRIGHT", 14 *sizeMod, -14 *sizeMod)
-	border:SetBackdrop({
-		edgeFile = getPath("tooltip_border"),
-		edgeSize = 32 *sizeMod
-	})
-	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-	--[[
-	border:SetBackdrop({
-		bgFile = nil,
-		edgeFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
-		edgeSize = 2,
-		tile = false,
-		tileSize = 0,
-		insets = {
-			left = 0,
-			right = 0,
-			top = 0,
-			bottom = 0
-		}
-	})
-	border:SetBackdropBorderColor(0, 0, 0, 1)
-	
-
-	local bSize = 4
-	local glow2 = border:CreateFrame("Frame")
-	glow2:SetPoint("TOPLEFT", button.Overlay, "TOPLEFT", -bSize, bSize)
-	glow2:SetPoint("BOTTOMRIGHT", button.Overlay, "BOTTOMRIGHT", bSize, -bSize)
-	glow2:SetBackdrop({
-		bgFile = nil, 
-		edgeFile = getPath("border-glow"), 
-		edgeSize = bSize*2,
-		tile = false,
-		tileSize = 0,
-		insets = {
-			left = 0,
-			right = 0,
-			top = 0,
-			bottom = 0
-		}
-	})
-	glow2:SetBackdropBorderColor(0, 0, 0, .75)
-
-	local bSize = 16
-	local glow = glow2:CreateFrame("Frame")
-	glow:SetPoint("TOPLEFT", button.Overlay, "TOPLEFT", -(bSize - 3), (bSize - 3))
-	glow:SetPoint("BOTTOMRIGHT", button.Overlay, "BOTTOMRIGHT", (bSize - 3), -(bSize - 3))
-	--glow:SetPoint("TOPLEFT", button.Overlay, "TOPLEFT", -bSize, bSize)
-	--glow:SetPoint("BOTTOMRIGHT", button.Overlay, "BOTTOMRIGHT", bSize, -bSize)
-	glow:SetBackdrop({
-		bgFile = nil, 
-		edgeFile = getPath("border-glow-overlay"), -- border-glow-overlay
-		edgeSize = bSize*2,
-		tile = false,
-		tileSize = 0,
-		insets = {
-			left = 0,
-			right = 0,
-			top = 0,
-			bottom = 0
-		}
-	})
-	glow:SetBackdropBorderColor(0, 0, 0, .75)
-	]]--
-
-	-- This one we reference, for magic school coloring later on
-	button.Border = border
-	button.Border.Glow = glow
+	button.Border = button.Overlay:CreateFrame("Frame")
+	button.Border:Place(unpack(Layout.AuraBorderFramePlace))
+	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
+	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
+	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
+	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
 
 end
 
--- Anything to post update at all?
 local PostUpdateAuraButton = function(element, button)
 	if (not button) or (not button:IsVisible()) then 
 		return 
 	end 
-	do return end
-
-	if button.isBuff then 
-		--button.Border:SetBackdropBorderColor(0, 0, 0, 1)
-		--button.Border.Glow:SetBackdropBorderColor(0, 0, 0, .75)
-
-		button.Border:SetBackdropBorderColor(1, 0, 0, 1)
-		button.Border.Glow:SetBackdropBorderColor(.7, 0, 0, .5)
-	else
-		local color = button.debuffType and Colors.debuff[button.debuffType]
-		if color then 
-			button.Border:SetBackdropBorderColor(color[1], color[2], color[3], 1)
-			button.Border.Glow:SetBackdropBorderColor(color[1]*.5, color[2]*.5, color[3]*.5, .75)
-		else
-			button.Border:SetBackdropBorderColor(0, 0, 0, 1)
-			button.Border.Glow:SetBackdropBorderColor(0, 0, 0, .75)
-		end
-	end 
 end
 
-
--- Style Post Updates
--- Styling function applying sizes and textures 
--- based on what kind of target we have, and its level. 
 local PostUpdateTextures = function(self)
-
-	-- War Seasoned
 	if (not PlayerHasXP()) then 
-		local health = self.Health
-		health:SetSize(385, 40)
-		health:SetStatusBarTexture(getPath("hp_cap_bar"))
-
-		local healthBg = self.Health.Bg
-		healthBg:SetTexture(getPath("hp_cap_case"))
-		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-		local threat = self.Threat
-		threat.health:SetTexture(getPath("hp_cap_case_glow"))
-
-		local powerFg = self.Power.Fg
-		powerFg:SetTexture(getPath("pw_crystal_case"))
-		powerFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-		local absorb = self.Absorb
-		absorb:SetSize(385, 40)
-		absorb:SetStatusBarTexture(getPath("hp_cap_bar"))
-
-		local cast = self.Cast
-		cast:SetSize(385, 40)
-		cast:SetStatusBarTexture(getPath("hp_cap_bar"))
-
-		local manaOrb = self.ExtraPower
-		if manaOrb then 
-			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
-			manaOrb.Border:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3]) 
+		self.Health:SetSize(unpack(Layout.SeasonedHealthSize))
+		self.Health:SetStatusBarTexture(Layout.SeasonedHealthTexture)
+		self.Health.Bg:SetTexture(Layout.SeasonedHealthBackdropTexture)
+		self.Health.Bg:SetVertexColor(unpack(Layout.SeasonedHealthBackdropColor))
+		self.Threat.health:SetTexture(Layout.SeasonedHealthThreatTexture)
+		self.Power.Fg:SetTexture(Layout.SeasonedPowerForegroundTexture)
+		self.Power.Fg:SetVertexColor(unpack(Layout.SeasonedPowerForegroundColor))
+		self.Absorb:SetSize(unpack(Layout.SeasonedAbsorbSize))
+		self.Absorb:SetStatusBarTexture(Layout.SeasonedAbsorbTexture)
+		self.Cast:SetSize(unpack(Layout.SeasonedCastSize))
+		self.Cast:SetStatusBarTexture(Layout.SeasonedCastTexture)
+		if self.ExtraPower then 
+			self.ExtraPower.Border:SetTexture(Layout.SeasonedManaOrbTexture)
+			self.ExtraPower.Border:SetVertexColor(unpack(Layout.SeasonedManaOrbColor)) 
 		end 
-
-	-- Battle Hardened
-	elseif (LEVEL >= 40) then 
-		local health = self.Health
-		health:SetSize(385, 37)
-		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-
-		local healthBg = self.Health.Bg
-		healthBg:SetTexture(getPath("hp_mid_case"))
-		healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-		local threat = self.Threat
-		threat.health:SetTexture(getPath("hp_mid_case_glow"))
-
-		local powerFg = self.Power.Fg
-		powerFg:SetTexture(getPath("pw_crystal_case"))
-		powerFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-		local absorb = self.Absorb
-		absorb:SetSize(385, 37)
-		absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-
-		local cast = self.Cast
-		cast:SetSize(385, 37)
-		cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-
-		local manaOrb = self.ExtraPower
-		if manaOrb then 
-			manaOrb.Border:SetTexture(getPath("orb_case_hi"))
-			manaOrb.Border:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3]) 
+	elseif (LEVEL >= Layout.HardenedLevel) then 
+		self.Health:SetSize(unpack(Layout.HardenedHealthSize))
+		self.Health:SetStatusBarTexture(Layout.HardenedHealthTexture)
+		self.Health.Bg:SetTexture(Layout.HardenedHealthBackdropTexture)
+		self.Health.Bg:SetVertexColor(unpack(Layout.HardenedHealthBackdropColor))
+		self.Threat.health:SetTexture(Layout.HardenedHealthThreatTexture)
+		self.Power.Fg:SetTexture(Layout.HardenedPowerForegroundTexture)
+		self.Power.Fg:SetVertexColor(unpack(Layout.HardenedPowerForegroundColor))
+		self.Absorb:SetSize(unpack(Layout.HardenedAbsorbSize))
+		self.Absorb:SetStatusBarTexture(Layout.HardenedAbsorbTexture)
+		self.Cast:SetSize(unpack(Layout.HardenedCastSize))
+		self.Cast:SetStatusBarTexture(Layout.HardenedCastTexture)
+		if self.ExtraPower then 
+			self.ExtraPower.Border:SetTexture(Layout.HardenedManaOrbTexture)
+			self.ExtraPower.Border:SetVertexColor(unpack(Layout.HardenedManaOrbColor)) 
 		end 
-
-	-- Novice
 	else 
-		local health = self.Health
-		health:SetSize(385, 37)
-		health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-
-		local healthBg = self.Health.Bg
-		healthBg:SetTexture(getPath("hp_low_case"))
-		healthBg:SetVertexColor(unpack(Colors.ui.wood))
-
-		local threat = self.Threat
-		threat.health:SetTexture(getPath("hp_low_case_glow"))
-
-		local powerFg = self.Power.Fg
-		powerFg:SetTexture(getPath("pw_crystal_case_low"))
-		powerFg:SetVertexColor(unpack(Colors.ui.wood))
-
-		local absorb = self.Absorb
-		absorb:SetSize(385, 37)
-		absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-
-		local cast = self.Cast
-		cast:SetSize(385, 37)
-		cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-
-		local manaOrb = self.ExtraPower
-		if manaOrb then 
-			manaOrb.Border:SetTexture(getPath("orb_case_low"))
-			manaOrb.Border:SetVertexColor(unpack(Colors.ui.wood)) 
+		self.Health:SetSize(unpack(Layout.NoviceHealthSize))
+		self.Health:SetStatusBarTexture(Layout.NoviceHealthTexture)
+		self.Health.Bg:SetTexture(Layout.NoviceHealthBackdropTexture)
+		self.Health.Bg:SetVertexColor(unpack(Layout.NoviceHealthBackdropColor))
+		self.Threat.health:SetTexture(Layout.NoviceHealthThreatTexture)
+		self.Power.Fg:SetTexture(Layout.NovicePowerForegroundTexture)
+		self.Power.Fg:SetVertexColor(unpack(Layout.NovicePowerForegroundColor))
+		self.Absorb:SetSize(unpack(Layout.NoviceAbsorbSize))
+		self.Absorb:SetStatusBarTexture(Layout.NoviceAbsorbTexture)
+		self.Cast:SetSize(unpack(Layout.NoviceCastSize))
+		self.Cast:SetStatusBarTexture(Layout.NoviceCastTexture)
+		if self.ExtraPower then 
+			self.ExtraPower.Border:SetTexture(Layout.NoviceManaOrbTexture)
+			self.ExtraPower.Border:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
 		end 
 	end 
 end 
-
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
@@ -424,8 +270,8 @@ local Style = function(self, unit, id, ...)
 	-- Frame
 	-----------------------------------------------------------
 
-	self:SetSize(439, 93) 
-	self:Place("BOTTOMLEFT", 167, 100) 
+	self:SetSize(unpack(Layout.Size)) 
+	self:Place(unpack(Layout.Place)) 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -452,26 +298,35 @@ local Style = function(self, unit, id, ...)
 
 	-- Health Bar
 	-----------------------------------------------------------	
+	local health 
 
-	local health = content:CreateStatusBar()
-	health:SetSize(385, 40)
-	health:Place("BOTTOMLEFT", 27, 27)
-	health:SetOrientation("RIGHT") -- set the bar to grow towards the right.
-	health:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
-	health:SetSmoothingFrequency(.5) -- set the duration of the smoothing.
-	health:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
-	health.colorTapped = false -- color tap denied units 
-	health.colorDisconnected = false -- color disconnected units
-	health.colorClass = false -- color players by class 
-	health.colorReaction = false -- color NPCs by their reaction standing with us
-	health.colorHealth = true -- color anything else in the default health color
-	health.frequent = true -- listen to frequent health events for more accurate updates
+	if (Layout.HealthType == "Orb") then 
+		health = content:CreateOrb()
+
+	elseif (Layout.HealthType == "SpinBar") then 
+		health = content:CreateSpinBar()
+
+	elseif (Layout.HealthType == "StatusBar") then 
+		health = content:CreateStatusBar()
+		health:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
+		health:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
+	end 
+
+	health:Place(unpack(Layout.HealthPlace))
+	health:SetSmoothingMode(Layout.HealthSmoothingMode or "bezier-fast-in-slow-out") -- set the smoothing mode.
+	health:SetSmoothingFrequency(Layout.HealthSmoothingFrequency or .5) -- set the duration of the smoothing.
+	health.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
+	health.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
+	health.colorClass = Layout.HealthColorClass -- color players by class 
+	health.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
+	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
 	self.Health = health
-
+	
 	local healthBg = health:CreateTexture()
-	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetSize(716, 188)
-	healthBg:SetPoint("CENTER", 1, -.5)
+	healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
+	healthBg:SetSize(unpack(Layout.HealthBackdropSize))
+	healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
 	self.Health.Bg = healthBg
 
 
@@ -643,42 +498,34 @@ local Style = function(self, unit, id, ...)
 
 	-- Auras
 	-----------------------------------------------------------
-	-- not appearing?
-	local aSize, aSpace = 40, 6 -- 42, 4
 	local auras = content:CreateFrame("Frame")
 	auras:Place("BOTTOMLEFT", health, "TOPLEFT", 10, 24)
-	auras:SetSize(aSize*8 + aSpace*7, aSize) -- auras will be aligned in the available space, this size gives us 8x1 auras
+	auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
 
-	auras.auraSize = aSize -- too much?
-	auras.spacingH = aSpace -- horizontal/column spacing between buttons
-	auras.spacingV = aSpace -- vertical/row spacing between aura buttons
-	auras.growthX = "RIGHT" -- auras grow to the left
-	auras.growthY = "UP" -- rows grow downwards (we just have a single row, though)
-	auras.maxVisible = 8 -- when set will limit the number of buttons regardless of space available
-	auras.maxBuffs = nil -- maximum number of visible buffs
-	auras.maxDebuffs = 3 -- maximum number of visible debuffs
-	auras.debuffsFirst = true -- show debuffs before buffs
-	auras.showCooldownSpiral = false -- don't show the spiral as a timer
-	auras.showCooldownTime = true -- show timer numbers
-
-	-- Filter strings
-	auras.auraFilter = nil -- general aura filter, only used if the below aren't here
-	auras.buffFilter = "HELPFUL" -- buff specific filter passed to blizzard API calls
-	auras.debuffFilter = "HARMFUL" -- debuff specific filter passed to blizzard API calls
-	
-	-- Filter methods
-	auras.AuraFilter = nil -- general aura filter function, called when the below aren't there
-	auras.BuffFilter = Auras.BuffFilter -- buff specific filter function
-	auras.DebuffFilter = Auras.DebuffFilter -- debuff specific filter function
-			
-	-- Aura tooltip position
-	auras.tooltipDefaultPosition = nil 
-	auras.tooltipPoint = "BOTTOMLEFT"
-	auras.tooltipAnchor = nil
-	auras.tooltipRelPoint = "TOPLEFT"
-	auras.tooltipOffsetX = 8 
-	auras.tooltipOffsetY = 16
-
+	auras.auraSize = Layout.AuraSize -- too much?
+	auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
+	auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
+	auras.growthX = Layout.AuraGrowthX -- auras grow to the left
+	auras.growthY = Layout.AuraGrowthY -- rows grow downwards (we just have a single row, though)
+	auras.maxVisible = Layout.AuraMax -- when set will limit the number of buttons regardless of space available
+	auras.maxBuffs = Layout.AuraMaxBuffs -- maximum number of visible buffs
+	auras.maxDebuffs = Layout.AuraMaxDebuffs -- maximum number of visible debuffs
+	auras.debuffsFirst = Layout.AuraDebuffs -- show debuffs before buffs
+	auras.showCooldownSpiral = Layout.ShowAuraCooldownSpirals -- don't show the spiral as a timer
+	auras.showCooldownTime = Layout.ShowAuraCooldownTime -- show timer numbers
+	auras.auraFilter = Layout.AuraFilter -- general aura filter, only used if the below aren't here
+	auras.buffFilter = Layout.AuraBuffFilter -- buff specific filter passed to blizzard API calls
+	auras.debuffFilter = Layout.AuraDebuffFilter -- debuff specific filter passed to blizzard API calls
+	auras.AuraFilter = Layout.AuraFilterFunc -- general aura filter function, called when the below aren't there
+	auras.BuffFilter = Layout.BuffFilterFunc -- buff specific filter function
+	auras.DebuffFilter = Layout.DebuffFilterFunc -- debuff specific filter function
+	auras.tooltipDefaultPosition = Layout.AuraTooltipDefaultPosition
+	auras.tooltipPoint = Layout.AuraTooltipPoint
+	auras.tooltipAnchor = Layout.AuraTooltipAnchor
+	auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
+	auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
+	auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
+		
 	self.Auras = auras
 	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
 	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)

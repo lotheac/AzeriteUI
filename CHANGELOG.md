@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.34] 2018-08-12
+### Added
+- Added a minor welcome message to point new users towards the cogwheel settings button.
+
+### Changed
+- Started splitting layout data and modules applying that data into separate folders and files.
+- Complimentary bar buttons will now always be displayed as 2 rows of buttons when the layout allows for it. This means that when the primary bar has 7 or 12 buttons, the complimentary bar will show always be displayed as 2 rows, either with 3 buttons in each row or 12. It makes sense when you see it. 
+- Update actionbutton hover areas to match where the buttons are actually placed with the various layouts now. Goal is to minimize screen usage, and keep the hovereffect to the actual button areas.
+
+### Fixed
+- The minimap zone text should now properly update when moving through outdoor zones. 
+
 ## [1.0.33] 2018-08-11
 ### Added
 - Added an options menu available from right-clicking the cogwheel found in the bottom right corner of the screen. Current options are all related to visibility, button counts and fading settings of the actionbuttons, but more will come! The menu is fully usable even during combat, as it's written mainly using the restricted environment and not regular lua. So you don't have to wait until you're dead to make that bar with your life saving ability visible. 

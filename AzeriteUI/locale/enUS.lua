@@ -11,6 +11,12 @@ L["<Middle-Click>"] = true
 L["<Right-Click>"] = true
 L["CTRL+C"] = true
 
+-- Welcome messages
+--------------------------------------------
+L["Welcome to the UI!"] = "|cffccccccWelcome to |r" .. GetAddOnMetadata(ADDON, "Title") .. "|cffcccccc!|r|n|n" 
+L["Menu button location."] = "|cffe5b226<Left-Click>|r |cffcccccccog for game windows.|r|n"
+						  .. "|cffe5b226<Right-Click>|r |cffcccccccog for actionbar options.|r|n|n"
+
 
 -- Clock & Time Settings
 --------------------------------------------

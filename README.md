@@ -12,6 +12,10 @@ Right-Click the cogwheel icon in the bottom right corner of the screen for actio
 
 You can't. This is as much UX as UI, meaning the interface is designed around a concept, this isn't meant to be a pretty skin over your current interface, it's instead a full user experience system where how you interact with the game is affected.
 
+## I can't track my quests!
+
+This is currently one of the unfinished features. For now you can use the addon [EskaTracker](https://www.curseforge.com/wow/addons/eskatracker), just remember to read its install description properly. We're not affiliated with the creators of this addon, so any question would have to be directed to them, not us. 
+
 ## Where's the rest?  
 
 It's still in its early stages here, but we'll be adding new features and improve the current ones one on almost a daily basis. 
