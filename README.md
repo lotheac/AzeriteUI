@@ -4,9 +4,17 @@ This is a custom user interface for World of Warcraft: Battle For Azeroth, with 
 
 The motivation of this user interface is immersion. This game has SO much information that if not handled carefully becomes cumbersome, therefore blocking the most important asset of the game, the world. The best interface is no interface at all, but in a game such as this that is not possible. But if we have to block away parts of the game world to see information about the game mechanics, then at least let’s make it dynamic, beautiful and in sync with the game's aesthetics. Let's make it Warcraft!  
 
+## How can I get more action buttons?
+
+Right-Click the cogwheel icon in the bottom right corner of the screen for actionbar options. You can have a maximum of 24 buttons, which in effect is the main actionbar and the bar known in the default interface as the "bottom left multi action bar".    
+
+## How can I move things? 
+
+You can't. This is as much UX as UI, meaning the interface is designed around a concept, this isn't meant to be a pretty skin over your current interface, it's instead a full user experience system where how you interact with the game is affected.
+
 ## Where's the rest?  
 
-It's still in its early stages here, but we'll be adding new features and improve the current ones one on a daily basis the upcoming weeks. We aim to have it fully ready at least a full week before the launch of Battle for Azeroth, so everybody can have an updated version ready leveling! 
+It's still in its early stages here, but we'll be adding new features and improve the current ones one on almost a daily basis. 
 
 ## I found a bug, where to report?
 
