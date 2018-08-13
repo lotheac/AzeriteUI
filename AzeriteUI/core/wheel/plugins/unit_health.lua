@@ -81,7 +81,7 @@ local UpdateValue = function(element, unit, min, max, disconnected, dead, tapped
 					if value.showMaximum then
 						value:SetFormattedText("%s / %s - %d%%", short(min), short(max), math_floor(min/max * 100))
 					else
-						value:SetFormattedText("%s / %d%%", short(min), math_floor(min/max * 100))
+						value:SetFormattedText("%d%%", math_floor(min/max * 100))
 					end
 				else
 					if value.showMaximum then
@@ -111,6 +111,9 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 		color = self.colors.reaction.civilian
 	elseif (element.colorClass and UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
+		color = class and self.colors.class[class]
+	elseif (element.colorPetAsPlayer and UnitIsUnit(unit, "pet")) then 
+		local _, class = UnitClass("player")
 		color = class and self.colors.class[class]
 	else 
 		local threat = UnitThreatSituation("player", unit)
@@ -202,5 +205,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 11)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 13)
 end 

@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -318,7 +319,7 @@ local createOptionButton = function(window, order, text, updateType, optionDB, o
 
 	local msg = option:CreateFontString()
 	msg:SetPoint("CENTER", 0, 0)
-	msg:SetFontObject(AzeriteFont14)
+	msg:SetFontObject(Fonts(14, false))
 	msg:SetJustifyH("RIGHT")
 	msg:SetJustifyV("TOP")
 	msg:SetIndentedWordWrap(false)

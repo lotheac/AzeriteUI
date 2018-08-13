@@ -9,6 +9,7 @@ end
 --do return end 
 
 local Module = Core:NewModule("BlizzardFonts", "LibEvent")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Lua API
 local _G = _G
@@ -33,14 +34,14 @@ Module.SetFontObjects = function(self)
 	-- Chat Font
 	-- This is the cont used by chat windows and inputboxes. 
 	-- When set early enough in the loading process, all windows inherit this.
-	_G.ChatFontNormal:SetFontObject(AzeriteFont15_Outline)
+	_G.ChatFontNormal:SetFontObject(Fonts(15, true))
 	_G.ChatFontNormal:SetShadowOffset(0, 0)
 	_G.ChatFontNormal:SetShadowColor(0, 0, 0, 0)
 
 	-- Chat Bubble Font
 	-- This is what chat bubbles inherit from. 
 	-- We should use this in our custom bubbles too.
-	_G.ChatBubbleFont:SetFontObject(AzeriteFont10_Outline)
+	_G.ChatBubbleFont:SetFontObject(Fonts(10, true))
 	_G.ChatBubbleFont:SetShadowOffset(0, 0)
 	_G.ChatBubbleFont:SetShadowColor(0, 0, 0, 0)
 end

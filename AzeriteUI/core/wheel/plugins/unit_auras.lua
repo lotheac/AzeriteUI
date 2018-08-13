@@ -621,7 +621,8 @@ local Update = function(self, event, unit)
 end 
 
 local Proxy = function(self, ...)
-	return (self.Auras.Override or Update)(self, ...)
+	return Update(self, ...)
+	--return (self.Auras.Override or Update)(self, ...)
 end 
 
 local ForceUpdate = function(element)
@@ -709,5 +710,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 19)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 20)
 end 

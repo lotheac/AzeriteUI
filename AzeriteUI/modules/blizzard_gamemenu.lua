@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("BlizzardGameMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Lua API
 local _G = _G
@@ -264,19 +265,19 @@ Module.StyleButtons = function(self)
 					button.pushed:SetPoint("CENTER")
 
 					button.text.normal:SetTextColor(0,0,0)
-					button.text.normal:SetFontObject(AzeriteFont14)
+					button.text.normal:SetFontObject(Fonts(14, false))
 					button.text.normal:SetAlpha(.5)
 					button.text.normal:SetShadowOffset(0, -.85)
 					button.text.normal:SetShadowColor(1,1,1,.5)
 
 					button.text.highlight:SetTextColor(0,0,0)
-					button.text.highlight:SetFontObject(AzeriteFont14)
+					button.text.highlight:SetFontObject(Fonts(14, false))
 					button.text.highlight:SetAlpha(.5)
 					button.text.highlight:SetShadowOffset(0, -.85)
 					button.text.highlight:SetShadowColor(1,1,1,.5)
 
 					button.text.pushed:SetTextColor(0,0,0)
-					button.text.pushed:SetFontObject(AzeriteFont14)
+					button.text.pushed:SetFontObject(Fonts(14, false))
 					button.text.pushed:SetAlpha(.5)
 					button.text.pushed:SetShadowOffset(0, -.85)
 					button.text.pushed:SetShadowColor(1,1,1,.5)

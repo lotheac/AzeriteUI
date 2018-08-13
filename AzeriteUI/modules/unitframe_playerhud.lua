@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("UnitFramePlayerHUD", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Lua API
 local _G = _G
@@ -474,7 +475,7 @@ local Style = function(self, unit, id, ...)
 	castValue:SetDrawLayer("OVERLAY")
 	castValue:SetJustifyH("CENTER")
 	castValue:SetJustifyV("MIDDLE")
-	castValue:SetFontObject(AzeriteFont14_Outline)
+	castValue:SetFontObject(Fonts(14, true))
 	castValue:SetShadowOffset(0, 0)
 	castValue:SetShadowColor(0, 0, 0, 0)
 	castValue:SetTextColor(240/255, 240/255, 240/255, .7)
@@ -484,7 +485,7 @@ local Style = function(self, unit, id, ...)
 	castName:SetDrawLayer("BORDER")
 	castName:SetJustifyH("CENTER")
 	castName:SetJustifyV("MIDDLE")
-	castName:SetFontObject(AzeriteFont15_Outline)
+	castName:SetFontObject(Fonts(15, true))
 	castName:SetShadowOffset(0, 0)
 	castName:SetShadowColor(0, 0, 0, 0)
 	castName:SetTextColor(240/255, 240/255, 240/255, .5)

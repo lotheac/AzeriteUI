@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent", "LibFrame")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Lua API
 local _G = _G
@@ -132,7 +133,7 @@ Module.StyleTimer = function(self, frame)
 		msg:SetDrawLayer("OVERLAY", 1)
 		msg:SetJustifyH("CENTER")
 		msg:SetJustifyV("MIDDLE")
-		msg:SetFontObject(AzeriteFont14_Outline)
+		msg:SetFontObject(Fonts(14, true))
 		msg:SetShadowOffset(0, 0)
 		msg:SetShadowColor(0, 0, 0, 0)
 		msg:SetTextColor(240/255, 240/255, 240/255, .7)

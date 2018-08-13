@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.35] 2018-08-13
+### Added
+- Added back the Blizzard ObjectivesTracker. Finished or not, you'll be needing it now! 
+
+### Changed
+- Let's call it a beta. 
+
 ## [1.0.34] 2018-08-12
 ### Added
 - Added a minor welcome message to point new users towards the cogwheel settings button.

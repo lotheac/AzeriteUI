@@ -6,8 +6,9 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibSpinBar", "LibOrb", "LibTooltip")
-local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
+local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [UnitFramePlayer]")
 
 -- Lua API
@@ -30,48 +31,6 @@ local _, PlayerClass = UnitClass("player")
 
 -- Current player level
 local LEVEL = UnitLevel("player") 
-
-local map = {
-
-	-- Health Bar Map
-	-- (Texture Size 512x64, Growth: RIGHT)
-	bar = {
-		{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
-		{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-		{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-		{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, 
-		{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, 
-		{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
-		{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
-	},
-
-	-- Power Crystal Map
-	-- (Texture Size 256x256, Growth: UP)
-	-- (top = left side   bottom = right side)
-	crystal = {
-		top = {
-			{ keyPercent =   0/256, offset =  -65/256 }, 
-			{ keyPercent =  72/256, offset =    0/256 }, 
-			{ keyPercent = 116/256, offset =  -16/256 }, 
-			{ keyPercent = 128/256, offset =  -28/256 }, 
-			{ keyPercent = 256/256, offset =  -84/256 }, 
-		},
-		bottom = {
-			{ keyPercent =   0/256, offset =  -47/256 }, 
-			{ keyPercent =  84/256, offset =    0/256 }, 
-			{ keyPercent = 135/256, offset =  -24/256 }, 
-			{ keyPercent = 142/256, offset =  -32/256 }, 
-			{ keyPercent = 225/256, offset =  -79/256 }, 
-			{ keyPercent = 256/256, offset = -168/256 }, 
-		}
-	},
-
-	-- Cast Bar Map
-	-- (Texture Size 128x32, Growth: Right)
-	cast = {
-
-	}
-}
 
 
 -- Utility Functions
@@ -146,28 +105,40 @@ local OverridePowerColor = function(element, unit, min, max, powerType, powerID,
 end 
 
 local Threat_UpdateColor = function(element, unit, status, r, g, b)
-	element.health:SetVertexColor(r, g, b)
-	element.power:SetVertexColor(r, g, b)
+	if element.health then 
+		element.health:SetVertexColor(r, g, b)
+	end
+	if element.power then 
+		element.power:SetVertexColor(r, g, b)
+	end
 	if element.mana then 
 		element.mana:SetVertexColor(r, g, b)
 	end 
 end
 
 local Threat_IsShown = function(element)
-	return element.health:IsShown()
+	return element.health and element.health:IsShown()
 end 
 
 local Threat_Show = function(element)
-	element.health:Show()
-	element.power:Show()
+	if 	element.health then 
+		element.health:Show()
+	end
+	if 	element.power then 
+		element.power:Show()
+	end
 	if element.mana then 
 		element.mana:Show()
 	end 
 end 
 
 local Threat_Hide = function(element)
-	element.health:Hide()
-	element.power:Hide()
+	if 	element.health then 
+		element.health:Hide()
+	end 
+	if element.power then 
+		element.power:Hide()
+	end
 	if element.mana then 
 		element.mana:Hide()
 	end
@@ -213,54 +184,120 @@ local PostUpdateAuraButton = function(element, button)
 end
 
 local PostUpdateTextures = function(self)
+	if (not Layout.UseProgressiveFrames) then 
+		return
+	end 
 	if (not PlayerHasXP()) then 
 		self.Health:SetSize(unpack(Layout.SeasonedHealthSize))
 		self.Health:SetStatusBarTexture(Layout.SeasonedHealthTexture)
-		self.Health.Bg:SetTexture(Layout.SeasonedHealthBackdropTexture)
-		self.Health.Bg:SetVertexColor(unpack(Layout.SeasonedHealthBackdropColor))
-		self.Threat.health:SetTexture(Layout.SeasonedHealthThreatTexture)
-		self.Power.Fg:SetTexture(Layout.SeasonedPowerForegroundTexture)
-		self.Power.Fg:SetVertexColor(unpack(Layout.SeasonedPowerForegroundColor))
-		self.Absorb:SetSize(unpack(Layout.SeasonedAbsorbSize))
-		self.Absorb:SetStatusBarTexture(Layout.SeasonedAbsorbTexture)
-		self.Cast:SetSize(unpack(Layout.SeasonedCastSize))
-		self.Cast:SetStatusBarTexture(Layout.SeasonedCastTexture)
-		if self.ExtraPower then 
+
+		if Layout.UseHealthBackdrop then 
+			self.Health.Bg:SetTexture(Layout.SeasonedHealthBackdropTexture)
+			self.Health.Bg:SetVertexColor(unpack(Layout.SeasonedHealthBackdropColor))
+		end 
+
+		if Layout.UseThreat then
+			if self.Threat.health then 
+				self.Threat.health:SetTexture(Layout.SeasonedHealthThreatTexture)
+			end 
+		end
+
+		if Layout.UsePowerBar then 
+			if Layout.UsePowerForeground then 
+				self.Power.Fg:SetTexture(Layout.SeasonedPowerForegroundTexture)
+				self.Power.Fg:SetVertexColor(unpack(Layout.SeasonedPowerForegroundColor))
+			end
+		end
+
+		if Layout.UseAbsorbBar then 
+			self.Absorb:SetSize(unpack(Layout.SeasonedAbsorbSize))
+			self.Absorb:SetStatusBarTexture(Layout.SeasonedAbsorbTexture)
+		end 
+
+		if Layout.UseCastBar then 
+			self.Cast:SetSize(unpack(Layout.SeasonedCastSize))
+			self.Cast:SetStatusBarTexture(Layout.SeasonedCastTexture)
+		end
+
+		if Layout.UseMana then 
 			self.ExtraPower.Border:SetTexture(Layout.SeasonedManaOrbTexture)
 			self.ExtraPower.Border:SetVertexColor(unpack(Layout.SeasonedManaOrbColor)) 
 		end 
+
 	elseif (LEVEL >= Layout.HardenedLevel) then 
 		self.Health:SetSize(unpack(Layout.HardenedHealthSize))
 		self.Health:SetStatusBarTexture(Layout.HardenedHealthTexture)
-		self.Health.Bg:SetTexture(Layout.HardenedHealthBackdropTexture)
-		self.Health.Bg:SetVertexColor(unpack(Layout.HardenedHealthBackdropColor))
-		self.Threat.health:SetTexture(Layout.HardenedHealthThreatTexture)
-		self.Power.Fg:SetTexture(Layout.HardenedPowerForegroundTexture)
-		self.Power.Fg:SetVertexColor(unpack(Layout.HardenedPowerForegroundColor))
-		self.Absorb:SetSize(unpack(Layout.HardenedAbsorbSize))
-		self.Absorb:SetStatusBarTexture(Layout.HardenedAbsorbTexture)
-		self.Cast:SetSize(unpack(Layout.HardenedCastSize))
-		self.Cast:SetStatusBarTexture(Layout.HardenedCastTexture)
-		if self.ExtraPower then 
+
+		if Layout.UseHealthBackdrop then 
+			self.Health.Bg:SetTexture(Layout.HardenedHealthBackdropTexture)
+			self.Health.Bg:SetVertexColor(unpack(Layout.HardenedHealthBackdropColor))
+		end
+
+		if Layout.UseThreat then
+			if self.Threat.health then 
+				self.Threat.health:SetTexture(Layout.HardenedHealthThreatTexture)
+			end 
+		end 
+
+		if Layout.UsePowerBar then 
+			if Layout.UsePowerForeground then 
+				self.Power.Fg:SetTexture(Layout.HardenedPowerForegroundTexture)
+				self.Power.Fg:SetVertexColor(unpack(Layout.HardenedPowerForegroundColor))
+			end
+		end
+
+		if Layout.UseAbsorbBar then 
+			self.Absorb:SetSize(unpack(Layout.HardenedAbsorbSize))
+			self.Absorb:SetStatusBarTexture(Layout.HardenedAbsorbTexture)
+		end
+
+		if Layout.UseCastBar then 
+			self.Cast:SetSize(unpack(Layout.HardenedCastSize))
+			self.Cast:SetStatusBarTexture(Layout.HardenedCastTexture)
+		end
+
+		if Layout.UseMana then 
 			self.ExtraPower.Border:SetTexture(Layout.HardenedManaOrbTexture)
 			self.ExtraPower.Border:SetVertexColor(unpack(Layout.HardenedManaOrbColor)) 
 		end 
+
 	else 
 		self.Health:SetSize(unpack(Layout.NoviceHealthSize))
 		self.Health:SetStatusBarTexture(Layout.NoviceHealthTexture)
-		self.Health.Bg:SetTexture(Layout.NoviceHealthBackdropTexture)
-		self.Health.Bg:SetVertexColor(unpack(Layout.NoviceHealthBackdropColor))
-		self.Threat.health:SetTexture(Layout.NoviceHealthThreatTexture)
-		self.Power.Fg:SetTexture(Layout.NovicePowerForegroundTexture)
-		self.Power.Fg:SetVertexColor(unpack(Layout.NovicePowerForegroundColor))
-		self.Absorb:SetSize(unpack(Layout.NoviceAbsorbSize))
-		self.Absorb:SetStatusBarTexture(Layout.NoviceAbsorbTexture)
-		self.Cast:SetSize(unpack(Layout.NoviceCastSize))
-		self.Cast:SetStatusBarTexture(Layout.NoviceCastTexture)
-		if self.ExtraPower then 
+
+		if Layout.UseHealthBackdrop then 
+			self.Health.Bg:SetTexture(Layout.NoviceHealthBackdropTexture)
+			self.Health.Bg:SetVertexColor(unpack(Layout.NoviceHealthBackdropColor))
+		end
+
+		if Layout.UseThreat then
+			if self.Threat.health then 
+				self.Threat.health:SetTexture(Layout.NoviceHealthThreatTexture)
+			end 
+		end 
+
+		if Layout.UsePowerBar then 
+			if Layout.UsePowerForeground then 
+				self.Power.Fg:SetTexture(Layout.NovicePowerForegroundTexture)
+				self.Power.Fg:SetVertexColor(unpack(Layout.NovicePowerForegroundColor))
+			end
+		end
+
+		if Layout.UseAbsorbBar then 
+			self.Absorb:SetSize(unpack(Layout.NoviceAbsorbSize))
+			self.Absorb:SetStatusBarTexture(Layout.NoviceAbsorbTexture)
+		end
+
+		if Layout.UseCastBar then 
+			self.Cast:SetSize(unpack(Layout.NoviceCastSize))
+			self.Cast:SetStatusBarTexture(Layout.NoviceCastTexture)
+		end 
+
+		if Layout.UseMana then 
 			self.ExtraPower.Border:SetTexture(Layout.NoviceManaOrbTexture)
 			self.ExtraPower.Border:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
 		end 
+
 	end 
 end 
 
@@ -295,6 +332,18 @@ local Style = function(self, unit, id, ...)
 	overlay:SetAllPoints()
 	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
 
+	-- Border
+	-----------------------------------------------------------	
+	if Layout.UseBorderBackdrop then 
+		local border = self:CreateFrame("Frame")
+		border:SetFrameLevel(self:GetFrameLevel() + 8)
+		border.SetSize(unpack(Layout.BorderFrameSize))
+		border:Place(unpack(Layout.BorderFramePlace))
+		border:SetBackdrop(Layout.BorderFrameBackdrop)
+		border:SetBackdropColor(unpack(Layout.BorderFrameBackdropColor))
+		border:SetBackdropBorderColor(unpack(Layout.BorderFrameBackdropBorderColor))
+		self.Border = border
+	end 
 
 	-- Health Bar
 	-----------------------------------------------------------	
@@ -306,10 +355,16 @@ local Style = function(self, unit, id, ...)
 	elseif (Layout.HealthType == "SpinBar") then 
 		health = content:CreateSpinBar()
 
-	elseif (Layout.HealthType == "StatusBar") then 
+	else 
 		health = content:CreateStatusBar()
 		health:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
-		health:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
+		if Layout.HealthBarSparkMap then 
+			health:SetSparkMap(Layout.HealthBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+	end 
+	if (not Layout.UseProgressiveFrames) then 
+		health:SetStatusBarTexture(Layout.HealthBarTexture)
+		health:SetSize(Layout.HealthBarTexture)
 	end 
 
 	health:Place(unpack(Layout.HealthPlace))
@@ -323,53 +378,69 @@ local Style = function(self, unit, id, ...)
 	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
 	self.Health = health
 	
-	local healthBg = health:CreateTexture()
-	healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
-	healthBg:SetSize(unpack(Layout.HealthBackdropSize))
-	healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
-	self.Health.Bg = healthBg
-
-
+	if Layout.UseHealthBackdrop then 
+		local healthBg = health:CreateTexture()
+		healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
+		healthBg:SetSize(unpack(Layout.HealthBackdropSize))
+		healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
+		self.Health.Bg = healthBg
+	end 
 
 	-- Absorb Bar
 	-----------------------------------------------------------	
-
-	local absorb = content:CreateStatusBar()
-	absorb:SetFrameLevel(health:GetFrameLevel() + 1)
-	absorb:Place("BOTTOMLEFT", 27, 27)
-	absorb:SetOrientation("LEFT") -- grow the bar towards the left (grows from the end of the health)
-	absorb:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
-	absorb:SetStatusBarColor(1, 1, 1, .25) -- make the bar fairly transparent, it's just an overlay after all. 
-	self.Absorb = absorb
-
+	if Layout.UseAbsorbBar then 
+		local absorb = content:CreateStatusBar()
+		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
+		absorb:Place(unpack(Layout.AbsorbBarPlace))
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		if Layout.AbsorbBarSparkMap then 
+			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
+		self.Absorb = absorb
+	end 
 
 	-- Power Crystal
 	-----------------------------------------------------------
+	if Layout.UsePowerBar then 
+		local power = backdrop:CreateStatusBar()
+		power:SetSize(unpack(Layout.PowerSize))
+		power:Place(unpack(Layout.PowerPlace))
+		power:SetStatusBarTexture(Layout.PowerBarTexture)
+		power:SetTexCoord(unpack(Layout.PowerBarTexCoord))
+		power:SetOrientation(Layout.PowerBarOrientation or "RIGHT") -- set the bar to grow towards the top.
+		power:SetSmoothingMode(Layout.PowerBarSmoothingMode) -- set the smoothing mode.
+		power:SetSmoothingFrequency(Layout.PowerBarSmoothingFrequency or .5) -- set the duration of the smoothing.
 
-	local power = backdrop:CreateStatusBar()
-	power:SetSize(120, 140)
-	power:Place("BOTTOMLEFT", -101, 38)
-	power:SetStatusBarTexture(getPath("power_crystal_front"))
-	power:SetTexCoord(50/255, 206/255, 37/255, 219/255)
-	power:SetOrientation("UP") -- set the bar to grow towards the top.
-	power:SetSparkMap(map.crystal) -- set the map the spark follows along the bar.
-	power.ignoredResource = "MANA" -- make the bar hide when MANA is the primary resource. 
-	self.Power = power
-	self.Power.OverrideColor = OverridePowerColor
+		if Layout.PowerBarSparkMap then 
+			power:SetSparkMap(Layout.PowerBarSparkMap) -- set the map the spark follows along the bar.
+		end 
 
-	local powerBg = power:CreateTexture()
-	powerBg:SetDrawLayer("BACKGROUND", -2)
-	powerBg:SetSize(120/157*256, 140/183*256)
-	powerBg:SetPoint("CENTER", 0, 0)
-	powerBg:SetTexture(getPath("power_crystal_back"))
-	powerBg:SetVertexColor(1, 1, 1, .85) 
+		power.ignoredResource = Layout.PowerIgnoredResource -- make the bar hide when MANA is the primary resource. 
 
-	local powerFg = power:CreateTexture()
-	powerFg:SetSize(198,98)
-	powerFg:SetPoint("BOTTOM", 7, -51)
-	powerFg:SetDrawLayer("ARTWORK")
-	powerFg:SetTexture(getPath("pw_crystal_case"))
-	self.Power.Fg = powerFg
+		self.Power = power
+		self.Power.OverrideColor = OverridePowerColor
+
+		if Layout.UsePowerBackground then 
+			local powerBg = power:CreateTexture()
+			powerBg:SetDrawLayer(unpack(Layout.PowerBackgroundDrawLayer))
+			powerBg:SetSize(unpack(Layout.PowerBackgroundSize))
+			powerBg:SetPoint(unpack(Layout.PowerBackgroundPlace))
+			powerBg:SetTexture(Layout.PowerBackgroundTexture)
+			powerBg:SetVertexColor(unpack(Layout.PowerBackgroundColor)) 
+			self.Power.Bg = powerBg
+		end
+
+		if Layout.UsePowerForeground then 
+			local powerFg = power:CreateTexture()
+			powerFg:SetSize(198,98)
+			powerFg:SetPoint("BOTTOM", 7, -51)
+			powerFg:SetDrawLayer("ARTWORK")
+			powerFg:SetTexture(getPath("pw_crystal_case"))
+			self.Power.Fg = powerFg
+		end
+	end 
+
 
 
 	-- Mana Orb
@@ -380,102 +451,115 @@ local Style = function(self, unit, id, ...)
 				 or (PlayerClass == "SHAMAN") or (PlayerClass == "PRIEST")
 				 or (PlayerClass == "MAGE") or (PlayerClass == "WARLOCK") 
 
-	if hasMana then 
-		local extraPower = backdrop:CreateOrb()
-		extraPower:SetSize(103, 103) -- 113,113 
-		extraPower:Place("BOTTOMLEFT", -97 +5, 22 + 5) -- -97,22 
-		extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3")) -- define the textures used in the orb. 
-		extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
-		self.ExtraPower = extraPower
-	
-		local extraPowerBg = extraPower:CreateBackdropTexture()
-		extraPowerBg:SetDrawLayer("BACKGROUND", -2)
-		extraPowerBg:SetSize(113, 113)
-		extraPowerBg:SetPoint("CENTER", 0, 0)
-		extraPowerBg:SetTexture(getPath("pw_orb_bar3"))
-		extraPowerBg:SetVertexColor(22/255,  26/255, 22/255, .82) 
-	
-		local extraPowerFg2 = extraPower:CreateTexture()
-		extraPowerFg2:SetDrawLayer("BORDER", -1)
-		extraPowerFg2:SetSize(127, 127) 
-		extraPowerFg2:SetPoint("CENTER", 0, 0)
-		extraPowerFg2:SetTexture(getPath("shade_circle"))
-		extraPowerFg2:SetVertexColor(0, 0, 0, 1) 
+	if Layout.UseMana then 
+		if hasMana then 
+			local extraPower = backdrop:CreateOrb()
+			extraPower:SetSize(103, 103) -- 113,113 
+			extraPower:Place("BOTTOMLEFT", -97 +5, 22 + 5) -- -97,22 
+			extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3")) -- define the textures used in the orb. 
+			extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
+			self.ExtraPower = extraPower
 		
-		local extraPowerFg = extraPower:CreateTexture()
-		extraPowerFg:SetDrawLayer("BORDER")
-		extraPowerFg:SetSize(188, 188)
-		extraPowerFg:SetPoint("CENTER", 0, 0)
+			local extraPowerBg = extraPower:CreateBackdropTexture()
+			extraPowerBg:SetDrawLayer("BACKGROUND", -2)
+			extraPowerBg:SetSize(113, 113)
+			extraPowerBg:SetPoint("CENTER", 0, 0)
+			extraPowerBg:SetTexture(getPath("pw_orb_bar3"))
+			extraPowerBg:SetVertexColor(22/255,  26/255, 22/255, .82) 
+		
+			local extraPowerFg2 = extraPower:CreateTexture()
+			extraPowerFg2:SetDrawLayer("BORDER", -1)
+			extraPowerFg2:SetSize(127, 127) 
+			extraPowerFg2:SetPoint("CENTER", 0, 0)
+			extraPowerFg2:SetTexture(getPath("shade_circle"))
+			extraPowerFg2:SetVertexColor(0, 0, 0, 1) 
+			
+			local extraPowerFg = extraPower:CreateTexture()
+			extraPowerFg:SetDrawLayer("BORDER")
+			extraPowerFg:SetSize(188, 188)
+			extraPowerFg:SetPoint("CENTER", 0, 0)
 
-		self.ExtraPower.Border = extraPowerFg
+			self.ExtraPower.Border = extraPowerFg
+		end 
+
 	end 
-
 
 	-- Threat
 	-----------------------------------------------------------	
-	local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
-	threats.hideSolo = true
-	threats.fadeOut = 3
-
-	local threatHealth = backdrop:CreateTexture()
-	threatHealth:SetDrawLayer("BACKGROUND", -2)
-	threatHealth:SetSize(716, 188)
-	threatHealth:SetPoint("CENTER", 1, -1)
-	threatHealth:SetAlpha(.75)
-	threats.health = threatHealth
-
-	local threatPowerFrame = backdrop:CreateFrame("Frame")
-	threatPowerFrame:SetFrameLevel(backdrop:GetFrameLevel())
-
-	local threatPower = threatPowerFrame:CreateTexture()
-	threatPower:SetPoint("CENTER", power, "CENTER", 0, 0)
-	threatPower:SetDrawLayer("BACKGROUND", -2)
-	threatPower:SetSize(120/157*256, 140/183*256)
-	threatPower:SetAlpha(.75)
-	threatPower:SetTexture(getPath("power_crystal_glow"))
-	threatPower._owner = self.Power
-	threats.power = threatPower
-
-	-- Hook the power visibility to the power crystal
-	self.Power:HookScript("OnShow", function() threatPowerFrame:Show() end)
-	self.Power:HookScript("OnHide", function() threatPowerFrame:Hide() end)
-
-	if hasMana then 
-
-		local threatManaFrame = backdrop:CreateFrame("Frame")
-		threatManaFrame:SetFrameLevel(backdrop:GetFrameLevel())
-
-		local threatMana = threatManaFrame:CreateTexture()
-		threatMana:SetDrawLayer("BACKGROUND", -2)
-		threatMana:SetPoint("CENTER", self.ExtraPower, "CENTER", 0, 0)
-		threatMana:SetSize(188, 188)
-		threatMana:SetAlpha(.75)
-		threatMana:SetTexture(getPath("orb_case_glow"))
-		threatMana._owner = self.ExtraPower
-		threats.mana = threatMana
-
-		self.ExtraPower:HookScript("OnShow", function() threatManaFrame:Show() end)
-		self.ExtraPower:HookScript("OnHide", function() threatManaFrame:Hide() end)
-	end
-
-	self.Threat = threats
-	self.Threat.OverrideColor = Threat_UpdateColor
-
+	if Layout.UseThreat then 
+		
+		local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
+		threats.hideSolo = true
+		threats.fadeOut = 3
+	
+		local threatHealth = backdrop:CreateTexture()
+		threatHealth:SetDrawLayer("BACKGROUND", -2)
+		threatHealth:SetSize(716, 188)
+		threatHealth:SetPoint("CENTER", 1, -1)
+		threatHealth:SetAlpha(.75)
+		threats.health = threatHealth
+	
+		if Layout.UsePowerBar then 
+			local threatPowerFrame = backdrop:CreateFrame("Frame")
+			threatPowerFrame:SetFrameLevel(backdrop:GetFrameLevel())
+	
+			local threatPower = threatPowerFrame:CreateTexture()
+			threatPower:SetPoint("CENTER", power, "CENTER", 0, 0)
+			threatPower:SetDrawLayer("BACKGROUND", -2)
+			threatPower:SetSize(120/157*256, 140/183*256)
+			threatPower:SetAlpha(.75)
+			threatPower:SetTexture(getPath("power_crystal_glow"))
+			threatPower._owner = self.Power
+			threats.power = threatPower
+	
+			-- Hook the power visibility to the power crystal
+			self.Power:HookScript("OnShow", function() threatPowerFrame:Show() end)
+			self.Power:HookScript("OnHide", function() threatPowerFrame:Hide() end)
+		end 
+	
+		if Layout.UseMana then 
+			if hasMana then 
+	
+				local threatManaFrame = backdrop:CreateFrame("Frame")
+				threatManaFrame:SetFrameLevel(backdrop:GetFrameLevel())
+	
+				local threatMana = threatManaFrame:CreateTexture()
+				threatMana:SetDrawLayer("BACKGROUND", -2)
+				threatMana:SetPoint("CENTER", self.ExtraPower, "CENTER", 0, 0)
+				threatMana:SetSize(188, 188)
+				threatMana:SetAlpha(.75)
+				threatMana:SetTexture(getPath("orb_case_glow"))
+				threatMana._owner = self.ExtraPower
+				threats.mana = threatMana
+	
+				self.ExtraPower:HookScript("OnShow", function() threatManaFrame:Show() end)
+				self.ExtraPower:HookScript("OnHide", function() threatManaFrame:Hide() end)
+			end
+		end 
+	
+		self.Threat = threats
+		self.Threat.OverrideColor = Threat_UpdateColor
+	end 
 
 
 	-- Cast Bar
 	-----------------------------------------------------------
-	local cast = content:CreateStatusBar()
-	cast:SetSize(385, 40)
-	cast:SetFrameLevel(health:GetFrameLevel() + 1)
-	cast:Place("BOTTOMLEFT", 27, 27)
-	cast:SetOrientation("RIGHT") -- set the bar to grow towards the right.
-	cast:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
-	cast:SetSmoothingFrequency(.15)
-	cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
-	cast:SetSparkMap(map.bar) -- set the map the spark follows along the bar.
+	if Layout.UseCastBar then
+		local cast = content:CreateStatusBar()
+		cast:SetSize(385, 40)
+		cast:SetFrameLevel(health:GetFrameLevel() + 1)
+		cast:Place("BOTTOMLEFT", 27, 27)
+		cast:SetOrientation("RIGHT") -- set the bar to grow towards the right.
+		cast:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
+		cast:SetSmoothingFrequency(.15)
+		cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
 
-	self.Cast = cast
+		if Layout.CastBarSparkMap then 
+			cast:SetSparkMap(Layout.CastBarSparkMap) -- set the map the spark follows along the bar.
+		end
+
+		self.Cast = cast
+	end 
 
 
 	-- Combat Indicator
@@ -499,10 +583,9 @@ local Style = function(self, unit, id, ...)
 	-- Auras
 	-----------------------------------------------------------
 	local auras = content:CreateFrame("Frame")
-	auras:Place("BOTTOMLEFT", health, "TOPLEFT", 10, 24)
+	auras:Place(unpack(Layout.AuraFramePlace))
 	auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
-
-	auras.auraSize = Layout.AuraSize -- too much?
+	auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
 	auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
 	auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
 	auras.growthX = Layout.AuraGrowthX -- auras grow to the left
@@ -540,56 +623,60 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(AzeriteFont18_Outline)
-	healthVal:SetShadowOffset(0, 0)
-	healthVal:SetShadowColor(0, 0, 0, 0)
+	healthVal:SetFontObject(Fonts(18, true))
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
 	self.Health.Value = healthVal
 	self.Health.OverrideValue = OverrideHealthValue
 
 	-- Absorb Value
-	local absorbVal = health:CreateFontString()
-	absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 13, 0)
-	absorbVal:SetDrawLayer("OVERLAY")
-	absorbVal:SetJustifyH("CENTER")
-	absorbVal:SetJustifyV("MIDDLE")
-	absorbVal:SetFontObject(AzeriteFont18_Outline)
-	absorbVal:SetShadowOffset(0, 0)
-	absorbVal:SetShadowColor(0, 0, 0, 0)
-	absorbVal:SetTextColor(240/255, 240/255, 240/255, .5)
-	self.Absorb.Value = absorbVal 
-	self.Absorb.OverrideValue = OverrideValue
+	if Layout.UseAbsorbBar then 
+		local absorbVal = self.Health:CreateFontString()
+		absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 13, 0)
+		absorbVal:SetDrawLayer("OVERLAY")
+		absorbVal:SetJustifyH("CENTER")
+		absorbVal:SetJustifyV("MIDDLE")
+		absorbVal:SetFontObject(Fonts(18, true))
+		absorbVal:SetTextColor(240/255, 240/255, 240/255, .5)
+		self.Absorb.Value = absorbVal 
+		self.Absorb.OverrideValue = OverrideValue
+	end 
 
 	-- Power Value
-	local powerVal = power:CreateFontString()
-	powerVal:SetPoint("CENTER", 0, -16)
-	powerVal:SetDrawLayer("OVERLAY")
-	powerVal:SetJustifyH("CENTER")
-	powerVal:SetJustifyV("MIDDLE")
-	powerVal:SetFontObject(AzeriteFont18_Outline)
-	powerVal:SetShadowOffset(0, 0)
-	powerVal:SetShadowColor(0, 0, 0, 0)
-	powerVal:SetTextColor(240/255, 240/255, 240/255, .4)
-	self.Power.Value = powerVal
-	self.Power.UpdateValue = OverrideValue
+	if Layout.UsePowerBar then 
+		local powerVal = self.Power:CreateFontString()
+		powerVal:SetPoint("CENTER", 0, -16)
+		powerVal:SetDrawLayer("OVERLAY")
+		powerVal:SetJustifyH("CENTER")
+		powerVal:SetJustifyV("MIDDLE")
+		powerVal:SetFontObject(Fonts(18, true))
+		powerVal:SetTextColor(240/255, 240/255, 240/255, .4)
+		self.Power.Value = powerVal
+		self.Power.UpdateValue = OverrideValue
+	end
 
-	if hasMana then 
-		local extraPowerVal = self.ExtraPower:CreateFontString()
-		extraPowerVal:SetPoint("CENTER", 3, 0)
-		extraPowerVal:SetDrawLayer("OVERLAY")
-		extraPowerVal:SetJustifyH("CENTER")
-		extraPowerVal:SetJustifyV("MIDDLE")
-		extraPowerVal:SetFontObject(AzeriteFont18_Outline)
-		extraPowerVal:SetShadowOffset(0, 0)
-		extraPowerVal:SetShadowColor(0, 0, 0, 0)
-		extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
-	
-		self.ExtraPower.Value = extraPowerVal
-		self.ExtraPower.UpdateValue = OverrideValue
+	if Layout.UseMana then 
+		if hasMana then 
+			local extraPowerVal = self.ExtraPower:CreateFontString()
+			extraPowerVal:SetPoint("CENTER", 3, 0)
+			extraPowerVal:SetDrawLayer("OVERLAY")
+			extraPowerVal:SetJustifyH("CENTER")
+			extraPowerVal:SetJustifyV("MIDDLE")
+			extraPowerVal:SetFontObject(Fonts(18, true))
+			extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
+		
+			self.ExtraPower.Value = extraPowerVal
+			self.ExtraPower.UpdateValue = OverrideValue
+		end 
 	end 
 
 	-- Update textures according to player level
-	PostUpdateTextures(self)
+	if Layout.UseProgressiveFrames then 
+		PostUpdateTextures(self)
+	end 
+end 
+
+Module.GetFrame = function(self)
+	return self.frame
 end 
 
 Module.OnEvent = function(self, event, ...)
@@ -604,9 +691,9 @@ Module.OnEvent = function(self, event, ...)
 			end
 		end
 	end
-
-	-- Update textures according to player level
-	PostUpdateTextures(self.frame)
+	if Layout.UseProgressiveFrames then 
+		PostUpdateTextures(self:GetFrame())
+	end 
 end
 
 Module.OnInit = function(self)

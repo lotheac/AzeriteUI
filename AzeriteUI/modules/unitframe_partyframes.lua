@@ -8,6 +8,7 @@ end
 local Module = Core:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame", "LibStatusBar")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Lua API
 local _G = _G
@@ -164,7 +165,7 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(AzeriteFont13_Outline)
+	healthVal:SetFontObject(Fonts(13, true))
 	healthVal:SetShadowOffset(-.85, -.85)
 	healthVal:SetShadowColor(0, 0, 0, .75)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)

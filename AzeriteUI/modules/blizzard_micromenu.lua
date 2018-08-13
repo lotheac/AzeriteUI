@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("BlizzardMicroMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -387,7 +388,7 @@ Module.AddOptionsToMenuWindow = function(self)
 				microButton.newText = microButton:CreateFontString()
 				microButton.newText:SetDrawLayer("OVERLAY")
 				microButton.newText:SetTextColor(0,0,0)
-				microButton.newText:SetFontObject(AzeriteFont14)
+				microButton.newText:SetFontObject(Fonts(14, false))
 				microButton.newText:SetShadowOffset(0, -.85)
 				microButton.newText:SetShadowColor(1,1,1,.5)
 				microButton.newText:SetText(microButtonTexts[buttonName])

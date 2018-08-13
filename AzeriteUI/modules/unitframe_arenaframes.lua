@@ -8,6 +8,7 @@ end
 local Module = Core:NewModule("UnitFrameArena", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
+local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Lua API
 local _G = _G
@@ -87,13 +88,13 @@ local PostCreateAuraButton = function(element, button)
 
 	-- Aura stacks
 	local count = button.Count
-	count:SetFontObject(AzeriteFont11_Outline)
+	count:SetFontObject(Fonts(11, true))
 	count:ClearAllPoints()
 	count:SetPoint("BOTTOMRIGHT", 2, -2)
 
 	-- Aura time remaining
 	local time = button.Time
-	time:SetFontObject(AzeriteFont14_Outline)
+	time:SetFontObject(Fonts(14, true))
 	--time:ClearAllPoints()
 	--time:SetPoint("CENTER", 0, 0)
 
@@ -282,7 +283,7 @@ local Style = function(self, unit, id, ...)
 	name:SetDrawLayer("OVERLAY")
 	name:SetJustifyH("CENTER")
 	name:SetJustifyV("TOP")
-	name:SetFontObject(AzeriteFont14_Outline)
+	name:SetFontObject(Fonts(14, true))
 	name:SetShadowOffset(0, 0)
 	name:SetShadowColor(0, 0, 0, 0)
 	name:SetTextColor(240/255, 240/255, 240/255, .75)
@@ -293,7 +294,7 @@ local Style = function(self, unit, id, ...)
 	healthVal:SetDrawLayer("OVERLAY")
 	healthVal:SetJustifyH("CENTER")
 	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(AzeriteFont14_Outline)
+	healthVal:SetFontObject(Fonts(14, true))
 	healthVal:SetShadowOffset(0, 0)
 	healthVal:SetShadowColor(0, 0, 0, 0)
 	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)

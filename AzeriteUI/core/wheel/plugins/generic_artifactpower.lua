@@ -88,9 +88,22 @@ local Update = function(self, event, ...)
 
 	local azeriteItemLocation = FindActiveAzeriteItem()
 	if (not azeriteItemLocation) then 
-		return element:Hide()
+		if (element.showEmpty) then 
+			element:SetMinMaxValues(0, 100)
+			element:SetValue(0)
+			if element.Value then 
+				element:UpdateValue(0, 100, 1)
+			end 
+			if (not element:IsShown()) then 
+				element:Show()
+			end
+			return 
+		else
+			return element:Hide()
+		end 
 	end
 	
+	local min, max, level 
 	local min, max = GetAzeriteItemXPInfo(azeriteItemLocation)
 	local level = GetPowerLevel(azeriteItemLocation) 
 
@@ -156,5 +169,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 9)
+	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 11)
 end 
