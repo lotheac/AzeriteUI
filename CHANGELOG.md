@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.36] 2018-08-14
+### Fixed
+- User interface works for non-mana classes again now. Sorry! 
+
 ## [1.0.35] 2018-08-13
 ### Added
 - Added back the Blizzard ObjectivesTracker. Finished or not, you'll be needing it now! 

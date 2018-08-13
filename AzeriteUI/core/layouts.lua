@@ -149,6 +149,25 @@ local BlizzardChatFrames = {
 	UseButtonTextures = true
 }
 
+local BlizzardMicroMenu = {
+	ButtonFont = Fonts(14, false),
+	ButtonFontColor = { 0, 0, 0 }, 
+	ButtonFontShadowOffset = { 0, -.85 },
+	ButtonFontShadowColor = { 1, 1, 1, .5 },
+
+	ConfigWindowBackdrop = {
+		bgFile = BLANK_TEXTURE,
+		edgeFile = getPath("tooltip_border"),
+		edgeSize = 32 *.75, 
+		insets = { 
+			top = 23 *.75, 
+			bottom = 23 *.75, 
+			left = 23 *.75, 
+			right = 23 *.75 
+		}
+	}
+}
+
 local BlizzardObjectivesTracker = {
 	Place = { "TOPRIGHT", -(110/2 + 40), -260 },
 	Width = 110,
@@ -777,6 +796,7 @@ local UnitFrameToT = {
 
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [ActionBarMain]", ActionBarMain)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardChatFrames]", BlizzardChatFrames)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardMicroMenu]", BlizzardMicroMenu)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardObjectivesTracker]", BlizzardObjectivesTracker)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [Minimap]", Minimap)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [TooltipStyling]", TooltipStyling)

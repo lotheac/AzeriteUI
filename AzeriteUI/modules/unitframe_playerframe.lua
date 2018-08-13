@@ -220,8 +220,10 @@ local PostUpdateTextures = function(self)
 		end
 
 		if Layout.UseMana then 
-			self.ExtraPower.Border:SetTexture(Layout.SeasonedManaOrbTexture)
-			self.ExtraPower.Border:SetVertexColor(unpack(Layout.SeasonedManaOrbColor)) 
+			if self.ExtraPower then 
+				self.ExtraPower.Border:SetTexture(Layout.SeasonedManaOrbTexture)
+				self.ExtraPower.Border:SetVertexColor(unpack(Layout.SeasonedManaOrbColor)) 
+			end 
 		end 
 
 	elseif (LEVEL >= Layout.HardenedLevel) then 
@@ -257,8 +259,10 @@ local PostUpdateTextures = function(self)
 		end
 
 		if Layout.UseMana then 
-			self.ExtraPower.Border:SetTexture(Layout.HardenedManaOrbTexture)
-			self.ExtraPower.Border:SetVertexColor(unpack(Layout.HardenedManaOrbColor)) 
+			if self.ExtraPower then 
+				self.ExtraPower.Border:SetTexture(Layout.HardenedManaOrbTexture)
+				self.ExtraPower.Border:SetVertexColor(unpack(Layout.HardenedManaOrbColor)) 
+			end 
 		end 
 
 	else 
@@ -294,8 +298,10 @@ local PostUpdateTextures = function(self)
 		end 
 
 		if Layout.UseMana then 
-			self.ExtraPower.Border:SetTexture(Layout.NoviceManaOrbTexture)
-			self.ExtraPower.Border:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
+			if self.ExtraPower then 
+				self.ExtraPower.Border:SetTexture(Layout.NoviceManaOrbTexture)
+				self.ExtraPower.Border:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
+			end 
 		end 
 
 	end 
