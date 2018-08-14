@@ -71,8 +71,6 @@ Module.StyleTracker = function(self)
 		local item = block.itemButton
 		if item and not item.skinned then
 			item:SetSize(25, 25)
-			item:SetNormalTexture(nil)
-			item.icon:SetTexCoord(unpack(E.TexCoords))
 			item.Count:ClearAllPoints()
 			item.Count:SetPoint("TOPLEFT", 1, -1)
 			item.Count:SetFontObject(Fonts(14,true))
@@ -122,7 +120,7 @@ Module.StyleTracker = function(self)
 				end
 			end
 
-			BonusObjectiveTrackerProgressBar_PlayFlareAnim = E.noop
+			BonusObjectiveTrackerProgressBar_PlayFlareAnim = function() end
 			progressBar.isSkinned = true
 		elseif icon and progressBar.backdrop then
 			progressBar.backdrop:SetShown(icon:IsShown())
