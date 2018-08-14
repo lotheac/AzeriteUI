@@ -50,6 +50,7 @@ modules\blizzard_gamemenu.lua
 modules\blizzard_interface_styling.lua
 modules\blizzard_micromenu.lua
 modules\blizzard_mirrortimers.lua
+modules\blizzard_objectivestracker.lua
 modules\blizzard_popups_styling.lua
 modules\blizzard_tooltips_styling.lua
 modules\chat_bubbles.lua

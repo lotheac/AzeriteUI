@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.38] 2018-08-14
+### Changed
+- Moved Blizzard ObjectivesTracker modifications to its own file. Remember to restart game for the file to be discovered!
+
+### Fixed
+- Fixed more bugs related to the Blizzard ObjectivesTracker.
+
 ## [1.0.37] 2018-08-14
 ### Fixed
 - Fixed bugs related to the Blizzard ObjectivesTracker.
