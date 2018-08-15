@@ -1009,6 +1009,52 @@ Module.SetUpMinimap = function(self)
 		Handler.Toggle = toggle
 	end 
 
+	if Layout.UseGroupFinderEye then 
+		local queueButton = _G.QueueStatusMinimapButton
+
+		local button = Handler:CreateOverlayFrame()
+		button:SetFrameLevel(button:GetFrameLevel() + 10) 
+		button:Place(unpack(Layout.GroupFinderEyePlace))
+		button:SetSize(unpack(Layout.GroupFinderEyeSize))
+
+		queueButton:SetParent(button)
+		queueButton:ClearAllPoints()
+		queueButton:SetPoint("CENTER", 0, 0)
+		queueButton:SetSize(unpack(Layout.GroupFinderEyeSize))
+
+		if Layout.UseGroupFinderEyeBackdrop then 
+			local backdrop = queueButton:CreateTexture()
+			backdrop:SetDrawLayer("BACKGROUND", -6)
+			backdrop:SetPoint("CENTER", 0, 0)
+			backdrop:SetSize(unpack(Layout.GroupFinderEyeBackdropSize))
+			backdrop:SetTexture(Layout.GroupFinderEyeBackdropTexture)
+			backdrop:SetVertexColor(unpack(Layout.GroupFinderEyeBackdropColor))
+		end 
+
+		if Layout.GroupFinderEyeTexture then 
+			local UIHider = CreateFrame("Frame")
+			UIHider:Hide()
+			queueButton.Eye.texture:SetParent(UIHider)
+			queueButton.Eye.texture:SetAlpha(0)
+
+			local iconTexture = queueButton:CreateTexture()
+			iconTexture:SetDrawLayer("ARTWORK", 1)
+			iconTexture:SetPoint("CENTER", 0, 0)
+			iconTexture:SetSize(unpack(Layout.GroupFinderEyeSize))
+			iconTexture:SetTexture(Layout.GroupFinderEyeTexture)
+			iconTexture:SetVertexColor(unpack(Layout.GroupFinderEyeColor))
+		else
+			queueButton.Eye:SetSize(unpack(Layout.GroupFinderEyeSize)) 
+			queueButton.Eye.texture:SetSize(unpack(Layout.GroupFinderEyeSize))
+		end 
+	
+
+		if Layout.GroupFinderQueueStatusPlace then 
+			QueueStatusFrame:ClearAllPoints()
+			QueueStatusFrame:SetPoint(unpack(Layout.GroupFinderQueueStatusPlace))
+		end 
+	end 
+
 end 
 
 -- Perform and initial update of all elements, 

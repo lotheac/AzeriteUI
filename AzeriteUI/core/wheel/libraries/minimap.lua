@@ -1,5 +1,5 @@
-local Version = 24 -- This library's version 
-local MapVersion = 24 -- Minimap library version the minimap created by this is compatible with
+local Version = 25 -- This library's version 
+local MapVersion = 25 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -87,7 +87,8 @@ do
 	-- Should we hide these too maybe? Just enslave them to our upcoming system?
 	LibMinimap.baggedButtonsIgnored["MBB_MinimapButtonFrame"] = true
 	LibMinimap.baggedButtonsIgnored["MinimapButtonFrame"] = true
-
+	--LibMinimap.baggedButtonsIgnored["QueueStatusMinimapButton"] = true
+	
 	LibMinimap.baggedButtonsIgnored["BookOfTracksFrame"] = true
 	LibMinimap.baggedButtonsIgnored["CartographerNotesPOI"] = true
 	LibMinimap.baggedButtonsIgnored["DA_Minimap"] = true

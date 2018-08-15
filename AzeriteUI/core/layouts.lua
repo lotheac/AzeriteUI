@@ -22,7 +22,7 @@ end
 
 -- Convert degrees to radians
 local degreesToRadians = function(degrees)
-	return degrees * (2*math_pi)/180
+	return degrees * (2*math_pi)/180 -- well this is just bad. Gotta roll with it now, though. 
 end 
 
 -- Core
@@ -259,7 +259,13 @@ local Minimap = {
 		MailTextureSize = { 66, 66 },
 		MailTextureDrawLayer = { "ARTWORK", 1 },
 		MailTextureRotation = degreesToRadians(7.5),
- 
+
+	UseGroupFinderEye = true, 
+		GroupFinderEyePlace = { "CENTER", math.cos(45*math_pi/180) * (213/2 + 10), math.sin(45*math_pi/180) * (213/2 + 10) }, 
+		GroupFinderEyeSize = { 56, 56 }, 
+		GroupFinderEyeTexture = getPath("group-finder-eye-green"),
+		GroupFinderEyeColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+		GroupFinderQueueStatusPlace = { "BOTTOMRIGHT", QueueStatusMinimapButton, "TOPLEFT", 0, 0 },
 }
 
 -- Core Tooltips
@@ -445,10 +451,10 @@ local UnitFramePlayer = {
 		AuraBuffFilter = "HELPFUL", -- buff specific filter passed to blizzard API calls
 		AuraDebuffFilter = "HARMFUL", -- debuff specific filter passed to blizzard API calls
 		AuraFilterFunc = nil, -- general aura filter function, called when the below aren't there
-		--BuffFilterFunc = Auras.BuffFilter, -- buff specific filter function
-		--DebuffFilterFunc = Auras.DebuffFilter, -- debuff specific filter function
-		BuffFilterFunc = function() return true end, -- buff specific filter function
-		DebuffFilterFunc = function() return true end, -- debuff specific filter function
+		BuffFilterFunc = Auras.BuffFilter, -- buff specific filter function
+		DebuffFilterFunc = Auras.DebuffFilter, -- debuff specific filter function
+		--BuffFilterFunc = function() return true end, -- buff specific filter function
+		--DebuffFilterFunc = function() return true end, -- debuff specific filter function
 		AuraFrameSize = { 40*8 + 6*(8 -1), 40 },
 		AuraFramePlace = { "BOTTOMLEFT", 27 + 10, 27 + 24 + 40 },
 		AuraTooltipDefaultPosition = nil,
@@ -718,7 +724,7 @@ local UnitFramePlayerHUD = {
 					point4.slotTexture:SetRotation(degreesToRadians(3*posMod))
 					point4.case:SetPoint("CENTER", 0, 0)
 					point4.case:SetSize(60,60)
-					point4.case:SetRotation(degreesToRadians(0))
+					point4.case:SetRotation(0)
 					point4.case:SetTexture(getPath("point_plate"))
 				
 					point5:SetPoint("CENTER", -203*posMod,-11)
@@ -761,34 +767,34 @@ local UnitFramePlayerHUD = {
 					point3:SetPoint("CENTER", -234*posMod,-73)
 					point3:SetSize(39,40)
 					point3:SetStatusBarTexture(getPath("point_hearth"))
-					point3:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point3:GetStatusBarTexture():SetRotation(0)
 					point3.slotTexture:SetTexture(getPath("point_hearth"))
-					point3.slotTexture:SetRotation(degreesToRadians(0))
+					point3.slotTexture:SetRotation(0)
 					point3.case:SetPoint("CENTER", 0,0)
 					point3.case:SetSize(80,80)
-					point3.case:SetRotation(degreesToRadians(0))
+					point3.case:SetRotation(0)
 					point3.case:SetTexture(getPath("point_plate"))
 				
 					point4:SetPoint("CENTER", -221*posMod,-36)
 					point4:SetSize(13,13)
 					point4:SetStatusBarTexture(getPath("point_crystal"))
-					point4:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point4:GetStatusBarTexture():SetRotation(0)
 					point4.slotTexture:SetTexture(getPath("point_crystal"))
-					point4.slotTexture:SetRotation(degreesToRadians(0))
+					point4.slotTexture:SetRotation(0)
 					point4.case:SetPoint("CENTER", 0, 0)
 					point4.case:SetSize(60,60)
-					point4.case:SetRotation(degreesToRadians(0))
+					point4.case:SetRotation(0)
 					point4.case:SetTexture(getPath("point_plate"))
 				
 					point5:SetPoint("CENTER", -203*posMod,-9)
 					point5:SetSize(13,13)
 					point5:SetStatusBarTexture(getPath("point_crystal"))
-					point5:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point5:GetStatusBarTexture():SetRotation(0)
 					point5.slotTexture:SetTexture(getPath("point_crystal"))
-					point5.slotTexture:SetRotation(degreesToRadians(0))
+					point5.slotTexture:SetRotation(0)
 					point5.case:SetPoint("CENTER",0, 0)
 					point5.case:SetSize(60,60)
-					point5.case:SetRotation(degreesToRadians(0))
+					point5.case:SetRotation(0)
 					point5.case:SetTexture(getPath("point_plate"))
 		
 				elseif (style == "SoulShards") then 
@@ -869,23 +875,23 @@ local UnitFramePlayerHUD = {
 					point2:SetPoint("CENTER", -234*posMod,-73)
 					point2:SetSize(39,40)
 					point2:SetStatusBarTexture(getPath("point_hearth"))
-					point2:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point2:GetStatusBarTexture():SetRotation(0)
 					point2.slotTexture:SetTexture(getPath("point_hearth"))
-					point2.slotTexture:SetRotation(degreesToRadians(0))
+					point2.slotTexture:SetRotation(0)
 					point2.case:SetPoint("CENTER", 0,0)
 					point2.case:SetSize(80,80)
-					point2.case:SetRotation(degreesToRadians(0))
+					point2.case:SetRotation(0)
 					point2.case:SetTexture(getPath("point_plate"))
 				
 					point3:SetPoint("CENTER", -221*posMod,-36)
 					point3:SetSize(13,13)
 					point3:SetStatusBarTexture(getPath("point_crystal"))
-					point3:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point3:GetStatusBarTexture():SetRotation(0)
 					point3.slotTexture:SetTexture(getPath("point_crystal"))
-					point3.slotTexture:SetRotation(degreesToRadians(0))
+					point3.slotTexture:SetRotation(0)
 					point3.case:SetPoint("CENTER", 0, 0)
 					point3.case:SetSize(60,60)
-					point3.case:SetRotation(degreesToRadians(0))
+					point3.case:SetRotation(0)
 					point3.case:SetTexture(getPath("point_plate"))
 		
 		
@@ -895,67 +901,67 @@ local UnitFramePlayerHUD = {
 					point1:SetPoint("CENTER", -203*posMod,-131)
 					point1:SetSize(28,28)
 					point1:SetStatusBarTexture(getPath("point_rune2"))
-					point1:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point1:GetStatusBarTexture():SetRotation(0)
 					point1.slotTexture:SetTexture(getPath("point_rune2"))
-					point1.slotTexture:SetRotation(degreesToRadians(0))
+					point1.slotTexture:SetRotation(0)
 					point1.case:SetPoint("CENTER", 0, 0)
 					point1.case:SetSize(58,58)
-					point1.case:SetRotation(degreesToRadians(0))
+					point1.case:SetRotation(0)
 					point1.case:SetTexture(getPath("point_dk_block"))
 		
 					point2:SetPoint("CENTER", -227*posMod,-107)
 					point2:SetSize(28,28)
 					point2:SetStatusBarTexture(getPath("point_rune4"))
-					point2:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point2:GetStatusBarTexture():SetRotation(0)
 					point2.slotTexture:SetTexture(getPath("point_rune4"))
-					point2.slotTexture:SetRotation(degreesToRadians(0))
+					point2.slotTexture:SetRotation(0)
 					point2.case:SetPoint("CENTER", 0, 0)
 					point2.case:SetSize(68,68)
-					point2.case:SetRotation(degreesToRadians(0))
+					point2.case:SetRotation(0)
 					point2.case:SetTexture(getPath("point_dk_block"))
 		
 					point3:SetPoint("CENTER", -253*posMod,-83)
 					point3:SetSize(30,30)
 					point3:SetStatusBarTexture(getPath("point_rune1"))
-					point3:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point3:GetStatusBarTexture():SetRotation(0)
 					point3.slotTexture:SetTexture(getPath("point_rune1"))
-					point3.slotTexture:SetRotation(degreesToRadians(0))
+					point3.slotTexture:SetRotation(0)
 					point3.case:SetPoint("CENTER", 0,0)
 					point3.case:SetSize(74,74)
-					point3.case:SetRotation(degreesToRadians(0))
+					point3.case:SetRotation(0)
 					point3.case:SetTexture(getPath("point_dk_block"))
 				
 					point4:SetPoint("CENTER", -220*posMod,-64)
 					point4:SetSize(28,28)
 					point4:SetStatusBarTexture(getPath("point_rune3"))
-					point4:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point4:GetStatusBarTexture():SetRotation(0)
 					point4.slotTexture:SetTexture(getPath("point_rune3"))
-					point4.slotTexture:SetRotation(degreesToRadians(0))
+					point4.slotTexture:SetRotation(0)
 					point4.case:SetPoint("CENTER", 0, 0)
 					point4.case:SetSize(68,68)
-					point4.case:SetRotation(degreesToRadians(0))
+					point4.case:SetRotation(0)
 					point4.case:SetTexture(getPath("point_dk_block"))
 		
 					point5:SetPoint("CENTER", -246*posMod,-38)
 					point5:SetSize(32,32)
 					point5:SetStatusBarTexture(getPath("point_rune2"))
-					point5:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point5:GetStatusBarTexture():SetRotation(0)
 					point5.slotTexture:SetTexture(getPath("point_rune2"))
-					point5.slotTexture:SetRotation(degreesToRadians(0))
+					point5.slotTexture:SetRotation(0)
 					point5.case:SetPoint("CENTER", 0, 0)
 					point5.case:SetSize(78,78)
-					point5.case:SetRotation(degreesToRadians(0))
+					point5.case:SetRotation(0)
 					point5.case:SetTexture(getPath("point_dk_block"))
 		
 					point6:SetPoint("CENTER", -214*posMod,-10)
 					point6:SetSize(40,40)
 					point6:SetStatusBarTexture(getPath("point_rune1"))
-					point6:GetStatusBarTexture():SetRotation(degreesToRadians(0))
+					point6:GetStatusBarTexture():SetRotation(0)
 					point6.slotTexture:SetTexture(getPath("point_rune1"))
-					point6.slotTexture:SetRotation(degreesToRadians(0))
+					point6.slotTexture:SetRotation(0)
 					point6.case:SetPoint("CENTER", 0, 0)
 					point6.case:SetSize(98,98)
-					point6.case:SetRotation(degreesToRadians(0))
+					point6.case:SetRotation(0)
 					point6.case:SetTexture(getPath("point_dk_block"))
 		
 				end 

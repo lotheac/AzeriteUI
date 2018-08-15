@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 10)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 11)
 if (not LibBlizzard) then	
 	return
 end
@@ -355,8 +355,8 @@ UIWidgets["Minimap"] = function(self)
 	-- New dungeon finder eye in MoP
 	local QueueStatusMinimapButton = _G.QueueStatusMinimapButton
 	QueueStatusMinimapButton:SetHighlightTexture("") 
-	QueueStatusMinimapButton.Eye.texture:SetParent(UIHider)
-	QueueStatusMinimapButton.Eye.texture:SetAlpha(0)
+	--QueueStatusMinimapButton.Eye.texture:SetParent(UIHider)
+	--QueueStatusMinimapButton.Eye.texture:SetAlpha(0)
 
 	if QueueStatusMinimapButtonBorder then
 		QueueStatusMinimapButtonBorder:SetTexture(nil)

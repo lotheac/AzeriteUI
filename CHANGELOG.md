@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.40] 2018-08-15
+### Added
+- A Group Finder Eye is now available on the minimap when queued using the group finder.
+
 ## [1.0.39] 2018-08-15
 ### Changed
 - Parented the Blizzard ObjectivesTracker to our own master frame, to prevent it from covering the Blizzard Micro Menu.
