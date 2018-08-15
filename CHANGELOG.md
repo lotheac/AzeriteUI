@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.41] 2018-08-15
+### Fixed
+- The target health bar should no longer be flipped the wrong way.
+- The target unit classification icon has been moved back to where it belongs. 
+- The target absorb bar now shows up again, and its value text is in the right place too.
+
 ## [1.0.40] 2018-08-15
 ### Added
 - A Group Finder Eye is now available on the minimap when queued using the group finder.

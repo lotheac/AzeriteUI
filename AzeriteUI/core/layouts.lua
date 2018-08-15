@@ -307,6 +307,7 @@ local UnitFramePlayer = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+		HealthBarSetFlippedHorizontally = false, 
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
 		HealthSmoothingFrequency = .5, -- speed of the smoothing method
 		HealthColorTapped = false, -- color tap denied units 
@@ -982,7 +983,7 @@ local UnitFrameTarget = {
 		HealthSize = nil, 
 		HealthType = "StatusBar", -- health type
 		HealthBarTexture = nil, -- only called when non-progressive frames are used
-		HealthBarOrientation = "RIGHT", -- bar orientation
+		HealthBarOrientation = "LEFT", -- bar orientation
 		HealthBarSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -992,6 +993,7 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+		HealthBarSetFlippedHorizontally = true, 
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
 		HealthSmoothingFrequency = .5, -- speed of the smoothing method
 		HealthColorTapped = true, -- color tap denied units 
@@ -1004,6 +1006,7 @@ local UnitFrameTarget = {
 	UseHealthBackdrop = true,
 		HealthBackdropPlace = { "CENTER", 1, -.5 },
 		HealthBackdropSize = { 716, 188 },
+		HealthBackdropTexCoord = { 1, 0, 0, 1 }, 
 		HealthBackdropDrawLayer = { "BACKGROUND", -1 },
 
 	UseHealthValue = true, 
@@ -1025,7 +1028,8 @@ local UnitFrameTarget = {
 	UseAbsorbBar = true,
 		AbsorbBarPlace = { "BOTTOMLEFT", 27, 27 },
 		AbsorbBarSize = nil,
-		AbsorbBarOrientation = "LEFT",
+		AbsorbBarOrientation = "RIGHT",
+		AbsorbBarSetFlippedHorizontally = true, 
 		AbsorbBarColor = { 1, 1, 1, .25 },
 		AbsorbBarSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
@@ -1038,7 +1042,7 @@ local UnitFrameTarget = {
 		},
 
 		UseAbsorbValue = true, 
-			AbsorbValuePlaceFunction = function(self) return "LEFT", self.Health.Value, "RIGHT", 13, 0 end, 
+			AbsorbValuePlaceFunction = function(self) return "RIGHT", self.Health.Value, "LEFT", -13, 0 end, 
 			AbsorbValueDrawLayer = { "OVERLAY", 1 }, 
 			AbsorbValueFont = Fonts(18, true),
 			AbsorbValueJustifyH = "CENTER", 
@@ -1091,17 +1095,17 @@ local UnitFrameTarget = {
 		TargetIndicatorPetByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 	UseClassificationIndicator = true, 
-		ClassificationIndicatorBossPlace = { "BOTTOMRIGHT", 30 - 84/2, -1 + 84/2 },
+		ClassificationIndicatorBossPlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
 		ClassificationIndicatorBossSize = { 84,84 },
 		ClassificationIndicatorBossTexture = getPath("icon_classification_boss"),
 		ClassificationIndicatorBossColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
-		ClassificationIndicatorElitePlace = { "BOTTOMRIGHT", 30 - 84/2, -1 + 84/2 },
+		ClassificationIndicatorElitePlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
 		ClassificationIndicatorEliteSize = { 84,84 },
 		ClassificationIndicatorEliteTexture = getPath("icon_classification_elite"),
 		ClassificationIndicatorEliteColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
-		ClassificationIndicatorRarePlace = { "BOTTOMRIGHT", 30 - 84/2, -1 + 84/2 },
+		ClassificationIndicatorRarePlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
 		ClassificationIndicatorRareSize = { 84,84 },
 		ClassificationIndicatorRareTexture = getPath("icon_classification_rare"),
 		ClassificationIndicatorRareColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
@@ -1222,6 +1226,7 @@ local UnitFrameTarget = {
 		UseProgressiveCastBar = true, 
 		UseProgressiveThreat = true, 
 		UseProgressivePortrait = true, 
+		UseProgressiveAbsorbBar = true, 
 
 		BossHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		BossHealthSize = { 533, 40 },

@@ -263,6 +263,11 @@ local PostUpdateTextures = function(self)
 		end 
 	end 
 
+	if Layout.UseAbsorbBar and Layout.UseProgressiveAbsorbBar then 
+		self.Absorb:SetSize(unpack(Layout[TARGET_STYLE.."AbsorbSize"]))
+		self.Absorb:SetStatusBarTexture(Layout[TARGET_STYLE.."AbsorbTexture"])
+	end
+
 	if Layout.UsePowerBar and Layout.UseProgressivePowerBar then 
 		if Layout.UsePowerForeground then 
 			self.Power.Fg:SetTexture(Layout[TARGET_STYLE.."PowerForegroundTexture"])
@@ -397,6 +402,9 @@ local Style = function(self, unit, id, ...)
 		if (not Layout.UseProgressiveFrames) then 
 			healthBg:SetTexture(Layout.HealthBackdropTexture)
 		end 
+		if Layout.HealthBackdropTexCoord then 
+			healthBg:SetTexCoord(unpack(Layout.HealthBackdropTexCoord))
+		end 
 		self.Health.Bg = healthBg
 	end 
 
@@ -415,19 +423,18 @@ local Style = function(self, unit, id, ...)
 		local absorb = content:CreateStatusBar()
 		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
 		absorb:Place(unpack(Layout.AbsorbBarPlace))
-		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) 
 		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
 
 		if (not Layout.UseProgressiveFrames) then
 			absorb:SetSize(unpack(Layout.AbsorbSize))
 			absorb:SetStatusBarTexture(Layout.AbsorbBarTexture)
 		end
-
 		if Layout.AbsorbBarSparkMap then 
 			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
 		end 
 
-		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
 		self.Absorb = absorb
 	end 
 
