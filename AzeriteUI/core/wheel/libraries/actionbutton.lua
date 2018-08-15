@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 27)
+local LibActionButton = CogWheel:Set("LibActionButton", 29)
 if (not LibActionButton) then	
 	return
 end
@@ -244,7 +244,7 @@ local CreateOverlayGlow = function(button)
 
 	-- create frame and textures
 	local name = button:GetName() .. "OverlayGlow" 
-	local overlay = button:CreateFrame("Frame", name)
+	local overlay = button:CreateFrame("Frame", name, button)
 
 	-- spark
 	overlay.spark = overlay:CreateTexture(name .. "Spark", "BACKGROUND")
@@ -317,14 +317,6 @@ local CreateOverlayGlow = function(button)
 	overlay:SetScript("OnUpdate", ActionButton_OverlayGlowOnUpdate)
 	overlay:SetScript("OnHide", OverlayGlow_OnHide)
 
-	return overlay
-end
-
-local GetOverlayGlow = function()
-	local overlay = table_remove(lib.unusedOverlays)
-	if not overlay then
-		overlay = CreateOverlayGlow()
-	end
 	return overlay
 end
 
@@ -455,7 +447,7 @@ end
 
 LibActionButton.CreateButtonOverlay = function(self, button)
 
-	local overlay = button:CreateFrame("Frame")
+	local overlay = button:CreateFrame("Frame", nil, button)
 	overlay:SetAllPoints()
 	overlay:SetFrameLevel(button:GetFrameLevel() + 15)
 	button.Overlay = overlay
@@ -501,8 +493,7 @@ LibActionButton.CreateButtonOverlayGlow = function(self, button)
 	local frameWidth, frameHeight = button:GetSize()
 	overlayGlow:ClearAllPoints()
 	overlayGlow:SetSize(frameWidth * 1.4, frameHeight * 1.4)
-	overlayGlow:SetPoint("TOPLEFT", button, "TOPLEFT", -frameWidth * 0.2, frameHeight * 0.2)
-	overlayGlow:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", frameWidth * 0.2, -frameHeight * 0.2)
+	overlayGlow:SetPoint("CENTER", 0, 0)
 
 	button.OverlayGlow = overlayGlow
 
@@ -510,7 +501,7 @@ end
 
 LibActionButton.CreateButtonCooldowns = function(self, button)
 
-	local cooldown = button:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	local cooldown = button:CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
 	cooldown:Hide()
 	cooldown:SetAllPoints()
 	cooldown:SetFrameLevel(button:GetFrameLevel() + 1)
@@ -535,7 +526,7 @@ LibActionButton.CreateButtonCooldowns = function(self, button)
 	cooldownCount:SetTextColor(250/255, 250/255, 250/255, .85)
 	button.CooldownCount = cooldownCount
 
-	local chargeCooldown = button:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	local chargeCooldown = button:CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
 	chargeCooldown:Hide()
 	chargeCooldown:SetAllPoints()
 	chargeCooldown:SetFrameLevel(button:GetFrameLevel() + 2)

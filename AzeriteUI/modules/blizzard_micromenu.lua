@@ -8,6 +8,7 @@ end
 local Module = Core:NewModule("BlizzardMicroMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [BlizzardMicroMenu]")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -237,7 +238,7 @@ Module.GetConfigWindow = function(self)
 		configWindow:Hide()
 		configWindow:SetFrameStrata("DIALOG")
 		configWindow:SetFrameLevel(10)
-		configWindow:Place("BOTTOMRIGHT", -41, 32)
+		configWindow:Place("BOTTOMRIGHT", -71, 52)
 		configWindow:EnableMouse(true)
 		configWindow:SetScript("OnShow", ConfigWindow_OnShow)
 		configWindow:SetScript("OnHide", ConfigWindow_OnHide)
@@ -249,17 +250,7 @@ Module.GetConfigWindow = function(self)
 		border:SetFrameLevel(5)
 		border:SetPoint("TOPLEFT", -23 *sizeMod, 23 *sizeMod)
 		border:SetPoint("BOTTOMRIGHT", 23 *sizeMod, -23 *sizeMod)
-		border:SetBackdrop({
-			bgFile = BLANK_TEXTURE,
-			edgeFile = getPath("tooltip_border"),
-			edgeSize = 32 *sizeMod, 
-			insets = { 
-				top = 23 *sizeMod, 
-				bottom = 23 *sizeMod, 
-				left = 23 *sizeMod, 
-				right = 23 *sizeMod 
-			}
-		})
+		border:SetBackdrop(Layout.ConfigWindowBackdrop)
 		border:SetBackdropBorderColor(1, 1, 1, 1)
 		border:SetBackdropColor(.05, .05, .05, .85)
 		
@@ -378,19 +369,25 @@ Module.AddOptionsToMenuWindow = function(self)
 				microButton:SetScript("OnUpdate", nil)
 				microButton:SetScript("OnEnter", microButtonScripts[buttonName.."_OnEnter"] or microButtonScripts.MicroButton_OnEnter)
 				microButton:SetScript("OnLeave", microButtonScripts.MicroButton_OnLeave)
-				
-				microButton.normal = microButton:CreateTexture()
-				microButton.normal:SetDrawLayer("ARTWORK")
-				microButton.normal:SetTexture(getPath("menu_button_normal"))
-				microButton.normal:SetSize(1024 *1/3 *sizeMod, 256 *1/3 *sizeMod)
-				microButton.normal:SetPoint("CENTER")
+
+
+				if Layout.UseBorderBackdrop then 
+
+				else 
+					microButton.normal = microButton:CreateTexture()
+					microButton.normal:SetDrawLayer("ARTWORK")
+					microButton.normal:SetTexture(getPath("menu_button_normal"))
+					microButton.normal:SetSize(1024 *1/3 *sizeMod, 256 *1/3 *sizeMod)
+					microButton.normal:SetPoint("CENTER")
+	
+				end 
 
 				microButton.newText = microButton:CreateFontString()
 				microButton.newText:SetDrawLayer("OVERLAY")
-				microButton.newText:SetTextColor(0,0,0)
-				microButton.newText:SetFontObject(Fonts(14, false))
-				microButton.newText:SetShadowOffset(0, -.85)
-				microButton.newText:SetShadowColor(1,1,1,.5)
+				microButton.newText:SetTextColor(unpack(Layout.ButtonFontColor))
+				microButton.newText:SetFontObject(Layout.ButtonFont)
+				microButton.newText:SetShadowOffset(unpack(Layout.ButtonFontShadowOffset))
+				microButton.newText:SetShadowColor(unpack(Layout.ButtonFontShadowColor))
 				microButton.newText:SetText(microButtonTexts[buttonName])
 				microButton.newText:SetPoint("CENTER", 0, 0)
 

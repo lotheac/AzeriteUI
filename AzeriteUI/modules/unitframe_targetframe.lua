@@ -9,6 +9,7 @@ local Module = Core:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "Li
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [UnitFrameTarget]")
 
 -- Lua API
 local _G = _G
@@ -43,62 +44,7 @@ local LEVEL = UnitLevel("player")
 
 -- Constants to hold various info about our last target 
 -- We need this to decide when the artwork should change
-local TARGET_GUID
 local TARGET_STYLE
-
--- Spark maps for nice animations
-local map = {
-
-	-- Health Bar Map (Normal)
-	-- (Texture Size 512x64, Growth: RIGHT)
-	normal = {
-		{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
-		{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-		{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-		{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, 
-		{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, 
-		{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
-		{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
-	},
-
-	-- Health Bar Map (Boss)
-	-- (Texture Size 1024x64, Growth: RIGHT)
-	boss = {
-		top = {
-			{ keyPercent =    0/1024, offset = -24/64 }, 
-			{ keyPercent =   13/1024, offset =   0/64 }, 
-			{ keyPercent = 1018/1024, offset =   0/64 }, 
-			{ keyPercent = 1024/1024, offset = -10/64 }
-		},
-		bottom = {
-			{ keyPercent =    0/1024, offset = -39/64 }, 
-			{ keyPercent =   13/1024, offset = -16/64 }, 
-			{ keyPercent =  949/1024, offset = -16/64 }, 
-			{ keyPercent =  977/1024, offset =  -1/64 }, 
-			{ keyPercent =  984/1024, offset =  -2/64 }, 
-			{ keyPercent = 1024/1024, offset = -52/64 }
-		}
-	},
-
-	-- Health Bar Map (Critter)
-	-- (Texture Size 64x64, Growth: RIGHT)
-	critter = {
-		top = {
-			{ keyPercent =  0/64, offset = -30/64 }, 
-			{ keyPercent = 14/64, offset =  -1/64 }, 
-			{ keyPercent = 49/64, offset =  -1/64 }, 
-			{ keyPercent = 64/64, offset = -34/64 }
-		},
-		bottom = {
-			{ keyPercent =  0/64, offset = -30/64 }, 
-			{ keyPercent = 15/64, offset =   0/64 }, 
-			{ keyPercent = 32/64, offset =  -1/64 }, 
-			{ keyPercent = 50/64, offset =  -4/64 }, 
-			{ keyPercent = 64/64, offset = -27/64 }
-		}
-	}
-
-}
 
 
 -- Utility Functions
@@ -151,341 +97,237 @@ end
 
 local OverrideHealthValue = function(element, unit, min, max, disconnected, dead, tapped)
 	if disconnected then 
-		element.Percent:SetText("")
-		element.Value:SetText(PLAYER_OFFLINE)
+		if element.Percent then 
+			element.Percent:SetText("")
+		end 
+		if element.Value then 
+			element.Value:SetText(PLAYER_OFFLINE)
+		end 
 	elseif dead then 
-		element.Percent:SetText("")
-		element.Value:SetText(DEAD)
+		if element.Percent then 
+			element.Percent:SetText("")
+		end 
+		if element.Value then 
+			element.Value:SetText(DEAD)
+		end 
 	else
-	
-		element.Percent:SetFormattedText("%d", min/max*100 - (min/max*100)%1)
-		OverrideValue(element, unit, min, max, disconnected, dead, tapped)
+		if element.Percent then 
+			element.Percent:SetFormattedText("%d", min/max*100 - (min/max*100)%1)
+		end 
+		if element.Value then 
+			OverrideValue(element, unit, min, max, disconnected, dead, tapped)
+		end 
 	end 
 end 
 
-
-
 local Threat_UpdateColor = function(element, unit, status, r, g, b)
-	element.health:SetVertexColor(r, g, b)
-	element.portrait:SetVertexColor(r, g, b)
+	if element.health then 
+		element.health:SetVertexColor(r, g, b)
+	end
+	if element.power then 
+		element.power:SetVertexColor(r, g, b)
+	end
+	if element.portrait then 
+		element.portrait:SetVertexColor(r, g, b)
+	end 
 end
 
 local Threat_IsShown = function(element)
-	return element.health:IsShown()
+	return element.health and element.health:IsShown()
 end 
 
 local Threat_Show = function(element)
-	element.health:Show()
-	element.portrait:Show()
+	if 	element.health then 
+		element.health:Show()
+	end
+	if 	element.power then 
+		element.power:Show()
+	end
+	if element.portrait then 
+		element.portrait:Show()
+	end 
 end 
 
 local Threat_Hide = function(element)
-	element.health:Hide()
-	element.portrait:Hide()
+	if 	element.health then 
+		element.health:Hide()
+	end 
+	if element.power then 
+		element.power:Hide()
+	end
+	if element.portrait then 
+		element.portrait:Hide()
+	end
 end 
 
 local PostCreateAuraButton = function(element, button)
 	
-	-- Downscale factor of the border backdrop
-	local sizeMod = 2/4
+	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
+	button.Icon:SetSize(unpack(Layout.AuraIconSize))
+	button.Icon:ClearAllPoints()
+	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
 
+	button.Count:SetFontObject(Layout.AuraCountFont)
+	button.Count:ClearAllPoints()
+	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
 
-	-- Restyle original elements
-	----------------------------------------------------
+	button.Time:SetFontObject(Layout.AuraTimeFont)
+	button.Time:ClearAllPoints()
+	button.Time:SetPoint(unpack(Layout.AuraTimePlace))
 
-	-- Spell icon
-	-- We inset the icon, so the border aligns with the button edge
-	local icon = button.Icon
-	icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
-	icon:ClearAllPoints()
-	icon:SetPoint("TOPLEFT", 3, -3)
-	icon:SetPoint("BOTTOMRIGHT", -3, 3)
+	local layer, level = button.Icon:GetDrawLayer()
 
-	-- Aura stacks
-	local count = button.Count
-	count:SetFontObject(Fonts(11, true))
-	count:ClearAllPoints()
-	count:SetPoint("BOTTOMRIGHT", 2, -2)
+	button.Darken = button:CreateTexture()
+	button.Darken:SetDrawLayer(layer, level + 1)
+	button.Darken:SetSize(button.Icon:GetSize())
+	button.Darken:SetAllPoints(button.Icon)
+	button.Darken:SetColorTexture(0, 0, 0, .25)
 
-	-- Aura time remaining
-	local time = button.Time
-	time:SetFontObject(Fonts(14, true))
-	--time:ClearAllPoints()
-	--time:SetPoint("CENTER", 0, 0)
-
-
-	-- Create custom elements
-	----------------------------------------------------
-
-	-- Retrieve the icon drawlayer, and put our darkener right above
-	local iconDrawLayer, iconDrawLevel = icon:GetDrawLayer()
-
-	-- Darken the icons slightly, don't want them too bright
-	local darken = button:CreateTexture()
-	darken:SetDrawLayer(iconDrawLayer, iconDrawLevel + 1)
-	darken:SetSize(icon:GetSize())
-	darken:SetAllPoints(icon)
-	darken:SetColorTexture(0, 0, 0, .25)
-
-	-- Create our own custom border.
-	-- Using our new thick tooltip border, just scaled down slightly.
-	local border = button.Overlay:CreateFrame("Frame")
-	border:SetPoint("TOPLEFT", -14 *sizeMod, 14 *sizeMod)
-	border:SetPoint("BOTTOMRIGHT", 14 *sizeMod, -14 *sizeMod)
-	border:SetBackdrop({
-		edgeFile = getPath("tooltip_border"),
-		edgeSize = 32 *sizeMod
-	})
-	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-	-- This one we reference, for magic school coloring later on
-	button.Border = border
+	button.Border = button.Overlay:CreateFrame("Frame")
+	button.Border:Place(unpack(Layout.AuraBorderFramePlace))
+	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
+	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
+	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
+	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
 
 end
 
--- Anything to post update at all?
 local PostUpdateAuraButton = function(element, button)
+	if (not button) or (not button:IsVisible()) then 
+		return 
+	end 
 end
 
--- Style Post Updates
--- Styling function applying sizes and textures 
--- based on what kind of target we have, and its level. 
-local PostUpdate = function(self)
+local PostUpdateTextures = function(self)
+	if (not Layout.UseProgressiveFrames) then 
+		return
+	end 
+
+	local CURRENT_STYLE
 
 	-- Figure out if the various artwork and bar textures need to be updated
 	-- We could put this into element post updates, 
 	-- but to avoid needless checks we limit this to actual target updates. 
-	local unitLevel = UnitLevel("target")
-	local unitClassification = UnitClassification("target")
+	local level = UnitLevel("target")
+	local classification = UnitClassification("target")
 
-	if ((unitClassification == "worldboss") or (unitLevel and (unitLevel < 1))) then 
-		if (TARGET_STYLE ~= "BOSS") then 
-			TARGET_STYLE = "BOSS"
+	if ((classification == "worldboss") or (level and level < 1)) then 
+		CURRENT_STYLE = "Boss"
 
-			local health = self.Health
-			health:SetSize(533, 40)
-			health:Place("TOPRIGHT", -27, -27)
-			health:SetStatusBarTexture(getPath("hp_boss_bar"))
-			health:SetSparkMap(map.boss)
-	
-			local healthBg = self.Health.Bg
-			healthBg:SetSize(694, 190)
-			healthBg:SetPoint("CENTER", -.5, 1)
-			healthBg:SetTexture(getPath("hp_boss_case"))
-			healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	elseif ((level and level >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) or (UnitIsUnit("target", "player") and (not PlayerHasXP()))) then 
+		CURRENT_STYLE = "Seasoned"
 
-			local healthVal = self.Health.Value
-			healthVal:Show()
+	elseif (level and level >= Layout.HardenedLevel) then 
+		CURRENT_STYLE = "Hardened"
 
-			local healthPerc = self.Health.Percent
-			healthPerc:Show()
+	elseif ((level and level == 1) and (not UnitIsPlayer("target"))) then 
+		CURRENT_STYLE = "Critter"
 
-			local threat = self.Threat
-			threat.health:SetSize(694, 190)
-			threat.health:SetPoint("CENTER", -.5, 1 +1)
-			threat.health:SetTexture(getPath("hp_boss_case_glow"))
-	
-			local cast = self.Cast
-			cast:SetSize(533, 40)
-			cast:Place("TOPRIGHT", -27, -27)
-			cast:SetStatusBarTexture(getPath("hp_boss_bar"))
-			cast:SetSparkMap(map.boss)
+	elseif ((level and level > 1) or UnitIsPlayer("target")) then 
+		CURRENT_STYLE = "Novice"
+	end 
 
-			local portraitFg = self.Portrait.Fg
-			portraitFg:SetTexture(getPath("portrait_frame_hi"))
-			portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+	-- Silently return if there was no change
+	if (CURRENT_STYLE == TARGET_STYLE) or (not CURRENT_STYLE) then 
+		return 
+	end 
+
+	-- Store the new style
+	TARGET_STYLE = CURRENT_STYLE
+
+
+	if Layout.UseProgressiveHealth then 
+		self.Health:Place(unpack(Layout[TARGET_STYLE.."HealthPlace"]))
+		self.Health:SetSize(unpack(Layout[TARGET_STYLE.."HealthSize"]))
+		self.Health:SetStatusBarTexture(Layout[TARGET_STYLE.."HealthTexture"])
+		self.Health:SetSparkMap(Layout[TARGET_STYLE.."HealthSparkMap"])
+
+		if Layout.UseHealthBackdrop and Layout.UseProgressiveHealthBackdrop then 
+			self.Health.Bg:ClearAllPoints()
+			self.Health.Bg:SetPoint(unpack(Layout[TARGET_STYLE.."HealthBackdropPlace"]))
+			self.Health.Bg:SetSize(unpack(Layout[TARGET_STYLE.."HealthBackdropSize"]))
+			self.Health.Bg:SetTexture(Layout[TARGET_STYLE.."HealthBackdropTexture"])
+			self.Health.Bg:SetVertexColor(unpack(Layout[TARGET_STYLE.."HealthBackdropColor"]))
 		end
 
-	-- War Seasoned / Capped  
-	elseif (unitLevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]) or (UnitIsUnit("target", "player") and (not PlayerHasXP())) then 
-		if (TARGET_STYLE ~= "CAP") then 
-			TARGET_STYLE = "CAP"
-
-			local health = self.Health
-			health:SetSize(385, 40)
-			health:Place("TOPRIGHT", -27, -27)
-			health:SetStatusBarTexture(getPath("hp_cap_bar"))
-			health:SetSparkMap(map.normal)
-	
-			local healthBg = self.Health.Bg
-			healthBg:SetSize(716, 188)
-			healthBg:SetPoint("CENTER", -1, .5)
-			healthBg:SetTexture(getPath("hp_cap_case"))
-			healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-			local healthVal = self.Health.Value
-			healthVal:Show()
-
-			local healthPerc = self.Health.Percent
-			healthPerc:Hide()
-
-			local threat = self.Threat
-			threat.health:SetSize(716, 188)
-			threat.health:SetPoint("CENTER", -1, .5  +1)
-			threat.health:SetTexture(getPath("hp_cap_case_glow"))
-
-			local cast = self.Cast
-			cast:SetSize(385, 40)
-			cast:Place("TOPRIGHT", -27, -27)
-			cast:SetStatusBarTexture(getPath("hp_cap_bar"))
-			cast:SetSparkMap(map.normal)
-
-			local portraitFg = self.Portrait.Fg
-			portraitFg:SetTexture(getPath("portrait_frame_hi"))
-			portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+		if Layout.UseHealthValue and Layout[TARGET_STYLE.."HealthValueVisible"]  then 
+			self.Health.Value:Show()
+		elseif Layout.UseHealthValue then 
+			self.Health.Value:Hide()
 		end 
 
-	-- Battle Hardened / Mid level
-	elseif (unitLevel >= 40) then 
-		if (TARGET_STYLE ~= "MID") then 
-			TARGET_STYLE = "MID"
-
-			local health = self.Health
-			health:SetSize(385, 37)
-			health:Place("TOPRIGHT", -27, -27)
-			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			health:SetSparkMap(map.normal)
-	
-			local healthBg = self.Health.Bg
-			healthBg:SetSize(716, 188)
-			healthBg:SetPoint("CENTER", -1, -.5)
-			healthBg:SetTexture(getPath("hp_mid_case"))
-			healthBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-	
-			local healthVal = self.Health.Value
-			healthVal:Show()
-
-			local healthPerc = self.Health.Percent
-			healthPerc:Hide()
-
-			local threat = self.Threat
-			threat.health:SetSize(716, 188)
-			threat.health:SetPoint("CENTER", -1, -.5 +1)
-			threat.health:SetTexture(getPath("hp_mid_case_glow"))
-
-			local cast = self.Cast
-			cast:SetSize(385, 37)
-			cast:Place("TOPRIGHT", -27, -27)
-			cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			cast:SetSparkMap(map.normal)
-
-			local portraitFg = self.Portrait.Fg
-			portraitFg:SetTexture(getPath("portrait_frame_hi"))
-			portraitFg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+		if Layout.UseHealthPercent and Layout[TARGET_STYLE.."HealthPercentVisible"]  then 
+			self.Health.Percent:Show()
+		elseif Layout.UseHealthPercent then 
+			self.Health.Percent:Hide()
 		end 
+	end 
 
-	-- Trivial / Critter
-	elseif ((unitLevel == 1) and (not UnitIsPlayer("target"))) then 
-		if (TARGET_STYLE ~= "CRITTER") then 
-			TARGET_STYLE = "CRITTER"
-
-			local health = self.Health
-			health:SetSize(40, 36)
-			health:Place("TOPRIGHT", -24, -24)
-			health:SetStatusBarTexture(getPath("hp_critter_bar"))
-			health:SetSparkMap(map.critter)
-	
-			local healthBg = self.Health.Bg
-			healthBg:SetSize(98,96)
-			healthBg:SetPoint("CENTER", 0, 1)
-			healthBg:SetTexture(getPath("hp_critter_case"))
-			healthBg:SetVertexColor(unpack(Colors.ui.wood))
-
-			local healthVal = self.Health.Value
-			healthVal:Hide()
-
-			local healthPerc = self.Health.Percent
-			healthPerc:Hide()
-
-			local threat = self.Threat
-			threat.health:SetSize(98,96)
-			threat.health:SetPoint("CENTER", 0, 1 +1)
-			threat.health:SetTexture(getPath("hp_critter_case_glow"))
-
-			local cast = self.Cast
-			cast:SetSize(40, 36)
-			cast:Place("TOPRIGHT", -24, -24)
-			cast:SetStatusBarTexture(getPath("hp_critter_bar"))
-			cast:SetSparkMap(map.critter)
-
-			local portraitFg = self.Portrait.Fg
-			portraitFg:SetTexture(getPath("portrait_frame_lo"))
-			portraitFg:SetVertexColor(unpack(Colors.ui.wood))
+	if Layout.UsePowerBar and Layout.UseProgressivePowerBar then 
+		if Layout.UsePowerForeground then 
+			self.Power.Fg:SetTexture(Layout[TARGET_STYLE.."PowerForegroundTexture"])
+			self.Power.Fg:SetVertexColor(unpack(Layout[TARGET_STYLE.."PowerForegroundColor"]))
 		end
+	end
 
-		-- Novice / Low Level
-	elseif (unitLevel > 1) or UnitIsPlayer("target") then 
+	if Layout.UseMana and Layout.UseProgressiveMana then 
+		self.ExtraPower.Border:SetTexture(Layout[TARGET_STYLE.."ManaOrbTexture"])
+		self.ExtraPower.Border:SetVertexColor(unpack(Layout[TARGET_STYLE.."ManaOrbColor"])) 
+	end 
 
-		if (TARGET_STYLE ~= "LOW") then 
-			TARGET_STYLE = "LOW" 
+	if Layout.UseThreat and Layout.UseProgressiveThreat then
+		if self.Threat.health then 
+			self.Threat.health:SetTexture(Layout[TARGET_STYLE.."HealthThreatTexture"])
+			if Layout.NoviceHealthThreatPlace then 
+				self.Threat.health:ClearAllPoints()
+				self.Threat.health:SetPoint(unpack(Layout[TARGET_STYLE.."HealthThreatPlace"]))
+			end 
+			if Layout.NoviceHealthThreatSize then 
+				self.Threat.health:SetSize(unpack(Layout[TARGET_STYLE.."HealthThreatSize"]))
+			end 
+		end 
+	end
 
-			local health = self.Health
-			health:SetSize(385, 37)
-			health:Place("TOPRIGHT", -27, -27)
-			health:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			health:SetSparkMap(map.normal)
+	if Layout.UseCastBar and Layout.UseProgressiveCastBar then 
+		self.Cast:Place(unpack(Layout[TARGET_STYLE.."CastPlace"]))
+		self.Cast:SetSize(unpack(Layout[TARGET_STYLE.."CastSize"]))
+		self.Cast:SetStatusBarTexture(getPath("hp_boss_bar"))
+		self.Cast:SetSparkMap(Layout[TARGET_STYLE.."CastSparkMap"])
+	end 
 
-			local healthVal = self.Health.Value
-			healthVal:Show()
+	if Layout.UsePortrait and Layout.UseProgressivePortrait then 
 
-			local healthPerc = self.Health.Percent
-			healthPerc:Hide()
 
-			local healthBg = self.Health.Bg
-			healthBg:SetSize(716, 188)
-			healthBg:SetPoint("CENTER", -1, -.5)
-			healthBg:SetTexture(getPath("hp_low_case"))
-			healthBg:SetVertexColor(unpack(Colors.ui.wood))
-
-			local threat = self.Threat
-			threat.health:SetSize(716, 188)
-			threat.health:SetPoint("CENTER", -1, -.5  +1)
-			threat.health:SetTexture(getPath("hp_low_case_glow"))
-
-			local cast = self.Cast
-			cast:SetSize(385, 37)
-			cast:Place("TOPRIGHT", -27, -27)
-			cast:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			cast:SetSparkMap(map.normal)
-
-			local absorb = self.Absorb
-			absorb:SetSize(385, 37)
-			absorb:Place("TOPRIGHT", -27, -27)
-			absorb:SetStatusBarTexture(getPath("hp_lowmid_bar"))
-			absorb:SetSparkMap(map.normal)
-
-			local portraitFg = self.Portrait.Fg
-			portraitFg:SetTexture(getPath("portrait_frame_lo"))
-			portraitFg:SetVertexColor(unpack(Colors.ui.wood)) 
+		if Layout.UsePortraitBackground then 
 		end 
 
+		if Layout.UsePortraitShade then 
+		end 
+
+		if Layout.UsePortraitForeground then 
+			self.Portrait.Fg:SetTexture(Layout[TARGET_STYLE.."PortraitForegroundTexture"])
+			self.Portrait.Fg:SetVertexColor(unpack(Layout[TARGET_STYLE.."PortraitForegroundColor"]))
+		end 
 	end 
 	
 end 
 
-local PostUpdateHealthPercent = function(self)
-	local unitLevel = UnitLevel(unit)
-	local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
-
-end
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
 
-
 	-- Frame
-	-----------------------------------------------------------
+	self:SetSize(unpack(Layout.Size)) 
+	self:Place(unpack(Layout.Place)) 
 
-	self:SetSize(439, 93) 
-	self:Place("TOPRIGHT", -153, -79) 
-	self:SetHitRectInsets(0, -80, -30, 0)
+	if Layout.HitRectInsets then 
+		self:SetHitRectInsets(unpack(Layout.HitRectInsets))
+	else 
+		self:SetHitRectInsets(0, 0, 0, 0)
+	end 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
-
-
-	-- Scaffolds
-	-----------------------------------------------------------
 
 	-- frame to contain art backdrops, shadows, etc
 	local backdrop = self:CreateFrame("Frame")
@@ -502,333 +344,519 @@ local Style = function(self, unit, id, ...)
 	overlay:SetAllPoints()
 	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
 
+	-- Border
+	if Layout.UseBorderBackdrop then 
+		local border = self:CreateFrame("Frame")
+		border:SetFrameLevel(self:GetFrameLevel() + 8)
+		border:SetSize(unpack(Layout.BorderFrameSize))
+		border:Place(unpack(Layout.BorderFramePlace))
+		border:SetBackdrop(Layout.BorderFrameBackdrop)
+		border:SetBackdropColor(unpack(Layout.BorderFrameBackdropColor))
+		border:SetBackdropBorderColor(unpack(Layout.BorderFrameBackdropBorderColor))
+		self.Border = border
+	end 
 
-	-- Health Bar
-	-----------------------------------------------------------
+	-- Health 
+	local health 
 
-	local health = content:CreateStatusBar()
-	health:Place("TOPRIGHT", -27, -27)
-	health:SetOrientation("LEFT") -- set the bar to grow towards the left
-	health:SetFlippedHorizontally(true) -- flips the bar texture horizontally
-	health.colorTapped = true
-	health.colorDisconnected = true
-	health.colorClass = true
-	health.colorReaction = true
-	health.colorHealth = true
-	health.colorThreat = true
-	health.frequent = 1/120
+	if (Layout.HealthType == "Orb") then 
+		health = content:CreateOrb()
+
+	elseif (Layout.HealthType == "SpinBar") then 
+		health = content:CreateSpinBar()
+
+	else 
+		health = content:CreateStatusBar()
+		health:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
+		health:SetFlippedHorizontally(Layout.HealthBarSetFlippedHorizontally)
+		if Layout.HealthBarSparkMap then 
+			health:SetSparkMap(Layout.HealthBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+	end 
+	if (not Layout.UseProgressiveFrames) then 
+		health:SetStatusBarTexture(Layout.HealthBarTexture)
+		health:SetSize(unpack(Layout.HealthSize))
+	end 
+
+	health:Place(unpack(Layout.HealthPlace))
+	health:SetSmoothingMode(Layout.HealthSmoothingMode or "bezier-fast-in-slow-out") -- set the smoothing mode.
+	health:SetSmoothingFrequency(Layout.HealthSmoothingFrequency or .5) -- set the duration of the smoothing.
+	health.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
+	health.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
+	health.colorClass = Layout.HealthColorClass -- color players by class 
+	health.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
+	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
 	self.Health = health
-
-	local healthBg = health:CreateTexture()
-	healthBg:SetDrawLayer("BACKGROUND", -1)
-	healthBg:SetTexCoord(1,0,0,1)
-	self.Health.Bg = healthBg
-
 	
+	if Layout.UseHealthBackdrop then 
+		local healthBg = health:CreateTexture()
+		healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
+		healthBg:SetSize(unpack(Layout.HealthBackdropSize))
+		healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
+		if (not Layout.UseProgressiveFrames) then 
+			healthBg:SetTexture(Layout.HealthBackdropTexture)
+		end 
+		self.Health.Bg = healthBg
+	end 
+
+	if Layout.UseHealthForeground then 
+		local healthFg = health:CreateTexture()
+		healthFg:SetDrawLayer("BORDER", 1)
+		healthFg:SetSize(unpack(Layout.HealthForegroundSize))
+		healthFg:SetPoint(unpack(Layout.HealthForegroundPlace))
+		healthFg:SetTexture(Layout.HealthForegroundTexture)
+		healthFg:SetDrawLayer(unpack(Layout.HealthForegroundDrawLayer))
+		self.Health.Fg = healthFg
+	end 
+
 	-- Absorb Bar
-	-----------------------------------------------------------	
+	if Layout.UseAbsorbBar then 
+		local absorb = content:CreateStatusBar()
+		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
+		absorb:Place(unpack(Layout.AbsorbBarPlace))
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
 
-	local absorb = content:CreateStatusBar()
-	absorb:SetFrameLevel(health:GetFrameLevel() + 1)
-	absorb:Place("TOPRIGHT", -27, -27)
-	absorb:SetOrientation("RIGHT") -- grow the bar towards the right (grows from the end of the health)
-	absorb:SetFlippedHorizontally(true) -- flips the bar texture horizontally
-	absorb:SetStatusBarColor(1,1,1,.5)
-	self.Absorb = absorb
-	
+		if (not Layout.UseProgressiveFrames) then
+			absorb:SetSize(unpack(Layout.AbsorbSize))
+			absorb:SetStatusBarTexture(Layout.AbsorbBarTexture)
+		end
+
+		if Layout.AbsorbBarSparkMap then 
+			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
+		self.Absorb = absorb
+	end 
+
+	-- Power 
+	if Layout.UsePowerBar then 
+		local power = backdrop:CreateStatusBar()
+		power:SetSize(unpack(Layout.PowerSize))
+		power:Place(unpack(Layout.PowerPlace))
+		power:SetStatusBarTexture(Layout.PowerBarTexture)
+		power:SetTexCoord(unpack(Layout.PowerBarTexCoord))
+		power:SetOrientation(Layout.PowerBarOrientation or "RIGHT") -- set the bar to grow towards the top.
+		power:SetSmoothingMode(Layout.PowerBarSmoothingMode) -- set the smoothing mode.
+		power:SetSmoothingFrequency(Layout.PowerBarSmoothingFrequency or .5) -- set the duration of the smoothing.
+
+		if Layout.PowerBarSparkMap then 
+			power:SetSparkMap(Layout.PowerBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+
+		power.ignoredResource = Layout.PowerIgnoredResource -- make the bar hide when MANA is the primary resource. 
+
+		self.Power = power
+		self.Power.OverrideColor = OverridePowerColor
+
+		if Layout.UsePowerBackground then 
+			local powerBg = power:CreateTexture()
+			powerBg:SetDrawLayer(unpack(Layout.PowerBackgroundDrawLayer))
+			powerBg:SetSize(unpack(Layout.PowerBackgroundSize))
+			powerBg:SetPoint(unpack(Layout.PowerBackgroundPlace))
+			powerBg:SetTexture(Layout.PowerBackgroundTexture)
+			powerBg:SetVertexColor(unpack(Layout.PowerBackgroundColor)) 
+			self.Power.Bg = powerBg
+		end
+
+		if Layout.UsePowerForeground then 
+			local powerFg = power:CreateTexture()
+			powerFg:SetSize(unpack(Layout.PowerForegroundSize))
+			powerFg:SetPoint(unpack(Layout.PowerForegroundPlace))
+			powerFg:SetDrawLayer(unpack(Layout.PowerForegroundDrawLayer))
+			powerFg:SetTexture(Layout.PowerForegroundTexture)
+			self.Power.Fg = powerFg
+		end
+
+		-- Power Value
+		if Layout.UsePowerBar then 
+			if Layout.UsePowerValue then 
+				local powerVal = self.Power:CreateFontString()
+				powerVal:SetPoint(unpack(Layout.PowerValuePlace))
+				powerVal:SetDrawLayer(unpack(Layout.PowerValueDrawLayer))
+				powerVal:SetJustifyH(Layout.PowerValueJustifyH)
+				powerVal:SetJustifyV(Layout.PowerValueJustifyV)
+				powerVal:SetFontObject(Layout.PowerValueFont)
+				powerVal:SetTextColor(unpack(Layout.PowerValueColor))
+				self.Power.Value = powerVal
+				self.Power.UpdateValue = OverrideValue
+			end 
+		end		
+	end 
 
 	-- Cast Bar
-	-----------------------------------------------------------
-	local cast = content:CreateStatusBar()
-	cast:Place("TOPRIGHT", -27, -27)
-	cast:SetOrientation("LEFT") -- set the bar to grow towards the left
-	cast:SetFlippedHorizontally(true) -- flips the bar texture horizontally
-	cast:SetFrameLevel(health:GetFrameLevel() + 1)
-	cast:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
-	cast:SetSmoothingFrequency(.15)
-	cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
+	if Layout.UseCastBar then
+		local cast = content:CreateStatusBar()
+		cast:SetSize(unpack(Layout.CastBarSize))
+		cast:SetFrameLevel(health:GetFrameLevel() + 1)
+		cast:Place(unpack(Layout.CastBarPlace))
+		cast:SetOrientation(Layout.CastBarOrientation) -- set the bar to grow towards the right.
+		cast:SetSmoothingMode(Layout.CastBarSmoothingMode) -- set the smoothing mode.
+		cast:SetSmoothingFrequency(Layout.CastBarSmoothingFrequency)
+		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) -- the alpha won't be overwritten. 
 
-	self.Cast = cast
+		if (not Layout.UseProgressiveFrames) then 
+			cast:SetStatusBarTexture(Layout.CastBarTexture)
+		end 
 
+		if Layout.CastBarSparkMap then 
+			cast:SetSparkMap(Layout.CastBarSparkMap) -- set the map the spark follows along the bar.
+		end
+
+		self.Cast = cast
+	end 
 
 	-- Portrait
-	-----------------------------------------------------------
+	if Layout.UsePortrait then 
+		local portrait = backdrop:CreateFrame("PlayerModel")
+		portrait:SetPoint(unpack(Layout.PortraitPlace))
+		portrait:SetSize(unpack(Layout.PortraitSize)) 
+		portrait:SetAlpha(Layout.PortraitAlpha)
+		portrait.distanceScale = Layout.PortraitDistanceScale
+		portrait.positionX = Layout.PortraitPositionX
+		portrait.positionY = Layout.PortraitPositionY
+		portrait.positionZ = Layout.PortraitPositionZ
+		portrait.rotation = Layout.PortraitRotation -- in degrees
+		portrait.showFallback2D = Layout.PortraitShowFallback2D -- display 2D portraits when unit is out of range of 3D models
+		self.Portrait = portrait
+		
+		-- To allow the backdrop and overlay to remain 
+		-- visible even with no visible player model, 
+		-- we add them to our backdrop and overlay frames, 
+		-- not to the portrait frame itself.  
+		if Layout.UsePortraitBackground then 
+			local portraitBg = backdrop:CreateTexture()
+			portraitBg:SetPoint(unpack(Layout.PortraitBackgroundPlace))
+			portraitBg:SetSize(unpack(Layout.PortraitBackgroundSize))
+			portraitBg:SetTexture(Layout.PortraitBackgroundTexture)
+			portraitBg:SetDrawLayer(unpack(Layout.PortraitBackgroundDrawLayer))
+			portraitBg:SetVertexColor(unpack(Layout.PortraitBackgroundColor)) -- keep this dark
+			self.Portrait.Bg = portraitBg
+		end 
 
-	local portrait = backdrop:CreateFrame("PlayerModel")
-	portrait:SetPoint("TOPRIGHT", 73, 8)
-	portrait:SetSize(85, 85) 
-	portrait:SetAlpha(.85)
-	portrait.distanceScale = 1
-	portrait.positionX = 0
-	portrait.positionY = 0
-	portrait.positionZ = 0
-	portrait.rotation = 0 -- in degrees
-	portrait.showFallback2D = true -- display 2D portraits when unit is out of range of 3D models
-	self.Portrait = portrait
-	
-	-- To allow the backdrop and overlay to remain 
-	-- visible even with no visible player model, 
-	-- we add them to our backdrop and overlay frames, 
-	-- not to the portrait frame itself.  
-	local portraitBg = backdrop:CreateTexture()
-	portraitBg:SetDrawLayer("BACKGROUND", 0)
-	portraitBg:SetPoint("TOPRIGHT", 116, 55)
-	portraitBg:SetSize(173, 173)
-	portraitBg:SetTexture(getPath("party_portrait_back"))
-	portraitBg:SetVertexColor(.5, .5, .5) -- keep this dark
-	self.Portrait.Bg = portraitBg
+		if Layout.UsePortraitShade then 
+			local portraitShade = content:CreateTexture()
+			portraitShade:SetPoint(unpack(Layout.PortraitShadePlace))
+			portraitShade:SetSize(unpack(Layout.PortraitShadeSize)) 
+			portraitShade:SetTexture(Layout.PortraitShadeTexture)
+			portraitShade:SetDrawLayer(unpack(Layout.PortraitShadeDrawLayer))
+			self.Portrait.Shade = portraitShade
+		end 
 
-	local portraitShade = content:CreateTexture()
-	portraitShade:SetDrawLayer("BACKGROUND", -1)
-	portraitShade:SetPoint("TOPRIGHT", 83, 21)
-	portraitShade:SetSize(107, 107) 
-	portraitShade:SetTexture(getPath("shade_circle"))
-	self.Portrait.Shade = portraitShade
-
-	local portraitFg = content:CreateTexture()
-	portraitFg:SetDrawLayer("BACKGROUND", 0)
-	portraitFg:SetPoint("TOPRIGHT", 123, 61)
-	portraitFg:SetSize(187, 187)
-	self.Portrait.Fg = portraitFg
-
+		if Layout.UsePortraitForeground then 
+			local portraitFg = content:CreateTexture()
+			portraitFg:SetPoint(unpack(Layout.PortraitForegroundPlace))
+			portraitFg:SetSize(unpack(Layout.PortraitForegroundSize))
+			portraitFg:SetDrawLayer(unpack(Layout.PortraitForegroundDrawLayer))
+			self.Portrait.Fg = portraitFg
+		end 
+	end 
 
 	-- Threat
-	-----------------------------------------------------------	
-	local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
-	threats.feedbackUnit = "player"
-	threats.hideSolo = true
-	threats.fadeOut = 3
+	if Layout.UseThreat then 
+		local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
+		threats.feedbackUnit = "player"
+		threats.hideSolo = true
+		threats.fadeOut = 3
 
-	local threatHealth = backdrop:CreateTexture()
-	threatHealth:SetDrawLayer("BACKGROUND", -2)
-	threatHealth:SetTexCoord(1,0,0,1)
-	threatHealth:SetAlpha(.75)
-	threats.health = threatHealth
+		local threatHealth = backdrop:CreateTexture()
+		threatHealth:SetDrawLayer("BACKGROUND", -2)
+		threatHealth:SetTexCoord(1,0,0,1)
+		threatHealth:SetAlpha(.75)
+		threats.health = threatHealth
 
-	local threatPortrait = backdrop:CreateTexture()
-	threatPortrait:SetDrawLayer("BACKGROUND", -2)
-	threatPortrait:SetAlpha(.75)
-	threatPortrait:SetTexture(getPath("portrait_frame_glow"))
-	threatPortrait:SetSize(187, 187)
-	threatPortrait:SetPoint("CENTER", portraitFg, "CENTER", 0, 0)
-	threats.portrait = threatPortrait
+		if Layout.UsePortrait then 
+			local threatPortrait = backdrop:CreateTexture()
+			threatPortrait:SetDrawLayer("BACKGROUND", -2)
+			threatPortrait:SetAlpha(.75)
+			threatPortrait:SetTexture(getPath("portrait_frame_glow"))
+			threatPortrait:SetSize(187, 187)
+			threatPortrait:SetPoint("CENTER", self.Portrait.Fg, "CENTER", 0, 0)
+			threats.portrait = threatPortrait
+		end 
 
-	self.Threat = threats
-	self.Threat.OverrideColor = Threat_UpdateColor
-
+		self.Threat = threats
+		self.Threat.OverrideColor = Threat_UpdateColor
+	end
 
 	-- Unit Level
-	-----------------------------------------------------------
+	if Layout.UseLevel then 
 
-	-- level text
-	local level = overlay:CreateFontString()
-	level:SetPoint("CENTER", self, "TOPRIGHT", 79, -62)
-	level:SetDrawLayer("BORDER")
-	level:SetJustifyH("CENTER")
-	level:SetJustifyV("MIDDLE")
-	level:SetFontObject(Fonts(12, true))
-	level:SetShadowOffset(0, 0)
-	level:SetShadowColor(0, 0, 0, 0)
+		-- level text
+		local level = overlay:CreateFontString()
+		level:SetPoint(unpack(Layout.LevelPlace))
+		level:SetDrawLayer(unpack(Layout.LevelDrawLayer))
+		level:SetJustifyH(Layout.LevelJustifyH)
+		level:SetJustifyV(Layout.LevelJustifyV)
+		level:SetFontObject(Layout.LevelFont)
 
-	-- Hide the level of capped (or higher) players and NPcs 
-	-- Doesn't affect high/unreadable level (??) creatures, as they will still get a skull.
-	level.hideCapped = true 
+		-- Hide the level of capped (or higher) players and NPcs 
+		-- Doesn't affect high/unreadable level (??) creatures, as they will still get a skull.
+		level.hideCapped = Layout.LevelHideCapped 
 
-	-- Hide the level of level 1's
-	level.hideFloored = true
+		-- Hide the level of level 1's
+		level.hideFloored = Layout.LevelHideFloored
 
-	-- Set the default level coloring when nothing special is happening
-	level.defaultColor = { 251/255, 255/255, 255/255 } 
-	level.alpha = .7
+		-- Set the default level coloring when nothing special is happening
+		level.defaultColor = Layout.LevelColor
+		level.alpha = Layout.LevelAlpha
 
-	-- Badge backdrop
-	local levelBadge = overlay:CreateTexture()
-	levelBadge:SetDrawLayer("BACKGROUND")
-	levelBadge:SetPoint("CENTER", portrait, "CENTER", 48,-28)
-	levelBadge:SetSize(86,86)
-	levelBadge:SetTexture(getPath("point_plate"))
-	levelBadge:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-	level.Badge = levelBadge
+		-- Badge backdrop
+		if Layout.UseLevelBadge then 
+			local levelBadge = overlay:CreateTexture()
+			levelBadge:SetPoint("CENTER", level, "CENTER", 0, 0)
+			levelBadge:SetSize(unpack(Layout.LevelBadgeSize))
+			levelBadge:SetDrawLayer(unpack(Layout.LevelBadgeDrawLayer))
+			levelBadge:SetTexture(Layout.LevelBadgeTexture)
+			levelBadge:SetVertexColor(unpack(Layout.LevelBadgeColor))
+			level.Badge = levelBadge
+		end 
 
-	-- Skull texture for bosses, high level and dead units  
-	local skull = overlay:CreateTexture()
-	skull:SetDrawLayer("BORDER")
-	skull:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
-	skull:SetSize(64,64)
-	skull:SetTexture(getPath("icon_skull"))
-	level.Skull = skull
+		-- Skull texture for bosses, high level (and dead units if the below isn't provided)
+		if Layout.UseLevelSkull then 
+			local skull = overlay:CreateTexture()
+			skull:Hide()
+			skull:SetPoint("CENTER", level, "CENTER", 0, 0)
+			skull:SetSize(unpack(Layout.LevelSkullSize))
+			skull:SetDrawLayer(unpack(Layout.LevelSkullDrawLayer))
+			skull:SetTexture(Layout.LevelSkullTexture)
+			skull:SetVertexColor(unpack(Layout.LevelSkullColor))
+			level.Skull = skull
+		end 
 
-	-- Skull texture for bosses, high level and dead units  
-	local dead = overlay:CreateTexture()
-	dead:SetDrawLayer("BORDER")
-	dead:SetPoint("CENTER", levelBadge, "CENTER", 0, 0)
-	dead:SetSize(64,64)
-	dead:SetTexture(getPath("icon_skull_dead"))
-	dead:Hide()
-	level.Dead = dead
-	
-	self.Level = level
-
+		-- Skull texture for dead units only
+		if Layout.UseLevelDeadSkull then 
+			local dead = overlay:CreateTexture()
+			dead:Hide()
+			dead:SetPoint("CENTER", level, "CENTER", 0, 0)
+			dead:SetSize(unpack(Layout.LevelDeadSkullSize))
+			dead:SetDrawLayer(unpack(Layout.LevelDeadSkullDrawLayer))
+			dead:SetTexture(Layout.LevelDeadSkullTexture)
+			dead:SetVertexColor(unpack(Layout.LevelDeadSkullColor))
+			level.Dead = dead
+		end 
+		
+		self.Level = level	
+	end 
 
 	-- Unit Classification (boss, elite, rare)
-	-----------------------------------------------------------	
+	if Layout.UseClassificationIndicator then 
+		self.Classification = {}
 
-	self.Classification = {}
+		local boss = overlay:CreateTexture()
+		boss:SetPoint(unpack(Layout.ClassificationIndicatorBossPlace))
+		boss:SetSize(unpack(Layout.ClassificationIndicatorBossSize))
+		boss:SetTexture(Layout.ClassificationIndicatorBossTexture)
+		boss:SetVertexColor(unpack(Layout.ClassificationIndicatorBossColor))
+		self.Classification.Boss = boss
 
-	local boss = overlay:CreateTexture()
-	boss:SetTexture(getPath("icon_classification_boss"))
-	boss:SetSize(84,84)
-	boss:SetPoint("CENTER", self, "BOTTOMRIGHT", 30, -1)
-	boss:SetVertexColor(182/255, 183/255, 181/255)
-	self.Classification.Boss = boss
+		local elite = overlay:CreateTexture()
+		elite:SetPoint(unpack(Layout.ClassificationIndicatorElitePlace))
+		elite:SetSize(unpack(Layout.ClassificationIndicatorEliteSize))
+		elite:SetTexture(Layout.ClassificationIndicatorEliteTexture)
+		elite:SetVertexColor(unpack(Layout.ClassificationIndicatorEliteColor))
+		self.Classification.Elite = elite
 
-	local elite = overlay:CreateTexture()
-	elite:SetTexture(getPath("icon_classification_elite"))
-	elite:SetSize(84,84)
-	elite:SetPoint("CENTER", self, "BOTTOMRIGHT", 30, -1)
-	elite:SetVertexColor(182/255, 183/255, 181/255)
-	self.Classification.Elite = elite
-
-	local rare = overlay:CreateTexture()
-	rare:SetTexture(getPath("icon_classification_rare"))
-	rare:SetSize(84,84)
-	rare:SetPoint("CENTER", self, "BOTTOMRIGHT", 30, -1)
-	rare:SetVertexColor(182/255, 183/255, 181/255)
-	self.Classification.Rare = rare
+		local rare = overlay:CreateTexture()
+		rare:SetPoint(unpack(Layout.ClassificationIndicatorRarePlace))
+		rare:SetSize(unpack(Layout.ClassificationIndicatorRareSize))
+		rare:SetTexture(Layout.ClassificationIndicatorRareTexture)
+		rare:SetVertexColor(unpack(Layout.ClassificationIndicatorRareColor))
+		self.Classification.Rare = rare
+	end
 
 
 	-- Targeting
-	-----------------------------------------------------------	
 	-- Indicates who your target is targeting
+	if Layout.UseTargetIndicator then 
+		self.Targeted = {}
 
-	self.Targeted = {}
+		local friend = overlay:CreateTexture()
+		friend:SetPoint(unpack(Layout.TargetIndicatorYouByFriendPlace))
+		friend:SetSize(unpack(Layout.TargetIndicatorYouByFriendSize))
+		friend:SetTexture(Layout.TargetIndicatorYouByFriendTexture)
+		friend:SetVertexColor(unpack(Layout.TargetIndicatorYouByFriendColor))
+		self.Targeted.YouByFriend = friend
 
-	local friend = overlay:CreateTexture()
-	friend:SetTexture(getPath("icon_target_green"))
-	friend:SetSize(96,48)
-	friend:SetPoint("CENTER", self, "TOPRIGHT", -10, 12)
-	friend:SetVertexColor(227/255, 231/255, 216/255)
-	self.Targeted.YouByFriend = friend
+		local enemy = overlay:CreateTexture()
+		enemy:SetPoint(unpack(Layout.TargetIndicatorYouByEnemyPlace))
+		enemy:SetSize(unpack(Layout.TargetIndicatorYouByEnemySize))
+		enemy:SetTexture(Layout.TargetIndicatorYouByEnemyTexture)
+		enemy:SetVertexColor(unpack(Layout.TargetIndicatorYouByEnemyColor))
+		self.Targeted.YouByEnemy = enemy
 
-	local enemy = overlay:CreateTexture()
-	enemy:SetTexture(getPath("icon_target_red"))
-	enemy:SetSize(96,48)
-	enemy:SetPoint("CENTER", self, "TOPRIGHT", -10, 12)
-	enemy:SetVertexColor(227/255, 231/255, 216/255)
-	self.Targeted.YouByEnemy = enemy
-
-	local pet = overlay:CreateTexture()
-	pet:SetTexture(getPath("icon_target_blue"))
-	pet:SetSize(96,48)
-	pet:SetPoint("CENTER", self, "TOPRIGHT", -10, 12)
-	pet:SetVertexColor(227/255, 231/255, 216/255)
-	self.Targeted.PetByEnemy = pet
-
+		local pet = overlay:CreateTexture()
+		pet:SetPoint(unpack(Layout.TargetIndicatorPetByEnemyPlace))
+		pet:SetSize(unpack(Layout.TargetIndicatorPetByEnemySize))
+		pet:SetTexture(Layout.TargetIndicatorPetByEnemyTexture)
+		pet:SetVertexColor(unpack(Layout.TargetIndicatorPetByEnemyColor))
+		self.Targeted.PetByEnemy = pet
+	end 
 
 	-- Auras
-	-----------------------------------------------------------
+	if Layout.UseAuras then 
+		local auras = content:CreateFrame("Frame")
+		auras:Place(unpack(Layout.AuraFramePlace))
+		auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
+		auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
+		auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
+		auras.growthX = Layout.AuraGrowthX -- auras grow to the left
+		auras.growthY = Layout.AuraGrowthY -- rows grow downwards (we just have a single row, though)
+		auras.maxVisible = Layout.AuraMax -- when set will limit the number of buttons regardless of space available
+		auras.maxBuffs = Layout.AuraMaxBuffs -- maximum number of visible buffs
+		auras.maxDebuffs = Layout.AuraMaxDebuffs -- maximum number of visible debuffs
+		auras.debuffsFirst = Layout.AuraDebuffs -- show debuffs before buffs
+		auras.showCooldownSpiral = Layout.ShowAuraCooldownSpirals -- don't show the spiral as a timer
+		auras.showCooldownTime = Layout.ShowAuraCooldownTime -- show timer numbers
+		auras.auraFilter = Layout.AuraFilter -- general aura filter, only used if the below aren't here
+		auras.buffFilter = Layout.AuraBuffFilter -- buff specific filter passed to blizzard API calls
+		auras.debuffFilter = Layout.AuraDebuffFilter -- debuff specific filter passed to blizzard API calls
+		auras.AuraFilter = Layout.AuraFilterFunc -- general aura filter function, called when the below aren't there
+		auras.BuffFilter = Layout.BuffFilterFunc -- buff specific filter function
+		auras.DebuffFilter = Layout.DebuffFilterFunc -- debuff specific filter function
+		auras.tooltipDefaultPosition = Layout.AuraTooltipDefaultPosition
+		auras.tooltipPoint = Layout.AuraTooltipPoint
+		auras.tooltipAnchor = Layout.AuraTooltipAnchor
+		auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
+		auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
+		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
+			
+		self.Auras = auras
+		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
 
-	local aSize, aSpace = 40, 6 -- 42, 4
-	local auras = content:CreateFrame("Frame")
-	auras:Place("TOPRIGHT", health, "BOTTOMRIGHT", -10, -20)
-	auras:SetSize(aSize*7 + aSpace*6, aSize) -- auras will be aligned in the available space, this size gives us 7x1 auras
+	-- Buffs
+	if Layout.UseBuffs then 
+		local buffs = content:CreateFrame("Frame")
+		buffs:Place(unpack(Layout.BuffFramePlace))
+		buffs:SetSize(unpack(Layout.BuffFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		buffs.auraSize = Layout.BuffSize -- size of the aura. assuming squares. 
+		buffs.spacingH = Layout.BuffSpaceH -- horizontal/column spacing between buttons
+		buffs.spacingV = Layout.BuffSpaceV -- vertical/row spacing between aura buttons
+		buffs.growthX = Layout.BuffGrowthX -- auras grow to the left
+		buffs.growthY = Layout.BuffGrowthY -- rows grow downwards (we just have a single row, though)
+		buffs.maxVisible = Layout.BuffMax -- when set will limit the number of buttons regardless of space available
+		buffs.showCooldownSpiral = Layout.ShowBuffCooldownSpirals -- don't show the spiral as a timer
+		buffs.showCooldownTime = Layout.ShowBuffCooldownTime -- show timer numbers
+		buffs.debuffFilter = Layout.BuffFilter -- general aura filter, only used if the below aren't here
+		buffs.BuffFilter = Layout.BuffFilterFunc -- general aura filter function, called when the below aren't there
+		buffs.tooltipDefaultPosition = Layout.BuffTooltipDefaultPosition
+		buffs.tooltipPoint = Layout.BuffTooltipPoint
+		buffs.tooltipAnchor = Layout.BuffTooltipAnchor
+		buffs.tooltipRelPoint = Layout.BuffTooltipRelPoint
+		buffs.tooltipOffsetX = Layout.BuffTooltipOffsetX
+		buffs.tooltipOffsetY = Layout.BuffTooltipOffsetY
+			
+		self.Buffs = buffs
+		self.Buffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Buffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
 
-	auras.auraSize = aSize -- too much?
-	auras.spacingH = aSpace -- horizontal/column spacing between buttons
-	auras.spacingV = aSpace -- vertical/row spacing between aura buttons
-	auras.growthX = "LEFT" -- auras grow to the left
-	auras.growthY = "DOWN" -- rows grow downwards (we just have a single row, though)
-	auras.maxVisible = 7 -- when set will limit the number of buttons regardless of space available
-	auras.maxBuffs = 3 -- maximum number of visible buffs
-	auras.maxDebuffs = nil -- maximum number of visible debuffs
-	auras.debuffsFirst = false -- show debuffs before buffs
-	auras.showCooldownSpiral = false -- don't show the spiral as a timer
-	auras.showCooldownTime = true -- show timer numbers
-
-	-- Filter strings
-	auras.auraFilter = nil -- general aura filter, only used if the below aren't here
-	auras.buffFilter = "HELPFUL" -- buff specific filter passed to blizzard API calls
-	auras.debuffFilter = "HARMFUL" -- debuff specific filter passed to blizzard API calls
-
-	-- Filter methods
-	auras.AuraFilter = nil -- general aura filter function, called when the below aren't there
-	auras.BuffFilter = Auras.BuffFilter -- buff specific filter function
-	auras.DebuffFilter = Auras.DebuffFilter -- debuff specific filter function
-
-	-- Aura tooltip position
-	auras.tooltipDefaultPosition = nil 
-	auras.tooltipPoint = "TOPRIGHT"
-	auras.tooltipAnchor = nil
-	auras.tooltipRelPoint = "BOTTOMRIGHT"
-	auras.tooltipOffsetX = -8 
-	auras.tooltipOffsetY = -16
-		
-	self.Auras = auras
-	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
-	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
-
-
-
-	-- Texts
-	-----------------------------------------------------------	
+	-- Debuffs
+	if Layout.UseDebuffs then 
+		local debuffs = content:CreateFrame("Frame")
+		debuffs:Place(unpack(Layout.DebuffFramePlace))
+		debuffs:SetSize(unpack(Layout.DebuffFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		debuffs.auraSize = Layout.DebuffSize -- size of the aura. assuming squares. 
+		debuffs.spacingH = Layout.DebuffSpaceH -- horizontal/column spacing between buttons
+		debuffs.spacingV = Layout.DebuffSpaceV -- vertical/row spacing between aura buttons
+		debuffs.growthX = Layout.DebuffGrowthX -- auras grow to the left
+		debuffs.growthY = Layout.DebuffGrowthY -- rows grow downwards (we just have a single row, though)
+		debuffs.maxVisible = Layout.DebuffMax -- when set will limit the number of buttons regardless of space available
+		debuffs.showCooldownSpiral = Layout.ShowDebuffCooldownSpirals -- don't show the spiral as a timer
+		debuffs.showCooldownTime = Layout.ShowDebuffCooldownTime -- show timer numbers
+		debuffs.debuffFilter = Layout.DebuffFilter -- general aura filter, only used if the below aren't here
+		debuffs.DebuffFilter = Layout.DebuffFilterFunc -- general aura filter function, called when the below aren't there
+		debuffs.tooltipDefaultPosition = Layout.DebuffTooltipDefaultPosition
+		debuffs.tooltipPoint = Layout.DebuffTooltipPoint
+		debuffs.tooltipAnchor = Layout.DebuffTooltipAnchor
+		debuffs.tooltipRelPoint = Layout.DebuffTooltipRelPoint
+		debuffs.tooltipOffsetX = Layout.DebuffTooltipOffsetX
+		debuffs.tooltipOffsetY = Layout.DebuffTooltipOffsetY
+			
+		self.Debuffs = debuffs
+		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
 
 	-- Unit Name
-	local name = overlay:CreateFontString()
-	name:SetPoint("TOPRIGHT", -40, 18)
-	name:SetDrawLayer("OVERLAY")
-	name:SetJustifyH("CENTER")
-	name:SetJustifyV("TOP")
-	name:SetFontObject(Fonts(18, true))
-	name:SetShadowOffset(0, 0)
-	name:SetShadowColor(0, 0, 0, 0)
-	name:SetTextColor(240/255, 240/255, 240/255, .75)
-	self.Name = name
+	if Layout.UseName then 
+		local name = overlay:CreateFontString()
+		name:SetPoint(unpack(Layout.NamePlace))
+		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
+		name:SetJustifyH(Layout.NameDrawJustifyH)
+		name:SetJustifyV(Layout.NameDrawJustifyV)
+		name:SetFontObject(Layout.NameFont)
+		name:SetTextColor(unpack(Layout.NameColor))
+		if Layout.NameSize then 
+			name:SetSize(unpack(Layout.NameSize))
+		end 
+		self.Name = name
+	end 
 
 	-- Health Value
-	local healthVal = health:CreateFontString()
-	healthVal:SetPoint("RIGHT", -27, 4)
-	healthVal:SetDrawLayer("OVERLAY")
-	healthVal:SetJustifyH("CENTER")
-	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(Fonts(18, true))
-	healthVal:SetShadowOffset(0, 0)
-	healthVal:SetShadowColor(0, 0, 0, 0)
-	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
+	if Layout.UseHealthValue then 
+		local healthVal = health:CreateFontString()
+		healthVal:SetPoint(unpack(Layout.HealthValuePlace))
+		healthVal:SetDrawLayer(unpack(Layout.HealthValueDrawLayer))
+		healthVal:SetJustifyH(Layout.HealthValueJustifyH)
+		healthVal:SetJustifyV(Layout.HealthValueJustifyV)
+		healthVal:SetFontObject(Layout.HealthValueFont)
+		healthVal:SetTextColor(unpack(Layout.HealthValueColor))
+		self.Health.Value = healthVal
+	end 
 
-	-- Health percentage for bosses
-	local healthPerc = health:CreateFontString()
-	healthPerc:SetPoint("LEFT", 27, 4)
-	healthPerc:SetDrawLayer("OVERLAY")
-	healthPerc:SetJustifyH("CENTER")
-	healthPerc:SetJustifyV("MIDDLE")
-	healthPerc:SetFontObject(Fonts(18, true))
-	healthPerc:SetShadowOffset(0, 0)
-	healthPerc:SetShadowColor(0, 0, 0, 0)
-	healthPerc:SetTextColor(240/255, 240/255, 240/255, .5)
-	
-	self.Health.Value = healthVal
-	self.Health.Percent = healthPerc
-	self.Health.OverrideValue = OverrideHealthValue
+	-- Health Percentage 
+	if Layout.UseHealthPercent then 
+		local healthPerc = health:CreateFontString()
+		healthPerc:SetPoint(unpack(Layout.HealthPercentPlace))
+		healthPerc:SetDrawLayer(unpack(Layout.HealthPercentDrawLayer))
+		healthPerc:SetJustifyH(Layout.HealthPercentJustifyH)
+		healthPerc:SetJustifyV(Layout.HealthPercentJustifyV)
+		healthPerc:SetFontObject(Layout.HealthPercentFont)
+		healthPerc:SetTextColor(unpack(Layout.HealthPercentColor))
+		self.Health.Percent = healthPerc
+	end 
 
-	-- Absorb value
-	local absorbVal = health:CreateFontString()
-	absorbVal:SetPoint("RIGHT", healthVal, "LEFT", -13, 0)
-	absorbVal:SetDrawLayer("OVERLAY")
-	absorbVal:SetJustifyH("CENTER")
-	absorbVal:SetJustifyV("MIDDLE")
-	absorbVal:SetFontObject(Fonts(18, true))
-	absorbVal:SetShadowOffset(0, 0)
-	absorbVal:SetShadowColor(0, 0, 0, 0)
-	absorbVal:SetTextColor( 240/255, 240/255, 240/255, .5)
+	-- Custom Health Value override function
+	if (Layout.HealthValueOverride ~= nil) then 
+		self.Health.OverrideValue = Layout.HealthValueOverride
+	else 
+		self.Health.OverrideValue = OverrideHealthValue
+	end 
 
-	self.Absorb.Value = absorbVal 
-	self.Absorb.OverrideValue = OverrideValue
+	-- Absorb Value
+	if Layout.UseAbsorbBar then 
+		if Layout.UseAbsorbValue then 
+			local absorbVal = overlay:CreateFontString()
+			if Layout.AbsorbValuePlaceFunction then 
+				absorbVal:SetPoint(Layout.AbsorbValuePlaceFunction(self))
+			else 
+				absorbVal:SetPoint(unpack(Layout.AbsorbValuePlace))
+			end 
+			absorbVal:SetDrawLayer(unpack(Layout.AbsorbValueDrawLayer))
+			absorbVal:SetJustifyH(Layout.AbsorbValueJustifyH)
+			absorbVal:SetJustifyV(Layout.AbsorbValueJustifyV)
+			absorbVal:SetFontObject(Layout.AbsorbValueFont)
+			absorbVal:SetTextColor(unpack(Layout.AbsorbValueColor))
+			self.Absorb.Value = absorbVal 
+			self.Absorb.OverrideValue = OverrideValue
+		end 
+	end 
 
-
-	-- Update target frame textures
-	PostUpdate(self)
-
+	-- Update textures according to player level
+	if Layout.UseProgressiveFrames then 
+		PostUpdateTextures(self)
+	end 
 end
+
+Module.GetFrame = function(self)
+	return self.frame
+end 
 
 Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_TARGET_CHANGED") then
@@ -843,8 +871,10 @@ Module.OnEvent = function(self, event, ...)
 				self:PlaySoundKitID(SOUNDKIT.IG_CREATURE_NEUTRAL_SELECT, "SFX")
 			end
 
-			-- Update target frame textures
-			PostUpdate(self.frame)
+			-- Update textures according to player level
+			if Layout.UseProgressiveFrames then 
+				PostUpdateTextures(self:GetFrame())
+			end 
 		else
 			-- Play a sound indicating we lost our target
 			self:PlaySoundKitID(SOUNDKIT.INTERFACE_SOUND_LOST_TARGET_UNIT, "SFX")

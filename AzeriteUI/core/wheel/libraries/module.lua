@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 19)
+local LibModule = CogWheel:Set("LibModule", 20)
 if (not LibModule) then	
 	return
 end
@@ -279,6 +279,17 @@ local ModuleProtoType = {
 		end
 	end,
 
+	-- Check if an addon exists	in the addon listing
+	IsAddOnAvailable = function(self, target)
+		local target = string_lower(target)
+		for i = 1,GetNumAddOns() do
+			local name, title, notes, enabled, loadable, reason, security = self:GetAddOnInfo(i)
+			if string_lower(name) == target then
+				return true
+			end
+		end
+	end,
+	
 	-- Get the parent module. Will return nil for top level modules.
 	GetParent = function(self)
 		return parentModule[self]

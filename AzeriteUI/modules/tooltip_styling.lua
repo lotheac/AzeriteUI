@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("TooltipStyling", "LibEvent", "LibDB", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [TooltipStyling]")
 
 -- Lua API
 local _G = _G
@@ -79,16 +80,9 @@ end
 -- this is just the fallbacks to have a consistent base look.
 Module.StyleTooltips = function(self)
 
-	self:SetDefaultTooltipBackdrop({
-		bgFile = [[Interface\ChatFrame\ChatFrameBackground]], -- [[Interface\FrameGeneral\UI-Background-Marble]],
-		edgeFile = getPath("tooltip_border_blizzcompatible"),
-		edgeSize = 32, 
-		tile = false, -- tiles don't tile vertically (?)
-		--tile = true, tileSize = 256, 
-		insets = { top = 2.5, bottom = 2.5, left = 2.5, right = 2.5 }
-	})
-	self:SetDefaultTooltipBackdropColor(.05, .05, .05, .85) -- 1, 1, 1, 1
-	self:SetDefaultTooltipBackdropBorderColor(1, 1, 1, 1) 
+	self:SetDefaultTooltipBackdrop(Layout.TooltipBackdrop)
+	self:SetDefaultTooltipBackdropColor(unpack(Layout.TooltipBackdropColor)) 
+	self:SetDefaultTooltipBackdropBorderColor(unpack(Layout.TooltipBackdropBorderColor)) 
 
 	-- Points the backdrop is offset outwards
 	-- (left, right, top, bottom)
@@ -107,13 +101,13 @@ Module.StyleTooltips = function(self)
 	self:SetDefaultTooltipStatusBarHeight(5, "power") 
 
 	-- Use our own texture for the bars
-	self:SetDefaultTooltipStatusBarTexture(getPath("statusbar_normal"))
+	self:SetDefaultTooltipStatusBarTexture(Layout.TooltipStatusBarTexture)
 
 	-- Set the default spacing between statusbars
 	self:SetDefaultTooltipStatusBarSpacing(2)
 
 	-- Default position of all tooltips.
-	self:SetDefaultTooltipPosition("BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -48, 107)
+	self:SetDefaultTooltipPosition(unpack(Layout.TooltipPlace))
 
 	-- Set the default colors for new tooltips
 	self:SetDefaultTooltipColorTable(Colors)

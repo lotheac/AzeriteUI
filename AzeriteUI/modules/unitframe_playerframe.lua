@@ -6,7 +6,6 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibSpinBar", "LibOrb", "LibTooltip")
-local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [UnitFramePlayer]")
@@ -99,7 +98,11 @@ local OverridePowerColor = function(element, unit, min, max, powerType, powerID,
 	elseif tapped then
 		r, g, b = unpack(self.colors.tapped)
 	else
-		r, g, b = unpack(powerType and self.colors.power[powerType .. "_CRYSTAL"] or self.colors.power[powerType] or self.colors.power.UNUSED)
+		if Layout.PowerColorSuffix then 
+			r, g, b = unpack(powerType and self.colors.power[powerType .. Layout.PowerColorSuffix] or self.colors.power[powerType] or self.colors.power.UNUSED)
+		else 
+			r, g, b = unpack(powerType and self.colors.power[powerType] or self.colors.power.UNUSED)
+		end 
 	end
 	element:SetStatusBarColor(r, g, b)
 end 
@@ -144,7 +147,6 @@ local Threat_Hide = function(element)
 	end
 end 
 
-
 local PostCreateAuraButton = function(element, button)
 	
 	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
@@ -168,7 +170,7 @@ local PostCreateAuraButton = function(element, button)
 	button.Darken:SetAllPoints(button.Icon)
 	button.Darken:SetColorTexture(0, 0, 0, .25)
 
-	button.Border = button.Overlay:CreateFrame("Frame")
+	button.Border = button.Overlay:CreateFrame("Frame", nil, button.Overlay)
 	button.Border:Place(unpack(Layout.AuraBorderFramePlace))
 	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
 	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
@@ -301,7 +303,7 @@ local PostUpdateTextures = function(self)
 			if self.ExtraPower then 
 				self.ExtraPower.Border:SetTexture(Layout.NoviceManaOrbTexture)
 				self.ExtraPower.Border:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
-			end 
+			end
 		end 
 
 	end 
@@ -312,9 +314,14 @@ local Style = function(self, unit, id, ...)
 
 	-- Frame
 	-----------------------------------------------------------
-
 	self:SetSize(unpack(Layout.Size)) 
 	self:Place(unpack(Layout.Place)) 
+
+	if Layout.HitRectInsets then 
+		self:SetHitRectInsets(unpack(Layout.HitRectInsets))
+	else 
+		self:SetHitRectInsets(0, 0, 0, 0)
+	end 
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -343,7 +350,7 @@ local Style = function(self, unit, id, ...)
 	if Layout.UseBorderBackdrop then 
 		local border = self:CreateFrame("Frame")
 		border:SetFrameLevel(self:GetFrameLevel() + 8)
-		border.SetSize(unpack(Layout.BorderFrameSize))
+		border:SetSize(unpack(Layout.BorderFrameSize))
 		border:Place(unpack(Layout.BorderFramePlace))
 		border:SetBackdrop(Layout.BorderFrameBackdrop)
 		border:SetBackdropColor(unpack(Layout.BorderFrameBackdropColor))
@@ -370,7 +377,7 @@ local Style = function(self, unit, id, ...)
 	end 
 	if (not Layout.UseProgressiveFrames) then 
 		health:SetStatusBarTexture(Layout.HealthBarTexture)
-		health:SetSize(Layout.HealthBarTexture)
+		health:SetSize(unpack(Layout.HealthSize))
 	end 
 
 	health:Place(unpack(Layout.HealthPlace))
@@ -389,7 +396,20 @@ local Style = function(self, unit, id, ...)
 		healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
 		healthBg:SetSize(unpack(Layout.HealthBackdropSize))
 		healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
+		if (not Layout.UseProgressiveFrames) then 
+			healthBg:SetTexture(Layout.HealthBackdropTexture)
+		end 
 		self.Health.Bg = healthBg
+	end 
+
+	if Layout.UseHealthForeground then 
+		local healthFg = health:CreateTexture()
+		healthFg:SetDrawLayer("BORDER", 1)
+		healthFg:SetSize(unpack(Layout.HealthForegroundSize))
+		healthFg:SetPoint(unpack(Layout.HealthForegroundPlace))
+		healthFg:SetTexture(Layout.HealthForegroundTexture)
+		healthFg:SetDrawLayer(unpack(Layout.HealthForegroundDrawLayer))
+		self.Health.Fg = healthFg
 	end 
 
 	-- Absorb Bar
@@ -399,14 +419,21 @@ local Style = function(self, unit, id, ...)
 		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
 		absorb:Place(unpack(Layout.AbsorbBarPlace))
 		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+
+		if (not Layout.UseProgressiveFrames) then
+			absorb:SetSize(unpack(Layout.AbsorbSize))
+			absorb:SetStatusBarTexture(Layout.AbsorbBarTexture)
+		end
+
 		if Layout.AbsorbBarSparkMap then 
 			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
 		end 
+
 		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
 		self.Absorb = absorb
 	end 
 
-	-- Power Crystal
+	-- Power 
 	-----------------------------------------------------------
 	if Layout.UsePowerBar then 
 		local power = backdrop:CreateStatusBar()
@@ -439,14 +466,13 @@ local Style = function(self, unit, id, ...)
 
 		if Layout.UsePowerForeground then 
 			local powerFg = power:CreateTexture()
-			powerFg:SetSize(198,98)
-			powerFg:SetPoint("BOTTOM", 7, -51)
-			powerFg:SetDrawLayer("ARTWORK")
-			powerFg:SetTexture(getPath("pw_crystal_case"))
+			powerFg:SetSize(unpack(Layout.PowerForegroundSize))
+			powerFg:SetPoint(unpack(Layout.PowerForegroundPlace))
+			powerFg:SetDrawLayer(unpack(Layout.PowerForegroundDrawLayer))
+			powerFg:SetTexture(Layout.PowerForegroundTexture)
 			self.Power.Fg = powerFg
 		end
 	end 
-
 
 
 	-- Mana Orb
@@ -547,18 +573,21 @@ local Style = function(self, unit, id, ...)
 		self.Threat.OverrideColor = Threat_UpdateColor
 	end 
 
-
 	-- Cast Bar
 	-----------------------------------------------------------
 	if Layout.UseCastBar then
 		local cast = content:CreateStatusBar()
-		cast:SetSize(385, 40)
+		cast:SetSize(unpack(Layout.CastBarSize))
 		cast:SetFrameLevel(health:GetFrameLevel() + 1)
-		cast:Place("BOTTOMLEFT", 27, 27)
-		cast:SetOrientation("RIGHT") -- set the bar to grow towards the right.
-		cast:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
-		cast:SetSmoothingFrequency(.15)
-		cast:SetStatusBarColor(1, 1, 1, .15) -- the alpha won't be overwritten. 
+		cast:Place(unpack(Layout.CastBarPlace))
+		cast:SetOrientation(Layout.CastBarOrientation) -- set the bar to grow towards the right.
+		cast:SetSmoothingMode(Layout.CastBarSmoothingMode) -- set the smoothing mode.
+		cast:SetSmoothingFrequency(Layout.CastBarSmoothingFrequency)
+		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) -- the alpha won't be overwritten. 
+
+		if (not Layout.UseProgressiveFrames) then 
+			cast:SetStatusBarTexture(Layout.CastBarTexture)
+		end 
 
 		if Layout.CastBarSparkMap then 
 			cast:SetSparkMap(Layout.CastBarSparkMap) -- set the map the spark follows along the bar.
@@ -567,97 +596,184 @@ local Style = function(self, unit, id, ...)
 		self.Cast = cast
 	end 
 
-
 	-- Combat Indicator
-	local combat = overlay:CreateTexture()
-	combat:SetDrawLayer("OVERLAY", -1)
-	combat:SetSize(80,80)
-	combat:SetPoint("CENTER", self, "BOTTOMLEFT", -41, 22) 
-	combat:SetTexture(getPath("icon-combat"))
-	combat:SetVertexColor(Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75)
+	if Layout.UseCombatIndicator then 
+		local combat = overlay:CreateTexture()
+		combat:SetSize(unpack(Layout.CombatIndicatorSize))
+		combat:SetPoint(unpack(Layout.CombatIndicatorPlace)) 
+		combat:SetTexture(Layout.CombatIndicatorTexture)
+		combat:SetDrawLayer(unpack(Layout.CombatIndicatorDrawLayer))
+		combat:SetVertexColor(unpack(Layout.CombatIndicatorColor))
+	
+		local combatGlow = overlay:CreateTexture()
+		combatGlow:SetSize(unpack(Layout.CombatIndicatorGlowSize))
+		combatGlow:SetPoint(unpack(Layout.CombatIndicatorGlowPlace)) 
+		combatGlow:SetTexture(Layout.CombatIndicatorGlowTexture)
+		combatGlow:SetDrawLayer(unpack(Layout.CombatIndicatorGlowDrawLayer))
+		combatGlow:SetVertexColor(unpack(Layout.CombatIndicatorGlowColor))
 
-	local combatGlow = overlay:CreateTexture()
-	combatGlow:SetDrawLayer("OVERLAY", -1)
-	combatGlow:SetSize(80,80)
-	combatGlow:SetPoint("CENTER", combat, "CENTER", 0, 0) 
-	combatGlow:SetTexture(getPath("icon-combat-glow"))
-
-	self.Combat = combat
-	self.Combat.Glow = combatGlow
-
+		self.Combat = combat
+		self.Combat.Glow = combatGlow
+	end 
 
 	-- Auras
 	-----------------------------------------------------------
-	local auras = content:CreateFrame("Frame")
-	auras:Place(unpack(Layout.AuraFramePlace))
-	auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
-	auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
-	auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
-	auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
-	auras.growthX = Layout.AuraGrowthX -- auras grow to the left
-	auras.growthY = Layout.AuraGrowthY -- rows grow downwards (we just have a single row, though)
-	auras.maxVisible = Layout.AuraMax -- when set will limit the number of buttons regardless of space available
-	auras.maxBuffs = Layout.AuraMaxBuffs -- maximum number of visible buffs
-	auras.maxDebuffs = Layout.AuraMaxDebuffs -- maximum number of visible debuffs
-	auras.debuffsFirst = Layout.AuraDebuffs -- show debuffs before buffs
-	auras.showCooldownSpiral = Layout.ShowAuraCooldownSpirals -- don't show the spiral as a timer
-	auras.showCooldownTime = Layout.ShowAuraCooldownTime -- show timer numbers
-	auras.auraFilter = Layout.AuraFilter -- general aura filter, only used if the below aren't here
-	auras.buffFilter = Layout.AuraBuffFilter -- buff specific filter passed to blizzard API calls
-	auras.debuffFilter = Layout.AuraDebuffFilter -- debuff specific filter passed to blizzard API calls
-	auras.AuraFilter = Layout.AuraFilterFunc -- general aura filter function, called when the below aren't there
-	auras.BuffFilter = Layout.BuffFilterFunc -- buff specific filter function
-	auras.DebuffFilter = Layout.DebuffFilterFunc -- debuff specific filter function
-	auras.tooltipDefaultPosition = Layout.AuraTooltipDefaultPosition
-	auras.tooltipPoint = Layout.AuraTooltipPoint
-	auras.tooltipAnchor = Layout.AuraTooltipAnchor
-	auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
-	auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
-	auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
+	if Layout.UseAuras then 
+		local auras = content:CreateFrame("Frame")
+		auras:Place(unpack(Layout.AuraFramePlace))
+		auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
+		auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
+		auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
+		auras.growthX = Layout.AuraGrowthX -- auras grow to the left
+		auras.growthY = Layout.AuraGrowthY -- rows grow downwards (we just have a single row, though)
+		auras.maxVisible = Layout.AuraMax -- when set will limit the number of buttons regardless of space available
+		auras.maxBuffs = Layout.AuraMaxBuffs -- maximum number of visible buffs
+		auras.maxDebuffs = Layout.AuraMaxDebuffs -- maximum number of visible debuffs
+		auras.debuffsFirst = Layout.AuraDebuffs -- show debuffs before buffs
+		auras.showCooldownSpiral = Layout.ShowAuraCooldownSpirals -- don't show the spiral as a timer
+		auras.showCooldownTime = Layout.ShowAuraCooldownTime -- show timer numbers
+		auras.auraFilter = Layout.AuraFilter -- general aura filter, only used if the below aren't here
+		auras.buffFilter = Layout.AuraBuffFilter -- buff specific filter passed to blizzard API calls
+		auras.debuffFilter = Layout.AuraDebuffFilter -- debuff specific filter passed to blizzard API calls
+		auras.AuraFilter = Layout.AuraFilterFunc -- general aura filter function, called when the below aren't there
+		auras.BuffFilter = Layout.BuffFilterFunc -- buff specific filter function
+		auras.DebuffFilter = Layout.DebuffFilterFunc -- debuff specific filter function
+		auras.tooltipDefaultPosition = Layout.AuraTooltipDefaultPosition
+		auras.tooltipPoint = Layout.AuraTooltipPoint
+		auras.tooltipAnchor = Layout.AuraTooltipAnchor
+		auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
+		auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
+		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
+			
+		self.Auras = auras
+		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
+
+	if Layout.UseBuffs then 
+		local buffs = content:CreateFrame("Frame")
+		buffs:Place(unpack(Layout.BuffFramePlace))
+		buffs:SetSize(unpack(Layout.BuffFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		buffs.auraSize = Layout.BuffSize -- size of the aura. assuming squares. 
+		buffs.spacingH = Layout.BuffSpaceH -- horizontal/column spacing between buttons
+		buffs.spacingV = Layout.BuffSpaceV -- vertical/row spacing between aura buttons
+		buffs.growthX = Layout.BuffGrowthX -- auras grow to the left
+		buffs.growthY = Layout.BuffGrowthY -- rows grow downwards (we just have a single row, though)
+		buffs.maxVisible = Layout.BuffMax -- when set will limit the number of buttons regardless of space available
+		buffs.showCooldownSpiral = Layout.ShowBuffCooldownSpirals -- don't show the spiral as a timer
+		buffs.showCooldownTime = Layout.ShowBuffCooldownTime -- show timer numbers
+		buffs.debuffFilter = Layout.BuffFilter -- general aura filter, only used if the below aren't here
+		buffs.BuffFilter = Layout.BuffFilterFunc -- general aura filter function, called when the below aren't there
+		buffs.tooltipDefaultPosition = Layout.BuffTooltipDefaultPosition
+		buffs.tooltipPoint = Layout.BuffTooltipPoint
+		buffs.tooltipAnchor = Layout.BuffTooltipAnchor
+		buffs.tooltipRelPoint = Layout.BuffTooltipRelPoint
+		buffs.tooltipOffsetX = Layout.BuffTooltipOffsetX
+		buffs.tooltipOffsetY = Layout.BuffTooltipOffsetY
+			
+		--local test = debuffs:CreateTexture()
+		--test:SetColorTexture(.7, 0, 0, .5)
+		--test:SetAllPoints()
+
+		self.Buffs = buffs
+		self.Buffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Buffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
+
+	if Layout.UseDebuffs then 
+		local debuffs = content:CreateFrame("Frame")
+		debuffs:Place(unpack(Layout.DebuffFramePlace))
+		debuffs:SetSize(unpack(Layout.DebuffFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		debuffs.auraSize = Layout.DebuffSize -- size of the aura. assuming squares. 
+		debuffs.spacingH = Layout.DebuffSpaceH -- horizontal/column spacing between buttons
+		debuffs.spacingV = Layout.DebuffSpaceV -- vertical/row spacing between aura buttons
+		debuffs.growthX = Layout.DebuffGrowthX -- auras grow to the left
+		debuffs.growthY = Layout.DebuffGrowthY -- rows grow downwards (we just have a single row, though)
+		debuffs.maxVisible = Layout.DebuffMax -- when set will limit the number of buttons regardless of space available
+		debuffs.showCooldownSpiral = Layout.ShowDebuffCooldownSpirals -- don't show the spiral as a timer
+		debuffs.showCooldownTime = Layout.ShowDebuffCooldownTime -- show timer numbers
+		debuffs.debuffFilter = Layout.DebuffFilter -- general aura filter, only used if the below aren't here
+		debuffs.DebuffFilter = Layout.DebuffFilterFunc -- general aura filter function, called when the below aren't there
+		debuffs.tooltipDefaultPosition = Layout.DebuffTooltipDefaultPosition
+		debuffs.tooltipPoint = Layout.DebuffTooltipPoint
+		debuffs.tooltipAnchor = Layout.DebuffTooltipAnchor
+		debuffs.tooltipRelPoint = Layout.DebuffTooltipRelPoint
+		debuffs.tooltipOffsetX = Layout.DebuffTooltipOffsetX
+		debuffs.tooltipOffsetY = Layout.DebuffTooltipOffsetY
 		
-	self.Auras = auras
-	self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
-	self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+		--local test = debuffs:CreateTexture()
+		--test:SetColorTexture(.7, 0, 0, .5)
+		--test:SetAllPoints()
+
+		self.Debuffs = debuffs
+		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
 
 
 	-- Texts
 	-----------------------------------------------------------
+	-- Unit Name
+	if Layout.UseName then 
+		local name = overlay:CreateFontString()
+		name:SetPoint(unpack(Layout.NamePlace))
+		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
+		name:SetJustifyH(Layout.NameDrawJustifyH)
+		name:SetJustifyV(Layout.NameDrawJustifyV)
+		name:SetFontObject(Layout.NameFont)
+		name:SetTextColor(unpack(Layout.NameColor))
+		if Layout.NameSize then 
+			name:SetSize(unpack(Layout.NameSize))
+		end 
+		self.Name = name
+	end 
 
 	-- Health Value
-	local healthVal = health:CreateFontString()
-	healthVal:SetPoint("LEFT", 27, 4)
-	healthVal:SetDrawLayer("OVERLAY")
-	healthVal:SetJustifyH("CENTER")
-	healthVal:SetJustifyV("MIDDLE")
-	healthVal:SetFontObject(Fonts(18, true))
-	healthVal:SetTextColor(240/255, 240/255, 240/255, .5)
-	self.Health.Value = healthVal
-	self.Health.OverrideValue = OverrideHealthValue
+	if Layout.UseHealthValue then 
+		local healthVal = health:CreateFontString()
+		healthVal:SetPoint(unpack(Layout.HealthValuePlace))
+		healthVal:SetDrawLayer(unpack(Layout.HealthValueDrawLayer))
+		healthVal:SetJustifyH(Layout.HealthValueJustifyH)
+		healthVal:SetJustifyV(Layout.HealthValueJustifyV)
+		healthVal:SetFontObject(Layout.HealthValueFont)
+		healthVal:SetTextColor(unpack(Layout.HealthValueColor))
+		self.Health.Value = healthVal
+		self.Health.OverrideValue = OverrideHealthValue
+	end 
 
 	-- Absorb Value
 	if Layout.UseAbsorbBar then 
-		local absorbVal = self.Health:CreateFontString()
-		absorbVal:SetPoint("LEFT", healthVal, "RIGHT", 13, 0)
-		absorbVal:SetDrawLayer("OVERLAY")
-		absorbVal:SetJustifyH("CENTER")
-		absorbVal:SetJustifyV("MIDDLE")
-		absorbVal:SetFontObject(Fonts(18, true))
-		absorbVal:SetTextColor(240/255, 240/255, 240/255, .5)
-		self.Absorb.Value = absorbVal 
-		self.Absorb.OverrideValue = OverrideValue
+		if Layout.UseAbsorbValue then 
+			local absorbVal = overlay:CreateFontString()
+			if Layout.AbsorbValuePlaceFunction then 
+				absorbVal:SetPoint(Layout.AbsorbValuePlaceFunction(self))
+			else 
+				absorbVal:SetPoint(unpack(Layout.AbsorbValuePlace))
+			end 
+			absorbVal:SetDrawLayer(unpack(Layout.AbsorbValueDrawLayer))
+			absorbVal:SetJustifyH(Layout.AbsorbValueJustifyH)
+			absorbVal:SetJustifyV(Layout.AbsorbValueJustifyV)
+			absorbVal:SetFontObject(Layout.AbsorbValueFont)
+			absorbVal:SetTextColor(unpack(Layout.AbsorbValueColor))
+			self.Absorb.Value = absorbVal 
+			self.Absorb.OverrideValue = OverrideValue
+		end 
 	end 
 
 	-- Power Value
 	if Layout.UsePowerBar then 
-		local powerVal = self.Power:CreateFontString()
-		powerVal:SetPoint("CENTER", 0, -16)
-		powerVal:SetDrawLayer("OVERLAY")
-		powerVal:SetJustifyH("CENTER")
-		powerVal:SetJustifyV("MIDDLE")
-		powerVal:SetFontObject(Fonts(18, true))
-		powerVal:SetTextColor(240/255, 240/255, 240/255, .4)
-		self.Power.Value = powerVal
-		self.Power.UpdateValue = OverrideValue
+		if Layout.UsePowerValue then 
+			local powerVal = self.Power:CreateFontString()
+			powerVal:SetPoint(unpack(Layout.PowerValuePlace))
+			powerVal:SetDrawLayer(unpack(Layout.PowerValueDrawLayer))
+			powerVal:SetJustifyH(Layout.PowerValueJustifyH)
+			powerVal:SetJustifyV(Layout.PowerValueJustifyV)
+			powerVal:SetFontObject(Layout.PowerValueFont)
+			powerVal:SetTextColor(unpack(Layout.PowerValueColor))
+			self.Power.Value = powerVal
+			self.Power.UpdateValue = OverrideValue
+		end 
 	end
 
 	if Layout.UseMana then 

@@ -48,6 +48,7 @@ Module.PositionTracker = function(self)
 	ObjectiveFrameHolder:SetHeight(22)
 	ObjectiveFrameHolder:Place(unpack(Layout.Place))
 	
+	ObjectiveTrackerFrame:SetParent(self:GetFrame("UICenter")) -- taint or ok?
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOP", ObjectiveFrameHolder, "TOP")
 

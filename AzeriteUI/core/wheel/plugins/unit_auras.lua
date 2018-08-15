@@ -254,15 +254,15 @@ local CreateAuraButton = function(element)
 
 	-- Frame to contain art overlays, texts, etc
 	-- Modules can put their borders and other overlays here
-	local overlay = button:CreateFrame("Frame")
-	overlay:SetAllPoints()
+	local overlay = button:CreateFrame("Frame", nil, button)
+	overlay:SetAllPoints(button)
 	overlay:SetFrameLevel(button:GetFrameLevel() + 2)
 	button.Overlay = overlay
 
 	-- Cooldown frame
-	local cooldown = button:CreateFrame("Cooldown", nil, "CooldownFrameTemplate")
+	local cooldown = button:CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
 	cooldown:Hide()
-	cooldown:SetAllPoints()
+	cooldown:SetAllPoints(button)
 	cooldown:SetFrameLevel(button:GetFrameLevel() + 1)
 	cooldown:SetReverse(false)
 	cooldown:SetSwipeColor(0, 0, 0, .75)
@@ -710,5 +710,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 20)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 21)
 end 

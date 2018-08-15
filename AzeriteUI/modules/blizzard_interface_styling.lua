@@ -5,24 +5,20 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("BlizzardInterfaceStyling", "LibEvent", "LibFrame")
+local Module = Core:NewModule("BlizzardInterfaceStyling", "LibEvent", "LibDB", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
-local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
-local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
 local _G = _G
-local math_min = math.min
-
--- WoW API
-local hooksecurefunc = hooksecurefunc
-local GetScreenHeight = _G.GetScreenHeight
 
 -- Current player level
 local LEVEL = UnitLevel("player") 
 
+
+
 -- Utility Functions
 -----------------------------------------------------------------
+
 -- Returns the correct difficulty color compared to the player
 local getDifficultyColorByLevel = function(level)
 	level = level - LEVEL
@@ -44,9 +40,8 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
-
-Module.OnEvent = function(self, event, ...)
-end
+Module.OnEnable = function(self)
+end 
 
 Module.OnInit = function(self)
 end 

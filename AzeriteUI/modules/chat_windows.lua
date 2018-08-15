@@ -7,6 +7,7 @@ end
 
 local Module = Core:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [BlizzardChatFrames]")
 
 -- Lua API
 local _G = _G
@@ -312,7 +313,7 @@ Module.PostCreateChatWindow = function(self, frame)
 	frame:SetIndentedWordWrap(false) -- messy?
 
 	-- just lock all frames away from our important objects
-	frame:SetClampRectInsets(-54, -54, -310, -330)
+	frame:SetClampRectInsets(unpack(Layout.DefaultClampRectInsets))
 
 	-- Set the frame's alpha and color
 	FCF_SetWindowColor(frame, 0, 0, 0, 0)
@@ -612,8 +613,8 @@ Module.SetUpMainFrames = function(self)
 	-- and any scaling later on is applied to that pixel font, 
 	-- not to the original vector font. 
 	local frame = self:CreateFrame("Frame", nil, "UICenter")
-	frame:SetPoint("LEFT", 85, 0)
-	frame:SetSize(519, 196)
+	frame:SetPoint(unpack(Layout.DefaultChatFramePlace))
+	frame:SetSize(unpack(Layout.DefaultChatFrameSize))
 
 	self:HandleAllChatWindows()
 	self:SetChatWindowAsSlaveTo(ChatFrame1, frame)
@@ -625,6 +626,10 @@ Module.SetUpMainFrames = function(self)
 end 
 
 Module.SetUpButton = function(self, button, sizeMod, texture)
+	if (not Layout.UseButtonTextures) then 
+		return 
+	end 
+
 	sizeMod = sizeMod/1.25
 
 	local normal = button:GetNormalTexture()

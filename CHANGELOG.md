@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.39] 2018-08-15
+### Changed
+- Parented the Blizzard ObjectivesTracker to our own master frame, to prevent it from covering the Blizzard Micro Menu.
+- Continued the work on code restructuring towards the new single file layout system. 
+- Changed how various textures are attached to unit frame aura buttons to attempt to fix the "misplaced border" issues that I so far have been unable to reproduce. 
+- Added some bonus bars to the actionbutton page switcher for all classes, also added an action icon update regardless of whether or not the actual page was changed. 
+- The target of target unit frame is now hidden when your current target is a harmless level 1 critter, or if the target of the target is yourself as this is already indicated by the red eye on the target portrait.
+
+### Fixed
+- Fixed bad positioning of the player frame combat indicator after recent code restructuring. 
+- Fixed the missing minimap zone- and latency texts. 
+- Fixed a lingering "ExtraPower" bug after the code restructuring.
+
 ## [1.0.38] 2018-08-14
 ### Changed
 - Moved Blizzard ObjectivesTracker modifications to its own file. Remember to restart game for the file to be discovered!

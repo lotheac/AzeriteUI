@@ -571,6 +571,8 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 					value = GetOverrideBarIndex(); 
 				elseif HasTempShapeshiftActionBar() then
 					value = GetTempShapeshiftBarIndex(); 
+				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then 
+					value = GetBonusBarIndex();
 				else
 					value = nil;
 				end
@@ -598,9 +600,11 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 					--local actionType, actionId, subType = GetActionInfo(slot); 
 					--if (actionType == "flyout") then 
 					--end
-
-					self:CallMethod("UpdateAction"); 
 				end 
+
+				-- call this anyway?
+				self:CallMethod("UpdateAction"); 
+
 			]], value)
 		end 
 	]=])
@@ -837,4 +841,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 23)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 26)
