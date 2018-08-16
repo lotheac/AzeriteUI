@@ -224,6 +224,11 @@ local Toggle_UpdateTooltip = function(self)
 	local resting, restState, restedName, mult
 	local restedLeft, restedTimeLeft
 
+	if hasXP or hasAP then 
+		tooltip:SetDefaultAnchor(self)
+		tooltip:SetMaximumWidth(330)
+	end
+
 	-- XP tooltip
 	-- Currently more or less a clone of the blizzard tip, we should improve!
 	if hasXP then 
@@ -233,8 +238,6 @@ local Toggle_UpdateTooltip = function(self)
 		
 		local min, max = UnitXP("player"), UnitXPMax("player")
 
-		tooltip:SetDefaultAnchor(self)
-		tooltip:SetMaximumWidth(330)
 		tooltip:AddDoubleLine(POWER_TYPE_EXPERIENCE, UnitLevel("player"), rt, gt, bt, rt, gt, bt)
 		tooltip:AddDoubleLine(L["Current XP: "], fullXPString:format(normal..short(min)..NC, normal..short(max)..NC, highlight..math_floor(min/max*100).."%"..NC), rh, gh, bh, rgg, ggg, bgg)
 

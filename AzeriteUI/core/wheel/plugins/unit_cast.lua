@@ -112,8 +112,19 @@ local OnUpdate = function(element, elapsed)
 		element.casting = nil
 		element.castID = nil
 		element.channeling = nil
+		element.name = nil
+		element.text = nil
+
+		if element.Name then 
+			element.Name:SetText("")
+		end
+		if element.Value then 
+			element.Value:SetText("")
+		end
+		
 		element:SetValue(0, true)
 		element:Hide()
+		
 		return 
 	end
 	local r, g, b
@@ -123,7 +134,17 @@ local OnUpdate = function(element, elapsed)
 			element.casting = nil
 			element.tradeskill = nil
 			element.total = nil
-			element:SetValue(0, true)
+			element.name = nil
+			element.text = nil
+	
+			if element.Name then 
+				element.Name:SetText("")
+			end
+			if element.Value then 
+				element.Value:SetText("")
+			end
+			
+				element:SetValue(0, true)
 			element:Hide()
 			return
 		end
@@ -140,13 +161,23 @@ local OnUpdate = function(element, elapsed)
 		element:SetValue(duration)
 
 		if element.PostUpdate then 
-			element:PostUpdate(unit, duration)
+			element:PostUpdate(unit, duration, element.max, element.delay)
 		end
 
 	elseif element.channeling then
 		local duration = element.duration - elapsed
 		if (duration <= 0) then
 			element.channeling = nil
+			element.name = nil
+			element.text = nil
+	
+			if element.Name then 
+				element.Name:SetText("")
+			end
+			if element.Value then 
+				element.Value:SetText("")
+			end
+			
 			element:SetValue(0, true)
 			element:Hide()
 			return
@@ -171,6 +202,16 @@ local OnUpdate = function(element, elapsed)
 		element.casting = nil
 		element.castID = nil
 		element.channeling = nil
+		element.name = nil
+		element.text = nil
+
+		if element.Name then 
+			element.Name:SetText("")
+		end
+		if element.Value then 
+			element.Value:SetText("")
+		end
+		
 		element:SetValue(0, true)
 		element:Hide()
 		return
@@ -202,6 +243,8 @@ Update = function(self, event, unit, ...)
 		local max = endTime - startTime
 
 		element.castID = castID
+		element.name = name
+		element.text = text
 		element.duration = now - startTime
 		element.max = max
 		element.delay = 0
@@ -237,6 +280,15 @@ Update = function(self, event, unit, ...)
 		element.total = nil
 		element.casting = nil
 		element.interrupt = nil
+		element.name = nil
+		element.text = nil
+
+		if element.Name then 
+			element.Name:SetText("")
+		end
+		if element.Value then 
+			element.Value:SetText("")
+		end
 
 		element:SetValue(0, true)
 		element:Hide()
@@ -251,6 +303,15 @@ Update = function(self, event, unit, ...)
 		element.interrupt = nil
 		element.tradeskill = nil
 		element.total = nil
+		element.name = nil
+		element.text = nil
+
+		if element.Name then 
+			element.Name:SetText("")
+		end
+		if element.Value then 
+			element.Value:SetText("")
+		end
 
 		element:SetValue(0, true)
 		element:Hide()
@@ -265,6 +326,15 @@ Update = function(self, event, unit, ...)
 		element.total = nil
 		element.casting = nil
 		element.interrupt = nil
+		element.name = nil
+		element.text = nil
+
+		if element.Name then 
+			element.Name:SetText("")
+		end
+		if element.Value then 
+			element.Value:SetText("")
+		end
 
 		element:SetValue(0, true)
 		element:Hide()
@@ -344,6 +414,8 @@ Update = function(self, event, unit, ...)
 		element.delay = 0
 		element.channeling = true
 		element.interrupt = notInterruptible
+		element.name = name
+		element.text = text
 
 		element.casting = nil
 		element.castID = nil
@@ -383,7 +455,16 @@ Update = function(self, event, unit, ...)
 		if element:IsShown() then
 			element.channeling = nil
 			element.interrupt = nil
+			element.name = nil
+			element.text = nil
 
+			if element.Name then 
+				element.Name:SetText("")
+			end
+			if element.Value then 
+				element.Value:SetText("")
+			end
+		
 			element:SetValue(0, true)
 			element:Hide()
 		end
@@ -400,6 +481,16 @@ Update = function(self, event, unit, ...)
 		element.interrupt = nil
 		element.tradeskill = nil
 		element.total = nil
+		element.name = nil
+		element.text = nil
+
+		if element.Name then 
+			element.Name:SetText("")
+		end
+		if element.Value then 
+			element.Value:SetText("")
+		end
+
 		element:SetValue(0, true)
 		element:Hide()
 	end
@@ -706,5 +797,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 8)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 10)
 end 

@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.42] 2018-08-16
+### Added 
+- Added cast name and cast duration value to the target unit frame. 
+
+### Fixed
+- Target frame auras are once more in the right place.
+- Target frame castbar once more grows towards the left side. 
+- When you've hit maximum level or disabled XP, the Artifact Power tooltip should no longer get a new set of lines added to it every time you mouse over the Artifact Power bar. It should now reset properly. 
+
 ## [1.0.41] 2018-08-15
 ### Fixed
 - The target health bar should no longer be flipped the wrong way.

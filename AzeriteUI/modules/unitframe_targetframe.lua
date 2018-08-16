@@ -235,6 +235,8 @@ local PostUpdateTextures = function(self)
 	-- Store the new style
 	TARGET_STYLE = CURRENT_STYLE
 
+	-- Do this?
+	self.progressiveFrameStyle = CURRENT_STYLE
 
 	if Layout.UseProgressiveHealth then 
 		self.Health:Place(unpack(Layout[TARGET_STYLE.."HealthPlace"]))
@@ -499,11 +501,12 @@ local Style = function(self, unit, id, ...)
 		cast:SetSize(unpack(Layout.CastBarSize))
 		cast:SetFrameLevel(health:GetFrameLevel() + 1)
 		cast:Place(unpack(Layout.CastBarPlace))
-		cast:SetOrientation(Layout.CastBarOrientation) -- set the bar to grow towards the right.
-		cast:SetSmoothingMode(Layout.CastBarSmoothingMode) -- set the smoothing mode.
+		cast:SetOrientation(Layout.CastBarOrientation) 
+		cast:SetFlippedHorizontally(Layout.CastBarSetFlippedHorizontally)
+		cast:SetSmoothingMode(Layout.CastBarSmoothingMode) 
 		cast:SetSmoothingFrequency(Layout.CastBarSmoothingFrequency)
-		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) -- the alpha won't be overwritten. 
-
+		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) 
+		
 		if (not Layout.UseProgressiveFrames) then 
 			cast:SetStatusBarTexture(Layout.CastBarTexture)
 		end 
@@ -512,7 +515,44 @@ local Style = function(self, unit, id, ...)
 			cast:SetSparkMap(Layout.CastBarSparkMap) -- set the map the spark follows along the bar.
 		end
 
+		if Layout.UseCastBarName then 
+			local name, parent 
+			if Layout.CastBarNameParent then 
+				parent = self[Layout.CastBarNameParent]
+			end 
+			local name = (parent or overlay):CreateFontString()
+			name:SetPoint(unpack(Layout.CastBarNamePlace))
+			name:SetFontObject(Layout.CastBarNameFont)
+			name:SetDrawLayer(unpack(Layout.CastBarNameDrawLayer))
+			name:SetJustifyH(Layout.CastBarNameJustifyH)
+			name:SetJustifyV(Layout.CastBarNameJustifyV)
+			name:SetTextColor(unpack(Layout.CastBarNameColor))
+			if Layout.CastBarNameSize then 
+				name:SetSize(unpack(Layout.CastBarNameSize))
+			end 
+			cast.Name = name
+		end 
+
+		if Layout.UseCastBarValue then 
+			local value, parent 
+			if Layout.CastBarValueParent then 
+				parent = self[Layout.CastBarValueParent]
+			end 
+			local value = (parent or overlay):CreateFontString()
+			value:SetPoint(unpack(Layout.CastBarValuePlace))
+			value:SetFontObject(Layout.CastBarValueFont)
+			value:SetDrawLayer(unpack(Layout.CastBarValueDrawLayer))
+			value:SetJustifyH(Layout.CastBarValueJustifyH)
+			value:SetJustifyV(Layout.CastBarValueJustifyV)
+			value:SetTextColor(unpack(Layout.CastBarValueColor))
+			if Layout.CastBarValueSize then 
+				value:SetSize(unpack(Layout.CastBarValueSize))
+			end 
+			cast.Value = value
+		end 
+
 		self.Cast = cast
+		self.Cast.PostUpdate = Layout.CastBarPostUpdate
 	end 
 
 	-- Portrait

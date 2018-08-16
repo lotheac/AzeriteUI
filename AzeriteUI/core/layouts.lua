@@ -1142,7 +1142,8 @@ local UnitFrameTarget = {
 	UseCastBar = true,
 		CastBarPlace = { "BOTTOMLEFT", 27, 27 },
 		CastBarSize = { 385, 40 },
-		CastBarOrientation = "RIGHT", 
+		CastBarOrientation = "LEFT", 
+		CastBarSetFlippedHorizontally = true, 
 		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
 		CastBarSmoothingFrequency = .15,
 		CastBarTexture = nil, 
@@ -1156,6 +1157,71 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+
+		UseCastBarName = true, 
+			CastBarNameParent = "Health",
+			CastBarNamePlace = { "RIGHT", -27, 4 },
+			CastBarNameSize = { 385, 40 }, 
+			CastBarNameFont = Fonts(18, true),
+			CastBarNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+			CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+			CastBarNameJustifyH = "RIGHT", 
+			CastBarNameJustifyV = "MIDDLE",
+
+		UseCastBarValue = true, 
+			CastBarValueParent = "Health",
+			CastBarValuePlace = { "LEFT", 27, 4 },
+			CastBarValueDrawLayer = { "OVERLAY", 1 },
+			CastBarValueJustifyH = "CENTER",
+			CastBarValueJustifyV = "MIDDLE",
+			CastBarValueFont = Fonts(18, true),
+			CastBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
+	
+		CastBarPostUpdate = function(element, unit, duration, max, delay)
+			local owner = element._owner
+			if (owner.progressiveFrameStyle == "Critter") then 
+				if (element.casting or element.channeling) then 
+					if element.Value and element.Value:IsShown() then 
+						element.Value:Hide()
+					end
+					if element.Name and element.Name:IsShown() then 
+						element.Name:Hide()
+					end
+				end 
+			else
+				if (element.casting or element.channeling) then 
+					if (owner.progressiveFrameStyle == "Boss") then 
+						if (owner.Health.Percent and (owner.Health.Percent:IsShown())) then 
+							owner.Health.Percent:Hide()
+						end 
+					end 
+					if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
+						owner.Health.Value:Hide()
+					end 
+					if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
+						owner.Absorb.Value:Hide()
+					end  
+					if (element.Value and (not element.Value:IsShown())) then 
+						element.Value:Show()
+					end
+					if (element.Name and (not element.Name:IsShown())) then 
+						element.Name:Show()
+					end
+				else 
+					if (owner.progressiveFrameStyle == "Boss") then 
+						if (owner.Health.Percent and (not owner.Health.Percent:IsShown())) then 
+							owner.Health.Percent:Show()
+						end 
+					end 
+					if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
+						owner.Health.Value:Show()
+					end  
+					if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
+						owner.Absorb.Value:Show()
+					end  
+				end 
+			end
+		end,
 
 	UseCombatIndicator = true, 
 		CombatIndicatorPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 + 80/2) },
@@ -1176,26 +1242,26 @@ local UnitFrameTarget = {
 		AuraSize = 40, -- aurasize
 		AuraSpaceH = 6, -- horizontal spacing between auras
 		AuraSpaceV = 6, -- vertical spacing between auras
-		AuraMax = 8, -- max number of auras
-		AuraMaxBuffs = nil, -- max number of buffs
-		AuraMaxDebuffs = 3, -- max number of debuffs
+		AuraMax = 7, -- max number of auras
+		AuraMaxBuffs = 3, -- max number of buffs
+		AuraMaxDebuffs = nil, -- max number of debuffs
 		AuraDebuffsFirst = true, -- display debuffs before buffs
-		AuraGrowthX = "RIGHT", -- horizontal growth of auras
-		AuraGrowthY = "UP", -- vertical growth of auras
+		AuraGrowthX = "LEFT", -- horizontal growth of auras
+		AuraGrowthY = "DOWN", -- vertical growth of auras
 		AuraFilter = nil, -- general aura filter, only used if the below aren't here
 		AuraBuffFilter = "HELPFUL", -- buff specific filter passed to blizzard API calls
 		AuraDebuffFilter = "HARMFUL", -- debuff specific filter passed to blizzard API calls
 		AuraFilterFunc = nil, -- general aura filter function, called when the below aren't there
 		BuffFilterFunc = Auras.BuffFilter, -- buff specific filter function
 		DebuffFilterFunc = Auras.DebuffFilter, -- debuff specific filter function
-		AuraFrameSize = { 40*8 + 6*(8 -1), 40 },
-		AuraFramePlace = { "BOTTOMLEFT", 27 + 10, 27 + 24 + 40 },
+		AuraFrameSize = { 40*7 + 6*(7 -1), 40 },
+		AuraFramePlace = { "TOPRIGHT", -(27 + 10), -(27 + 40 + 20) },
 		AuraTooltipDefaultPosition = nil,
-		AuraTooltipPoint = "BOTTOMLEFT",
+		AuraTooltipPoint = "TOPRIGHT",
 		AuraTooltipAnchor = nil,
-		AuraTooltipRelPoint = "TOPLEFT",
-		AuraTooltipOffsetX = 8,
-		AuraTooltipOffsetY = 16,
+		AuraTooltipRelPoint = "BOTTOMRIGHT",
+		AuraTooltipOffsetX = -8,
+		AuraTooltipOffsetY = -16,
 		ShowAuraCooldownSpirals = false, -- show cooldown spirals on auras
 		ShowAuraCooldownTime = true, -- show time text on auras
 		AuraIconPlace = { "CENTER", 0, 0 },
