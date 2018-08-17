@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 12)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 15)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -55,6 +55,7 @@ local UnitLevel = _G.UnitLevel
 local UnitName = _G.UnitName
 local UnitRace = _G.UnitRace
 local UnitReaction = _G.UnitReaction
+local DoesSpellExist = _G.C_Spell.DoesSpellExist 
 
 
 LibTooltipScanner.embeds = LibTooltipScanner.embeds or {}
@@ -75,6 +76,7 @@ local ScannerName = LibTooltipScanner.scannerName
 
 -- Localized Constants
 local Constants = {
+	CastChanneled = _G.SPELL_CAST_CHANNELED, 
 	CastInstant = _G.SPELL_RECAST_TIME_CHARGEUP_INSTANT,
 	CastTimeMin = _G.SPELL_CAST_TIME_MIN,
 	CastTimeSec = _G.SPELL_CAST_TIME_SEC, 
@@ -203,6 +205,7 @@ local Patterns = {
 	CastTime1 = 				"^" .. Constants.CastInstant, 
 	CastTime2 = 				"^" .. string_gsub(Constants.CastTimeSec, "%%%.%dg", "(%.+)"),
 	CastTime3 = 				"^" .. string_gsub(Constants.CastTimeMin, "%%%.%dg", "(%.+)"),
+	CastTime4 = 				"^" .. Constants.CastChanneled, 
 
 	-- CooldownRemaining
 	CooldownTimeRemaining1 = 		   string_gsub(Constants.CooldownTimeRemaining1, "%%d", "(%%d+)"), 
@@ -231,7 +234,6 @@ local Patterns = {
 	Range4 = 					"^" .. string_gsub(Constants.RangeSpell, "%%s", "(%.+)"),
 
 }
-
 
 local isPrimaryStat = {
 	ITEM_MOD_STRENGTH_SHORT = true,
@@ -318,7 +320,7 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 	--  
 	--------------------------------------------
 	--	Name                    [School/Type] --
-	--	[Cost]                        [Range] --
+	--	[Cost][Range]                 [Range] --
 	--	[CastTime]             [CooldownTime] --
 	--	[Cooldown/Chargetime remaining      ] -- 
 	--	[                                   ] --
@@ -411,6 +413,30 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 
 				-- Left side iterations
 				if (leftMsg and (leftMsg ~= "")) then 
+
+					-- search for range
+					if (not foundRange) then 
+						local id = 1
+						while Patterns["Range"..id] do 
+							if (string_find(leftMsg, Patterns["Range"..id])) then 
+							
+								-- found the range line
+								foundRange = lineIndex
+								tbl.spellRange = leftMsg
+								tbl.spellCost = nil
+
+								-- it has no cost if the range is on this side
+								foundCost = true
+
+								if (lastInfoLine < foundRange) then 
+									lastInfoLine = foundRange
+								end 
+	
+								break
+							end 
+							id = id + 1
+						end 
+					end 
 
 					-- search for cast time
 					if (not foundCastTime) then 
@@ -788,6 +814,37 @@ LibTooltipScanner.GetTooltipDataForPetAction = function(self, actionSlot, tbl)
 
 
 	return tbl
+end
+
+LibTooltipScanner.GetTooltipDataForSpellID = function(self, spellID, tbl)
+	Scanner:Hide()
+	Scanner.owner = self
+	Scanner:SetOwner(self, "ANCHOR_NONE")
+
+	if spellID and DoesSpellExist(spellID) then 
+		Scanner:SetSpellByID(spellID)
+
+		tbl = tbl or {}
+		for i,v in pairs(tbl) do 
+			tbl[i] = nil
+		end 
+
+		local name, _, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellID)
+		if name then 
+			tbl.name = name
+			tbl.icon = icon 
+			tbl.castTime = castTime 
+			tbl.minRange = minRange
+			tbl.maxRange = maxRange
+			tbl.spellID = spellID
+
+
+
+		end 
+
+		return tbl
+	end 
+
 end
 
 LibTooltipScanner.GetTooltipDataForUnit = function(self, unit, tbl)
@@ -1362,6 +1419,7 @@ local embedMethods = {
 	GetTooltipDataForContainerSlot = true,
 	GetTooltipDataForInventorySlot = true, 
 	GetTooltipDataForInboxItem = true,
+	GetTooltipDataForSpellID = true,
 }
 
 LibTooltipScanner.Embed = function(self, target)

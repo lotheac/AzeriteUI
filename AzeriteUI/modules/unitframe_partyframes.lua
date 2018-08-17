@@ -309,10 +309,11 @@ Module.OnInit = function(self)
 
 	-- Hide it in raids of 6 or more players 
 	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
-	RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]hide;[@party1,exists]show;hide")
+	--RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]hide;[@party1,exists]show;hide")
+	RegisterAttributeDriver(self.frame, "state-vis", "[group:raid]hide;[group:party]show;hide")
 
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, "UICenter", Style)
+		self.frame[i] = self:SpawnUnitFrame("party"..i, self.frame, Style)
 		
 		-- uncomment this and comment the above line out to test party frames 
 		--self.frame[i] = self:SpawnUnitFrame("player", "UICenter", Style)

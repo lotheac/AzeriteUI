@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 11)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 13)
 if (not LibBlizzard) then	
 	return
 end
@@ -38,12 +38,12 @@ LibBlizzard.queue = LibBlizzard.queue or {}
 
 -- Frame to securely hide items
 if (not LibBlizzard.frame) then
-	local frame = CreateFrame("Frame", nil, UIParent)
+	local frame = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
 	frame:Hide()
 	frame:SetPoint("TOPLEFT", 0, 0)
 	frame:SetPoint("BOTTOMRIGHT", 0, 0)
 	frame.children = {}
-	RegisterStateDriver(frame, "visibility", "hide")
+	RegisterAttributeDriver(frame, "state-visibility", "hide")
 
 	-- Attach it to our library
 	LibBlizzard.frame = frame
@@ -433,6 +433,12 @@ UIWidgets["OrderHall"] = function(self)
 	OrderHallCommandBar:SetScript("OnEvent", nil)
 	OrderHallCommandBar:SetParent(UIHider)
 	OrderHallCommandBar:UnregisterAllEvents()
+end 
+
+UIWidgets["PlayerPowerBarAlt"] = function(self)
+	PlayerPowerBarAlt.ignoreFramePositionManager = true
+	PlayerPowerBarAlt:UnregisterAllEvents()
+	PlayerPowerBarAlt:SetParent(UIHider)
 end 
 
 UIWidgets["TimerTracker"] = function(self)

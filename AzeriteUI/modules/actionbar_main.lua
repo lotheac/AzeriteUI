@@ -670,7 +670,6 @@ ActionButton.PostCreate = function(self, ...)
 		self.Shade:SetTexture(Layout.IconShadeTexture)
 	end 
 
-
 	if Layout.UseBorderBackdrop or Layout.UseBorderTexture then 
 
 		self.BorderFrame = self:CreateFrame("Frame")
@@ -922,7 +921,7 @@ Module.SpawnHardCodedButtons = function(self)
 	local buttons = {} -- local button registry
 
 	for id = 1,12 do
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id, "") 
+		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
 		button.showGrid = true
 		buttons[#buttons + 1] = button
 	end
@@ -957,7 +956,7 @@ Module.SpawnButtons = function(self)
 
 	-- Mainbar, visible part
 	for id = 1,7 do
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id, "") 
+		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
 		buttons[#buttons + 1] = button
 	end
 

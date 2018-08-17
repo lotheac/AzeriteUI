@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 31)
+local LibTooltip = CogWheel:Set("LibTooltip", 36)
 if (not LibTooltip) then	
 	return
 end
@@ -1023,7 +1023,7 @@ Tooltip.SetAction = function(self, slot)
 				self:AddDoubleLine(data.spellCost, data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
 
 			elseif data.spellRange then 
-				self:AddDoubleLine(data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
+				self:AddLine(data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true)
 
 			elseif data.spellCost then 
 				self:AddLine(data.spellCost, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
@@ -1311,6 +1311,108 @@ Tooltip.SetUnit = function(self, unit)
 	end 
 end
 
+Tooltip.SetSpellByID = function(self, spellID)
+	if (not self.owner) then
+		self:Hide()
+		return
+	end
+
+	local data = self:GetTooltipDataForSpellID(spellID, self.data)
+	if data then 
+
+		-- Because a millionth of a second matters.
+		local colors = self.colors
+
+		-- Shouldn't be any bars here, but if for some reason 
+		-- the tooltip wasn't properly hidden before this, 
+		-- we make sure the bars are reset!
+		self:ClearStatusBars(true) -- suppress layout updates
+
+		-- Action Title
+		if data.schoolType then 
+			self:AddDoubleLine(data.name, data.schoolType, colors.title[1], colors.title[2], colors.title[3], colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true, true)
+		else 
+			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
+		end 
+
+		-- Cost and range
+		if (data.spellCost or data.spellRange) then 
+			if (data.spellRange and data.spellCost) then 
+				self:AddDoubleLine(data.spellCost, data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
+
+			elseif data.spellRange then 
+				self:AddLine(data.spellRange, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true)
+
+			elseif data.spellCost then 
+				self:AddLine(data.spellCost, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], true, true)
+			end 
+		end 
+
+		-- Time and Cooldown 
+		if (data.castTime or data.cooldownTime) then 
+			if (data.castTime and data.cooldownTime) then 
+				self:AddDoubleLine(data.castTime, data.cooldownTime, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3], colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+
+			elseif data.cooldownTime then 
+				self:AddDoubleLine(data.cooldownTime, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+
+			elseif data.castTime then 
+				self:AddLine(data.castTime, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+			end 
+		end 
+
+		-- Cooldown remaining. Check for charges first.
+		if (data.charges and data.maxCharges and (data.charges > 0) and (data.charges < data.maxCharges)) then
+
+			local msg = string_format(SPELL_RECHARGE_TIME, string_format(formatTime(data.chargeDuration - (GetTime() - data.chargeStart))))
+			self:AddLine(msg, colors.normal[1], colors.normal[2], colors.normal[3])
+
+		elseif (data.cooldownEnable and (data.cooldownEnable ~= 0) and (data.cooldownStart > 0) and (data.cooldownDuration > 0)) then 
+			
+			local msg = string_format(ITEM_COOLDOWN_TIME, string_format(formatTime(data.cooldownDuration - (GetTime() - data.cooldownStart))))
+			self:AddLine(msg, colors.normal[1], colors.normal[2], colors.normal[3])
+			
+		end 
+
+		-- Description
+		if data.description then 
+			self:AddLine(data.description, colors.quest.green[1], colors.quest.green[2], colors.quest.green[3], true)
+		end 
+
+		self:Show()
+	end
+end
+
+local ShowAuraTooltip = function(self, data)
+
+	-- Because a millionth of a second matters.
+	local colors = self.colors
+
+	-- Shouldn't be any bars here, but if for some reason 
+	-- the tooltip wasn't properly hidden before this, 
+	-- we make sure the bars are reset!
+	self:ClearStatusBars(true) -- suppress layout updates
+
+	self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
+
+	if data.spellId then 
+		-- How to NOT localize. This is just baaaaad!
+		local spellIDText = STAT_CATEGORY_SPELL .. " " .. ID
+		self:AddLine(spellIDText .. ": " .. data.spellId, colors.offwhite[1], colors.offwhite[2], colors.offwhite[3])
+	end 
+
+	if data.description then 
+		self:AddLine(data.description, colors.quest.green[1], colors.quest.green[2], colors.quest.green[3], true)
+	end 
+
+	if data.timeRemaining then 
+		self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
+	end 
+
+	self:Show()
+
+end
+
 Tooltip.SetUnitAura = function(self, unit, auraID, filter)
 	if (not self.owner) then
 		self:Hide()
@@ -1321,26 +1423,7 @@ Tooltip.SetUnitAura = function(self, unit, auraID, filter)
 	if unit then 
 		local data = self:GetTooltipDataForUnitAura(unit, auraID, filter, self.data)
 		if data then 
-
-			-- Because a millionth of a second matters.
-			local colors = self.colors
-
-			-- Shouldn't be any bars here, but if for some reason 
-			-- the tooltip wasn't properly hidden before this, 
-			-- we make sure the bars are reset!
-			self:ClearStatusBars(true) -- suppress layout updates
-
-			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
-
-			if data.description then 
-				self:AddLine(data.description, colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true)
-			end 
-
-			if data.timeRemaining then 
-				self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
-			end 
-
-			self:Show()
+			ShowAuraTooltip(self, data)
 		end 
 	end 
 end
@@ -1355,27 +1438,7 @@ Tooltip.SetUnitBuff = function(self, unit, buffID, filter)
 	if unit then 
 		local data = self:GetTooltipDataForUnitBuff(unit, buffID, filter, self.data)
 		if data then 
-
-			-- Because a millionth of a second matters.
-			local colors = self.colors
-
-			-- Shouldn't be any bars here, but if for some reason 
-			-- the tooltip wasn't properly hidden before this, 
-			-- we make sure the bars are reset!
-			self:ClearStatusBars(true) -- suppress layout updates
-
-			-- title
-			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
-
-			if data.description then 
-				self:AddLine(data.description, colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true)
-			end 
-
-			if data.timeRemaining then 
-				self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
-			end 
-
-			self:Show()
+			ShowAuraTooltip(self, data)
 		end 
 	end 
 end
@@ -1390,26 +1453,7 @@ Tooltip.SetUnitDebuff = function(self, unit, debuffID, filter)
 	if unit then 
 		local data = self:GetTooltipDataForUnitDebuff(unit, debuffID, filter, self.data)
 		if data then 
-
-			-- Because a millionth of a second matters.
-			local colors = self.colors
-
-			-- Shouldn't be any bars here, but if for some reason 
-			-- the tooltip wasn't properly hidden before this, 
-			-- we make sure the bars are reset!
-			self:ClearStatusBars(true) -- suppress layout updates
-
-			self:AddLine(data.name, colors.title[1], colors.title[2], colors.title[3], true)
-
-			if data.description then 
-				self:AddLine(data.description, colors.quest.gray[1], colors.quest.gray[2], colors.quest.gray[3], true)
-			end 
-
-			if data.timeRemaining then 
-				self:AddLine(data.timeRemaining, colors.normal[1], colors.normal[2], colors.normal[3], true)
-			end 
-
-			self:Show()
+			ShowAuraTooltip(self, data)
 		end 
 	end 
 end

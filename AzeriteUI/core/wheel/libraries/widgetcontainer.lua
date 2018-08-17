@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 1)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 2)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -268,7 +268,7 @@ WidgetFrame.UpdateAllElements = function(self, event, ...)
 			-- We cannot direcly access the ForceUpdate method, 
 			-- as that is meant for in-module updates to that unique
 			-- instance of the element, and doesn't exist on the template element itself. 
-			elements[element].Update(self, "Forced", self.unit)
+			elements[element].Update(self, event or "Forced", self.unit)
 		end
 	end
 	if (self.PostUpdate) then

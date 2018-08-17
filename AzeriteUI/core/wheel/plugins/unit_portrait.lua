@@ -1,6 +1,7 @@
 
 -- Lua API
 local _G = _G
+local string_find = string.find
 
 -- WoW API
 local SetPortraitTexture = _G.SetPortraitTexture
@@ -106,11 +107,15 @@ local Enable = function(self)
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 	
+		self:RegisterEvent("PORTRAITS_UPDATED", Proxy)
 		self:RegisterEvent("UNIT_PORTRAIT_UPDATE", Proxy)
-		--PORTRAITS_UPDATED
 		self:RegisterEvent("UNIT_MODEL_CHANGED", Proxy)
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
-		
+
+		if (self.unit and string_find(self.unit, "^party")) then
+			self:RegisterEvent("PARTY_MEMBER_ENABLE", Path)
+		end
+	
 		return true 
 	end
 end 
@@ -118,6 +123,10 @@ end
 local Disable = function(self)
 	local element = self.Portrait
 	if element then
+		element:Hide()
+
+		self:UnregisterEvent("PARTY_MEMBER_ENABLE", Proxy)
+		self:UnregisterEvent("PORTRAITS_UPDATED", Proxy)
 		self:UnregisterEvent("UNIT_PORTRAIT_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_MODEL_CHANGED", Proxy)
 		self:UnregisterEvent("UNIT_CONNECTION", Proxy)
@@ -126,5 +135,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Portrait", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("Portrait", Enable, Disable, Proxy, 6)
 end 

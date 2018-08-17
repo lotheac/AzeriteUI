@@ -603,30 +603,109 @@ local Style = function(self, unit, id, ...)
 
 	-- Threat
 	if Layout.UseThreat then 
-		local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
-		threats.feedbackUnit = "player"
-		threats.hideSolo = true
-		threats.fadeOut = 3
+		
+		local threat 
+		if Layout.UseSingleThreat then 
+			threat = backdrop:CreateTexture()
+		else 
+			threat = {}
+			threat.IsShown = Threat_IsShown
+			threat.Show = Threat_Show
+			threat.Hide = Threat_Hide 
+			threat.IsObjectType = function() end
 
-		local threatHealth = backdrop:CreateTexture()
-		threatHealth:SetDrawLayer("BACKGROUND", -2)
-		threatHealth:SetTexCoord(1,0,0,1)
-		threatHealth:SetAlpha(.75)
-		threats.health = threatHealth
+			if Layout.UseHealthThreat then 
 
-		if Layout.UsePortrait then 
-			local threatPortrait = backdrop:CreateTexture()
-			threatPortrait:SetDrawLayer("BACKGROUND", -2)
-			threatPortrait:SetAlpha(.75)
-			threatPortrait:SetTexture(getPath("portrait_frame_glow"))
-			threatPortrait:SetSize(187, 187)
-			threatPortrait:SetPoint("CENTER", self.Portrait.Fg, "CENTER", 0, 0)
-			threats.portrait = threatPortrait
+				local threatHealth = backdrop:CreateTexture()
+				if Layout.ThreatHealthPlace then 
+					threatHealth:SetPoint(unpack(Layout.ThreatHealthPlace))
+				end 
+				if Layout.ThreatHealthSize then 
+					threatHealth:SetSize(unpack(Layout.ThreatHealthSize))
+				end 
+				if Layout.ThreatHealthTexCoord then 
+					threatHealth:SetTexCoord(unpack(Layout.ThreatHealthTexCoord))
+				end 
+				if (not Layout.UseProgressiveHealthThreat) then 
+					threatHealth:SetTexture(Layout.ThreatHealthTexture)
+				end 
+				threatHealth:SetDrawLayer(unpack(Layout.ThreatHealthDrawLayer))
+				threatHealth:SetAlpha(Layout.ThreatHealthAlpha)
+
+				threatHealth._owner = self.Health
+				threat.health = threatHealth
+			end 
+		
+			if Layout.UsePowerBar and (Layout.UsePowerThreat or Layout.UsePowerBgThreat) then 
+
+				local threatPowerFrame = backdrop:CreateFrame("Frame")
+				threatPowerFrame:SetFrameLevel(backdrop:GetFrameLevel())
+				threatPowerFrame:SetAllPoints(self.Power)
+		
+				-- Hook the power visibility to the power crystal
+				self.Power:HookScript("OnShow", function() threatPowerFrame:Show() end)
+				self.Power:HookScript("OnHide", function() threatPowerFrame:Hide() end)
+
+				if Layout.UsePowerThreat then
+					local threatPower = threatPowerFrame:CreateTexture()
+					threatPower:SetPoint(unpack(Layout.ThreatPowerPlace))
+					threatPower:SetDrawLayer(unpack(Layout.ThreatPowerDrawLayer))
+					threatPower:SetSize(unpack(Layout.ThreatPowerSize))
+					threatPower:SetAlpha(Layout.ThreatPowerAlpha)
+
+					if (not Layout.UseProgressivePowerThreat) then 
+						threatPower:SetTexture(Layout.ThreatPowerTexture)
+					end
+
+					threatPower._owner = self.Power
+					threat.power = threatPower
+				end 
+
+				if Layout.UsePowerBgThreat then 
+					local threatPowerBg = threatPowerFrame:CreateTexture()
+					threatPowerBg:SetPoint(unpack(Layout.ThreatPowerBgPlace))
+					threatPowerBg:SetDrawLayer(unpack(Layout.ThreatPowerBgDrawLayer))
+					threatPowerBg:SetSize(unpack(Layout.ThreatPowerBgSize))
+					threatPowerBg:SetAlpha(Layout.ThreatPowerBgAlpha)
+
+					if (not Layout.UseProgressivePowerBgThreat) then 
+						threatPowerBg:SetTexture(Layout.ThreatPowerBgTexture)
+					end
+
+					threatPowerBg._owner = self.Power
+					threat.powerBg = threatPowerBg
+				end 
+	
+			end 
+		
+			if Layout.UsePortrait and Layout.UsePortraitThreat then 
+				local threatPortraitFrame = backdrop:CreateFrame("Frame")
+				threatPortraitFrame:SetFrameLevel(backdrop:GetFrameLevel())
+				threatPortraitFrame:SetAllPoints(self.Portrait)
+		
+				-- Hook the power visibility to the power crystal
+				self.Portrait:HookScript("OnShow", function() threatPortraitFrame:Show() end)
+				self.Portrait:HookScript("OnHide", function() threatPortraitFrame:Hide() end)
+
+				local threatPortrait = threatPortraitFrame:CreateTexture()
+				threatPortrait:SetPoint(unpack(Layout.ThreatPortraitPlace))
+				threatPortrait:SetSize(unpack(Layout.ThreatPortraitSize))
+				threatPortrait:SetTexture(Layout.ThreatPortraitTexture)
+				threatPortrait:SetDrawLayer(unpack(Layout.ThreatPortraitDrawLayer))
+				threatPortrait:SetAlpha(Layout.ThreatPortraitAlpha)
+
+				threatPortrait._owner = self.Power
+				threat.portrait = threatPortrait
+			end 
 		end 
 
-		self.Threat = threats
+		threat.hideSolo = Layout.ThreatHideSolo
+		threat.fadeOut = Layout.ThreatFadeOut
+		threat.feedbackUnit = "player"
+	
+		self.Threat = threat
 		self.Threat.OverrideColor = Threat_UpdateColor
-	end
+	end 
 
 	-- Unit Level
 	if Layout.UseLevel then 
@@ -713,7 +792,6 @@ local Style = function(self, unit, id, ...)
 		rare:SetVertexColor(unpack(Layout.ClassificationIndicatorRareColor))
 		self.Classification.Rare = rare
 	end
-
 
 	-- Targeting
 	-- Indicates who your target is targeting

@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.43] 2018-08-17
+### Added
+- Added a custom player alternate power bar, close to where the player castbar is. 
+
+### Changed
+- Party frames should now be hidden when the player is in a raid group, regardless of the size of that group. 
+- Moved the ExtraActionButton and ZoneAbilityButton somewhat up and towards the right, to avoid them covering the actionbars.
+- The Blizzard ObjectivesTracker will now be faded out during combat, arena fights and boss fights.
+- The target of target frame should now have smoother bar transitions.
+
+### Fixed
+- Power crystal threat texture while grouped or in an instance should no longer appear in the middle of your screen.
+- Spells with no cost should now get their spell range properly displayed and colored in their tooltips. 
+- Spells that are channeled should now properly display and color this property in their tooltips. 
+- Updated main actionbar page drivers for rogues and warriors.
+
+### Removed
+- Removed the blizzard alternate player power bar as we have our own custom one now. 
+
 ## [1.0.42] 2018-08-16
 ### Added 
 - Added cast name and cast duration value to the target unit frame. 

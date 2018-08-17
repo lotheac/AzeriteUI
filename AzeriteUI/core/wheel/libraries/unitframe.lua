@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 38)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 39)
 if (not LibUnitFrame) then	
 	return
 end
@@ -406,13 +406,18 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 	frame.colors = frame.colors or Colors
 
 	frame:SetAttribute("unit", unit) 
-	frame:SetAttribute("*type1", "target")
-	frame:SetAttribute("*type2", "togglemenu")
 
-	frame:SetScript("OnEnter", UnitFrame.OnEnter)
-	frame:SetScript("OnLeave", UnitFrame.OnLeave)
+	if (frame.ignoreMouseOver) then 
+		frame:EnableMouse(false)
+		frame:RegisterForClicks("")
+	else 
+		frame:SetAttribute("*type1", "target")
+		frame:SetAttribute("*type2", "togglemenu")
+		frame:SetScript("OnEnter", UnitFrame.OnEnter)
+		frame:SetScript("OnLeave", UnitFrame.OnLeave)
+		frame:RegisterForClicks("AnyUp")
+	end 
 	--frame:SetScript("OnAttributeChanged", UnitFrame.OnLeave)
-	frame:RegisterForClicks("AnyUp")
 
 	-- Initial update of the unit, in case we're in a vehicle at reload
 	local tempDriver

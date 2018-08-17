@@ -41,14 +41,7 @@ local Style = function(self, unit, id, ...)
 
 	-- We Don't want this clickable, 
 	-- it's in the middle of the screen!
-	if Layout.IgnoreMouseOver then 
-		self:EnableMouse(false) 
-
-		-- Doesn't do anything yet, 
-		-- but leaving it here for when 
-		-- our tooltip scripts support it.
-		self.ignoreMouseOver = true
-	end 
+	self.ignoreMouseOver = Layout.IgnoreMouseOver
 
 	-- Assign our own global custom colors
 	self.colors = Colors
@@ -74,7 +67,6 @@ local Style = function(self, unit, id, ...)
 
 
 	-- Cast Bar
-	-----------------------------------------------------------
 	if Layout.UseCastBar then 
 		local cast = backdrop:CreateStatusBar()
 		cast:Place(unpack(Layout.CastBarPlace))
@@ -218,6 +210,62 @@ local Style = function(self, unit, id, ...)
 		end 
 	end 
 
+	-- PlayerAltPower Bar
+	if Layout.UsePlayerAltPowerBar then 
+		local cast = backdrop:CreateStatusBar()
+		cast:Place(unpack(Layout.PlayerAltPowerBarPlace))
+		cast:SetSize(unpack(Layout.PlayerAltPowerBarSize))
+		cast:SetStatusBarTexture(Layout.PlayerAltPowerBarTexture)
+		cast:SetStatusBarColor(unpack(Layout.PlayerAltPowerBarColor)) 
+		cast:SetOrientation(Layout.PlayerAltPowerBarOrientation) -- set the bar to grow towards the top.
+		--cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
+		cast:EnableMouse(true)
+		self.AltPower = cast
+		
+		if Layout.UsePlayerAltPowerBarBackground then 
+			local castBg = cast:CreateTexture()
+			castBg:SetPoint(unpack(Layout.PlayerAltPowerBarBackgroundPlace))
+			castBg:SetSize(unpack(Layout.PlayerAltPowerBarBackgroundSize))
+			castBg:SetTexture(Layout.PlayerAltPowerBarBackgroundTexture)
+			castBg:SetDrawLayer(unpack(Layout.PlayerAltPowerBarBackgroundDrawLayer))
+			castBg:SetVertexColor(unpack(Layout.PlayerAltPowerBarBackgroundColor))
+			self.AltPower.Bg = castBg
+		end 
+
+		if Layout.UsePlayerAltPowerBarValue then 
+			local castValue = cast:CreateFontString()
+			castValue:SetPoint(unpack(Layout.PlayerAltPowerBarValuePlace))
+			castValue:SetFontObject(Layout.PlayerAltPowerBarValueFont)
+			castValue:SetDrawLayer(unpack(Layout.PlayerAltPowerBarValueDrawLayer))
+			castValue:SetJustifyH(Layout.PlayerAltPowerBarValueJustifyH)
+			castValue:SetJustifyV(Layout.PlayerAltPowerBarValueJustifyV)
+			castValue:SetTextColor(unpack(Layout.PlayerAltPowerBarValueColor))
+			self.AltPower.Value = castValue
+		end 
+
+		if Layout.UsePlayerAltPowerBarName then 
+			local castName = cast:CreateFontString()
+			castName:SetPoint(unpack(Layout.PlayerAltPowerBarNamePlace))
+			castName:SetFontObject(Layout.PlayerAltPowerBarNameFont)
+			castName:SetDrawLayer(unpack(Layout.PlayerAltPowerBarNameDrawLayer))
+			castName:SetJustifyH(Layout.PlayerAltPowerBarNameJustifyH)
+			castName:SetJustifyV(Layout.PlayerAltPowerBarNameJustifyV)
+			castName:SetTextColor(unpack(Layout.PlayerAltPowerBarNameColor))
+			self.AltPower.Name = castName
+		end 
+
+		if Layout.UsePlayerAltPowerBarBorderFrame then 
+			local border = cast:CreateFrame("Frame", nil, cast)
+			border:SetFrameLevel(cast:GetFrameLevel() + 8)
+			border:Place(unpack(Layout.PlayerAltPowerBarBorderFramePlace))
+			border:SetSize(unpack(Layout.PlayerAltPowerBarBorderFrameSize))
+			border:SetBackdrop(Layout.PlayerAltPowerBarBorderFrameBackdrop)
+			border:SetBackdropColor(unpack(Layout.PlayerAltPowerBarBorderFrameBackdropColor))
+			border:SetBackdropBorderColor(unpack(Layout.PlayerAltPowerBarBorderFrameBackdropBorderColor))
+			self.AltPower.Border = border
+		end 
+	end 
+	
 end
 
 Module.OnInit = function(self)

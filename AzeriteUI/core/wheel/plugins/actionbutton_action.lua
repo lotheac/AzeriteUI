@@ -689,12 +689,14 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 			driver = driver .. "; [bonusbar:1] 7"
 
 		elseif playerClass == "ROGUE" then
-			driver = driver .. ("; [%s:%s] %s; "):format("form", GetNumShapeshiftForms() + 1, 7) .. "[form:1] 7; [form:3] 7"
+			driver = driver .. "; [bonusbar:1] 7"
+			--driver = driver .. "; [form:1] 7;  [form:2] 7; [form:3] 7"
 
 		elseif playerClass == "WARRIOR" then
-			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8; [bonusbar:3] 9"
+			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8" -- [bonusbar:3] 9
 		end
-		driver = driver .. "; 1"
+		driver = driver .. "; [form] 1; 1"
+		--driver = driver .. "; 1"
 	else 
 		driver = tostring(barID)
 	end 
@@ -841,4 +843,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 26)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 27)

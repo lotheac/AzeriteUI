@@ -108,43 +108,79 @@ local OverridePowerColor = function(element, unit, min, max, powerType, powerID,
 end 
 
 local Threat_UpdateColor = function(element, unit, status, r, g, b)
-	if element.health then 
-		element.health:SetVertexColor(r, g, b)
-	end
-	if element.power then 
-		element.power:SetVertexColor(r, g, b)
-	end
-	if element.mana then 
-		element.mana:SetVertexColor(r, g, b)
+	if (element:IsObjectType("Texture")) then 
+		element:SetVertexColor(r, g, b)
+	elseif (element:IsObjectType("FontString")) then 
+		element:SetTextColor(r, g, b)
+	else 
+		if element.health then 
+			element.health:SetVertexColor(r, g, b)
+		end
+		if element.power then 
+			element.power:SetVertexColor(r, g, b)
+		end
+		if element.powerBg then 
+			element.powerBg:SetVertexColor(r, g, b)
+		end
+		if element.mana then 
+			element.mana:SetVertexColor(r, g, b)
+		end 
+		if element.portrait then 
+			element.portrait:SetVertexColor(r, g, b)
+		end 
 	end 
 end
 
 local Threat_IsShown = function(element)
-	return element.health and element.health:IsShown()
-end 
+	if (element:IsObjectType("Texture") or element:IsObjectType("FontString")) then 
+		return element:IsShown()
+	else 
+		return element.health and element.health:IsShown()
+	end 
+end
 
 local Threat_Show = function(element)
-	if 	element.health then 
-		element.health:Show()
-	end
-	if 	element.power then 
-		element.power:Show()
-	end
-	if element.mana then 
-		element.mana:Show()
+	if (element:IsObjectType("Texture") or element:IsObjectType("FontString")) then 
+		element:Show()
+	else 
+		if element.health then 
+			element.health:Show()
+		end
+		if element.power then 
+			element.power:Show()
+		end
+		if element.powerBg then 
+			element.powerBg:Show()
+		end
+		if element.mana then 
+			element.mana:Show()
+		end 
+		if element.portrait then 
+			element.portrait:Show()
+		end 
 	end 
 end 
 
 local Threat_Hide = function(element)
-	if 	element.health then 
-		element.health:Hide()
+	if (element:IsObjectType("Texture") or element:IsObjectType("FontString")) then 
+		element:Hide()
+	else 
+		if element.health then 
+			element.health:Hide()
+		end 
+		if element.power then 
+			element.power:Hide()
+		end
+		if element.powerBg then 
+			element.powerBg:Hide()
+		end
+		if element.mana then 
+			element.mana:Hide()
+		end
+		if element.portrait then 
+			element.portrait:Hide()
+		end
 	end 
-	if element.power then 
-		element.power:Hide()
-	end
-	if element.mana then 
-		element.mana:Hide()
-	end
 end 
 
 local PostCreateAuraButton = function(element, button)
@@ -199,7 +235,7 @@ local PostUpdateTextures = function(self)
 		end 
 
 		if Layout.UseThreat then
-			if self.Threat.health then 
+			if self.Threat.health and Layout.UseProgressiveHealthThreat then 
 				self.Threat.health:SetTexture(Layout.SeasonedHealthThreatTexture)
 			end 
 		end
@@ -222,9 +258,9 @@ local PostUpdateTextures = function(self)
 		end
 
 		if Layout.UseMana then 
-			if self.ExtraPower then 
-				self.ExtraPower.Border:SetTexture(Layout.SeasonedManaOrbTexture)
-				self.ExtraPower.Border:SetVertexColor(unpack(Layout.SeasonedManaOrbColor)) 
+			if self.ExtraPower and Layout.UseProgressiveManaForeground then
+				self.ExtraPower.Fg:SetTexture(Layout.SeasonedManaOrbTexture)
+				self.ExtraPower.Fg:SetVertexColor(unpack(Layout.SeasonedManaOrbColor)) 
 			end 
 		end 
 
@@ -238,7 +274,7 @@ local PostUpdateTextures = function(self)
 		end
 
 		if Layout.UseThreat then
-			if self.Threat.health then 
+			if self.Threat.health and Layout.UseProgressiveHealthThreat then 
 				self.Threat.health:SetTexture(Layout.HardenedHealthThreatTexture)
 			end 
 		end 
@@ -261,9 +297,9 @@ local PostUpdateTextures = function(self)
 		end
 
 		if Layout.UseMana then 
-			if self.ExtraPower then 
-				self.ExtraPower.Border:SetTexture(Layout.HardenedManaOrbTexture)
-				self.ExtraPower.Border:SetVertexColor(unpack(Layout.HardenedManaOrbColor)) 
+			if self.ExtraPower and Layout.UseProgressiveManaForeground then 
+				self.ExtraPower.Fg:SetTexture(Layout.HardenedManaOrbTexture)
+				self.ExtraPower.Fg:SetVertexColor(unpack(Layout.HardenedManaOrbColor)) 
 			end 
 		end 
 
@@ -277,7 +313,7 @@ local PostUpdateTextures = function(self)
 		end
 
 		if Layout.UseThreat then
-			if self.Threat.health then 
+			if self.Threat.health and Layout.UseProgressiveHealthThreat then 
 				self.Threat.health:SetTexture(Layout.NoviceHealthThreatTexture)
 			end 
 		end 
@@ -300,9 +336,9 @@ local PostUpdateTextures = function(self)
 		end 
 
 		if Layout.UseMana then 
-			if self.ExtraPower then 
-				self.ExtraPower.Border:SetTexture(Layout.NoviceManaOrbTexture)
-				self.ExtraPower.Border:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
+			if self.ExtraPower and Layout.UseProgressiveManaForeground then 
+				self.ExtraPower.Fg:SetTexture(Layout.NoviceManaOrbTexture)
+				self.ExtraPower.Fg:SetVertexColor(unpack(Layout.NoviceManaOrbColor)) 
 			end
 		end 
 
@@ -485,33 +521,57 @@ local Style = function(self, unit, id, ...)
 
 	if Layout.UseMana then 
 		if hasMana then 
-			local extraPower = backdrop:CreateOrb()
-			extraPower:SetSize(103, 103) -- 113,113 
-			extraPower:Place("BOTTOMLEFT", -97 +5, 22 + 5) -- -97,22 
-			extraPower:SetStatusBarTexture(getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3")) -- define the textures used in the orb. 
-			extraPower.exclusiveResource = "MANA" -- set the orb to only be visible when MANA is the primary resource.
+
+			local extraPower 
+			if (Layout.ManaType == "Orb") then 
+				extraPower = backdrop:CreateOrb()
+				extraPower:SetStatusBarTexture(unpack(Layout.ManaOrbTextures)) 
+
+			elseif (Layout.ManaType == "SpinBar") then 
+				extraPower = backdrop:CreateSpinBar()
+				extraPower:SetStatusBarTexture(Layout.ManaSpinBarTexture)
+			else
+				extraPower = backdrop:CreateStatusBar()
+				extraPower:SetStatusBarTexture(Layout.ManaTexture)
+			end
+
+			extraPower:Place(unpack(Layout.ManaPlace))  
+			extraPower:SetSize(unpack(Layout.ManaSize)) 
+			extraPower.exclusiveResource = Layout.ManaExclusiveResource or "MANA" 
 			self.ExtraPower = extraPower
 		
-			local extraPowerBg = extraPower:CreateBackdropTexture()
-			extraPowerBg:SetDrawLayer("BACKGROUND", -2)
-			extraPowerBg:SetSize(113, 113)
-			extraPowerBg:SetPoint("CENTER", 0, 0)
-			extraPowerBg:SetTexture(getPath("pw_orb_bar3"))
-			extraPowerBg:SetVertexColor(22/255,  26/255, 22/255, .82) 
-		
-			local extraPowerFg2 = extraPower:CreateTexture()
-			extraPowerFg2:SetDrawLayer("BORDER", -1)
-			extraPowerFg2:SetSize(127, 127) 
-			extraPowerFg2:SetPoint("CENTER", 0, 0)
-			extraPowerFg2:SetTexture(getPath("shade_circle"))
-			extraPowerFg2:SetVertexColor(0, 0, 0, 1) 
-			
-			local extraPowerFg = extraPower:CreateTexture()
-			extraPowerFg:SetDrawLayer("BORDER")
-			extraPowerFg:SetSize(188, 188)
-			extraPowerFg:SetPoint("CENTER", 0, 0)
+			if Layout.UseManaBackground then 
+				local extraPowerBg = extraPower:CreateBackdropTexture()
+				extraPowerBg:SetPoint(unpack(Layout.ManaBackgroundPlace))
+				extraPowerBg:SetSize(unpack(Layout.ManaBackgroundSize))
+				extraPowerBg:SetTexture(Layout.ManaBackgroundTexture)
+				extraPowerBg:SetDrawLayer(unpack(Layout.ManaBackgroundDrawLayer))
+				extraPowerBg:SetVertexColor(unpack(Layout.ManaBackgroundColor)) 
+				self.ExtraPower.bg = extraPowerBg
+			end 
 
-			self.ExtraPower.Border = extraPowerFg
+			if Layout.UseManaShade then 
+				local extraPowerShade = extraPower:CreateTexture()
+				extraPowerShade:SetPoint(unpack(Layout.ManaShadePlace))
+				extraPowerShade:SetSize(unpack(Layout.ManaShadeSize)) 
+				extraPowerShade:SetTexture(Layout.ManaShadeTexture)
+				extraPowerShade:SetDrawLayer(unpack(Layout.ManaShadeDrawLayer))
+				extraPowerShade:SetVertexColor(unpack(Layout.ManaShadeColor)) 
+				self.ExtraPower.Shade = extraPowerShade
+			end 
+
+			if Layout.UseManaForeground then 
+				local extraPowerFg = extraPower:CreateTexture()
+				extraPowerFg:SetPoint(unpack(Layout.ManaForegroundPlace))
+				extraPowerFg:SetSize(unpack(Layout.ManaForegroundSize))
+				extraPowerFg:SetDrawLayer(unpack(Layout.ManaForegroundDrawLayer))
+
+				if (not Layout.UseProgressiveManaForeground) then 
+					extraPowerFg:SetTexture(Layout.ManaForegroundTexture)
+				end 
+
+				self.ExtraPower.Fg = extraPowerFg
+			end 
 		end 
 
 	end 
@@ -520,56 +580,103 @@ local Style = function(self, unit, id, ...)
 	-----------------------------------------------------------	
 	if Layout.UseThreat then 
 		
-		local threats = { IsShown = Threat_IsShown, Show = Threat_Show, Hide = Threat_Hide }
-		threats.hideSolo = true
-		threats.fadeOut = 3
+		local threat 
+		if Layout.UseSingleThreat then 
+			threat = backdrop:CreateTexture()
+		else 
+			threat = {}
+			threat.IsShown = Threat_IsShown
+			threat.Show = Threat_Show
+			threat.Hide = Threat_Hide 
+			threat.IsObjectType = function() end
+
+			if Layout.UseHealthThreat then 
+
+				local threatHealth = backdrop:CreateTexture()
+				threatHealth:SetPoint(unpack(Layout.ThreatHealthPlace))
+				threatHealth:SetSize(unpack(Layout.ThreatHealthSize))
+				threatHealth:SetDrawLayer(unpack(Layout.ThreatHealthDrawLayer))
+				threatHealth:SetAlpha(Layout.ThreatHealthAlpha)
+
+				if (not Layout.UseProgressiveHealthThreat) then 
+					threatHealth:SetTexture(Layout.ThreatHealthTexture)
+				end 
+
+				threatHealth._owner = self.Health
+				threat.health = threatHealth
+
+			end 
+		
+			if Layout.UsePowerBar and (Layout.UsePowerThreat or Layout.UsePowerBgThreat) then 
+
+				local threatPowerFrame = backdrop:CreateFrame("Frame")
+				threatPowerFrame:SetFrameLevel(backdrop:GetFrameLevel())
+				threatPowerFrame:SetAllPoints(self.Power)
+		
+				-- Hook the power visibility to the power crystal
+				self.Power:HookScript("OnShow", function() threatPowerFrame:Show() end)
+				self.Power:HookScript("OnHide", function() threatPowerFrame:Hide() end)
+
+				if Layout.UsePowerThreat then
+					local threatPower = threatPowerFrame:CreateTexture()
+					threatPower:SetPoint(unpack(Layout.ThreatPowerPlace))
+					threatPower:SetDrawLayer(unpack(Layout.ThreatPowerDrawLayer))
+					threatPower:SetSize(unpack(Layout.ThreatPowerSize))
+					threatPower:SetAlpha(Layout.ThreatPowerAlpha)
+
+					if (not Layout.UseProgressivePowerThreat) then 
+						threatPower:SetTexture(Layout.ThreatPowerTexture)
+					end
+
+					threatPower._owner = self.Power
+					threat.power = threatPower
+				end 
+
+				if Layout.UsePowerBgThreat then 
+					local threatPowerBg = threatPowerFrame:CreateTexture()
+					threatPowerBg:SetPoint(unpack(Layout.ThreatPowerBgPlace))
+					threatPowerBg:SetDrawLayer(unpack(Layout.ThreatPowerBgDrawLayer))
+					threatPowerBg:SetSize(unpack(Layout.ThreatPowerBgSize))
+					threatPowerBg:SetAlpha(Layout.ThreatPowerBgAlpha)
+
+					if (not Layout.UseProgressivePowerBgThreat) then 
+						threatPowerBg:SetTexture(Layout.ThreatPowerBgTexture)
+					end
+
+					threatPowerBg._owner = self.Power
+					threat.powerBg = threatPowerBg
+				end 
 	
-		local threatHealth = backdrop:CreateTexture()
-		threatHealth:SetDrawLayer("BACKGROUND", -2)
-		threatHealth:SetSize(716, 188)
-		threatHealth:SetPoint("CENTER", 1, -1)
-		threatHealth:SetAlpha(.75)
-		threats.health = threatHealth
-	
-		if Layout.UsePowerBar then 
-			local threatPowerFrame = backdrop:CreateFrame("Frame")
-			threatPowerFrame:SetFrameLevel(backdrop:GetFrameLevel())
-	
-			local threatPower = threatPowerFrame:CreateTexture()
-			threatPower:SetPoint("CENTER", power, "CENTER", 0, 0)
-			threatPower:SetDrawLayer("BACKGROUND", -2)
-			threatPower:SetSize(120/157*256, 140/183*256)
-			threatPower:SetAlpha(.75)
-			threatPower:SetTexture(getPath("power_crystal_glow"))
-			threatPower._owner = self.Power
-			threats.power = threatPower
-	
-			-- Hook the power visibility to the power crystal
-			self.Power:HookScript("OnShow", function() threatPowerFrame:Show() end)
-			self.Power:HookScript("OnHide", function() threatPowerFrame:Hide() end)
-		end 
-	
-		if Layout.UseMana then 
-			if hasMana then 
-	
+			end 
+		
+			if Layout.UseMana and Layout.UseManaThreat and hasMana then 
+		
 				local threatManaFrame = backdrop:CreateFrame("Frame")
 				threatManaFrame:SetFrameLevel(backdrop:GetFrameLevel())
-	
-				local threatMana = threatManaFrame:CreateTexture()
-				threatMana:SetDrawLayer("BACKGROUND", -2)
-				threatMana:SetPoint("CENTER", self.ExtraPower, "CENTER", 0, 0)
-				threatMana:SetSize(188, 188)
-				threatMana:SetAlpha(.75)
-				threatMana:SetTexture(getPath("orb_case_glow"))
-				threatMana._owner = self.ExtraPower
-				threats.mana = threatMana
+				threatManaFrame:SetAllPoints(self.ExtraPower)
 	
 				self.ExtraPower:HookScript("OnShow", function() threatManaFrame:Show() end)
 				self.ExtraPower:HookScript("OnHide", function() threatManaFrame:Hide() end)
-			end
+
+				local threatMana = threatManaFrame:CreateTexture()
+				threatMana:SetDrawLayer(unpack(Layout.ThreatManaDrawLayer))
+				threatMana:SetPoint(unpack(Layout.ThreatManaPlace))
+				threatMana:SetSize(unpack(Layout.ThreatManaSize))
+				threatMana:SetAlpha(Layout.ThreatManaAlpha)
+
+				if (not Layout.UseProgressiveManaThreat) then 
+					threatMana:SetTexture(Layout.ThreatManaTexture)
+				end 
+
+				threatMana._owner = self.ExtraPower
+				threat.mana = threatMana
+			end 
 		end 
+
+		threat.hideSolo = Layout.ThreatHideSolo
+		threat.fadeOut = Layout.ThreatFadeOut
 	
-		self.Threat = threats
+		self.Threat = threat
 		self.Threat.OverrideColor = Threat_UpdateColor
 	end 
 

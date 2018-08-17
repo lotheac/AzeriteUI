@@ -40,6 +40,7 @@ local Core = {
 		Minimap = true,
 		--ObjectiveTracker = true,
 		OrderHall = true,
+		PlayerPowerBarAlt = true, 
 		Tutorials = true,
 		UnitFrames = true,
 		--Warnings = true,
@@ -203,6 +204,52 @@ local BlizzardObjectivesTracker = {
 	SpaceTop = 260, 
 	SpaceBottom = 330, 
 	MaxHeight = 480,
+	HideInCombat = false, 
+	HideInBossFights = true, 
+	HideInArena = true,
+}
+
+local FloaterHUD = {
+	StyleExtraActionButton = true, 
+		ExtraActionButtonFramePlace = { "CENTER", 210 + 27, -60 },
+		ExtraActionButtonPlace = { "CENTER", 0, 0 },
+		ExtraActionButtonSize = { 64, 64 },
+
+		ExtraActionButtonIconPlace = { "CENTER", 0, 0 },
+		ExtraActionButtonIconSize = { 44, 44 },
+		ExtraActionButtonIconMaskTexture = getPath("actionbutton_circular_mask"),  
+
+		ExtraActionButtonCount = Fonts(18, true),
+		ExtraActionButtonCountPlace = { "BOTTOMRIGHT", -3, 3 },
+		ExtraActionButtonCountJustifyH = "CENTER",
+		ExtraActionButtonCountJustifyV = "BOTTOM",
+
+		ExtraActionButtonCooldownSize = { 44, 44 },
+		ExtraActionButtonCooldownPlace = { "CENTER", 0, 0 },
+		ExtraActionButtonCooldownSwipeTexture = getPath("actionbutton_circular_mask"),
+		ExtraActionButtonCooldownBlingTexture = getPath("blank"),
+		ExtraActionButtonCooldownSwipeColor = { 0, 0, 0, .75 },
+		ExtraActionButtonCooldownBlingColor = { 0, 0, 0 , 0 },
+		ExtraActionButtonShowCooldownSwipe = true,
+		ExtraActionButtonShowCooldownBling = true,
+
+		ExtraActionButtonKeybindPlace = { "TOPLEFT", 5, -5 },
+		ExtraActionButtonKeybindJustifyH = "CENTER",
+		ExtraActionButtonKeybindJustifyV = "BOTTOM",
+		ExtraActionButtonKeybindFont = Fonts(15, true),
+		ExtraActionButtonKeybindShadowOffset = { 0, 0 },
+		ExtraActionButtonKeybindShadowColor = { 0, 0, 0, 1 },
+		ExtraActionButtonKeybindColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3], .75 },
+	
+		UseExtraActionButtonBorderTexture = true,
+			ExtraActionButtonBorderPlace = { "CENTER", 0, 0 },
+			ExtraActionButtonBorderSize = { 64/(122/256), 64/(122/256) },
+			ExtraActionButtonBorderTexture = getPath("actionbutton-border"),
+			ExtraActionButtonBorderDrawLayer = { "BORDER", 1 },
+			ExtraActionButtonBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
+
+		ExtraActionButtonKillStyleTexture = true, 
+
 }
 
 -- Minimap
@@ -436,7 +483,61 @@ local UnitFramePlayer = {
 
 		
 	UseThreat = true,
+		ThreatHideSolo = true, 
+		ThreatFadeOut = 3, 
+
+		UseHealthThreat = true, 
+			ThreatHealthPlace = { "CENTER", 1, -1 },
+			ThreatHealthSize = { 716, 188 },
+			ThreatHealthDrawLayer = { "BACKGROUND", -2 },
+			ThreatHealthAlpha = .5, 
+
+		UsePowerThreat = true, 
+			ThreatPowerPlace = { "CENTER", 0, 0 }, 
+			ThreatPowerSize = { 120/157*256, 140/183*256 },
+			ThreatPowerTexture = getPath("power_crystal_glow"),
+			ThreatPowerDrawLayer = { "BACKGROUND", -2 },
+			ThreatPowerAlpha = .5,
+
+		UsePowerBgThreat = true, 
+			ThreatPowerBgPlace = { "BOTTOM", 7, -51 }, 
+			ThreatPowerBgSize = { 198,98 },
+			ThreatPowerBgTexture = getPath("pw_crystal_case_glow"),
+			ThreatPowerBgDrawLayer = { "BACKGROUND", -3 },
+			ThreatPowerBgAlpha = .5,
+
+		UseManaThreat = true, 
+			ThreatManaPlace = { "CENTER", 0, 0 }, 
+			ThreatManaSize = { 188, 188 },
+			ThreatManaTexture = getPath("orb_case_glow"),
+			ThreatManaDrawLayer = { "BACKGROUND", -2 },
+			ThreatManaAlpha = .5,
+
 	UseMana = true, 
+		ManaType = "Orb",
+		ManaExclusiveResource = "MANA", 
+		ManaPlace = { "BOTTOMLEFT", -97 +5, 22 + 5 }, 
+		ManaSize = { 103, 103 },
+		ManaOrbTextures = { getPath("pw_orb_bar4"), getPath("pw_orb_bar3"), getPath("pw_orb_bar3") },
+
+		UseManaBackground = true, 
+			ManaBackgroundPlace = { "CENTER", 0, 0 }, 
+			ManaBackgroundSize = { 113, 113 }, 
+			ManaBackgroundTexture = getPath("pw_orb_bar3"),
+			ManaBackgroundDrawLayer = { "BACKGROUND", -2 }, 
+			ManaBackgroundColor = { 22/255, 26/255, 22/255, .82 },
+
+		UseManaShade = true, 
+			ManaShadePlace = { "CENTER", 0, 0 }, 
+			ManaShadeSize = { 127, 127 }, 
+			ManaShadeTexture = getPath("shade_circle"), 
+			ManaShadeDrawLayer = { "BORDER", -1 }, 
+			ManaShadeColor = { 0, 0, 0, 1 }, 
+
+		UseManaForeground = true, 
+			ManaForegroundPlace = { "CENTER", 0, 0 }, 
+			ManaForegroundSize = { 188, 188 }, 
+			ManaForegroundDrawLayer = { "BORDER", 1 },
 	
 	UseAuras = true,
 		AuraSize = 40, -- aurasize
@@ -480,6 +581,9 @@ local UnitFramePlayer = {
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 	
 	UseProgressiveFrames = true,
+		UseProgressiveHealthThreat = true, 
+		UseProgressiveManaForeground = true, 
+
 		SeasonedHealthSize = { 385, 40 },
 		SeasonedHealthTexture = getPath("hp_cap_bar"),
 		SeasonedHealthSparkMap = {
@@ -970,7 +1074,52 @@ local UnitFramePlayerHUD = {
 				-- Store the element's full stylestring
 				element.powerStyle = style
 			end 
-		end 
+		end, 
+
+	UsePlayerAltPowerBar = true,
+		PlayerAltPowerBarPlace = { "CENTER", "UICenter", "CENTER", 0, -(133 + 56)  }, 
+		PlayerAltPowerBarSize = { 111,14 },
+		PlayerAltPowerBarTexture = getPath("cast_bar"), 
+		PlayerAltPowerBarColor = { 70/255, 255/255, 131/255, .69 }, 
+		PlayerAltPowerBarOrientation = "RIGHT",
+		PlayerAltPowerBarSparkMap = {
+			top = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			}
+		},
+
+		UsePlayerAltPowerBarBackground = true, 
+			PlayerAltPowerBarBackgroundPlace = { "CENTER", 1, -2 }, 
+			PlayerAltPowerBarBackgroundSize = { 193,93 },
+			PlayerAltPowerBarBackgroundTexture = getPath("cast_back"), 
+			PlayerAltPowerBarBackgroundDrawLayer = { "BACKGROUND", 1 },
+			PlayerAltPowerBarBackgroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+			
+		UsePlayerAltPowerBarValue = true, 
+			PlayerAltPowerBarValuePlace = { "CENTER", 0, 0 },
+			PlayerAltPowerBarValueFont = Fonts(14, true),
+			PlayerAltPowerBarValueDrawLayer = { "OVERLAY", 1 },
+			PlayerAltPowerBarValueJustifyH = "CENTER",
+			PlayerAltPowerBarValueJustifyV = "MIDDLE",
+			PlayerAltPowerBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
+
+		UsePlayerAltPowerBarName = true, 
+			PlayerAltPowerBarNamePlace = { "TOP", 0, -(12 + 14) },
+			PlayerAltPowerBarNameFont = Fonts(15, true),
+			PlayerAltPowerBarNameDrawLayer = { "OVERLAY", 1 },
+			PlayerAltPowerBarNameJustifyH = "CENTER",
+			PlayerAltPowerBarNameJustifyV = "MIDDLE",
+			PlayerAltPowerBarNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
+
 }
 
 -- UnitFrame: Target
@@ -1237,7 +1386,21 @@ local UnitFrameTarget = {
 
 		
 	UseThreat = true,
-	
+		ThreatHideSolo = true, 
+		ThreatFadeOut = 3, 
+
+		UseHealthThreat = true, 
+			ThreatHealthTexCoord = { 1,0,0,1 },
+			ThreatHealthDrawLayer = { "BACKGROUND", -2 },
+			ThreatHealthAlpha = .5, 
+
+		UsePortraitThreat = true, 
+			ThreatPortraitPlace = { "CENTER", 0, 0 }, 
+			ThreatPortraitSize = { 187, 187 },
+			ThreatPortraitTexture = getPath("portrait_frame_glow"),
+			ThreatPortraitDrawLayer = { "BACKGROUND", -2 },
+			ThreatPortraitAlpha = .5,
+
 	UseAuras = true,
 		AuraSize = 40, -- aurasize
 		AuraSpaceH = 6, -- horizontal spacing between auras
@@ -1289,6 +1452,7 @@ local UnitFrameTarget = {
 	UseProgressiveFrames = true,
 		UseProgressiveHealth = true, 
 		UseProgressiveHealthBackdrop = true, 
+		UseProgressiveHealthThreat = true, 
 		UseProgressiveCastBar = true, 
 		UseProgressiveThreat = true, 
 		UseProgressivePortrait = true, 
@@ -1731,6 +1895,7 @@ CogWheel("LibDB"):NewDatabase(ADDON..": Layout [ActionBarMain]", ActionBarMain)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardChatFrames]", BlizzardChatFrames)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardMicroMenu]", BlizzardMicroMenu)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardObjectivesTracker]", BlizzardObjectivesTracker)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [FloaterHUD]", FloaterHUD)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [Minimap]", Minimap)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [TooltipStyling]", TooltipStyling)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
@@ -1738,4 +1903,3 @@ CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFrameP
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
-
