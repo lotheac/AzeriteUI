@@ -10,6 +10,50 @@ local UnitPowerMax = _G.UnitPowerMax
 -- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
 local ALTERNATE_POWER_INDEX = Enum and Enum.PowerType.Alternate or ALTERNATE_POWER_INDEX or 10
 
+
+local utf8sub = function(str, i, dots)
+	if not str then return end
+	local bytes = str:len()
+	if bytes <= i then
+		return str
+	else
+		local len, pos = 0, 1
+		while pos <= bytes do
+			len = len + 1
+			local c = str:byte(pos)
+			if c > 0 and c <= 127 then
+				pos = pos + 1
+			elseif c >= 192 and c <= 223 then
+				pos = pos + 2
+			elseif c >= 224 and c <= 239 then
+				pos = pos + 3
+			elseif c >= 240 and c <= 247 then
+				pos = pos + 4
+			end
+			if len == i then break end
+		end
+		if len == i and pos <= bytes then
+			return str:sub(1, pos - 1)..(dots and "..." or "")
+		else
+			return str
+		end
+	end
+end
+
+local short = function(value)
+	value = tonumber(value)
+	if (not value) then return "" end
+	if (value >= 1e9) then
+		return ("%.1fb"):format(value / 1e9):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e6 then
+		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e3 or value <= -1e3 then
+		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([kmb])$", "%1")
+	else
+		return tostring(value - value%1)
+	end	
+end
+
 -- Borrow the unitframe tooltip
 local GetTooltip = function(element)
 	return element.GetTooltip and element:GetTooltip() or element._owner.GetTooltip and element._owner:GetTooltip()
@@ -144,5 +188,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 4)
 end 

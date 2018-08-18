@@ -343,18 +343,26 @@ end
 
 -- Called when the usable state of the button changes
 ActionButton.UpdateUsable = function(self) 
-	if self.outOfRange then
+	if UnitIsDeadOrGhost("player") then 
+		self.Icon:SetDesaturated(true)
+		self.Icon:SetVertexColor(.4, .4, .4)
+
+	elseif self.outOfRange then
+		self.Icon:SetDesaturated(false)
 		self.Icon:SetVertexColor(1, .15, .15)
 
 	else
 		local isUsable, notEnoughMana = IsUsableAction(self.buttonAction)
 		if isUsable then
+			self.Icon:SetDesaturated(false)
 			self.Icon:SetVertexColor(1, 1, 1)
 
 		elseif notEnoughMana then
+			self.Icon:SetDesaturated(false)
 			self.Icon:SetVertexColor(.35, .35, 1)
 
 		else
+			self.Icon:SetDesaturated(false)
 			self.Icon:SetVertexColor(.4, .4, .4)
 		end
 	end
@@ -843,4 +851,4 @@ local Disable = function(self)
 end
 
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 27)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 28)

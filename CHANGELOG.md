@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.44] 2018-08-18
+### Changed
+- Action buttons are new desaturated and toned down when the player is dead.
+- Moved the talking head frame farther up the screen, away from the unit frames and actionbars. 
+
+### Fixed
+- Fixed the issue causing a bug when trying to show the value on the player's alternate power bar.
+- Durability and vehicle seat indicator should once again be positioned in a more fitting place. 
+
 ## [1.0.43] 2018-08-17
 ### Added
 - Added a custom player alternate power bar, close to where the player castbar is. 

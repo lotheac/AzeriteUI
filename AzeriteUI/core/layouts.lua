@@ -228,7 +228,7 @@ local FloaterHUD = {
 		ExtraActionButtonCooldownPlace = { "CENTER", 0, 0 },
 		ExtraActionButtonCooldownSwipeTexture = getPath("actionbutton_circular_mask"),
 		ExtraActionButtonCooldownBlingTexture = getPath("blank"),
-		ExtraActionButtonCooldownSwipeColor = { 0, 0, 0, .75 },
+		ExtraActionButtonCooldownSwipeColor = { 0, 0, 0, .5 },
 		ExtraActionButtonCooldownBlingColor = { 0, 0, 0 , 0 },
 		ExtraActionButtonShowCooldownSwipe = true,
 		ExtraActionButtonShowCooldownBling = true,
@@ -249,6 +249,15 @@ local FloaterHUD = {
 			ExtraActionButtonBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
 
 		ExtraActionButtonKillStyleTexture = true, 
+
+	StyleDurabilityFrame = true, 
+		DurabilityFramePlace = { "CENTER", 190, 0 },
+
+	StyleVehicleSeatIndicator = true, 
+		VehicleSeatIndicatorPlace = { "CENTER", 424, 0 }, 
+
+	StyleTalkingHeadFrame = true, 
+		StyleTalkingHeadFramePlace = { "TOP", 0, -(60 + 200) }, 
 
 }
 

@@ -5,11 +5,13 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("FloaterHUD", "LibFrame", "LibTooltip")
+local Module = Core:NewModule("FloaterHUD", "LibEvent", "LibFrame", "LibTooltip")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [FloaterHUD]")
 
 -- Lua API
 local _G = _G
+local ipairs = ipairs
+local table_remove = table.remove
 
 -- Frame Holders
 local Holder = {}
@@ -307,8 +309,48 @@ Module.StyleVehicleSeatIndicator = function(self)
 	
 end 
 
+Module.StyleTalkingHeadFrame = function(self)
+	if (not Layout.StyleTalkingHeadFrame) then 
+		return 
+	end 
+
+	local frame = TalkingHeadFrame
+
+	-- This means the addon hasn't been loaded, 
+	-- so we register a listener and return.
+	if (not frame) then
+		return self:RegisterEvent("ADDON_LOADED", "OnEvent")
+	end
+
+	-- Prevent blizzard from moving this one around
+	frame.ignoreFramePositionManager = true
+
+	self:CreateHolder(frame, unpack(Layout.StyleTalkingHeadFramePlace))
+	self:CreatePointHook(frame)
+
+	-- Iterate through all alert subsystems in order to find the one created for TalkingHeadFrame, and then remove it.
+	-- We do this to prevent alerts from anchoring to this frame when it is shown.
+	local AlertFrame = _G.AlertFrame
+	for index, alertFrameSubSystem in ipairs(AlertFrame.alertFrameSubSystems) do
+		if (alertFrameSubSystem.anchorFrame and (alertFrameSubSystem.anchorFrame == content)) then
+			table_remove(AlertFrame.alertFrameSubSystems, index)
+		end
+	end
+	
+end
+
 Module.GetFloaterTooltip = function(self)
 	return self:GetTooltip("CG_FloaterTooltip") or self:CreateTooltip("CG_FloaterTooltip")
+end
+
+Module.OnEvent = function(self, event, ...)
+	if (event == "ADDON_LOADED") then 
+		local addon = ... 
+		if (addon == "Blizzard_TalkingHeadUI") then 
+			self:StyleTalkingHeadFrame()
+			self:UnregisterEvent("ADDON_LOADED", "OnEvent")
+		end 
+	end 
 end
 
 Module.OnInit = function(self)
@@ -316,4 +358,5 @@ Module.OnInit = function(self)
 	self:StyleVehicleSeatIndicator()
 	self:StyleExtraActionButton()
 	self:StyleZoneAbilityButton()
+	self:StyleTalkingHeadFrame()
 end
