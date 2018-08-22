@@ -625,6 +625,10 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	button:SetID(buttonID)
 	button:SetAttribute("type", "action")
 	button:SetAttribute("flyoutDirection", "UP")
+	button:SetAttribute("checkselfcast", true)
+	button:SetAttribute("checkfocuscast", true)
+	button:SetAttribute("useparent-unit", true)
+	button:SetAttribute("useparent-actionpage", true)
 	button.id = buttonID
 	button.action = 0
 
@@ -711,11 +715,11 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 
 	local visibilityDriver
 	if (barID == 1) then 
-		visibilityDriver = "show"
+		-- Sometimes no frames exist
+		visibilityDriver = "[@player,exists][vehicleui]show;hide"
 	else 
-		visibilityDriver = "[overridebar][possessbar][shapeshift]hide;[vehicleui]hide;show"
+		visibilityDriver = "[overridebar][possessbar][shapeshift][vehicleui][@player,noexists]hide;show"
 	end 
-
 	
 	-- enable the visibility driver
 	RegisterAttributeDriver(visibility, "state-vis", visibilityDriver)
@@ -826,7 +830,6 @@ local Enable = function(self)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
 	self:RegisterEvent("SPELL_UPDATE_CHARGES", Proxy)
 	
-
 end
 
 -- Disable events and update handlers here
@@ -850,5 +853,4 @@ local Disable = function(self)
 	
 end
 
-
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 28)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 31)

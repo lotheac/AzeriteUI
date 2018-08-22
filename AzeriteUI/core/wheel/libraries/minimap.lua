@@ -176,6 +176,7 @@ local OnElementEvent = function(proxy, event, ...)
 	if (Callbacks[proxy] and Callbacks[proxy][event]) then 
 		local events = Callbacks[proxy][event]
 		for i = 1, #events do
+			-- Note: this has created a nil error once!
 			events[i](proxy, event, ...)
 		end
 	end 

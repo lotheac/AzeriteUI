@@ -23,9 +23,10 @@ local MAPPY = Module:IsAddOnEnabled("Mappy")
 local mt = getmetatable(CreateFrame("Frame")).__index
 
 -- Grab pure methods
-local SetParent = mt.SetParent
-local SetPoint = mt.SetPoint
-local ClearAllPoints = mt.ClearAllPoints
+local Frame_ClearAllPoints = mt.ClearAllPoints
+local Frame_IsShown = mt.IsShown
+local Frame_SetParent = mt.SetParent
+local Frame_SetPoint = mt.SetPoint
 
 local DisableTexture = function(texture, _, loop)
 	if loop then
@@ -38,9 +39,9 @@ local ResetPoint = function(object, _, anchor)
 	local holder = object and Holder[object]
 	if (holder) then 
 		if (anchor ~= holder) then
-			SetParent(object, holder)
-			ClearAllPoints(object)
-			SetPoint(object, "CENTER", holder, "CENTER", 0, 0)
+			Frame_SetParent(object, holder)
+			Frame_ClearAllPoints(object)
+			Frame_SetPoint(object, "CENTER", holder, "CENTER", 0, 0)
 		end
 	end 
 end
@@ -81,6 +82,91 @@ local ZoneAbilityButton_OnLeave = function(self)
 	tooltip:Hide()
 end
 
+local GroupLootContainer_PostUpdate = function(self)
+	local lastIdx = nil;
+
+	for i=1, self.maxIndex do
+		local frame = self.rollFrames[i]
+		local prevFrame = self.rollFrames[i-1]
+		if ( frame ) then
+			frame:ClearAllPoints()
+			if prevFrame and not (prevFrame == frame) then
+				frame:SetPoint(Layout.AlertFramesPosition, prevFrame, Layout.AlertFramesAnchor, 0, Layout.AlertFramesOffset)
+			else
+				frame:SetPoint(Layout.AlertFramesPosition, self, Layout.AlertFramesPosition, 0, 0)
+			end
+			lastIdx = i
+		end
+	end
+
+	if ( lastIdx ) then
+		self:SetHeight(self.reservedSize * lastIdx)
+		self:Show()
+	else
+		self:Hide()
+	end
+end
+
+local AlertSubSystem_AdjustAnchors = function(self, relativeAlert)
+	if self.alertFrame:IsShown() then
+		self.alertFrame:ClearAllPoints()
+		self.alertFrame:SetPoint(Layout.AlertFramesPosition, relativeAlert, Layout.AlertFramesAnchor, 0, Layout.AlertFramesOffset)
+		return self.alertFrame
+	end
+	return relativeAlert
+end
+
+local AlertSubSystem_AdjustAnchorsNonAlert = function(self, relativeAlert)
+	if self.anchorFrame:IsShown() then
+		self.anchorFrame:ClearAllPoints()
+		self.anchorFrame:SetPoint(Layout.AlertFramesPosition, relativeAlert, Layout.AlertFramesAnchor, 0, Layout.AlertFramesOffset)
+		return self.anchorFrame
+	end
+	return relativeAlert
+end
+
+local AlertSubSystem_AdjustQueuedAnchors = function(self, relativeAlert)
+	for alertFrame in self.alertFramePool:EnumerateActive() do
+		alertFrame:ClearAllPoints()
+		alertFrame:SetPoint(Layout.AlertFramesPosition, relativeAlert, Layout.AlertFramesAnchor, 0, Layout.AlertFramesOffset)
+		relativeAlert = alertFrame
+	end
+	return relativeAlert
+end
+
+local AlertSubSystem_AdjustPosition = function(self)
+	if self.alertFramePool then --queued alert system
+		self.AdjustAnchors = AlertSubSystem_AdjustQueuedAnchors
+	elseif not self.anchorFrame then --simple alert system
+		self.AdjustAnchors = AlertSubSystem_AdjustAnchors
+	elseif self.anchorFrame then --anchor frame system
+		self.AdjustAnchors = AlertSubSystem_AdjustAnchorsNonAlert
+	end
+end
+
+local AlertFrame_PostUpdatePosition = function(self, subSystem)
+	AlertSubSystem_AdjustPosition(subSystem)
+end
+
+local AlertFrame_PostUpdateAnchors = function(self)
+	local holder = Holder[AlertFrame]
+	holder:ClearAllPoints()
+
+	if (TalkingHeadFrame and Frame_IsShown(TalkingHeadFrame)) then 
+		holder:Place(unpack(Layout.AlertFramesPlaceTalkingHead))
+	else 
+		holder:Place(unpack(Layout.AlertFramesPlace))
+	end
+
+	AlertFrame:ClearAllPoints()
+	AlertFrame:SetAllPoints(holder)
+	GroupLootContainer:ClearAllPoints()
+	GroupLootContainer:SetPoint(Layout.AlertFramesPosition, holder, Layout.AlertFramesAnchor, 0, Layout.AlertFramesOffset)
+	if GroupLootContainer:IsShown() then
+		GroupLootContainer_PostUpdate(GroupLootContainer)
+	end
+end
+
 Module.CreateHolder = function(self, object, ...)
 	Holder[object] = self:CreateFrame("Frame", nil, "UICenter")
 	Holder[object]:Place(...)
@@ -101,6 +187,31 @@ Module.DisableMappy = function(object)
 		object.SetPoint = nil -- return the SetPoint method to its original metamethod
 		object.ClearAllPoints = nil -- return the SetPoint method to its original metamethod
 	end 
+end
+
+Module.StyleAlertFrames = function(self)
+	if (not Layout.StyleAlertFrames) then 
+		return 
+	end 
+
+	local alertFrame = AlertFrame
+	local lootFrame = GroupLootContainer
+
+	self:CreateHolder(alertFrame, unpack(Layout.AlertFramesPlace)):SetSize(unpack(Layout.AlertFramesSize))
+
+	lootFrame.ignoreFramePositionManager = true
+	alertFrame.ignoreFramePositionManager = true
+
+	UIPARENT_MANAGED_FRAME_POSITIONS["GroupLootContainer"] = nil
+
+	for _,alertFrameSubSystem in ipairs(alertFrame.alertFrameSubSystems) do
+		AlertSubSystem_AdjustPosition(alertFrameSubSystem)
+	end
+
+	hooksecurefunc(alertFrame, "AddAlertFrameSubSystem", AlertFrame_PostUpdatePosition)
+	hooksecurefunc(alertFrame, "UpdateAnchors", AlertFrame_PostUpdateAnchors)
+	hooksecurefunc("GroupLootContainer_Update", GroupLootContainer_PostUpdate)
+
 end
 
 Module.StyleExtraActionButton = function(self)
@@ -322,6 +433,11 @@ Module.StyleTalkingHeadFrame = function(self)
 		return self:RegisterEvent("ADDON_LOADED", "OnEvent")
 	end
 
+	-- This will prevent the talking head frame size from affecting other blizzard anchors,
+	-- it will also prevent the blizzard frame manager from moving it at all.
+	-- This is tainting?
+	--frame.IsShown = function() return false end
+
 	-- Prevent blizzard from moving this one around
 	frame.ignoreFramePositionManager = true
 
@@ -336,8 +452,23 @@ Module.StyleTalkingHeadFrame = function(self)
 			table_remove(AlertFrame.alertFrameSubSystems, index)
 		end
 	end
+
+	frame:HookScript("OnShow", AlertFrame_PostUpdateAnchors)
+	frame:HookScript("OnHide", AlertFrame_PostUpdateAnchors)
 	
 end
+
+Module.StyleErrorFrame = function(self)
+	if (not Layout.StyleErrorFrame) then 
+		return 
+	end 
+
+	local frame = UIErrorsFrame
+
+	if Layout.ErrorFrameStrata then 
+		frame:SetFrameStrata(Layout.ErrorFrameStrata)
+	end 
+end 
 
 Module.GetFloaterTooltip = function(self)
 	return self:GetTooltip("CG_FloaterTooltip") or self:CreateTooltip("CG_FloaterTooltip")
@@ -359,4 +490,6 @@ Module.OnInit = function(self)
 	self:StyleExtraActionButton()
 	self:StyleZoneAbilityButton()
 	self:StyleTalkingHeadFrame()
+	self:StyleAlertFrames()
+	self:StyleErrorFrame()
 end

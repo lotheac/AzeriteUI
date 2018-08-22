@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.45] 2018-08-22
+### Added
+- AlertFrames are back!
+
+### Changed
+- Nameplate castbar color now varies based on whether or not the unit is your enemy or not.
+- Moved talking head all the way to the top. 
+- Alerts now grow from the top towards the bottom of the screen.
+
+### Fixed
+- Nameplate castbars once more get a spiked border for uninterruptable casts.
+- Fixed an issue with the portrait widget where `PORTRAITS_UPDATED` was registered as a unit event, causing an error.
+- Unit frame aura stack counts are no longer hidden behind the aura borders.
+- Action buttons now react to selfcast- and focus modifiers.
+
 ## [1.0.44] 2018-08-18
 ### Changed
 - Action buttons are new desaturated and toned down when the player is dead.

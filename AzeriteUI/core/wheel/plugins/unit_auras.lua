@@ -710,5 +710,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 21)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 22)
 end 

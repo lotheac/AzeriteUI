@@ -184,13 +184,14 @@ local Threat_Hide = function(element)
 end 
 
 local PostCreateAuraButton = function(element, button)
-	
 	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
 	button.Icon:SetSize(unpack(Layout.AuraIconSize))
 	button.Icon:ClearAllPoints()
 	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
 
 	button.Count:SetFontObject(Layout.AuraCountFont)
+	button.Count:SetJustifyH("CENTER")
+	button.Count:SetJustifyV("MIDDLE")
 	button.Count:ClearAllPoints()
 	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
 
@@ -200,19 +201,24 @@ local PostCreateAuraButton = function(element, button)
 
 	local layer, level = button.Icon:GetDrawLayer()
 
-	button.Darken = button:CreateTexture()
+	button.Darken = button.Darken or button:CreateTexture()
 	button.Darken:SetDrawLayer(layer, level + 1)
 	button.Darken:SetSize(button.Icon:GetSize())
-	button.Darken:SetAllPoints(button.Icon)
+	button.Darken:SetPoint("CENTER", 0, 0)
 	button.Darken:SetColorTexture(0, 0, 0, .25)
 
-	button.Border = button.Overlay:CreateFrame("Frame", nil, button.Overlay)
-	button.Border:Place(unpack(Layout.AuraBorderFramePlace))
+	button.Overlay:ClearAllPoints()
+	button.Overlay:SetPoint("CENTER", 0, 0)
+	button.Overlay:SetSize(button.Icon:GetSize())
+
+	button.Border = button.Border or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
+	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 1)
+	button.Border:ClearAllPoints()
+	button.Border:SetPoint(unpack(Layout.AuraBorderFramePlace))
 	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
 	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
 	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
 	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
-
 end
 
 local PostUpdateAuraButton = function(element, button)

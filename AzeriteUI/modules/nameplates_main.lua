@@ -69,6 +69,40 @@ local getPath = function(fileName)
 	return ([[Interface\AddOns\%s\media\%s.tga]]):format(ADDON, fileName)
 end 
 
+local PostUpdateCast = function(element, unit)
+end
+
+-- Castbar updates. Only called when the bar is visible. 
+local PostUpdateCast = function(cast, unit)
+	local colors = cast._owner.colors
+	if cast.interrupt then 
+		cast:SetSize(68,9) 
+		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -10)
+		cast:SetStatusBarTexture(getPath("cast_bar"))
+
+		cast.Bg:SetSize(cast:GetSize())
+		cast.Bg:SetTexture(getPath("cast_bar"))
+
+		cast.Border:Hide()
+		cast.Glow:Hide()
+	else
+		cast:SetSize(80,10) 
+		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -6)
+		cast:SetStatusBarTexture(getPath("nameplate_bar"))
+
+		cast.Bg:SetSize(cast:GetSize())
+		cast.Bg:SetTexture(getPath("nameplate_solid"))
+
+		cast.Border:Show() 
+		cast.Glow:Show()
+	end 
+	if UnitIsEnemy(unit, "player") then 
+		cast:SetStatusBarColor(colors.quest.red[1], colors.quest.red[2], colors.quest.red[3]) 
+	else 
+		cast:SetStatusBarColor(colors.cast[1], colors.cast[2], colors.cast[3]) 
+	end 
+end
+
 -- Library Updates
 -- *will be called by the library at certain times
 -----------------------------------------------------------------

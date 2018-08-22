@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 15)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 17)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -638,9 +638,9 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 		tbl.itemSetID = itemSetID
 		tbl.isBattlePet = isBattlePet
 		tbl.isCraftingReagent = isCraftingReagent
-		tbl.itemArmor = tonumber(itemStats.RESISTANCE0_NAME)
-		tbl.itemStamina = tonumber(itemStats.ITEM_MOD_STRENGTH_SHORT)
-		tbl.itemDPS = tonumber(itemStats.ITEM_MOD_DAMAGE_PER_SECOND_SHORT)
+		tbl.itemArmor = itemStats and tonumber(itemStats.RESISTANCE0_NAME)
+		tbl.itemStamina = itemStats and tonumber(itemStats.ITEM_MOD_STRENGTH_SHORT)
+		tbl.itemDPS = itemStats and tonumber(itemStats.ITEM_MOD_DAMAGE_PER_SECOND_SHORT)
 		tbl.uselessStats = {}
 		tbl.secondaryStats = {}	
 
@@ -648,25 +648,27 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 		if (primaryStat == LE_UNIT_STAT_STRENGTH) then 
 			primaryKey = "ITEM_MOD_STRENGTH_SHORT"
 			tbl.primaryStat = ITEM_MOD_STRENGTH_SHORT
-			tbl.primaryStatValue = tonumber(itemStats.ITEM_MOD_STRENGTH_SHORT)
+			tbl.primaryStatValue = itemStats and tonumber(itemStats.ITEM_MOD_STRENGTH_SHORT)
 		elseif (primaryStat == LE_UNIT_STAT_AGILITY) then 
 			primaryKey = "ITEM_MOD_AGILITY_SHORT"
 			tbl.primaryStat = ITEM_MOD_AGILITY_SHORT
-			tbl.primaryStatValue = tonumber(itemStats.ITEM_MOD_AGILITY_SHORT)
+			tbl.primaryStatValue = itemStats and tonumber(itemStats.ITEM_MOD_AGILITY_SHORT)
 		elseif (primaryStat == LE_UNIT_STAT_INTELLECT) then 
 			primaryKey = "ITEM_MOD_INTELLECT_SHORT"
 			tbl.primaryStat = ITEM_MOD_INTELLECT_SHORT
-			tbl.primaryStatValue = tonumber(itemStats.ITEM_MOD_INTELLECT_SHORT)
+			tbl.primaryStatValue = itemStats and tonumber(itemStats.ITEM_MOD_INTELLECT_SHORT)
 		end 
 
 		local has2ndStats
-		for key,value in pairs(itemStats) do 
-			if (isPrimaryStat[key] and (key ~= primaryKey)) then 
-				tbl.uselessStats[key] = value
-			end 
-			if (isSecondaryStat[key]) then 
-				tbl.secondaryStats[key] = value
-				has2ndStats = true
+		if itemStats then
+			for key,value in pairs(itemStats) do 
+				if (isPrimaryStat[key] and (key ~= primaryKey)) then 
+					tbl.uselessStats[key] = value
+				end 
+				if (isSecondaryStat[key]) then 
+					tbl.secondaryStats[key] = value
+					has2ndStats = true
+				end 
 			end 
 		end 
 

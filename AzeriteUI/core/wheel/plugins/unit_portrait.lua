@@ -107,7 +107,7 @@ local Enable = function(self)
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 	
-		self:RegisterEvent("PORTRAITS_UPDATED", Proxy)
+		self:RegisterEvent("PORTRAITS_UPDATED", Proxy, true)
 		self:RegisterEvent("UNIT_PORTRAIT_UPDATE", Proxy)
 		self:RegisterEvent("UNIT_MODEL_CHANGED", Proxy)
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)

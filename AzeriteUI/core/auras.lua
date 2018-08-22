@@ -15,6 +15,8 @@ local _,PlayerClass = UnitClass("player")
 -- Whitelisted auras we'll always display, 
 -- even when they fall under the criteria to be filtered out.
 local WhiteList = {
+	[67556] 	= true, -- Cooking Speed
+
 	[243138] 	= true, -- Happy Feet event 
 	[246050] 	= true, -- Happy Feet buff gained restoring health
 

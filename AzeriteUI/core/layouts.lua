@@ -31,7 +31,7 @@ local Core = {
 	FadeInUI = true, 
 	DisableUIWidgets = {
 		ActionBars = true, 
-		Alerts = true,
+		--Alerts = true,
 		Auras = true,
 		--CaptureBars = true,
 		CastBars = true,
@@ -54,6 +54,11 @@ local Core = {
 	EasySwitch = {
 		["GoldpawUI"] = { goldpawui5 = true, goldpawui = true, goldpaw = true, goldui = true, gui5 = true, gui = true }
 	}
+}
+
+-- Core Menu
+local CoreMenu = {
+	Place = { "BOTTOMRIGHT", -41, 32 }
 }
 
 -- ActionBars
@@ -199,8 +204,8 @@ local BlizzardMicroMenu = {
 }
 
 local BlizzardObjectivesTracker = {
-	Place = { "TOPRIGHT", -(110/2 + 40), -260 },
-	Width = 110,
+	Place = { "TOPRIGHT", -60, -260 },
+	Width = 235, -- 235 default
 	SpaceTop = 260, 
 	SpaceBottom = 330, 
 	MaxHeight = 480,
@@ -210,6 +215,7 @@ local BlizzardObjectivesTracker = {
 }
 
 local FloaterHUD = {
+
 	StyleExtraActionButton = true, 
 		ExtraActionButtonFramePlace = { "CENTER", 210 + 27, -60 },
 		ExtraActionButtonPlace = { "CENTER", 0, 0 },
@@ -257,8 +263,18 @@ local FloaterHUD = {
 		VehicleSeatIndicatorPlace = { "CENTER", 424, 0 }, 
 
 	StyleTalkingHeadFrame = true, 
-		StyleTalkingHeadFramePlace = { "TOP", 0, -(60 + 200) }, 
+		StyleTalkingHeadFramePlace = { "TOP", 0, -(60 + 40) }, 
 
+	StyleAlertFrames = true, 
+		AlertFramesPlace = { "TOP", "UICenter", "TOP", 0, -40 }, 
+		AlertFramesPlaceTalkingHead = { "TOP", "UICenter", "TOP", 0, -240 }, 
+		AlertFramesSize = { 180, 20 },
+		AlertFramesPosition = "TOP",
+		AlertFramesAnchor = "BOTTOM", 
+		AlertFramesOffset = -10,
+
+	StyleErrorFrame = true, 
+		ErrorFrameStrata = "LOW", 
 }
 
 -- Minimap
@@ -322,6 +338,11 @@ local Minimap = {
 		GroupFinderEyeTexture = getPath("group-finder-eye-green"),
 		GroupFinderEyeColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 		GroupFinderQueueStatusPlace = { "BOTTOMRIGHT", QueueStatusMinimapButton, "TOPLEFT", 0, 0 },
+}
+
+-- NamePlates
+local NamePlates = {
+
 }
 
 -- Core Tooltips
@@ -579,8 +600,8 @@ local UnitFramePlayer = {
 		AuraIconPlace = { "CENTER", 0, 0 },
 		AuraIconSize = { 40 - 6, 40 - 6 },
 		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
-		AuraCountPlace = { "BOTTOMRIGHT", 2, -2 },
-		AuraCountFont = Fonts(11, true),
+		AuraCountPlace = { "BOTTOMRIGHT", 3, -2 },
+		AuraCountFont = Fonts(14, true),
 		AuraTimePlace = { "CENTER", 0, 0 },
 		AuraTimeFont = Fonts(14, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
@@ -1439,8 +1460,8 @@ local UnitFrameTarget = {
 		AuraIconPlace = { "CENTER", 0, 0 },
 		AuraIconSize = { 40 - 6, 40 - 6 },
 		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
-		AuraCountPlace = { "BOTTOMRIGHT", 2, -2 },
-		AuraCountFont = Fonts(11, true),
+		AuraCountPlace = { "BOTTOMRIGHT", 3, -2 },
+		AuraCountFont = Fonts(14, true),
 		AuraTimePlace = { "CENTER", 0, 0 },
 		AuraTimeFont = Fonts(14, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
@@ -1900,6 +1921,7 @@ local UnitFramePet = {
 }
 
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [Core]", Core)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [CoreMenu]", CoreMenu)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [ActionBarMain]", ActionBarMain)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardChatFrames]", BlizzardChatFrames)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardMicroMenu]", BlizzardMicroMenu)

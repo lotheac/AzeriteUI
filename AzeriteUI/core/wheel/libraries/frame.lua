@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 39)
+local LibFrame = CogWheel:Set("LibFrame", 40)
 if (not LibFrame) then	
 	return
 end
@@ -43,7 +43,7 @@ local KEYWORD_DEFAULT = "UICenter"
 
 -- Create the new frame parent 
 if (not LibFrame.frameParent) then
-	LibFrame.frameParent = LibFrame.frameParent or CreateFrame("Frame", nil, WorldFrame, "SecureHandlerAttributeTemplate")
+	LibFrame.frameParent = LibFrame.frameParent or CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
 end 
 
 -- Create the UICenter frame
@@ -55,29 +55,73 @@ else
 	UnregisterAttributeDriver(LibFrame.frame, "state-visibility")
 end 
 
-do 
+local SetDisplaySize 
+if false then 
 
-	-- Retrieve WorldFrame size
-	local width, height = WorldFrame:GetSize()
+	SetDisplaySize = function(self)
 
-	-- Round to nearest integer, 
-	-- as blizz values tend to be inaccurate.
-	width = (width + .5) - width%1
-	height = (height + .5) - height%1
+		-- Retrieve WorldFrame size
+		local width, height = WorldFrame:GetSize()
 
-	-- Set the size and take scale into consideration
-	local scale = 768/1080
-	local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
-	local displayHeight = height/scale
-	
-	LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
-	LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
-	LibFrame.frame:ClearAllPoints()
-	LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
-	LibFrame.frame:SetScale(scale)
-	LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
+		-- Round to nearest integer, 
+		-- as blizz values tend to be inaccurate.
+		width = (width + .5) - width%1
+		height = (height + .5) - height%1
+
+		-- Set the size and take scale into consideration
+		local scale = 768/1080
+		local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
+		local displayHeight = height/scale
+		
+		LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
+		LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
+		LibFrame.frame:ClearAllPoints()
+		LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
+		LibFrame.frame:SetScale(scale)
+		LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
+	end 
+
+else 
+
+	SetDisplaySize = function(self)
+
+		-- Retrieve WorldFrame size
+		-- Round to nearest integer, 
+		-- as blizz values tend to be inaccurate.
+		local wWidth, wHeight = WorldFrame:GetSize()
+		wWidth = (wWidth + .5) - wWidth%1
+		wHeight = (wHeight + .5) - wHeight%1
+
+		--Retrieve UIParent size
+		local width, height = UIParent:GetSize()
+		width = (width + .5) - width%1
+		height = (height + .5) - height%1
+
+		-- Set the size and take scale into consideration
+		local precision = 1e5
+		local uiScale = UIParent:GetEffectiveScale()
+		uiScale = ((uiScale*precision + .5) - (uiScale*precision + .5)%1)/precision
+
+		local wScale = 768/1080
+		wScale = ((uiScale*precision + .5) - (uiScale*precision + .5)%1)/precision
+
+		local scale = height/1080
+
+		local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
+		local displayHeight = height/scale
+		
+		LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
+		LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
+		LibFrame.frame:ClearAllPoints()
+		LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
+		LibFrame.frame:SetScale(scale)
+		LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
+	end 
 
 end
+
+SetDisplaySize(LibFrame)
+
 
 -- Keep it and all its children hidden during pet battles. 
 RegisterAttributeDriver(LibFrame.frame, "state-visibility", "[petbattle] hide; show")
@@ -283,34 +327,14 @@ LibFrame.GetFrame = function(self, anchor)
 	return anchor and parseAnchor(anchor) or self.frame or DisplayFrame
 end
 
-LibFrame.UpdateDisplaySize = function(self, width, height)
+LibFrame.UpdateDisplaySize = function(self)
 
 	-- Can't change secure frame sizes through lua in combat
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
 	end 
-	
-	-- Retrieve the size if if wasn't provided
-	if (not width) or (not height) then 
-		width, height = WorldFrame:GetSize()
-	end 
 
-	-- Round to nearest integer, 
-	-- as blizz values tend to be inaccurate.
-	width = (width + .5) - width%1
-	height = (height + .5) - height%1
-
-	-- Set the size and take scale into consideration
-	local scale = 768/1080
-	local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
-	local displayHeight = height/scale
-
-	DisplayFrame:SetScale(scale)
-	DisplayFrame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
-
-	-- Only need to anchor to the bottom
-	DisplayFrame:ClearAllPoints()
-	DisplayFrame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
+	SetDisplaySize(self)
 end
 
 LibFrame.UpdateVisibility = function(self)
@@ -323,7 +347,7 @@ LibFrame.UpdateVisibility = function(self)
 
 		-- Show the map again unless it's been hidden manually
 		if (not self.minimapUserHidden) then 
-			Minimap:Show()
+			Minimap:SetAlpha(1)
 		end
 	else 
 		VisibilityFrame:SetAlpha(0)
@@ -331,7 +355,8 @@ LibFrame.UpdateVisibility = function(self)
 		self.minimapLibraryHidden = true
 
 		-- This shouldn't be fine even in combat
-		Minimap:Hide()
+		-- *edit: cannot change visibility, it taints.
+		Minimap:SetAlpha(0)
 	end 
 end 
 
@@ -340,8 +365,14 @@ LibFrame.UpdateMinimapVisibility = function(self)
 	local shown = Minimap:IsShown()
 
 	-- Don't allow the map to be forced back in when the UI is hidden 
-	if (self.minimapLibraryHidden and shown) then 
-		Minimap:Hide()
+	if shown then 
+		if self.minimapLibraryHidden then 
+			Minimap:SetAlpha(0)
+		else 
+			Minimap:SetAlpha(1)
+		end 
+	else
+		Minimap:SetAlpha(0)
 	end 
 
 	-- Still update the variable(?)
@@ -383,6 +414,7 @@ LibFrame.Enable = function(self)
 	self:RegisterMessage("CG_INTERFACE_SCALE_UPDATE", "OnEvent")
 	
 	-- Could it be enough to just track frame changes and not events?
+	self:SetHook(UIParent, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_UIParent_OnSizeChanged")
 	self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
 	self:SetHook(CinematicFrame, "OnShow", "UpdateVisibility", "LibFrame_CinematicFrame_OnShow")
 	self:SetHook(CinematicFrame, "OnHide", "UpdateVisibility", "LibFrame_CinematicFrame_OnHide")

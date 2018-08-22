@@ -45,6 +45,7 @@ local GetNetStats = _G.GetNetStats
 local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
 local GetServerTime = _G.GetServerTime
 local IsXPUserDisabled = _G.IsXPUserDisabled
+local SetCursor = _G.SetCursor
 local ToggleCalendar = _G.ToggleCalendar
 local UnitExists = _G.UnitExists
 local UnitLevel = _G.UnitLevel
@@ -61,6 +62,8 @@ local fullXPString = "%s / %s (%s)"
 local restedString = " (%s%% %s)"
 local shortLevelString = "%s %d"
 
+-- Player level
+local LEVEL = UnitLevel("player")
 
 -- Default settings
 -- Changing these does NOT change in-game settings
@@ -141,10 +144,10 @@ end
 
 -- Figure out if the player has a XP bar
 local PlayerHasXP = function()
-	local playerLevel = UnitLevel("player")
+	local playerLevel = LEVEL or UnitLevel("player")
 	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
 	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
-	local hasXP = (not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax))
+	local hasXP = (not IsXPUserDisabled()) and ((LEVEL < playerMax) or (LEVEL < expacMax))
 	return hasXP
 end
 
@@ -238,7 +241,7 @@ local Toggle_UpdateTooltip = function(self)
 		
 		local min, max = UnitXP("player"), UnitXPMax("player")
 
-		tooltip:AddDoubleLine(POWER_TYPE_EXPERIENCE, UnitLevel("player"), rt, gt, bt, rt, gt, bt)
+		tooltip:AddDoubleLine(POWER_TYPE_EXPERIENCE, LEVEL or UnitLevel("player"), rt, gt, bt, rt, gt, bt)
 		tooltip:AddDoubleLine(L["Current XP: "], fullXPString:format(normal..short(min)..NC, normal..short(max)..NC, highlight..math_floor(min/max*100).."%"..NC), rh, gh, bh, rgg, ggg, bgg)
 
 		-- add rested bonus if it exists
@@ -525,7 +528,7 @@ end
 local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 	local description = element.Value and element.Value.Description
 	if description then 
-		local level = UnitLevel("player")
+		local level = LEVEL or UnitLevel("player")
 		if (level and (level > 0)) then 
 			description:SetFormattedText("to level %s", level + 1)
 		else 
@@ -1117,21 +1120,38 @@ end
 
 Module.OnEvent = function(self, event, ...)
 
+	if (event == "PLAYER_LEVEL_UP") then 
+		local level = ...
+		if (level and (level ~= LEVEL)) then
+			LEVEL = level
+		else
+			local level = UnitLevel("player")
+			if (level ~= LEVEL) then
+				LEVEL = level
+			end
+		end
+	end
+
+	if (event == "PLAYER_REGEN_ENABLED") then 
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+	end
+
 	if (event == "PLAYER_TARGET_CHANGED") then 
 		if self.UseTargetUpdates then 
 			return self:UpdateInformationDisplay()
 		end
 	end 
 
-	if (event == "PLAYER_REGEN_ENABLED") then 
-		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
-	end
-
-	self:UpdateMinimapSize()
-	self:UpdateMinimapMask()
-
-	if self.UseTargetUpdates then 
-		self:UpdateInformationDisplay()
+	if (event == "PLAYER_ENTERING_WORLD") or (event == "VARIABLES_LOADED") then 
+		self:UpdateMinimapSize()
+		self:UpdateMinimapMask()
+		if self.UseTargetUpdates then 
+			self:UpdateInformationDisplay()
+		end
+		if Layout.UseStatusBars then 
+			self:UpdateBars()
+		end 
+		return
 	end
 
 	if Layout.UseStatusBars then 
@@ -1203,7 +1223,7 @@ Module.UpdateBars = function(self, event, ...)
 			if (Handler.ArtifactPower:IsShown()) then 
 				Handler.ArtifactPower:Hide()
 			end 
-	end 
+		end 
 
 		-- Post update the frame, could be sticky
 		Toggle_UpdateFrame(Handler.Toggle)
@@ -1246,4 +1266,9 @@ Module.OnEnable = function(self)
 
 	-- Enable all minimap elements
 	self:EnableAllElements()
+
+	-- Indicate we can ping by showing the cursor as crosshair over the minimap. 
+	-- Experimental. 
+	--Minimap:HookScript("OnEnter", function() SetCursor("Interface\\Cursor\\Crosshairs") end)
+	--Minimap:HookScript("OnLeave", function() SetCursor(nil) end)
 end 

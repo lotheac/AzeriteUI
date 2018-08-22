@@ -8,6 +8,7 @@ end
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [CoreMenu]")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -478,7 +479,7 @@ Module.GetConfigWindow = function(self)
 
 		-- create main window 
 		local window = self:CreateConfigWindowLevel(1)
-		window:Place("BOTTOMRIGHT", -41, 32)
+		window:Place(unpack(Layout.Place))
 		window:SetSize(600, 600)
 		window:EnableMouse(true)
 		window:SetScript("OnShow", ConfigWindow_OnShow)

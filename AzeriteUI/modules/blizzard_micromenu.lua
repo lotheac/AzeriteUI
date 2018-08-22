@@ -9,6 +9,7 @@ local Module = Core:NewModule("BlizzardMicroMenu", "LibEvent", "LibDB", "LibTool
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [BlizzardMicroMenu]")
+local CoreMenuLayout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [CoreMenu]")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -238,7 +239,7 @@ Module.GetConfigWindow = function(self)
 		configWindow:Hide()
 		configWindow:SetFrameStrata("DIALOG")
 		configWindow:SetFrameLevel(10)
-		configWindow:Place("BOTTOMRIGHT", -71, 52)
+		configWindow:Place(unpack(CoreMenuLayout.Place))
 		configWindow:EnableMouse(true)
 		configWindow:SetScript("OnShow", ConfigWindow_OnShow)
 		configWindow:SetScript("OnHide", ConfigWindow_OnHide)
