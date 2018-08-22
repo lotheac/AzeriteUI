@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 29)
+local LibActionButton = CogWheel:Set("LibActionButton", 30)
 if (not LibActionButton) then	
 	return
 end
@@ -141,7 +141,8 @@ Button.UnregisterEvent = function(self, event, func)
 		-- find the function's id 
 		for i = #events, 1, -1 do
 			if events[i] == func then
-				events[i] = nil -- remove the function from the event's registry
+				table_remove(events, i)
+				--events[i] = nil -- remove the function from the event's registry
 				if #events == 0 then
 					UnregisterEvent(self, event) 
 				end
@@ -156,7 +157,8 @@ Button.UnregisterAllEvents = function(self)
 	end
 	for event, funcs in pairs(Callbacks[self]) do
 		for i = #funcs, 1, -1 do
-			funcs[i] = nil
+			table_remove(funcs, i)
+			--funcs[i] = nil
 		end
 	end
 	UnregisterAllEvents(self)

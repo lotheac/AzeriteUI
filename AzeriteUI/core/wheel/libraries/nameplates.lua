@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 17)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 18)
 if (not LibNamePlate) then	
 	return
 end
@@ -30,6 +30,7 @@ local select = select
 local setmetatable = setmetatable
 local string_find = string.find
 local table_insert = table.insert
+local table_remove = table.remove
 local table_sort = table.sort
 local table_wipe = table.wipe
 local tonumber = tonumber
@@ -1077,7 +1078,8 @@ NamePlate.UnregisterEvent = function(self, event, func)
 		-- find the function's id 
 		for i = #events, 1, -1 do
 			if events[i] == func then
-				events[i] = nil -- remove the function from the event's registry
+				table_remove(events, i)
+				--events[i] = nil -- remove the function from the event's registry
 				if #events == 0 then
 					UnregisterEvent(self, event) 
 				end
@@ -1092,7 +1094,8 @@ NamePlate.UnregisterAllEvents = function(self)
 	end
 	for event, funcs in pairs(callbacks[self]) do
 		for i = #funcs, 1, -1 do
-			funcs[i] = nil
+			table_remove(funcs, i)
+			--funcs[i] = nil
 		end
 	end
 	UnregisterAllEvents(self)
@@ -1188,7 +1191,8 @@ NamePlate.DisableElement = function(self, element)
 
 	for i = #frameElements[self], 1, -1 do
 		if (frameElements[self][i] == element) then
-			frameElements[self][i] = nil
+			table_remove(frameElements[self], i)
+			--frameElements[self][i] = nil
 		end
 	end
 	

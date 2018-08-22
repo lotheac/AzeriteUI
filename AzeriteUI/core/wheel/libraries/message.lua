@@ -1,4 +1,4 @@
-local LibMessage = CogWheel:Set("LibMessage", 4)
+local LibMessage = CogWheel:Set("LibMessage", 6)
 if (not LibMessage) then	
 	return
 end
@@ -11,6 +11,7 @@ local select = select
 local string_join = string.join
 local string_match = string.match
 local table_insert = table_insert
+local table_remove = table.remove
 local type = type
 
 -- Create or retrieve our registries
@@ -110,7 +111,8 @@ LibMessage.New = function(self, target, registerName, unregisterName, unregister
 
 		for i = #messages, 1, -1 do
 			if (messages[i] == func) then 
-				messages[i] = nil
+				table_remove(messages, i)
+				--messages[i] = nil
 
 				-- Fire the Unregister callback if no more occurrences of this message is registered
 				return (target.OnUnregister and (not next(events[message]))) and target:OnUnregister(message, ...)
@@ -140,7 +142,8 @@ LibMessage.New = function(self, target, registerName, unregisterName, unregister
 			end
 
 			for i = #messages, 1, -1 do
-				messages[i] = nil
+				table_remove(messages, i)
+				--messages[i] = nil
 			end
 
 			-- Fire the Unregister callback if something was actually unregistered
@@ -259,7 +262,8 @@ LibMessage.UnregisterMessage = function(self, message, func)
 
 	for i = #messages, 1, -1 do
 		if (messages[i] == func) then 
-			messages[i] = nil
+			table_remove(messages, i)
+			--messages[i] = nil
 		end
 	end
 
@@ -288,7 +292,8 @@ LibMessage.UnregisterAllMessages = function(self, message, ...)
 	end
 
 	for i = #messages, 1, -1 do
-		messages[i] = nil
+		table_remove(messages, i)
+		--messages[i] = nil
 	end
 end
 

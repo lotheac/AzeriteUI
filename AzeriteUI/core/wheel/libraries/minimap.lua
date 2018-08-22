@@ -1,5 +1,5 @@
-local Version = 25 -- This library's version 
-local MapVersion = 25 -- Minimap library version the minimap created by this is compatible with
+local Version = 26 -- This library's version 
+local MapVersion = 26 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -43,6 +43,7 @@ local pairs = pairs
 local string_join = string.join
 local string_match = string.match
 local table_insert = table.insert
+local table_remove = table.remove
 local type = type
 local unpack = unpack
 
@@ -280,7 +281,8 @@ ElementHandler.UnregisterEvent = function(proxy, event, func)
 		-- find the function's id 
 		for i = #events, 1, -1 do
 			if events[i] == func then
-				events[i] = nil -- remove the function from the event's registry
+				table_remove(events, i)
+				--events[i] = nil -- remove the function from the event's registry
 				if #events == 0 then
 					UnregisterEvent(proxy, event) 
 				end
@@ -301,7 +303,8 @@ ElementHandler.UnregisterMessage = function(proxy, event, func)
 		-- find the function's id 
 		for i = #events, 1, -1 do
 			if events[i] == func then
-				events[i] = nil -- remove the function from the event's registry
+				table_remove(events, i)
+				--events[i] = nil -- remove the function from the event's registry
 				if #events == 0 then
 					UnregisterMessage(proxy, event) 
 				end
@@ -316,7 +319,8 @@ ElementHandler.UnregisterAllEvents = function(proxy)
 	end
 	for event, funcs in pairs(Callbacks[proxy]) do
 		for i = #funcs, 1, -1 do
-			funcs[i] = nil
+			table_remove(funcs, i)
+			--funcs[i] = nil
 		end
 	end
 	UnregisterAllEvents(proxy)
@@ -328,7 +332,8 @@ ElementHandler.UnregisterAllMessages = function(proxy)
 	end
 	for event, funcs in pairs(Callbacks[proxy]) do
 		for i = #funcs, 1, -1 do
-			funcs[i] = nil
+			table_remove(funcs, i)
+			--funcs[i] = nil
 		end
 	end
 	UnregisterAllMessages(proxy)
@@ -1113,7 +1118,8 @@ LibMinimap.DisableMinimapElement = function(self, name)
 	Elements[name].Disable(self:GetMinimapHandler())
 	for i = #ElementPool[self], 1, -1 do
 		if (ElementPool[self][i] == name) then
-			ElementPool[self][i] = nil
+			table_remove(ElementPool[self], i)
+			--ElementPool[self][i] = nil
 		end
 	end
 	ElementPoolEnabled[self][name] = nil

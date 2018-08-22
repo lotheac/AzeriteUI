@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 2)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 3)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -236,7 +236,8 @@ WidgetFrame.UnregisterEvent = function(self, event, func)
 		-- find the function's id 
 		for i = #events, 1, -1 do
 			if events[i] == func then
-				events[i] = nil -- remove the function from the event's registry
+				table_remove(events, i)
+				--events[i] = nil -- remove the function from the event's registry
 				if #events == 0 then
 					UnregisterEvent(self, event) 
 				end
@@ -251,7 +252,8 @@ WidgetFrame.UnregisterAllEvents = function(self)
 	end
 	for event, funcs in pairs(callbacks[self]) do
 		for i = #funcs, 1, -1 do
-			funcs[i] = nil
+			table_remove(funcs, i)
+			--funcs[i] = nil
 		end
 	end
 	UnregisterAllEvents(self)
@@ -321,7 +323,8 @@ WidgetFrame.DisableElement = function(self, element)
 
 	for i = #frameElements[self], 1, -1 do
 		if (frameElements[self][i] == element) then
-			frameElements[self][i] = nil
+			table_remove(frameElements[self], i)
+			--frameElements[self][i] = nil
 		end
 	end
 	

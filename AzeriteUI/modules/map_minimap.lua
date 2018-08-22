@@ -51,6 +51,8 @@ local UnitExists = _G.UnitExists
 local UnitLevel = _G.UnitLevel
 local UnitRace = _G.UnitRace
 
+-- SpinBar Cache
+local Spinner = {}
 
 -- Pandaren can get 300% rested bonus
 local maxRested = select(2, UnitRace("player")) == "Pandaren" and 3 or 1.5
@@ -965,11 +967,16 @@ Module.SetUpMinimap = function(self)
 		resting:SetTexture(getPath("xp_ring"))
 		resting:SetDrawLayer("BACKGROUND", 3)
 		resting:Hide()
+
+		-- Store the bars locally
+		Spinner[1] = ring1
+		Spinner[2] = ring2
 		
-		Handler.XP = ring1
+		Handler.XP = Spinner[1]
 		Handler.XP.PostUpdate = PostUpdate_XP
 
-		Handler.ArtifactPower = ring2
+		Handler.ArtifactPower = Spinner[2]
+		Handler.ArtifactPower.PostUpdate = nil
 		Handler.Resting = resting
 
 		-- Toggle button for ring frame
@@ -1173,55 +1180,69 @@ Module.UpdateBars = function(self, event, ...)
 
 	local Handler = self:GetMinimapHandler()
 
-	if (hasXP) or (hasAP) then
+	if (hasXP or hasAP) then
 		if (not Handler.Toggle:IsShown()) then  
 			Handler.Toggle:Show()
 		end
 	
 		-- 2 bars
 		if (hasXP and hasAP) then
+			-- Set the backdrop to the two bar backdrop
 			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-twobars-backdrop"))
 
-			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
-			Handler.XP:SetSparkSize(6,20 * 208/256)
-			Handler.XP:SetSparkInset(15 * 208/256)
-			--Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
-			Handler.XP.Value:ClearAllPoints()
-			Handler.XP.Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
-			Handler.XP.Value:SetFontObject(Fonts(16, true)) 
-			Handler.XP.Value.Description:Hide()
-			Handler.XP.OverrideValue = XP_OverrideValue
-		
-			self:EnableMinimapElement("ArtifactPower")
+			-- Disable any existing elements
+			self:DisableMinimapElement("XP")
+			self:DisableMinimapElement("ArtifactPower")
+
+			-- Update the look of the outer spinner
+			Spinner[1]:SetStatusBarTexture(getPath("minimap-bars-two-outer"))
+			Spinner[1]:SetSparkSize(6,20 * 208/256)
+			Spinner[1]:SetSparkInset(15 * 208/256)
+			Spinner[1].Value:ClearAllPoints()
+			Spinner[1].Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
+			Spinner[1].Value:SetFontObject(Fonts(16, true)) 
+			Spinner[1].Value.Description:Hide()
+			Spinner[1].OverrideValue = XP_OverrideValue
+
+			-- Assign the spinners to the elements
+			Handler.XP = Spinner[1]
+			Handler.ArtifactPower = Spinner[2]
+
+			-- Enable the elements
 			self:EnableMinimapElement("XP")
+			self:EnableMinimapElement("ArtifactPower")
 
 		-- 1 bar
 		else
+			-- Set the backdrop to the single thick bar backdrop
 			Handler.Toggle.Frame.Bg:SetTexture(getPath("minimap-onebar-backdrop"))
 
-			Handler.XP:SetStatusBarTexture(getPath("minimap-bars-single"))
-			Handler.XP:SetSparkSize(6,34 * 208/256)
-			Handler.XP:SetSparkInset(22 * 208/256)
-			--Handler.XP.Rested:SetStatusBarTexture(getPath("minimap-bars-single"))
-			Handler.XP.Value:ClearAllPoints()
-			Handler.XP.Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
-			Handler.XP.Value:SetFontObject(Fonts(24, true)) 
-			Handler.XP.Value.Description:Show()
+			local enable = hasXP and "XP" or "ArtifactPower"
+			local disable = hasXP and "XP" or "ArtifactPower"
 
-			if hasXP then 
-				self:DisableMinimapElement("ArtifactPower")
-				self:EnableMinimapElement("XP")
-				Handler.XP.OverrideValue = XP_OverrideValue
+			-- Disable the inactive element
+			self:DisableMinimapElement(disable)
 
-			elseif hasAP then 
-				Handler.XP.OverrideValue = AP_OverrideValue
+			-- Update the look of the outer spinner to the big single bar look
+			Spinner[1]:SetStatusBarTexture(getPath("minimap-bars-single"))
+			Spinner[1]:SetSparkSize(6,34 * 208/256)
+			Spinner[1]:SetSparkInset(22 * 208/256)
+			Spinner[1].Value:ClearAllPoints()
+			Spinner[1].Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
+			Spinner[1].Value:SetFontObject(Fonts(24, true)) 
+			Spinner[1].Value.Description:Show()
 
-				self:DisableMinimapElement("XP")
-				self:EnableMinimapElement("ArtifactPower")
-			end 
+			-- Update pointers and callbacks to the active element
+			Handler[disable] = nil
+			Handler[enable] = Spinner[1]
+			Handler[enable].OverrideValue = hasXP and XP_OverrideValue or AP_OverrideValue
 
-			if (Handler.ArtifactPower:IsShown()) then 
-				Handler.ArtifactPower:Hide()
+			-- Enable the active element
+			self:EnableMinimapElement(enable)
+
+			-- If the second spinner is still shown, hide it!
+			if (Spinner[2]:IsShown()) then 
+				Spinner[2]:Hide()
 			end 
 		end 
 

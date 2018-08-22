@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.46] 2018-08-22
+### Fixed
+- Rewrote how the two minimap spinbars for artifact power and experience are toggled and displayed to avoid the wrong bar being shown or updated.
+- Solved a problem with how events were removed from the various libraries that sometimes could cause unpredictable bugs. 
+
 ## [1.0.45] 2018-08-22
 ### Added
 - AlertFrames are back!
