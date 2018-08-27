@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.47] 2018-08-27
+### Added
+- Added the first iteration of a much better aura filtering system. Far more to come!
+- Added basic backdrop styling and slight statusbar re-alignment to the blizzard tooltips. No other changes done.
+- The zone ability button is now also styled and moved similar to the extra action button.
+
+### Changed
+- Recolored all normal nameplate castbars to a more neutral color. Protected casts remain red for enemy units, but are now green for friendly units.
+- Extensive folder rearrangement and code restructuring.
+- Started moving a lot of the repeatedly used functions to template files. 
+
+### Fixed
+- Now properly hiding the larger minimap spinbar description text if the content of the bar isn't currently experience.
+- The extra action button keybind text should now be above the button border.
+- Fixed a bug that would always use the boss sized cast texture for the target frame.
+
+### Removed
+- Removed the logon message from the user interface, as it easily becomes spam with both guild message, spec message and multiple other addons adding startup messages. 
+
 ## [1.0.46] 2018-08-22
 ### Fixed
 - Rewrote how the two minimap spinbars for artifact power and experience are toggled and displayed to avoid the wrong bar being shown or updated.

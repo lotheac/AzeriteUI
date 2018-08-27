@@ -11,68 +11,47 @@
 ## X-License: All Rights Reserved
 ## X-Category: Interface Enhancements
 
-# libraries and plugins
-core\wheel\wheel.xml
+structure\wheels\wheel.xml
 
-# custom color library
-core\colors.lua
+form\generic\functions.lua
+form\locale\locale.xml
+form\fonts\fonts.xml
+form\fonts\fonts.lua
+form\colors\colors.lua
+form\auras\aura_lists.lua
+form\auras\aura_functions.lua
+form\layouts\layout.xml
 
-# custom aura lists
-core\auras.lua
-
-# custom fonts library
-core\fonts.xml
-core\fonts.lua
-
-# localization
-locale\enUS.lua
-locale\deDE.lua
-locale\esES.lua
-locale\esMX.lua
-locale\frFR.lua
-locale\koKR.lua
-locale\ptBR.lua
-locale\ptPT.lua
-locale\ruRU.lua
-locale\zhCN.lua
-locale\zhTW.lua
-
-# interface layout data
-core\layouts.lua
-
-# interface core
-core\main.lua
-core\menu.lua
-
-# interface modules
-modules\actionbar_main.lua
-modules\blizzard_gamemenu.lua
-modules\blizzard_interface_styling.lua
-modules\blizzard_micromenu.lua
-modules\blizzard_mirrortimers.lua
-modules\blizzard_objectivestracker.lua
-modules\blizzard_popups_styling.lua
-modules\blizzard_tooltips_styling.lua
-modules\chat_bubbles.lua
-modules\chat_windows.lua
-modules\font_replacements.lua
-modules\hud_floaters.lua
-modules\hud_orderhall.lua
-modules\hud_warnings.lua
-modules\hud_worldstate.lua
-modules\map_minimap.lua
-modules\nameplates_main.lua
-modules\tooltip_styling.lua
-modules\tracker_quests.lua
-modules\tracker_mythics.lua
-modules\unitframe_arenaframes.lua
-modules\unitframe_bossframes.lua
-modules\unitframe_focusframe.lua
-modules\unitframe_partyframes.lua
-modules\unitframe_petframe.lua
-modules\unitframe_playerframe.lua
-modules\unitframe_playerhud.lua
-modules\unitframe_raidframes.lua
-modules\unitframe_targetframe.lua
-modules\unitframe_totframe.lua
+structure\main.lua
+structure\menu.lua
+structure\cogs\actionbar_main.lua
+structure\cogs\blizzard_gamemenu.lua
+structure\cogs\blizzard_interface_styling.lua
+structure\cogs\blizzard_micromenu.lua
+structure\cogs\blizzard_mirrortimers.lua
+structure\cogs\blizzard_objectivestracker.lua
+structure\cogs\blizzard_popups_styling.lua
+structure\cogs\blizzard_tooltips_styling.lua
+structure\cogs\chat_bubbles.lua
+structure\cogs\chat_windows.lua
+structure\cogs\font_replacements.lua
+structure\cogs\hud_floaters.lua
+structure\cogs\hud_orderhall.lua
+structure\cogs\hud_warnings.lua
+structure\cogs\hud_worldstate.lua
+structure\cogs\map_minimap.lua
+structure\cogs\nameplates_main.lua
+structure\cogs\tooltip_styling.lua
+structure\cogs\tracker_quests.lua
+structure\cogs\tracker_mythics.lua
+structure\cogs\unitframe_arenaframes.lua
+structure\cogs\unitframe_bossframes.lua
+structure\cogs\unitframe_focusframe.lua
+structure\cogs\unitframe_partyframes.lua
+structure\cogs\unitframe_petframe.lua
+structure\cogs\unitframe_playerframe.lua
+structure\cogs\unitframe_playerhud.lua
+structure\cogs\unitframe_raidframes.lua
+structure\cogs\unitframe_targetframe.lua
+structure\cogs\unitframe_totframe.lua
 
