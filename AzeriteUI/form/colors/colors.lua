@@ -59,7 +59,8 @@ Colors.cast = prepare(229/255, 204/255, 127/255)
 --Colors.cast = prepare(70/255, 255/255, 131/255)
 Colors.disconnected = prepare(120/255, 120/255, 120/255)
 Colors.tapped = prepare(161/255, 141/255, 120/255)
-Colors.dead = prepare(73/255, 25/255, 9/255)
+Colors.dead = prepare(121/255, 101/255, 96/255)
+--Colors.dead = prepare(73/255, 25/255, 9/255)
 
 -- Global UI vertex coloring
 Colors.ui = {

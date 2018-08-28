@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 40)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 41)
 if (not LibUnitFrame) then	
 	return
 end
@@ -254,11 +254,13 @@ UnitFrame.GetVehicleUnit = function(frame, unit)
 	local driver, vehicleUnit
 
 	if (unit == "player") then 
-		driver = "[vehicleui]pet;player"
+		driver = "[vehicleui][overridebar][possessbar][shapeshift]pet;player"
+		--driver = "[vehicleui]pet;player"
 		vehicleUnit = "pet"
 
 	elseif (unit == "pet") then 
-		driver = "[vehicleui]player;pet"
+		driver = "[vehicleui][overridebar][possessbar][shapeshift]player;pet"
+		--driver = "[vehicleui]player;pet"
 		vehicleUnit = "player"
 
 	else 
@@ -280,20 +282,29 @@ UnitFrame.EnableVehicleSwitcher = function(frame, unit)
 	vehicleSwitcher:SetAttribute("vehicleUnit", vehicleUnit)
 	vehicleSwitcher:SetAttribute("_onattributechanged", [[
 		if (name == "state-vehicleswitch") then 
-
 			local frame = self:GetFrameRef("UnitFrame");
 			local unit = frame:GetAttribute("unit");
 			local realUnit = self:GetAttribute("realUnit");
 			local vehicleUnit = self:GetAttribute("vehicleUnit");
 
-			-- Is there a unit change?
-			local newUnit
-			if (value ~= unit) then 
-				newUnit = value; 
-			end 
+			local newUnit; 
+			if (value == vehicleUnit) then
+				if HasVehicleActionBar() then
+					newUnit = GetVehicleBarIndex() and vehicleUnit; 
+				elseif HasOverrideActionBar() then 
+					newUnit = GetOverrideBarIndex() and vehicleUnit;
+				elseif HasTempShapeshiftActionBar() then
+					newUnit = GetTempShapeshiftBarIndex() and vehicleUnit;
+				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then 
+					newUnit = GetBonusBarIndex() and vehicleUnit;
+				else
+					newUnit = realUnit; 
+				end
+			elseif (value ~= unit) then 
+				newUnit = value;
+			end
 
 			if newUnit then 
-
 				-- compare to the current visibility driver, replace if needed
 				local newDriver 
 				if (newUnit == realUnit) then 
@@ -314,10 +325,53 @@ UnitFrame.EnableVehicleSwitcher = function(frame, unit)
 				-- set the frame's new unit
 				-- *this will fire a callback in Lua, updating frame events and elements
 				frame:SetAttribute("unit", newUnit);
+			end	
 
+		end
+	]])	
+	
+	--[=[
+		vehicleSwitcher:SetAttribute("onattributeChangedOld", [[
+			if (name == "state-vehicleswitch") then 
+
+				local frame = self:GetFrameRef("UnitFrame");
+				local unit = frame:GetAttribute("unit");
+				local realUnit = self:GetAttribute("realUnit");
+				local vehicleUnit = self:GetAttribute("vehicleUnit");
+
+				-- Is there a unit change?
+				local newUnit; 
+				if (value ~= unit) then 
+					newUnit = value; 
+				end 
+
+				if newUnit then 
+
+					-- compare to the current visibility driver, replace if needed
+					local newDriver 
+					if (newUnit == realUnit) then 
+						newDriver = frame:GetAttribute("visibilityDriver"); 
+					else 
+						-- Making an exception here for the pet frame, 
+						-- it's just a tricky one for some reason.
+						if (realUnit == "pet") then 
+							newDriver = "show"
+						else 
+							newDriver = "[@"..newUnit..",exists]show;hide"; 
+						end 
+					end 
+
+					UnregisterAttributeDriver(frame, "state-visibility"); 
+					RegisterAttributeDriver(frame, "state-visibility", newDriver); 
+
+					-- set the frame's new unit
+					-- *this will fire a callback in Lua, updating frame events and elements
+					frame:SetAttribute("unit", newUnit);
+
+				end 
 			end 
-		end 
-	]])
+		]])
+	]=]
 
 	RegisterAttributeDriver(vehicleSwitcher, "state-vehicleswitch", driver)
 end 
@@ -430,11 +484,14 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 
 	-- Allow custom drivers to be used, put in basic ones otherwise
 	-- todo: make some generic smart exceptions for party and raid
-	visibilityDriver = visibilityDriver or string_format("[@%s,exists]show;hide", unit) 
+	if (unit == "player") then 
+		visibilityDriver = visibilityDriver or string_format("[@%s,exists][vehicleui][overridebar][possessbar][shapeshift]show;hide", unit) 
+	else 
+		visibilityDriver = visibilityDriver or string_format("[@%s,exists]show;hide", unit) 
+	end 
 
 	frame:SetAttribute("visibilityDriver", visibilityDriver)
 	RegisterAttributeDriver(frame, "state-visibility", tempDriver or visibilityDriver)
-
 
 	if (unit == "player") then 
 		frame:EnableVehicleSwitcher(unit)
@@ -459,7 +516,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 
 	elseif (unit:match("arena%d?$")) then
 		frame.unitGroup = "arena"
-		frame:RegisterEvent("ARENA_OPPONENT_UPDATE", UnitFrame.OverrideAllElements)
+		frame:RegisterEvent("ARENA_OPPONENT_UPDATE", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("party%d?$")) then 
 		frame.unitGroup = "party"

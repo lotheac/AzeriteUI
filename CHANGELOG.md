@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.49] 2018-08-28
+### Added
+- Added a set of crowd control auras to the aura filter lists. For the time being they'll be shown on the player and target frame, but more advanced filtering will be added later. 
+
+### Changed
+- Added the word "Empty" to the empty alternate player power bar when it's empty, to make it appear less broken. 
+- Changed the text color used on dead units to something that is actually possible to read. 
+
+### Fixed
+- Rewrote the pet- and player frame vehicle switching mechanics to work better with the various override bars and similar. The Legion lay line race now works.  
+
 ## [1.0.48] 2018-08-28
 ### Added
 - Added better coloring to the name and health bar of Blizzard's mouseover unit tooltips, and did some general clutter cleanup.

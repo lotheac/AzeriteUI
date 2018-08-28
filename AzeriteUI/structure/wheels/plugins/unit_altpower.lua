@@ -10,7 +10,6 @@ local UnitPowerMax = _G.UnitPowerMax
 -- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
 local ALTERNATE_POWER_INDEX = Enum and Enum.PowerType.Alternate or ALTERNATE_POWER_INDEX or 10
 
-
 local utf8sub = function(str, i, dots)
 	if not str then return end
 	local bytes = str:len()
@@ -105,9 +104,12 @@ local UpdateValue = function(element, unit, current, min, max)
 end 
 
 local Update = function(self, event, unit, powerType)
-	if (not unit) or (unit ~= self.unit) then 
+	if (not unit) or ((unit ~= self.unit) and (unit ~= self.realUnit)) then 
 		return 
 	end 
+
+	-- Could be the player in a vehicle
+	unit = self.realUnit or unit
 
 	-- We're only interested in alternate power here
 	if ((event == "UNIT_POWER_UPDATE" or event == "UNIT_MAXPOWER") and (powerType ~= "ALTERNATE")) then 
@@ -188,5 +190,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 6)
 end 

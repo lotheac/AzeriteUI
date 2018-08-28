@@ -12,6 +12,7 @@ local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [UnitFramePlayerHU
 
 -- Lua API
 local _G = _G
+local math_floor = math.floor
 local math_pi = math.pi
 local select = select
 local string_gsub = string.gsub
@@ -21,6 +22,43 @@ local unpack = unpack
 
 -- Player Class
 local _, PlayerClass = UnitClass("player")
+
+local short = function(value)
+	value = tonumber(value)
+	if (not value) then return "" end
+	if (value >= 1e9) then
+		return ("%.1fb"):format(value / 1e9):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e6 then
+		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([kmb])$", "%1")
+	elseif value >= 1e3 or value <= -1e3 then
+		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([kmb])$", "%1")
+	else
+		return tostring(value - value%1)
+	end	
+end
+
+local AltPower_OverrideValue = function(element, unit, current, min, max)
+	local value = element.Value or element:IsObjectType("FontString") and element 
+	if value then
+		if (current == 0 or max == 0) then
+			value:SetText(EMPTY)
+		else
+			if value.showPercent then
+				if value.showMaximum then
+					value:SetFormattedText("%s / %s - %d%%", short(current), short(max), math_floor(current/max * 100))
+				else
+					value:SetFormattedText("%s / %d%%", short(current), math_floor(current/max * 100))
+				end
+			else
+				if value.showMaximum then
+					value:SetFormattedText("%s / %s", short(current), short(max))
+				else
+					value:SetFormattedText("%s", short(current))
+				end
+			end
+		end
+	end
+end 
 
 -- Main Styling Function
 local Style = function(self, unit, id, ...)
@@ -212,6 +250,7 @@ local Style = function(self, unit, id, ...)
 		--cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
 		cast:EnableMouse(true)
 		self.AltPower = cast
+		self.AltPower.OverrideValue = AltPower_OverrideValue
 		
 		if Layout.UsePlayerAltPowerBarBackground then 
 			local castBg = cast:CreateTexture()

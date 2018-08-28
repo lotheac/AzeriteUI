@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 3)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 5)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -150,7 +150,7 @@ WidgetFrame.OnUnitChanged = function(self, unit)
 			if (hasEvent and eventUnit ~= unit) then 
 
 				-- This erases previously registered unit events
-				RegisterUnitEvent(self, event, unit)
+				RegisterUnitEvent(self, event, unit, self.realUnit)
 			end 
 		end 
 		return true
@@ -219,7 +219,7 @@ WidgetFrame.RegisterEvent = function(self, event, func, unitless)
 			RegisterEvent(self, event)
 		else 
 			unitEvents[event] = true
-			RegisterUnitEvent(self, event)
+			RegisterUnitEvent(self, event, self.unit)
 		end 
 	end
 end

@@ -671,8 +671,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 
 	local visibilityDriver
 	if (barID == 1) then 
-		-- Sometimes no frames exist
-		visibilityDriver = "[@player,exists][vehicleui]show;hide"
+		visibilityDriver = "[@player,exists][vehicleui][overridebar][possessbar][shapeshift]show;hide"
 	else 
 		visibilityDriver = "[overridebar][possessbar][shapeshift][vehicleui][@player,noexists]hide;show"
 	end 
@@ -809,4 +808,4 @@ local Disable = function(self)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 33)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 34)

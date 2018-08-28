@@ -82,5 +82,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Combat", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("Combat", Enable, Disable, Proxy, 3)
 end 

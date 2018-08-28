@@ -6,6 +6,7 @@ local _G = _G
 
 -- WoW API
 local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
+local GetExpansionLevel = _G.GetExpansionLevel
 local GetSpecialization = _G.GetSpecialization
 local GetSpecializationInfo = _G.GetSpecializationInfo
 local IsXPUserDisabled = _G.IsXPUserDisabled
@@ -40,14 +41,44 @@ else
 	end
 end
 
+-- Returns the maximum level the account has access to 
+Functions.GetEffectivePlayerMaxLevel = function()
+	return MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel()]
+end
+
+-- Returns the maximum level in the current expansion 
+Functions.GetEffectiveExpansionMaxLevel = function()
+	return MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
+end
+
+-- Is the provided level at the account's maximum level?
+Functions.IsLevelAtEffectiveMaxLevel = function(level)
+	return (level >= Functions.GetEffectivePlayerMaxLevel())
+end
+
+-- Is the provided level at the expansions's maximum level?
+Functions.IsLevelAtEffectiveExpansionMaxLevel = function(level)
+	return (level >= Functions.GetEffectiveExpansionMaxLevel())
+end 
+
+-- Is the player at the account's maximum level?
+Functions.IsPlayerAtEffectiveMaxLevel = function()
+	return Functions.IsLevelAtEffectiveMaxLevel(UnitLevel("player"))
+end
+
+-- Is the player at the expansions's maximum level?
+Functions.IsPlayerAtEffectiveExpansionMaxLevel = function()
+	return Functions.IsLevelAtEffectiveExpansionMaxLevel(UnitLevel("player"))
+end
+
+-- Return whether the player currently can gain XP
 Functions.PlayerHasXP = function(useExpansionMax)
-	local playerLevel = UnitLevel("player")
-	local expacMax = MAX_PLAYER_LEVEL_TABLE[LE_EXPANSION_LEVEL_CURRENT or #MAX_PLAYER_LEVEL_TABLE]
-	local playerMax = MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel() or #MAX_PLAYER_LEVEL_TABLE]
-	if useExpansionMax then 
-		return ((not IsXPUserDisabled()) and ((playerLevel < playerMax) or (playerLevel < expacMax)))
-	else 
-		return ((not IsXPUserDisabled()) and (playerLevel < playerMax))
+	if IsXPUserDisabled() then 
+		return false 
+	elseif useExpansionMax then 
+		return (not Functions.IsPlayerAtEffectiveExpansionMaxLevel())
+	else
+		return (not Functions.IsPlayerAtEffectiveMaxLevel())
 	end 
 end
 
