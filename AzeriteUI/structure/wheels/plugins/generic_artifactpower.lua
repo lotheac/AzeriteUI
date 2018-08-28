@@ -50,30 +50,33 @@ if (gameLocale == "zhCN") then
 	end
 end 
 
-
 local UpdateValue = function(element, min, max, level)
 	if element.OverrideValue then
 		return element:OverrideValue(min, max, level)
 	end
-
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value.showPercent then 
-		value:SetFormattedText("%d%%", min/max*100)
+		if (max > 0) then 
+			value:SetFormattedText("%d%%", min/max*100)
+		else 
+			value:SetText("")
+		end 
 	elseif value.showDeficit then 
 		value:SetFormattedText(short(max - min))
 	else 
 		value:SetFormattedText(short(min))
 	end
-
 	local percent = value.Percent
 	if percent then 
-		percent:SetFormattedText("%d%%", min/max*100)
+		if (max > 0) then 
+			percent:SetFormattedText("%d%%", min/max*100)
+		else 
+			percent:SetText("")
+		end 
 	end 
-
 	if element.colorValue then 
 		local color = element._owner.colors.artifact
 		value:SetTextColor(color[1], color[2], color[3])
-
 		if percent then 
 			percent:SetTextColor(color[1], color[2], color[3])
 		end 
@@ -169,5 +172,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 11)
+	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 12)
 end 

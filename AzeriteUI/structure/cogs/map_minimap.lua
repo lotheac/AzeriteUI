@@ -180,7 +180,7 @@ local Performance_UpdateTooltip = function(self)
 	local rg, gg, bg = unpack(Colors.quest.green)
 
 	tooltip:SetDefaultAnchor(self)
-	tooltip:SetMaximumWidth(330)
+	tooltip:SetMaximumWidth(360)
 	tooltip:AddLine(L["Network Stats"], rt, gt, bt)
 	tooltip:AddLine(" ")
 	tooltip:AddDoubleLine(L["World latency:"], ("%d|cff888888%s|r"):format(math_floor(latencyWorld), MILLISECONDS_ABBR), rh, gh, bh, r, g, b)
@@ -224,7 +224,7 @@ local Toggle_UpdateTooltip = function(self)
 
 	if hasXP or hasAP then 
 		tooltip:SetDefaultAnchor(self)
-		tooltip:SetMaximumWidth(330)
+		tooltip:SetMaximumWidth(360)
 	end
 
 	-- XP tooltip
@@ -440,7 +440,7 @@ local Time_UpdateTooltip = function(self)
 	end 
 	
 	tooltip:SetDefaultAnchor(self)
-	tooltip:SetMaximumWidth(280)
+	tooltip:SetMaximumWidth(360)
 	tooltip:AddLine(TIMEMANAGER_TOOLTIP_TITLE, rt, gt, bt)
 	tooltip:AddLine(" ")
 	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, ls, lsuffix, Module.db.useStandardTime, Module.db.showSeconds)), rh, gh, bh, r, g, b)
@@ -530,10 +530,6 @@ local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 			description:SetText("")
 		end 
 	end 
-	local rested = element.Rested
-	if rested then 
-
-	end
 end
 
 local AP_OverrideValue = function(element, min, max, level)
@@ -545,14 +541,15 @@ local AP_OverrideValue = function(element, min, max, level)
 	end
 	local percent = value.Percent
 	if percent then 
-		-- removing the percentage sign
-		percent:SetFormattedText("%d", min/max*100)
+		if (max > 0) then 
+			percent:SetFormattedText("%d%%", min/max*100)
+		else 
+			percent:SetText("")
+		end 
 	end 
-
 	if element.colorValue then 
 		local color = element._owner.colors.artifact
 		value:SetTextColor(color[1], color[2], color[3])
-
 		if percent then 
 			percent:SetTextColor(color[1], color[2], color[3])
 		end 
@@ -566,18 +563,20 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 	else 
 		value:SetFormattedText(short(min))
 	end
-
 	local percent = value.Percent
 	if percent then 
-		local percValue = math_floor(min/max*100)
-		if (percValue > 0) then 
-			-- removing the percentage sign
-			percent:SetFormattedText("%d", percValue)
+		if (max > 0) then 
+			local percValue = math_floor(min/max*100)
+			if (percValue > 0) then 
+				-- removing the percentage sign
+				percent:SetFormattedText("%d", percValue)
+			else 
+				percent:SetText("xp") -- no localization for this
+			end 
 		else 
 			percent:SetText("xp") -- no localization for this
 		end 
 	end 
-
 	if element.colorValue then 
 		local color
 		if restedLeft then 
@@ -588,12 +587,10 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 			color = colors.xpValue or colors.xp
 		end 
 		value:SetTextColor(color[1], color[2], color[3])
-
 		if percent then 
 			percent:SetTextColor(color[1], color[2], color[3])
 		end 
 	end 
-
 end 
 
 Module.SetUpMinimap = function(self)
@@ -857,11 +854,6 @@ Module.SetUpMinimap = function(self)
 		ringFrameBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 		ringFrame.Bg = ringFrameBg
 
-		-- spark sizes/inset from edge:  
-		-- big single ring:  35 / 4
-		-- big thin ring: 20 / 3
-		-- small ring: 29 / 30
-
 		-- outer ring
 		local ring1 = ringFrame:CreateSpinBar()
 		ring1:SetPoint("CENTER", 0, 1)
@@ -882,19 +874,9 @@ Module.SetUpMinimap = function(self)
 		ring1.backdropMultiplier = 1 -- color the backdrop a darker shade of the outer bar color
 		ring1.sparkMultiplier = 1
 
-		--local rested = ringFrame:CreateSpinBar()
-		--rested:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-		--rested:SetSize(211 *411/419,211 *411/419)
-		--rested:SetStatusBarTexture(GetMediaPath("minimap-bars-single"))
-		--rested:SetAlpha(.95)
-		--rested:SetClockwise(true) -- bar runs clockwise
-		--rested:SetDegreeOffset(90*3 - 14) -- bar starts at 14 degrees out from the bottom vertical axis
-		--rested:SetDegreeSpan(360 - 14*2) -- bar stops at the opposite side of that axis
-		--rested:Hide()
-		--ring1.Rested = rested
-		local rested = ring1:CreateTexture()
-		rested:SetDrawLayer("OVERLAY", 1)
-		rested:SetTexture(GetMediaPath("point_gem"))
+		--local rested = ring1:CreateTexture()
+		--rested:SetDrawLayer("OVERLAY", 1)
+		--rested:SetTexture(GetMediaPath("point_gem"))
 
 		-- outer ring value text
 		local ring1Value = ring1:CreateFontString()
@@ -906,7 +888,6 @@ Module.SetUpMinimap = function(self)
 		ring1Value:SetShadowColor(0, 0, 0, 0)
 		ring1Value.showDeficit = true -- show what's missing 
 		ring1.Value = ring1Value
-		ring1.OverrideValue = XP_OverrideValue
 
 		-- outer ring value description text
 		local ring1ValueDescription = ring1:CreateFontString()
@@ -940,7 +921,6 @@ Module.SetUpMinimap = function(self)
 		ring2.colorPower = true -- color the bar according to its power type when showin artifact power or others 
 		ring2.colorStanding = true -- color the bar according to your standing when tracking reputation
 		ring2.colorValue = true -- color the value string same color as the bar
-		ring2.OverrideValue = AP_OverrideValue
 
 		-- inner ring value text
 		local ring2Value = ring2:CreateFontString()
@@ -965,13 +945,6 @@ Module.SetUpMinimap = function(self)
 		Spinner[1] = ring1
 		Spinner[2] = ring2
 		
-		Handler.XP = Spinner[1]
-		Handler.XP.PostUpdate = PostUpdate_XP
-
-		Handler.ArtifactPower = Spinner[2]
-		Handler.ArtifactPower.PostUpdate = nil
-		Handler.Resting = resting
-
 		-- Toggle button for ring frame
 		local toggle = Handler:CreateOverlayFrame()
 		toggle:SetFrameLevel(toggle:GetFrameLevel() + 10) -- need this above the ring frame and the rings
@@ -1126,7 +1099,7 @@ Module.OnEvent = function(self, event, ...)
 			LEVEL = level
 		else
 			local level = UnitLevel("player")
-			if (level ~= LEVEL) then
+			if (not LEVEL) or (LEVEL < level) then
 				LEVEL = level
 			end
 		end
@@ -1164,86 +1137,126 @@ Module.UpdateBars = function(self, event, ...)
 		return 
 	end 
 
+	local Handler = self:GetMinimapHandler()
+
+	-- Figure out what should be shown. 
+	-- *This will be optionally user configurable later on, 
+	-- but for now we're strictly using XP and AP. 
+	-- *Next thing wil be tracked reputation.
 	local hasXP = PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
 
-	--Handler.Honor = ring1
-	--Handler.Reputation = ring2
+	-- This will include rep(s) and honor later on
+	local first, second 
+	if hasXP then 
+		first = "XP"
+	elseif hasAP then 
+		first = "ArtifactPower"
+	end 
+	if first then 
+		if hasAP and (first ~= "ArtifactPower") then 
+			second = "ArtifactPower"
+		end
+	end 
 
-
-	local Handler = self:GetMinimapHandler()
-
-	if (hasXP or hasAP) then
+	if (first or second) then
 		if (not Handler.Toggle:IsShown()) then  
 			Handler.Toggle:Show()
 		end
-	
-		-- 2 bars
-		if (hasXP and hasAP) then
-			-- Set the backdrop to the two bar backdrop
-			Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-twobars-backdrop"))
 
-			-- Disable any existing elements
-			self:DisableMinimapElement("XP")
-			self:DisableMinimapElement("ArtifactPower")
+		-- Dual bars
+		if (first and second) then
 
-			-- Update the look of the outer spinner
-			Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-two-outer"))
-			Spinner[1]:SetSparkSize(6,20 * 208/256)
-			Spinner[1]:SetSparkInset(15 * 208/256)
-			Spinner[1].Value:ClearAllPoints()
-			Spinner[1].Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
-			Spinner[1].Value:SetFontObject(Fonts(16, true)) 
-			Spinner[1].Value.Description:Hide()
-			Spinner[1].OverrideValue = XP_OverrideValue
+			-- Setup the bars and backdrops for dual bar mode
+			if self.spinnerMode ~= "Dual" then 
+
+				-- Set the backdrop to the two bar backdrop
+				Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-twobars-backdrop"))
+
+				-- Update the look of the outer spinner
+				Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-two-outer"))
+				Spinner[1]:SetSparkSize(6,20 * 208/256)
+				Spinner[1]:SetSparkInset(15 * 208/256)
+				Spinner[1].Value:ClearAllPoints()
+				Spinner[1].Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
+				Spinner[1].Value:SetFontObject(Fonts(16, true)) 
+				Spinner[1].Value.Description:Hide()
+				Spinner[1].OverrideValue = XP_OverrideValue
+				Spinner[1].PostUpdate = PostUpdate_XP
+			end
 
 			-- Assign the spinners to the elements
-			Handler.XP = Spinner[1]
-			Handler.ArtifactPower = Spinner[2]
+			if (self.spinner1 ~= first) then 
+				self:DisableMinimapElement(first)
+				Handler[first] = Spinner[1]
+				self:EnableMinimapElement(first)
+				Handler[first]:ForceUpdate()
+			end
+			if (self.spinner2 ~= second) then 
+				self:DisableMinimapElement(second)
+				Handler[second] = Spinner[2]
+				self:EnableMinimapElement(second)
+				Handler[second]:ForceUpdate()
+			end
 
-			-- Enable the elements
-			self:EnableMinimapElement("XP")
-			self:EnableMinimapElement("ArtifactPower")
+			-- Store the current modes
+			self.spinnerMode = "Dual"
+			self.spinner1 = first
+			self.spinner2 = second
 
-		-- 1 bar
+		-- Single bar
 		else
-			-- Set the backdrop to the single thick bar backdrop
-			Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-onebar-backdrop"))
 
-			local enable = hasXP and "XP" or "ArtifactPower"
-			local disable = hasXP and "XP" or "ArtifactPower"
+			-- Setup the bars and backdrops for single bar mode
+			if (self.spinnerMode ~= "Single") then 
 
-			-- Disable the inactive element
-			self:DisableMinimapElement(disable)
+				-- Set the backdrop to the single thick bar backdrop
+				Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-onebar-backdrop"))
 
-			-- Update the look of the outer spinner to the big single bar look
-			Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-single"))
-			Spinner[1]:SetSparkSize(6,34 * 208/256)
-			Spinner[1]:SetSparkInset(22 * 208/256)
-			Spinner[1].Value:ClearAllPoints()
-			Spinner[1].Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
-			Spinner[1].Value:SetFontObject(Fonts(24, true)) 
+				-- Update the look of the outer spinner to the big single bar look
+				Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-single"))
+				Spinner[1]:SetSparkSize(6,34 * 208/256)
+				Spinner[1]:SetSparkInset(22 * 208/256)
+				Spinner[1].Value:ClearAllPoints()
+				Spinner[1].Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
+				Spinner[1].Value:SetFontObject(Fonts(24, true)) 
+			end 		
 
-			-- Only show the description if this is an XP bar,
-			-- we haven't added any for AP yet!
-			if hasXP then 
-				Spinner[1].Value.Description:Show()
-			else 
-				Spinner[1].Value.Description:Hide()
+			-- Disable any previously active secondary element
+			if self.spinner2 and Handler[self.spinner2] then 
+				self:DisableMinimapElement(self.spinner2)
+				Handler[self.spinner2] = nil
 			end 
 
-			-- Update pointers and callbacks to the active element
-			Handler[disable] = nil
-			Handler[enable] = Spinner[1]
-			Handler[enable].OverrideValue = hasXP and XP_OverrideValue or AP_OverrideValue
+			-- Update the element if needed
+			if (self.spinner1 ~= first) then 
 
-			-- Enable the active element
-			self:EnableMinimapElement(enable)
+				-- Update pointers and callbacks to the active element
+				Handler[first] = Spinner[1]
+				Handler[first].OverrideValue = hasXP and XP_OverrideValue or AP_OverrideValue
+				Handler[first].PostUpdate = hasXP and PostUpdate_XP or nil
+
+				-- Enable the active element
+				self:EnableMinimapElement(first)
+
+				-- Make sure XP description is updated
+				if hasXP then 
+					Handler[first].Value.Description:Show()
+				end
+
+				-- Update the visible element
+				Handler[first]:ForceUpdate()
+			end 
 
 			-- If the second spinner is still shown, hide it!
 			if (Spinner[2]:IsShown()) then 
 				Spinner[2]:Hide()
 			end 
+
+			-- Store the current modes
+			self.spinnerMode = "Single"
+			self.spinner1 = first
+			self.spinner2 = nil
 		end 
 
 		-- Post update the frame, could be sticky

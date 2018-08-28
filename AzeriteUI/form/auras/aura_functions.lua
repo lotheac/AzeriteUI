@@ -67,7 +67,7 @@ filters.player = function(element, button, unit, isOwnedByPlayer, name, icon, co
 
 		-- Auras visible on the player frame (with the exception of the player unit in group frames)
 		elseif (bit_band(auraFlags, filterFlags.OnPlayer) ~= 0) then
-			return (unit == "player") and (not element.__owner.unitGroup)
+			return (unit == "player") and (not element._owner.unitGroup)
 
 		-- Show remaining auras that hasn't specifically been hidden
 		else 
@@ -100,7 +100,7 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 		
 		-- Auras visible on the player frame (with the exception of the player unit in group frames)
 		elseif (bit_band(auraFlags, filterFlags.OnPlayer) ~= 0) then
-			return (unit == "player") and (not element.__owner.unitGroup)
+			return (unit == "player") and (not element._owner.unitGroup)
 		
 		-- Auras visible when the player is a tank
 		elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 

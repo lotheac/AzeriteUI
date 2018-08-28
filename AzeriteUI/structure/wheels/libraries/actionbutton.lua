@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 30)
+local LibActionButton = CogWheel:Set("LibActionButton", 32)
 if (not LibActionButton) then	
 	return
 end
@@ -502,19 +502,18 @@ LibActionButton.CreateButtonOverlayGlow = function(self, button)
 end
 
 LibActionButton.CreateButtonCooldowns = function(self, button)
-
 	local cooldown = button:CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
 	cooldown:Hide()
 	cooldown:SetAllPoints()
 	cooldown:SetFrameLevel(button:GetFrameLevel() + 1)
 	cooldown:SetReverse(false)
 	cooldown:SetSwipeColor(0, 0, 0, .75)
-	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) 
 	cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
 	cooldown:SetDrawSwipe(true)
 	cooldown:SetDrawBling(true)
 	cooldown:SetDrawEdge(false)
-	cooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
+	cooldown:SetHideCountdownNumbers(true) 
 	button.Cooldown = cooldown
 
 	local cooldownCount = (button.Overlay or button):CreateFontString()
@@ -534,14 +533,13 @@ LibActionButton.CreateButtonCooldowns = function(self, button)
 	chargeCooldown:SetFrameLevel(button:GetFrameLevel() + 2)
 	chargeCooldown:SetReverse(false)
 	chargeCooldown:SetSwipeColor(0, 0, 0, .75)
-	chargeCooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	chargeCooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) 
 	chargeCooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+	chargeCooldown:SetDrawEdge(true)
 	chargeCooldown:SetDrawSwipe(true)
-	chargeCooldown:SetDrawBling(true)
-	chargeCooldown:SetDrawEdge(false)
-	chargeCooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
+	chargeCooldown:SetDrawBling(false)
+	chargeCooldown:SetHideCountdownNumbers(true) 
 	button.ChargeCooldown = chargeCooldown
-
 end
 
 LibActionButton.CreateFlyoutArrow = function(self, button)

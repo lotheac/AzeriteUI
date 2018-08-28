@@ -3,7 +3,6 @@ if (not LibActionButton) then
 	return 
 end 
 
-
 -- Lua API
 local _G = _G
 local pairs = pairs
@@ -35,29 +34,10 @@ local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
 local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
 local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
-
 -- Utility Functions
 ----------------------------------------------------
-
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
-
--- Time formatting
-local formatTime = function(time)
-	if time > DAY then -- more than a day
-		return "%d%s %d%s", time/DAY - time/DAY%1, "d", time%DAY/HOUR, "h"
-	elseif time > HOUR then -- more than an hour
-		return "%d%s %d%s", time/HOUR - time/HOUR%1, "h", time%HOUR - time%HOUR%1 , "m"
-	elseif time > MINUTE then -- more than a minute
-		return "%d%s %d%s", time/MINUTE - time/MINUTE%1, "m", time%MINUTE - time%1  , "s"
-	elseif time > 5 then -- more than 5 seconds
-		return "%d%s", time - time%1, "s"
-	elseif time > 0 then
-		return "%.1f%s", time, "s"
-	else
-		return ""
-	end	
-end
 
 -- Aimed to be compact and displayed on buttons
 local formatCooldownTime = function(time)
@@ -81,38 +61,14 @@ local formatCooldownTime = function(time)
 	end	
 end
 
-local formatCooldownTime2 = function(time)
-	if time > DAY then -- more than a day
-		time = time + DAY/2
-		return "%d%s", time/DAY - time/DAY%1, "d"
-	elseif time > HOUR then -- more than an hour
-		time = time + HOUR/2
-		return "%d%s", time/HOUR - time/HOUR%1, "h"
-	elseif time > MINUTE then -- more than a minute
-		time = time + MINUTE/2
-		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
-	elseif time > 10 then -- more than 10 seconds
-		return "%d", time - time%1
-	elseif time > 5 then -- more than 5 seconds
-		return "|cffff8800%d|r", time - time%1
-	elseif time > 0 then
-		return "|cffff0000%.1f|r", time
-	else
-		return ""
-	end	
-end
-
 ----------------------------------------------------
 -- ActionButton Template
 ----------------------------------------------------
-
 local ActionButton = setmetatable({}, LibActionButton:GetGenericMeta())
 local ActionButton_MT = { __index = ActionButton }
 
-
 -- Updates
 ----------------------------------------------------
-
 local OnUpdate = function(self, elapsed)
 
 	self.flashTime = (self.flashTime or 0) - elapsed
@@ -853,4 +809,4 @@ local Disable = function(self)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 31)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 33)

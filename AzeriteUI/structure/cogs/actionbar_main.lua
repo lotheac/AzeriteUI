@@ -580,8 +580,8 @@ ActionButton.PostCreate = function(self, ...)
 	self.ChargeCooldown:SetPoint(unpack(Layout.ChargeCooldownPlace))
 	self.ChargeCooldown:SetSwipeTexture(Layout.ChargeCooldownSwipeTexture, unpack(Layout.ChargeCooldownSwipeColor))
 	self.ChargeCooldown:SetSwipeColor(unpack(Layout.ChargeCooldownSwipeColor))
-	self.ChargeCooldown:SetDrawSwipe(Layout.ShowChargeCooldownSwipe)
 	self.ChargeCooldown:SetBlingTexture(Layout.ChargeCooldownBlingTexture, unpack(Layout.ChargeCooldownBlingColor)) 
+	self.ChargeCooldown:SetDrawSwipe(Layout.ShowChargeCooldownSwipe)
 	self.ChargeCooldown:SetDrawBling(Layout.ShowChargeCooldownBling)
 
 	self.CooldownCount:ClearAllPoints()
@@ -633,7 +633,6 @@ ActionButton.PostCreate = function(self, ...)
 	if Layout.OverlayGlowAntsTexture then 
 		self.OverlayGlow.ants:SetTexture(Layout.OverlayGlowAntsTexture)
 	end 
-	
 
 	-- Our own style layers
 	-----------------------------------------------------

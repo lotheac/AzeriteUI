@@ -6,10 +6,14 @@
 ## Version: 1.0
 ## DefaultState: Enabled
 ## SavedVariables: AzeriteUI_DB
-## X-Website: https://www.patreon.com/AzeriteUI
-## X-Donate: PayPal:azerite@cogwerkz.org
-## X-License: All Rights Reserved
 ## X-Category: Interface Enhancements
+## X-Curse-Project-ID: 298648
+## X-Curse-Project-Name: AzeriteUI
+## X-Donate: https://www.paypal.me/azerite
+## X-Website: https://www.patreon.com/AzeriteUI
+## X-Discord: https://discord.gg/MUSfWXd
+## X-BugReport: https://bitbucket.org/bigcogs/azeriteui/issues
+## X-License: All Rights Reserved
 
 structure\wheels\wheel.xml
 

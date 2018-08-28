@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.48] 2018-08-28
+### Added
+- Added better coloring to the name and health bar of Blizzard's mouseover unit tooltips, and did some general clutter cleanup.
+- Added a little red glow around the player frame combat indicator. It doesn't pulse, but it's more visible than just the icon.
+
+### Changed
+- Characters which have manually disabled their experience gains or reached their account's maximum level regardless of what the current maximum expansion level in World of Warcraft is will no longer have an empty experience bar visible. 
+- Added a fairly transparent swipe texture to action button charge cooldowns until we can figure out why the edge texture refuses to show up. 
+
+### Fixed
+- Minimap XP description text should now hopefully update when gaining a level.
+- Fixed a division by zero error when forcefully updating experience and artifact power widgets on login.
+- Fixed a double underscore typo related to the new aura filtering that could cause excessive amounts of bugs.
+- Actionbuttons now once again displays a slot texture when spells are dragged to and from the buttons.
+
 ## [1.0.47] 2018-08-27
 ### Added
 - Added the first iteration of a much better aura filtering system. Far more to come!

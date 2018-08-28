@@ -1,5 +1,5 @@
-local Version = 26 -- This library's version 
-local MapVersion = 26 -- Minimap library version the minimap created by this is compatible with
+local Version = 27 -- This library's version 
+local MapVersion = 27 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -71,7 +71,6 @@ LibMinimap.elements = LibMinimap.elements or {} -- registered module element tem
 LibMinimap.elementPool = LibMinimap.elementPool or {} -- pool of element instances
 LibMinimap.elementPoolEnabled = LibMinimap.elementPoolEnabled or {} -- per module registry of element having been enabled
 LibMinimap.elementProxy = LibMinimap.elementProxy or {} -- event handler for a module's registered elements
-LibMinimap.elementObjects = LibMinimap.elementObjects or {} -- pool of unique objects created by the elements
 
 -- The minimap button bag
 LibMinimap.buttonBag = LibMinimap.buttonBag or LibFrame:CreateFrame("Frame", nil, LibFrame:CreateFrame("Frame")) -- two layers to make sure it's gone
@@ -133,7 +132,6 @@ local Elements = LibMinimap.elements
 local ElementPool = LibMinimap.elementPool
 local ElementPoolEnabled = LibMinimap.elementPoolEnabled
 local ElementProxy = LibMinimap.elementProxy
-local ElementObjects = LibMinimap.elementObjects
 local Frame = LibMinimap.frame
 
 
@@ -1053,19 +1051,8 @@ LibMinimap.OnEvent = function(self, event, ...)
 	end
 end 
 
-
-
 -- Element Updates
 ---------------------------------------------------------
-
-LibMinimap.GetElementObject = function(self, objectName)
-	return ElementObjects[objectName]
-end 
-
-LibMinimap.SetElementObject = function(self, objectName, object)
-	ElementObjects[objectName] = object
-end 
-
 LibMinimap.GetMinimapHandler = function(self)
 	if (not ElementProxy[self]) then 
 		-- create a new instance of the element 

@@ -14,7 +14,6 @@ local IsResting = _G.IsResting
 local UnitXP = _G.UnitXP
 local UnitXPMax = _G.UnitXPMax
 
-
 -- Number abbreviations
 local short = function(value)
 	value = tonumber(value)
@@ -29,7 +28,6 @@ local short = function(value)
 		return tostring(math_floor(value))
 	end	
 end
-
 
 -- zhCN exceptions
 local gameLocale = GetLocale()
@@ -47,23 +45,27 @@ if (gameLocale == "zhCN") then
 	end
 end 
 
-
 local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
-
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value.showPercent then 
-		value:SetFormattedText("%d%%", min/max*100)
+		if (max > 0) then 
+			value:SetFormattedText("%d%%", min/max*100)
+		else 
+			value:SetText("")
+		end 
 	elseif value.showDeficit then 
 		value:SetFormattedText(short(max - min))
 	else 
 		value:SetFormattedText(short(min))
 	end
-
 	local percent = value.Percent
 	if percent then 
-		percent:SetFormattedText("%d%%", min/max*100)
+		if (max > 0) then 
+			percent:SetFormattedText("%d%%", min/max*100)
+		else 
+			percent:SetText("")
+		end 
 	end 
-
 	if element.colorValue then 
 		local color
 		if restedLeft then 
@@ -74,12 +76,10 @@ local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 			color = colors.xpValue or colors.xp
 		end 
 		value:SetTextColor(color[1], color[2], color[3])
-
 		if percent then 
 			percent:SetTextColor(color[1], color[2], color[3])
 		end 
 	end 
-
 end 
 
 local Update = function(self, event, ...)
@@ -184,5 +184,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 10)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 11)
 end 

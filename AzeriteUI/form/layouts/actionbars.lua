@@ -65,11 +65,11 @@ local ActionBarMain = {
 	-- Charge Cooldown 
 	ChargeCooldownSize = { 44, 44 },
 	ChargeCooldownPlace = { "CENTER", 0, 0 },
-	ChargeCooldownSwipeColor = { 0, 0, 0 , 0 },
-	ChargeCooldownBlingColor = { 0, 0, 0 , 0 },
-	ChargeCooldownSwipeTexture = GetMediaPath("blank"),
+	ChargeCooldownSwipeColor = { 0, 0, 0, .5 },
+	ChargeCooldownBlingColor = { 0, 0, 0, 0 },
+	ChargeCooldownSwipeTexture = GetMediaPath("actionbutton_circular_mask"),
 	ChargeCooldownBlingTexture = GetMediaPath("blank"),
-	ShowChargeCooldownSwipe = false,
+	ShowChargeCooldownSwipe = true,
 	ShowChargeCooldownBling = false,
 
 	-- Charge Count / Stack Size Text
@@ -101,10 +101,11 @@ local ActionBarMain = {
 	OverlayGlowAntsTexture = GetMediaPath("IconAlertAnts-Circle"),
 
 	-- Backdrop 
-	BackdropPlace = { "CENTER", 0, 0 },
-	BackdropSize = { 64/(122/256), 64/(122/256) },
-	BackdropTexture = GetMediaPath("actionbutton-backdrop"),
-	BackdropDrawLayer = { "BACKGROUND", 1 },
+	UseBackdropTexture = true, 
+		BackdropPlace = { "CENTER", 0, 0 },
+		BackdropSize = { 64/(122/256), 64/(122/256) },
+		BackdropTexture = GetMediaPath("actionbutton-backdrop"),
+		BackdropDrawLayer = { "BACKGROUND", 1 },
 
 	-- Border 
 	UseBorderTexture = true, 

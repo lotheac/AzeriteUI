@@ -162,11 +162,12 @@ local UnitFramePlayer = {
 		CombatIndicatorTexture = GetMediaPath("icon-combat"),
 		CombatIndicatorDrawLayer = {"OVERLAY", -2 },
 		CombatIndicatorColor = { Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75 }, 
-		CombatIndicatorGlowPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 + 80/2) },
+	
+		CombatIndicatorGlowPlace = { "BOTTOMLEFT", -(41 + 80/2), 2+ (22 - 80/2) },
 		CombatIndicatorGlowSize = { 80,80 },
 		CombatIndicatorGlowTexture = GetMediaPath("icon-combat-glow"), 
-		CombatIndicatorGlowDrawLayer = { "OVERLAY", -1 }, 
-		CombatIndicatorGlowColor = { 0, 0, 0, 0 }, 
+		CombatIndicatorGlowDrawLayer = { "OVERLAY", -3 }, 
+		CombatIndicatorGlowColor = { 1, 0, 0, .5 }, 
 
 		
 	UseThreat = true,

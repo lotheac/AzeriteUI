@@ -17,8 +17,14 @@ local Update = function(self, event, unit)
 	local inCombat = UnitAffectingCombat("player")
 	if (inCombat) then
 		element:Show()
+		if element.Glow then 
+			element.Glow:Show()
+		end
 	else
 		element:Hide()
+		if element.Glow then 
+			element.Glow:Hide()
+		end
 	end
 
 	if element.PostUpdate then 
@@ -43,11 +49,14 @@ local Enable = function(self)
 		local inCombat = UnitAffectingCombat("player")
 		if (inCombat) then
 			element:Show()
+			if element.Glow then 
+				element.Glow:Show()
+			end
 		else
 			element:Hide()
-		end
-		if element.Glow then 
-			element.Glow:Hide()
+			if element.Glow then 
+				element.Glow:Hide()
+			end
 		end
 
 		self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)

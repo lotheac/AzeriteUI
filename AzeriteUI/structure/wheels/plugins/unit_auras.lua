@@ -266,12 +266,12 @@ local CreateAuraButton = function(element)
 	cooldown:SetFrameLevel(button:GetFrameLevel() + 1)
 	cooldown:SetReverse(false)
 	cooldown:SetSwipeColor(0, 0, 0, .75)
-	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) -- what wow uses, only with slightly lower alpha
+	cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) 
 	cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
 	cooldown:SetDrawSwipe(true)
 	cooldown:SetDrawBling(true)
 	cooldown:SetDrawEdge(false)
-	cooldown:SetHideCountdownNumbers(true) -- todo: add better numbering
+	cooldown:SetHideCountdownNumbers(true) 
 	button.Cooldown = cooldown
 
 	local time = overlay:CreateFontString()
@@ -710,5 +710,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 22)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 23)
 end 

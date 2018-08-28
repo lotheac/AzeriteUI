@@ -10,7 +10,192 @@ local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [TooltipStyling]")
 
 -- Lua API
+local _G = _G
+local math_floor = math.floor
+local table_concat = table.concat
+local table_wipe = table.wipe
+local type = type
 local unpack = unpack
+
+-- WoW API
+local UnitExists = _G.UnitExists
+local UnitIsUnit = _G.UnitIsUnit
+
+-- Blizzard textures we use 
+local BOSS_TEXTURE = "|TInterface\\TargetingFrame\\UI-TargetingFrame-Skull:16:16:-2:1|t"
+local FFA_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-FFA:16:12:-2:1:64:64:6:34:0:40|t"
+local FACTION_ALLIANCE_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Alliance:16:12:-2:1:64:64:6:34:0:40|t"
+local FACTION_NEUTRAL_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Neutral:16:12:-2:1:64:64:6:34:0:40|t"
+local FACTION_HORDE_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Horde:16:16:-4:0:64:64:0:40:0:40|t"
+
+-- String storing current name data for the unit tooltips
+local NAME_STRING = {} 
+
+local colorize = function(str, ...)
+	local r, g, b = ...
+	if (type(r) == "table") then
+		r, g, b = unpack(r)
+	elseif (type(r) == "string") then
+		r, g, b = unpack(Colors[r])
+	end
+	return ("|cff%02X%02X%02X%s|r"):format(math_floor(r*255), math_floor(g*255), math_floor(b*255), str)
+end
+
+local GetTooltipUnit = function(tooltip)
+	local unit = tooltip.unit
+	if (not unit) then 
+		return UnitExists("mouseover") and "mouseover" or nil 
+	elseif UnitExists(unit) then 
+		return UnitIsUnit(unit, "mouseover") and "mouseover" or unit 
+	end
+end
+
+local OnTooltipSetUnit = function(tooltip)
+	if (tooltip:IsForbidden()) then 
+		return
+	end
+
+	local unit = GetTooltipUnit(tooltip)
+	if (not unit) then
+		tooltip:Hide()
+		tooltip.unit = nil
+		return
+	end
+
+	local isplayer = UnitIsPlayer(unit)
+	local level = UnitLevel(unit)
+	local name, realm = UnitName(unit)
+	local faction = UnitFactionGroup(unit)
+	local isdead = UnitIsDead(unit) or UnitIsGhost(unit)
+
+	local disconnected, pvp, ffa, pvpname, afk, dnd, class, classname
+	local classification, creaturetype, iswildpet, isbattlepet
+	local isboss, reaction, istapped
+	local color
+
+	if isplayer then
+		disconnected = not UnitIsConnected(unit)
+		pvp = UnitIsPVP(unit)
+		ffa = UnitIsPVPFreeForAll(unit)
+		pvpname = UnitPVPName(unit)
+		afk = UnitIsAFK(unit)
+		dnd = UnitIsDND(unit)
+		classname, class = UnitClass(unit)
+	else
+		classification = UnitClassification(unit)
+		creaturetype = UnitCreatureFamily(unit) or UnitCreatureType(unit)
+		isboss = classification == "worldboss"
+		reaction = UnitReaction(unit, "player")
+		istapped = UnitIsTapDenied(unit)
+		iswildpet = UnitIsWildBattlePet(unit)
+		isbattlepet = UnitIsBattlePetCompanion(unit)
+
+		if isbattlepet or iswildpet then
+			level = UnitBattlePetLevel(unit)
+		end
+		if (level == -1) then
+			classification = "worldboss"
+			isboss = true
+		end
+	end
+
+	-- figure out name coloring based on collected data
+	if isdead then 
+		color = Colors.dead
+	elseif isplayer then
+		if disconnected then
+			color = Colors.disconnected
+		elseif class then
+			color = Colors.class[class]
+		else
+			color = Colors.normal
+		end
+	elseif reaction then
+		if istapped then
+			color = Colors.tapped
+		else
+			color = Colors.reaction[reaction]
+		end
+	else
+		color = Colors.normal
+	end
+
+	-- this can sometimes happen when hovering over battlepets
+	if (not name) or (not color) then
+		tooltip:Hide()
+		return
+	end
+
+	-- clean up the tip
+	for i = 2, tooltip:NumLines() do
+		local line = _G[tooltip:GetName().."TextLeft"..i]
+		if line then
+			--line:SetTextColor(unpack(Colors.quest.gray)) -- for the time being this will just be confusing
+			local text = line:GetText()
+			if text then
+				if (text == PVP_ENABLED) then
+					line:SetText("") -- kill pvp line, we're adding icons instead!
+				end
+				if (text == FACTION_ALLIANCE) or (text == FACTION_HORDE) then
+					line:SetText("") -- kill faction name, the pvp icons will describe this well enough!
+				end
+				if text == " " then
+					local nextLine = _G[tooltip:GetName().."TextLeft"..(i + 1)]
+					if nextLine then
+						local nextText = nextLine:GetText()
+						if (COALESCED_REALM_TOOLTIP and INTERACTIVE_REALM_TOOLTIP) then -- super simple check for connected realms
+							if (nextText == COALESCED_REALM_TOOLTIP) or (nextText == INTERACTIVE_REALM_TOOLTIP) then
+								line:SetText("")
+								nextLine:SetText(nil)
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	for i in ipairs(NAME_STRING) do 
+		NAME_STRING[i] = nil
+	end
+
+	if isplayer then
+		if ffa then
+			NAME_STRING[#NAME_STRING + 1] = FFA_TEXTURE
+		elseif (pvp and faction) then
+			if (faction == "Horde") then
+				NAME_STRING[#NAME_STRING + 1] = FACTION_HORDE_TEXTURE
+			elseif (faction == "Alliance") then
+				NAME_STRING[#NAME_STRING + 1] = FACTION_ALLIANCE_TEXTURE
+			elseif (faction == "Neutral") then
+				-- They changed this to their new atlas garbage in Legion, 
+				-- so for the sake of simplicty we'll just use the FFA PvP icon instead. Works.
+				NAME_STRING[#NAME_STRING + 1] = FFA_TEXTURE
+			end
+		end
+		NAME_STRING[#NAME_STRING + 1] = name
+	else
+		if isboss then
+			NAME_STRING[#NAME_STRING + 1] = BOSS_TEXTURE
+		end
+		NAME_STRING[#NAME_STRING + 1] = name
+	end
+
+	-- Need color codes for the text to always be correctly colored,
+	-- or blizzard will from time to time overwrite it with their own.
+	local title = _G[tooltip:GetName().."TextLeft1"]
+	title:SetText(colorize(table_concat(NAME_STRING, " "), color[1], color[2], color[3])) 
+
+	-- Color the statusbar in the same color as the unit name.
+	local statusbar = _G[tooltip:GetName().."StatusBar"]
+	if (statusbar and statusbar:IsShown()) then
+		if (color == Colors.normal) then
+			color = Colors.quest.green
+		end 
+		statusbar:SetStatusBarColor(color[1], color[2], color[3], 1)
+		statusbar.color = color
+	end	
+end
 
 Module.OnEnable = function(self)
 	for tooltip in self:GetAllBlizzardTooltips() do 
@@ -20,6 +205,10 @@ Module.OnEnable = function(self)
 		self:SetBlizzardTooltipBackdropColor(tooltip, unpack(Layout.TooltipBackdropColor))
 		self:SetBlizzardTooltipBackdropBorderColor(tooltip, unpack(Layout.TooltipBackdropBorderColor))
 		self:SetBlizzardTooltipBackdropOffsets(tooltip, 10, 10, 10, 16)
+
+		if tooltip:HasScript("OnTooltipSetUnit") then 
+			tooltip:HookScript("OnTooltipSetUnit", OnTooltipSetUnit)
+		end
 
 		local bar = _G[tooltip:GetName().."StatusBar"]
 		if bar then 
