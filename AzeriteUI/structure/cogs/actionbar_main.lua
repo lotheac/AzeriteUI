@@ -28,10 +28,14 @@ local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
 local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
 local GetBindingKey = _G.GetBindingKey
 local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
+local InCombatLockdown = _G.InCombatLockdown
+local IsMounted = _G.IsMounted
 local IsXPUserDisabled = _G.IsXPUserDisabled
 local SetOverrideBindingClick = _G.SetOverrideBindingClick
+local TaxiRequestEarlyLanding = _G.TaxiRequestEarlyLanding
 local ToggleCalendar = _G.ToggleCalendar
 local UnitLevel = _G.UnitLevel
+local UnitOnTaxi = _G.UnitOnTaxi
 local UnitRace = _G.UnitRace
 
 -- WoW Objects
@@ -713,14 +717,14 @@ Module.ArrangeButtons = function(self)
 	end 
 end
 
-Module.SpawnVehicleExitButton = function(self)
+Module.SpawnExitButton = function(self)
 
 	local button = self:CreateFrame("Button", nil, "UICenter", "SecureActionButtonTemplate")
 	button:SetFrameStrata("MEDIUM")
 	button:SetFrameLevel(100)
 	button:SetSize(32,32)
 	button:SetAttribute("type", "macro")
-	button:SetAttribute("macrotext", "/leavevehicle [target=vehicle,exists,canexitvehicle]")
+	button:SetAttribute("macrotext", "/leavevehicle [target=vehicle,exists,canexitvehicle]\n/dismount [mounted]")
 
 	-- This assumes our predefined minimap size, 
 	-- should rewrite it to react to actual sizes.
@@ -736,8 +740,18 @@ Module.SpawnVehicleExitButton = function(self)
 		local tooltip = self:GetActionButtonTooltip()
 		tooltip:Hide()
 		tooltip:SetDefaultAnchor(button)
-		tooltip:AddLine(LEAVE_VEHICLE)
-		tooltip:AddLine(L["%s to leave the vehicle."]:format(L["<Left-Click>"]), Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+
+		if UnitOnTaxi("player") then 
+			tooltip:AddLine(TAXI_CANCEL)
+			tooltip:AddLine(TAXI_CANCEL_DESCRIPTION, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		elseif IsMounted() then 
+			tooltip:AddLine(BINDING_NAME_DISMOUNT)
+			tooltip:AddLine(L["%s to dismount."]:format(L["<Left-Click>"]), Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		else 
+			tooltip:AddLine(LEAVE_VEHICLE)
+			tooltip:AddLine(L["%s to leave the vehicle."]:format(L["<Left-Click>"]), Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		end 
+
 		tooltip:Show()
 	end)
 
@@ -746,8 +760,15 @@ Module.SpawnVehicleExitButton = function(self)
 		tooltip:Hide()
 	end)
 
+	-- Gotta do this the unsecure way, no macros exist for this yet. 
+	button:HookScript("OnClick", function(self, button) 
+		if (UnitOnTaxi("player") and (not InCombatLockdown())) then
+			TaxiRequestEarlyLanding()
+		end
+	end)
+
 	-- Register a visibility driver
-	RegisterAttributeDriver(button, "state-visibility", "[target=vehicle,exists,canexitvehicle] show; hide")
+	RegisterAttributeDriver(button, "state-visibility", "[target=vehicle,exists,canexitvehicle][mounted]show;hide")
 
 	self.VehicleExitButton = button
 end
@@ -1246,7 +1267,7 @@ Module.OnInit = function(self)
 
 	-- Spawn the buttons
 	self:SpawnButtons()
-	self:SpawnVehicleExitButton()
+	self:SpawnExitButton()
 
 	-- Spawn XP/AP bars
 	if Layout.UseStatusBars then 

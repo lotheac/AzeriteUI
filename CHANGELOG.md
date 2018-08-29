@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.50] 2018-08-29
+### Added
+- The vehicle exit button on the minimap can now also dismount the player if the player currently is mounted.
+- The vehicle exit button on the minimap can now also request a stop at the next flight point when using a taxi.
+
 ## [1.0.49] 2018-08-28
 ### Added
 - Added a set of crowd control auras to the aura filter lists. For the time being they'll be shown on the player and target frame, but more advanced filtering will be added later. 

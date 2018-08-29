@@ -109,7 +109,7 @@ L["Click to disable the Pet Action Bar."] = true
 -- Various Button Tooltips
 --------------------------------------------
 L["%s to leave the vehicle."] = true
-
+L["%s to dismount."] = true
 
 -- Minimap Compass Abbreviations
 --------------------------------------------
