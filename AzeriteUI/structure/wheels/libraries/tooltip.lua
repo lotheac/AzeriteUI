@@ -2251,8 +2251,8 @@ end
 
 LibTooltip.SetBlizzardTooltipBackdropOffsets = function(self, tooltip, left, right, top, bottom)
 	if (not Backdrops[tooltip]) then 
-		return 
-	end 
+		return
+	end
 	Backdrops[tooltip]:ClearAllPoints()
 	Backdrops[tooltip]:SetPoint("LEFT", -left, 0)
 	Backdrops[tooltip]:SetPoint("RIGHT", right, 0)

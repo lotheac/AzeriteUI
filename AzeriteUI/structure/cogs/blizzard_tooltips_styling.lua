@@ -41,6 +41,29 @@ local colorize = function(str, ...)
 	return ("|cff%02X%02X%02X%s|r"):format(math_floor(r*255), math_floor(g*255), math_floor(b*255), str)
 end
 
+-- Bar post updates
+-- Show health values for tooltip health bars, and hide others.
+-- Will expand on this later to tailer all tooltips to our needs.  
+local StatusBar_UpdateValue = function(bar, value, max)
+	if value then 
+		if (value >= 1e8) then 			bar.value:SetFormattedText("%dm", value/1e6) 		-- 100m, 1000m, 2300m, etc
+		elseif (value >= 1e6) then 		bar.value:SetFormattedText("%.1fm", value/1e6) 		-- 1.0m - 99.9m 
+		elseif (value >= 1e5) then 		bar.value:SetFormattedText("%dk", value/1e3) 		-- 100k - 999k
+		elseif (value >= 1e3) then 		bar.value:SetFormattedText("%.1fk", value/1e3) 		-- 1.0k - 99.9k
+		elseif (value > 0) then 		bar.value:SetText(tostring(math_floor(value))) 		-- 1 - 999
+		else 							bar.value:SetText(DEAD)
+		end 
+		if (not bar.value:IsShown()) then 
+			bar.value:Show()
+		end
+	else 
+		if (bar.value:IsShown()) then 
+			bar.value:Hide()
+			bar.value:SetText("")
+		end
+	end 
+end 
+
 local GetTooltipUnit = function(tooltip)
 	local unit = tooltip.unit
 	if (not unit) then 
@@ -61,6 +84,8 @@ local OnTooltipSetUnit = function(tooltip)
 		tooltip.unit = nil
 		return
 	end
+
+	tooltip.unit = unit
 
 	local isplayer = UnitIsPlayer(unit)
 	local level = UnitLevel(unit)
@@ -197,6 +222,52 @@ local OnTooltipSetUnit = function(tooltip)
 	end	
 end
 
+local StatusBar_OnValueChanged = function(statusbar)
+	local value = statusbar:GetValue()
+	local min, max = statusbar:GetMinMaxValues()
+	
+	-- Hide the bar if values are missing, or if max or min is 0. 
+	if (not min) or (not max) or (not value) or (max == 0) or (value == min) then
+		statusbar:Hide()
+		return
+	end
+	
+	-- Just in case somebody messed up, 
+	-- we silently correct out of range values.
+	if value > max then
+		value = max
+	elseif value < min then
+		value = min
+	end
+	
+	if statusbar.value then
+		StatusBar_UpdateValue(statusbar, value, max)
+	end
+
+	-- Because blizzard shrink the textures instead of cropping them.
+	statusbar:GetStatusBarTexture():SetTexCoord(0, (value-min)/(max-min), 0, 1)
+
+	-- The color needs to be updated, or it will pop back to green
+	if statusbar.color then
+		if (not statusbar:GetParent().unit) then
+			statusbar.color = Colors.quest.green
+		end
+		statusbar:SetStatusBarColor(unpack(statusbar.color))
+	end
+end
+
+local StatusBar_OnShow = function(statusbar)
+	Module:SetBlizzardTooltipBackdropOffsets(statusbar._owner, 10, 10, 10, 18)
+	StatusBar_OnValueChanged(statusbar)
+end
+
+local StatusBar_OnHide = function(statusbar)
+	statusbar:GetStatusBarTexture():SetTexCoord(0, 1, 0, 1)
+	Module:SetBlizzardTooltipBackdropOffsets(statusbar._owner, 10, 10, 10, 12)
+end
+
+
+
 Module.OnEnable = function(self)
 	for tooltip in self:GetAllBlizzardTooltips() do 
 		self:KillBlizzardTooltipPetTextures(tooltip)
@@ -204,7 +275,7 @@ Module.OnEnable = function(self)
 		self:SetBlizzardTooltipBackdrop(tooltip, Layout.TooltipBackdrop)
 		self:SetBlizzardTooltipBackdropColor(tooltip, unpack(Layout.TooltipBackdropColor))
 		self:SetBlizzardTooltipBackdropBorderColor(tooltip, unpack(Layout.TooltipBackdropBorderColor))
-		self:SetBlizzardTooltipBackdropOffsets(tooltip, 10, 10, 10, 16)
+		self:SetBlizzardTooltipBackdropOffsets(tooltip, 10, 10, 10, 12)
 
 		if tooltip:HasScript("OnTooltipSetUnit") then 
 			tooltip:HookScript("OnTooltipSetUnit", OnTooltipSetUnit)
@@ -213,9 +284,21 @@ Module.OnEnable = function(self)
 		local bar = _G[tooltip:GetName().."StatusBar"]
 		if bar then 
 			bar:ClearAllPoints()
-			bar:SetPoint("TOPLEFT", tooltip, "BOTTOMLEFT", 3, 1)
-			bar:SetPoint("TOPRIGHT", tooltip, "BOTTOMRIGHT", -3, 1)
+			bar:SetPoint("TOPLEFT", tooltip, "BOTTOMLEFT", 3, 1  -2)
+			bar:SetPoint("TOPRIGHT", tooltip, "BOTTOMRIGHT", -3, 1  -2)
 			bar:SetHeight(3)
+			bar._owner = tooltip
+
+			bar.value = bar:CreateFontString()
+			bar.value:SetDrawLayer("OVERLAY")
+			bar.value:SetFontObject(Game12Font_o1)
+			bar.value:SetPoint("CENTER", 0, 0)
+			bar.value:SetTextColor(235/250, 235/250, 235/250, .75)
+
+			bar:HookScript("OnShow", StatusBar_OnShow)
+			bar:HookScript("OnHide", StatusBar_OnHide)
+			bar:HookScript("OnValueChanged", StatusBar_OnValueChanged)
+
 		end 
 	end 
 end 

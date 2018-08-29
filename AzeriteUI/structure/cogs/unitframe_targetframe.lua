@@ -161,6 +161,9 @@ local PostCreateAuraButton = function(element, button)
 	button.Count:SetJustifyV("MIDDLE")
 	button.Count:ClearAllPoints()
 	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
+	if Layout.AuraCountColor then 
+		button.Count:SetTextColor(unpack(Layout.AuraCountColor))
+	end 
 
 	button.Time:SetFontObject(Layout.AuraTimeFont)
 	button.Time:ClearAllPoints()

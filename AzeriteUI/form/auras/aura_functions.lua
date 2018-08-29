@@ -57,8 +57,12 @@ filters.player = function(element, button, unit, isOwnedByPlayer, name, icon, co
 	local auraFlags = auraList[spellID]
 	if auraFlags then
 
+		-- Always show boss level priorities
+		if (bit_band(auraFlags, filterFlags.PrioBoss) ~= 0) then 
+			return true 
+
 		-- Auras cast by the player
-		if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+		elseif (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
 			return unitIsPlayer[unitCaster] 
 
 		-- Auras visible on friendly targets (including ourself)
@@ -90,8 +94,12 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 	local auraFlags = auraList[spellID]
 	if auraFlags then
 
+		-- Always show boss level priorities
+		if (bit_band(auraFlags, filterFlags.PrioBoss) ~= 0) then 
+			return true 
+
 		-- Auras cast by the player
-		if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+		elseif (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
 			return unitIsPlayer[unitCaster] 
 		
 		-- Auras visible on friendly targets (including ourself)

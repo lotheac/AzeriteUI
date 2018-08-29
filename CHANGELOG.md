@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.51] 2018-08-29
+### Added
+- Added 200 auras from Battle for Azeroth dungeons to the aura whitelists for player and target unitframes.
+- Added 252 Well Fed! auras to the aura filter. 
+- Added an abbreviated health text to Blizzard mouseover tooltip statusbars.
+
+### Changed
+- Restructured the aura lists to avoid spam and maintain clearity in the code.
+- Adjusted the position and color of aura stack counts to match the actionbuttons in look and logic.
+
+### Fixed
+- Fixed the issue causing Blizzard mouseover tooltip statusbars to have their color flicker back and forth from the unit color and green. 
+
 ## [1.0.50] 2018-08-29
 ### Added
 - The vehicle exit button on the minimap can now also dismount the player if the player currently is mounted.

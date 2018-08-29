@@ -182,6 +182,9 @@ local PostCreateAuraButton = function(element, button)
 	button.Count:SetJustifyV("MIDDLE")
 	button.Count:ClearAllPoints()
 	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
+	if Layout.AuraCountColor then 
+		button.Count:SetTextColor(unpack(Layout.AuraCountColor))
+	end 
 
 	button.Time:SetFontObject(Layout.AuraTimeFont)
 	button.Time:ClearAllPoints()
@@ -439,6 +442,9 @@ local Style = function(self, unit, id, ...)
 		healthFg:SetPoint(unpack(Layout.HealthForegroundPlace))
 		healthFg:SetTexture(Layout.HealthForegroundTexture)
 		healthFg:SetDrawLayer(unpack(Layout.HealthForegroundDrawLayer))
+		if Layout.HealthForegroundColor then 
+			healthFg:SetVertexColor(unpack(Layout.HealthForegroundColor))
+		end 
 		self.Health.Fg = healthFg
 	end 
 

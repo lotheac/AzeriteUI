@@ -22,8 +22,7 @@ form\locale\locale.xml
 form\fonts\fonts.xml
 form\fonts\fonts.lua
 form\colors\colors.lua
-form\auras\aura_lists.lua
-form\auras\aura_functions.lua
+form\auras\auras.xml
 form\layouts\layout.xml
 
 structure\main.lua
