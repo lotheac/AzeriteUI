@@ -247,13 +247,13 @@ local StatusBar_OnValueChanged = function(statusbar)
 	-- Because blizzard shrink the textures instead of cropping them.
 	statusbar:GetStatusBarTexture():SetTexCoord(0, (value-min)/(max-min), 0, 1)
 
-	-- The color needs to be updated, or it will pop back to green
-	if statusbar.color then
-		if (not statusbar:GetParent().unit) then
-			statusbar.color = Colors.quest.green
-		end
-		statusbar:SetStatusBarColor(unpack(statusbar.color))
+	-- Add the green if no other color was detected. Like objects that aren't units, but still have health. 
+	if (not statusbar.color) or (not statusbar:GetParent().unit) then
+		statusbar.color = Colors.quest.green
 	end
+
+	-- The color needs to be updated, or it will pop back to green
+	statusbar:SetStatusBarColor(unpack(statusbar.color))
 end
 
 local StatusBar_OnShow = function(statusbar)
@@ -262,11 +262,12 @@ local StatusBar_OnShow = function(statusbar)
 end
 
 local StatusBar_OnHide = function(statusbar)
+	-- Do a color and texture reset upon hiding, to make sure it looks right when next shown. 
+	statusbar.color = Colors.quest.green
 	statusbar:GetStatusBarTexture():SetTexCoord(0, 1, 0, 1)
+	statusbar:SetStatusBarColor(unpack(statusbar.color))
 	Module:SetBlizzardTooltipBackdropOffsets(statusbar._owner, 10, 10, 10, 12)
 end
-
-
 
 Module.OnEnable = function(self)
 	for tooltip in self:GetAllBlizzardTooltips() do 

@@ -35,3 +35,4 @@ Join our social communities to talk about the development, the concepts, the fut
 ## Pledge to our work!  
 
 * Patreon: [www.patreon.com/AzeriteUI](https://www.patreon.com/AzeriteUI)
+* PayPal: [www.paypal.me/azerite](https://www.paypal.me/azerite)

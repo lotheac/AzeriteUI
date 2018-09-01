@@ -141,7 +141,8 @@ local UnitFramePlayer = {
 	UseCastBar = true,
 		CastBarPlace = { "BOTTOMLEFT", 27, 27 },
 		CastBarSize = { 385, 40 },
-		CastBarOrientation = "RIGHT", 
+		CastBarOrientation = "RIGHT",
+		CastBarDisableSmoothing =  true, 
 		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
 		CastBarSmoothingFrequency = .15,
 		CastBarTexture = nil, 
@@ -292,7 +293,7 @@ local UnitFramePlayer = {
 		SeasonedAbsorbSize = { 385, 40 },
 		SeasonedAbsorbTexture = GetMediaPath("hp_cap_bar"),
 		SeasonedCastSize = { 385, 40 },
-		SeasonedCastTexture = GetMediaPath("hp_cap_bar"),
+		SeasonedCastTexture = GetMediaPath("hp_cap_bar_highlight"),
 		SeasonedManaOrbTexture = GetMediaPath("orb_case_hi"),
 		SeasonedManaOrbColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		
@@ -985,7 +986,7 @@ local UnitFrameTarget = {
 		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
 		CastBarSmoothingFrequency = .15,
 		CastBarTexture = nil, 
-		CastBarColor = { 1, 1, 1, .15 }, 
+		CastBarColor = { 1, 1, 1, .25 }, 
 		CastBarSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 

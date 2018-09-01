@@ -7,10 +7,11 @@ local _G = _G
 local bit_band = bit.band
 local string_match = string.match
 
--- WoW APi
+-- WoW API
 local GetSpecialization = _G.GetSpecialization
 local GetSpecializationInfo = _G.GetSpecializationInfo
 local IsInGroup = _G.IsInGroup
+local GetTime = _G.GetTime
 local IsInInstance = _G.IsInInstance
 local IsLoggedIn = _G.IsLoggedIn
 local UnitCanAttack = _G.UnitCanAttack
@@ -54,6 +55,11 @@ end
 
 filters.player = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
 
+	local timeLeft 
+	if (expirationTime and expirationTime > 0) then 
+		timeLeft = expirationTime - GetTime()
+	end
+
 	local auraFlags = auraList[spellID]
 	if auraFlags then
 
@@ -79,12 +85,16 @@ filters.player = function(element, button, unit, isOwnedByPlayer, name, icon, co
 		end 
 
 	else
-		-- Show auras from npc's
+		-- Show auras from hostile npc's
 		if (not unitCaster) or (UnitCanAttack("player", unitCaster) and (not UnitPlayerControlled(unitCaster))) then 
-			return ((not isBuff) and (duration < 3600))
-		else 
-			-- Show any auras cast by bosses or the player's vehicle
-			return isBossDebuff or (unitCaster == "vehicle")
+			return ((not isBuff) and (duration and duration < 180))
+
+		-- Show any auras cast by bosses or the player's vehicle
+		elseif (isBossDebuff or (unitCaster == "vehicle")) then
+			return true
+		else
+			-- Just show all short ones remaining
+			return (duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))
 		end 
 	end
 
@@ -131,9 +141,9 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 	elseif (UnitCanAttack("player", unit) and (not UnitPlayerControlled(unit))) then 
 		return (not unitCaster or (unitCaster == unit)) or (isBuff and (duration < 3600))
 
-	-- Show unknown auras not falling into any of the above categories
+	-- Show unknown short auras not falling into any of the above categories
 	else 
-		return (not unitCaster)
+		return (not unitCaster) or (duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))
 	end
 end
 

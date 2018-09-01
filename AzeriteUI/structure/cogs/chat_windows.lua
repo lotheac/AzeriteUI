@@ -439,17 +439,18 @@ Module.PostCreateChatWindow = function(self, frame)
 		end
 	end)
 
-	if (editBox:GetParent() ~= frame) then
-		editBox:SetParent(frame)
-	end
+	-- These things will cause the editbox of docked windows 
+	-- to become hidden when in "classic" chat mode. 
 
-	hooksecurefunc(editBox, "SetParent", function(editBox, parent) 
-		--if (parent == UIParent) then
-		if (parent ~= frame) then
-			editBox:SetParent(frame)
-			--editBox:SetParent(self:GetFrame("UICenter"))
-		end
-	end)
+	--if (editBox:GetParent() ~= frame) then
+	--	editBox:SetParent(frame)
+	--end
+
+	--hooksecurefunc(editBox, "SetParent", function(editBox, parent) 
+	--	if (parent ~= frame) then
+	--		editBox:SetParent(frame)
+	--	end
+	--end)
 
 
 	-- ButtonFrame
@@ -478,12 +479,18 @@ Module.PostCreateChatWindow = function(self, frame)
 			self:UpdateChatWindowAlpha(frame)
 
 			-- Hook all editbox chat sizes to the same as ChatFrame1
-			local font, size, style = ChatFrame1:GetFontObject():GetFont()
+			local fontObject = frame:GetFontObject()
+			local font, size, style = fontObject:GetFont()
+			local x,y = fontObject:GetShadowOffset()
+			local r, g, b, a = fontObject:GetShadowColor()
 			local ourFont, ourSize, ourStyle = editBox:GetFont()
 
 			-- Stupid blizzard changing sizes by 0.0000001 and similar
 			size = math_floor(((size*10) + .5)/10)
 			ourSize = math_floor(((ourSize*10) + .5)/10)
+
+			editBox:SetFontObject(fontObject)
+			editBox.header:SetFontObject(fontObject)
 
 			-- Make sure the editbox keeps the same font as the frame, 
 			-- and not some completely different size as it does by default. 
@@ -497,6 +504,12 @@ Module.PostCreateChatWindow = function(self, frame)
 			if (ourFont ~= font) or (ourSize ~= size) or (style ~= ourStyle) then 
 				editBox.header:SetFont(font, size, style)
 			end 
+
+			editBox:SetShadowOffset(x,y)
+			editBox:SetShadowColor(r,g,b,a)
+
+			editBox.header:SetShadowOffset(x,y)
+			editBox.header:SetShadowColor(r,g,b,a)
 		end
 	end)
 

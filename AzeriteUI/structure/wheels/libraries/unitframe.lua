@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 41)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 44)
 if (not LibUnitFrame) then	
 	return
 end
@@ -67,7 +67,6 @@ local frameElements = LibUnitFrame.frameElements
 local frameElementsEnabled = LibUnitFrame.frameElementsEnabled
 local scriptHandlers = LibUnitFrame.scriptHandlers
 local scriptFrame = LibUnitFrame.scriptFrame
-
 
 -- RGB to Hex Color Code
 local hex = function(r, g, b)
@@ -182,6 +181,59 @@ if (not customClassColors()) then
 end
 
 
+local secureSnippets = {
+	vehicleSwitcher = [=[
+		if (name == "state-vehicleswitch") then 
+			local frame = self:GetFrameRef("UnitFrame");
+			local unit = frame:GetAttribute("unit");
+			local realUnit = self:GetAttribute("realUnit");
+			local vehicleUnit = self:GetAttribute("vehicleUnit");
+
+			local newUnit; 
+			if (realUnit == "player") then 
+				if UnitHasVehicleUI("player") then 
+					newUnit = "pet";
+				else 
+					newUnit = "player"; 
+				end 
+			elseif (realUnit == "pet") then 
+				if UnitHasVehicleUI("player") then 
+					newUnit = "player"; 
+				else 
+					newUnit = "pet";
+				end 
+			elseif UnitHasVehicleUI(realUnit) then 
+				newUnit = vehicleUnit 
+			else
+				newUnit = realUnit
+			end
+
+			if newUnit then 
+				-- compare to the current visibility driver, replace if needed
+				local newDriver 
+				if (newUnit == realUnit) then 
+					newDriver = frame:GetAttribute("visibilityDriver"); 
+				else 
+					-- Making an exception here for the pet frame, 
+					-- it's just a tricky one for some reason.
+					--if (realUnit == "pet") then 
+					--	newDriver = "show"
+					--else 
+					--	newDriver = "[@"..newUnit..",exists]show;hide"; 
+					--	newDriver = "[@"..newUnit..",exists]show;hide"; 
+					--end 
+				end 
+
+				UnregisterAttributeDriver(frame, "state-visibility"); 
+				RegisterAttributeDriver(frame, "state-visibility", newDriver); 
+
+				-- set the frame's new unit
+				-- *this will fire a callback in Lua, updating frame events and elements
+				frame:SetAttribute("unit", newUnit);
+			end	
+		end
+	]=]
+}
 
 -- Utility Functions
 --------------------------------------------------------------------------
@@ -242,139 +294,11 @@ local UnitFrame_MT = { __index = UnitFrame }
 
 -- Methods we don't wish to expose to the modules
 --------------------------------------------------------------------------
-
 local IsEventRegistered = UnitFrame_MT.__index.IsEventRegistered
 local RegisterEvent = UnitFrame_MT.__index.RegisterEvent
 local RegisterUnitEvent = UnitFrame_MT.__index.RegisterUnitEvent
 local UnregisterEvent = UnitFrame_MT.__index.UnregisterEvent
 local UnregisterAllEvents = UnitFrame_MT.__index.UnregisterAllEvents
-
-
-UnitFrame.GetVehicleUnit = function(frame, unit)
-	local driver, vehicleUnit
-
-	if (unit == "player") then 
-		driver = "[vehicleui][overridebar][possessbar][shapeshift]pet;player"
-		--driver = "[vehicleui]pet;player"
-		vehicleUnit = "pet"
-
-	elseif (unit == "pet") then 
-		driver = "[vehicleui][overridebar][possessbar][shapeshift]player;pet"
-		--driver = "[vehicleui]player;pet"
-		vehicleUnit = "player"
-
-	else 
-		driver = "[unithasvehicleui,@"..unit.."]"..unit.."pet;"..unit
-		vehicleUnit = unit.."pet"
-	end 
-
-	return driver, vehicleUnit
-end
-
-UnitFrame.EnableVehicleSwitcher = function(frame, unit)
-
-	local driver, vehicleUnit = frame:GetVehicleUnit(unit)
-	local result, target = SecureCmdOptionParse(driver)
-
-	local vehicleSwitcher = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
-	vehicleSwitcher:SetFrameRef("UnitFrame", frame)
-	vehicleSwitcher:SetAttribute("realUnit", unit)
-	vehicleSwitcher:SetAttribute("vehicleUnit", vehicleUnit)
-	vehicleSwitcher:SetAttribute("_onattributechanged", [[
-		if (name == "state-vehicleswitch") then 
-			local frame = self:GetFrameRef("UnitFrame");
-			local unit = frame:GetAttribute("unit");
-			local realUnit = self:GetAttribute("realUnit");
-			local vehicleUnit = self:GetAttribute("vehicleUnit");
-
-			local newUnit; 
-			if (value == vehicleUnit) then
-				if HasVehicleActionBar() then
-					newUnit = GetVehicleBarIndex() and vehicleUnit; 
-				elseif HasOverrideActionBar() then 
-					newUnit = GetOverrideBarIndex() and vehicleUnit;
-				elseif HasTempShapeshiftActionBar() then
-					newUnit = GetTempShapeshiftBarIndex() and vehicleUnit;
-				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then 
-					newUnit = GetBonusBarIndex() and vehicleUnit;
-				else
-					newUnit = realUnit; 
-				end
-			elseif (value ~= unit) then 
-				newUnit = value;
-			end
-
-			if newUnit then 
-				-- compare to the current visibility driver, replace if needed
-				local newDriver 
-				if (newUnit == realUnit) then 
-					newDriver = frame:GetAttribute("visibilityDriver"); 
-				else 
-					-- Making an exception here for the pet frame, 
-					-- it's just a tricky one for some reason.
-					if (realUnit == "pet") then 
-						newDriver = "show"
-					else 
-						newDriver = "[@"..newUnit..",exists]show;hide"; 
-					end 
-				end 
-
-				UnregisterAttributeDriver(frame, "state-visibility"); 
-				RegisterAttributeDriver(frame, "state-visibility", newDriver); 
-
-				-- set the frame's new unit
-				-- *this will fire a callback in Lua, updating frame events and elements
-				frame:SetAttribute("unit", newUnit);
-			end	
-
-		end
-	]])	
-	
-	--[=[
-		vehicleSwitcher:SetAttribute("onattributeChangedOld", [[
-			if (name == "state-vehicleswitch") then 
-
-				local frame = self:GetFrameRef("UnitFrame");
-				local unit = frame:GetAttribute("unit");
-				local realUnit = self:GetAttribute("realUnit");
-				local vehicleUnit = self:GetAttribute("vehicleUnit");
-
-				-- Is there a unit change?
-				local newUnit; 
-				if (value ~= unit) then 
-					newUnit = value; 
-				end 
-
-				if newUnit then 
-
-					-- compare to the current visibility driver, replace if needed
-					local newDriver 
-					if (newUnit == realUnit) then 
-						newDriver = frame:GetAttribute("visibilityDriver"); 
-					else 
-						-- Making an exception here for the pet frame, 
-						-- it's just a tricky one for some reason.
-						if (realUnit == "pet") then 
-							newDriver = "show"
-						else 
-							newDriver = "[@"..newUnit..",exists]show;hide"; 
-						end 
-					end 
-
-					UnregisterAttributeDriver(frame, "state-visibility"); 
-					RegisterAttributeDriver(frame, "state-visibility", newDriver); 
-
-					-- set the frame's new unit
-					-- *this will fire a callback in Lua, updating frame events and elements
-					frame:SetAttribute("unit", newUnit);
-
-				end 
-			end 
-		]])
-	]=]
-
-	RegisterAttributeDriver(vehicleSwitcher, "state-vehicleswitch", driver)
-end 
 
 -- Return or create the library default tooltip
 -- This is shared by all unitframes, unless these methods 
@@ -419,7 +343,6 @@ end
 
 -- Library API
 --------------------------------------------------------------------------
-
 -- Return or create the library default tooltip
 LibUnitFrame.GetUnitFrameTooltip = function(self)
 	return LibUnitFrame:GetTooltip("CG_UnitFrameTooltip") or LibUnitFrame:CreateTooltip("CG_UnitFrameTooltip")
@@ -455,11 +378,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 
 	frame.id = tonumber(string_match(unit, "^.-(%d+)"))
 	frame.requireUnit = true
-	frame.unit = unit 
-	frame.realUnit = unit
 	frame.colors = frame.colors or Colors
-
-	frame:SetAttribute("unit", unit) 
 
 	if (frame.ignoreMouseOver) then 
 		frame:EnableMouse(false)
@@ -471,48 +390,21 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 		frame:SetScript("OnLeave", UnitFrame.OnLeave)
 		frame:RegisterForClicks("AnyUp")
 	end 
-	--frame:SetScript("OnAttributeChanged", UnitFrame.OnLeave)
 
-	-- Initial update of the unit, in case we're in a vehicle at reload
-	local tempDriver
-	local driver, vehicleUnit = frame:GetVehicleUnit(unit)
-	local result, target = SecureCmdOptionParse(driver)
-	if (result ~= unit) then 
-		frame:SetAttribute("unit", result)
-		tempDriver = driver
-	end 
-
-	-- Allow custom drivers to be used, put in basic ones otherwise
-	-- todo: make some generic smart exceptions for party and raid
-	if (unit == "player") then 
-		visibilityDriver = visibilityDriver or string_format("[@%s,exists][vehicleui][overridebar][possessbar][shapeshift]show;hide", unit) 
-	else 
-		visibilityDriver = visibilityDriver or string_format("[@%s,exists]show;hide", unit) 
-	end 
-
-	frame:SetAttribute("visibilityDriver", visibilityDriver)
-	RegisterAttributeDriver(frame, "state-visibility", tempDriver or visibilityDriver)
-
-	if (unit == "player") then 
-		frame:EnableVehicleSwitcher(unit)
-
-	elseif (unit == "pet") then 
-		frame:EnableVehicleSwitcher(unit)
-
-	elseif (unit == "target") then
+	if (unit == "target") then
 		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.OverrideAllElements, true)
-
-	elseif (unit == "mouseover") then
-		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit == "focus") then
 		frame:RegisterEvent("PLAYER_FOCUS_CHANGED", UnitFrame.OverrideAllElements, true)
 
+	elseif (unit == "mouseover") then
+		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT", UnitFrame.OverrideAllElements, true)
+
 	elseif (unit:match("boss%d?$")) then
 		frame.unitGroup = "boss"
-		--frame:EnableFrameFrequent(.5, "unit")
 		frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_TARGETABLE_CHANGED", UnitFrame.OverrideAllElements, true)
+		--frame:EnableFrameFrequent(.5, "unit")
 
 	elseif (unit:match("arena%d?$")) then
 		frame.unitGroup = "arena"
@@ -520,17 +412,54 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 
 	elseif (unit:match("party%d?$")) then 
 		frame.unitGroup = "party"
-		frame:EnableVehicleSwitcher(unit)
 
 	elseif (unit:match("raid%d?$")) then 
 		frame.unitGroup = "raid"
-		frame:EnableVehicleSwitcher(unit)
 
 	elseif (unit:match("%w+target")) then
 		frame:EnableFrameFrequent(.5, "unit")
 	end
 
-	-- Store the unitframe in the registry
+	local vehicleDriver, visDriver
+	if (unit == "player") then 
+		-- Should work in all cases where the unitframe is replaced. It should always be the "pet" unit.
+		vehicleDriver = "[vehicleui]pet;player"
+
+		-- Might seem stupid, but I want the player frame to disappear along with the actionbars 
+		-- when we've blown the flight master's whistle and are getting picked up.
+		visDriver = "[@player,exists][vehicleui][possessbar][overridebar][mounted]show;hide"
+		--visDriver = "show"
+
+	elseif (unit == "pet") then 
+		vehicleDriver = "[vehicleui]player;pet"
+		visDriver = "[@pet,exists][vehicleui]show;hide"
+
+	elseif (unit:match("party%d?$")) or (unit:match("raid%d?$")) then 
+		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
+	end 
+
+	if (not visDriver) then
+		visDriver = string_format("[@%s,exists]show;hide", unit)
+	end
+
+	if vehicleDriver then 
+		local vehicleSwitcher = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
+		vehicleSwitcher:SetFrameRef("UnitFrame", frame)
+		vehicleSwitcher:SetAttribute("unit", unit)
+		vehicleSwitcher:SetAttribute("_onattributechanged", [=[
+			local frame = self:GetFrameRef("UnitFrame"); 
+			frame:SetAttribute("unit", value); 
+		]=])
+		frame.realUnit = unit
+		frame:SetAttribute("unit", SecureCmdOptionParse(vehicleDriver))
+		RegisterAttributeDriver(vehicleSwitcher, "state-vehicleswitch", vehicleDriver)
+	else
+		frame:SetAttribute("unit", unit)
+	end 
+
+	frame:SetAttribute("visibilityDriver", visDriver)
+	RegisterAttributeDriver(frame, "state-visibility", visDriver)
+
 	frames[frame] = true 
 	
 	return frame

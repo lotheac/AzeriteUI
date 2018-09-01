@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 5)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 6)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -137,7 +137,6 @@ local UnregisterAllEvents = WidgetFrame_MT.__index.UnregisterAllEvents
 local UpdateAllElements = function(self, ...)
 	return (self.OverrideAllElements or self.UpdateAllElements) (self, ...)
 end 
-
 
 WidgetFrame.OnUnitChanged = function(self, unit)
 	if (self.unit ~= unit) then

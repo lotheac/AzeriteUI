@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.52] 2018-09-01
+### Added
+- Added our new PayPal link [www.paypal.me/azerite](https://www.paypal.me/azerite) to the README! 
+
+### Changed
+- Target of target now has text indicating when its unit is dead or offline, to avoid "empty" frames which falsely appear to be bugged.
+- Player and target unit frame overlay castbars had their opacity bumped up a little, to make them easier to spot for people with worse monitor contrast ranges or possibly worse eyesight than mine. Either way it was probably too subtle for the majority, and thus needed changing. 
+- The chatframe input boxes now follow the same font size and style as their respective chat frames.
+- Rewrote the unit and visibility driver system for player, pet and grouped unitframes again. Tested with vehicles in Ulduar, with Legion cannons in Felsoul Hold in Suramar. The UI reacts and behaves as the default Blizzard UI does in these situations, so for now we'll consider this fixed. Further adjustments will be needed if any further situations arise and can be verified and reproduced.
+- Adjusted the player and target aura filters to include a lot of short duration general auras. 
+- Brightened up the Druid class color. Doesn't need to be toned down in this UI! 
+
+### Fixed
+- The chatframe input box should no longer be hidden when viewing other chat tabs than the primary one when using "classic" chat mode. 
+- Blizzard mouseover tooltips with objects that aren't units but still have health now get their health bars colored green, and not just whatever was left over from the previous unit with a unit colored health bar shown. 
+
 ## [1.0.51] 2018-08-29
 ### Added
 - Added 200 auras from Battle for Azeroth dungeons to the aura whitelists for player and target unitframes.

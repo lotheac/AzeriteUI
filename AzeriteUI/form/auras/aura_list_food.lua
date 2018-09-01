@@ -294,3 +294,13 @@ auraList[134506] = OnPlayer + IsFood
 auraList[225606] = OnPlayer + IsFood 
 auraList[ 33261] = OnPlayer + IsFood 
 auraList[201636] = OnPlayer + IsFood 
+
+-- Toys
+
+-- Fishing Bobbers. 
+-- These are cosmetic, and stack, but only the latest is visible.
+-- Need to make a grouped system where only the one with  
+-- the longest time left is currently shown. 
+--auraList[231291] = OnPlayer -- Can of Worms Bobber (Fishing Bobber)
+--auraList[231319] = OnPlayer -- Toy Cat Head Bobber (Fishing Bobber)
+--auraList[232613] = OnPlayer -- Wooden Pepe Bobber (Fishing Bobber)

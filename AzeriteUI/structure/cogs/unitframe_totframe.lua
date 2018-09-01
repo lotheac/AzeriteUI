@@ -33,10 +33,18 @@ local OverrideValue = function(element, unit, min, max, disconnected, dead, tapp
 end 
 
 local OverrideHealthValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if dead then 
-		return element.Value:SetText(DEAD)
+	if disconnected then 
+		if element.Value then 
+			element.Value:SetText(PLAYER_OFFLINE)
+		end 
+	elseif dead then 
+		if element.Value then 
+			return element.Value:SetText(DEAD)
+		end
 	else 
-		return OverrideValue(element, unit, min, max, disconnected, dead, tapped)
+		if element.Value then 
+			return OverrideValue(element, unit, min, max, disconnected, dead, tapped)
+		end 
 	end 
 end 
 
@@ -49,7 +57,8 @@ local PostUpdateAlpha = function(self)
 	local CURRENT_STYLE
 	local level = UnitLevel("target")
 
-	if Layout.HideWhenUnitIsPlayer and UnitIsUnit(unit, "player") then 
+	-- Hide it when tot is the same as the target
+	if Layout.HideWhenUnitIsPlayer and (UnitIsUnit(unit, "target") or UnitIsUnit(unit, "player")) then 
 		CURRENT_STYLE = "Hidden"
 	elseif (Layout.HideWhenTargetIsCritter and (level and level == 1) and (not UnitIsPlayer("target"))) then 
 		CURRENT_STYLE = "Hidden"

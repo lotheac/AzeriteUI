@@ -687,10 +687,14 @@ local Style = function(self, unit, id, ...)
 		cast:SetSize(unpack(Layout.CastBarSize))
 		cast:SetFrameLevel(health:GetFrameLevel() + 1)
 		cast:Place(unpack(Layout.CastBarPlace))
-		cast:SetOrientation(Layout.CastBarOrientation) -- set the bar to grow towards the right.
-		cast:SetSmoothingMode(Layout.CastBarSmoothingMode) -- set the smoothing mode.
-		cast:SetSmoothingFrequency(Layout.CastBarSmoothingFrequency)
-		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) -- the alpha won't be overwritten. 
+		cast:SetOrientation(Layout.CastBarOrientation) 
+		if Layout.CastBarDisableSmoothing then 
+			cast:DisableSmoothing()
+		else 
+			cast:SetSmoothingMode(Layout.CastBarSmoothingMode) .
+			cast:SetSmoothingFrequency(Layout.CastBarSmoothingFrequency)
+		end
+		cast:SetStatusBarColor(unpack(Layout.CastBarColor))  
 
 		if (not Layout.UseProgressiveFrames) then 
 			cast:SetStatusBarTexture(Layout.CastBarTexture)
