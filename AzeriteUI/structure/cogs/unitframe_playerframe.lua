@@ -756,7 +756,7 @@ local Style = function(self, unit, id, ...)
 		auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
 		auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
 		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
-			
+
 		self.Auras = auras
 		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
 		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)

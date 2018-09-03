@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.54] 2018-09-03
+### Changed
+- Reduced the time threshold for which unit auras get their remaining duration shown from 10 to 3 minutes. 
+
+### Fixed
+- Fixed the nil issue with the artifact power bar.  
+
 ## [1.0.53] 2018-09-03
 ### Added
 - Added reputation tracking to the minimap bars. The current display priority is Experience Points > Reputation > Artifact Power, and the two first of whatever is available will be displayed. Option to manually choose what to display will come later. 

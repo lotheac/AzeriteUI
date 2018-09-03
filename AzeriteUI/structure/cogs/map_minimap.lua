@@ -646,7 +646,7 @@ local PostUpdate_Rep = function(element, current, min, max, factionName, standin
 	end 
 end
 
-local PostUpdate_AP = function(min, max, level)
+local PostUpdate_AP = function(element, min, max, level)
 	local description = element.Value and element.Value.Description
 	if description then 
 		description:SetText(L["to next trait"])

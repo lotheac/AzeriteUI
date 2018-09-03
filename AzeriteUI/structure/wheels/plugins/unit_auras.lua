@@ -29,6 +29,8 @@ local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
+local LONG_THRESHOLD = MINUTE*3
+
 local formatTime = function(time)
 	if time > DAY then -- more than a day
 		time = time + DAY/2
@@ -177,20 +179,14 @@ local Aura_UpdateTimer = function(button, elapsed)
 		button.elapsed = (button.elapsed or 0) + elapsed
 
 		if (button.elapsed >= HZ) then
-
 			button.timeLeft = button.expirationTime - GetTime()
 
 			if (button.timeLeft > 0) then
-				if button.timeLeft >= (MINUTE*10) then 
-					if button._owner.showLongCooldownValues then 
-						button.Time:SetFormattedText(formatTime(button.timeLeft))
-					else
-						button.Time:SetText("")
-					end 
-				else
+				if (button.timeLeft < LONG_THRESHOLD) or (button._owner.showLongCooldownValues) then 
 					button.Time:SetFormattedText(formatTime(button.timeLeft))
+				else
+					button.Time:SetText("")
 				end 
-
 				if button._owner.PostUpdateButton then
 					button._owner:PostUpdateButton(button, "Timer")
 				end
