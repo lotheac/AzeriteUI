@@ -82,6 +82,25 @@ Functions.PlayerHasXP = function(useExpansionMax)
 	end 
 end
 
+-- Returns whether the player is  tracking a reputation
+Functions.PlayerHasRep = function()
+	local name, reaction, min, max, current, factionID = GetWatchedFactionInfo()
+	if name then 
+		local numFactions = GetNumFactions()
+		for i = 1, numFactions do
+			local factionName, description, standingID, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID, hasBonusRepGain, canBeLFGBonus = GetFactionInfo(i)
+			local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+			if (factionName == name) then
+				if standingID then 
+					return true
+				else 
+					return false
+				end 
+			end
+		end
+	end 
+end
+
 Functions.GetMediaPath = function(fileName, fileType)
 	return ([[Interface\AddOns\%s\form\media\%s.%s]]):format(ADDON, fileName, fileType or "tga")
 end

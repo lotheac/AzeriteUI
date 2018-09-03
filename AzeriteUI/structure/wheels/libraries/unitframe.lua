@@ -115,7 +115,7 @@ local Colors = {
 	debuff = prepareGroup(DebuffTypeColor),
 	disconnected = prepare( 153/255, 153/255, 153/255 ),
 	health = prepare( 25/255, 178/255, 25/255 ),
-	power = {},
+	power = { ALTERNATE = prepare(70/255, 255/255, 131/255) },
 	quest = {
 		red = prepare( 204/255, 25/255, 25/255 ),
 		orange = prepare( 255/255, 128/255, 25/255 ),

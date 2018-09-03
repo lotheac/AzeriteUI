@@ -4,11 +4,12 @@ local _G = _G
 
 -- WoW API
 local GetExpansionLevel = _G.GetExpansionLevel
-local UnitIsBattlePetCompanion = _G.UnitIsBattlePetCompanion
 local UnitBattlePetLevel = _G.UnitBattlePetLevel
 local UnitCanAttack = _G.UnitCanAttack
 local UnitEffectiveLevel = _G.UnitEffectiveLevel
+local UnitIsBattlePetCompanion = _G.UnitIsBattlePetCompanion
 local UnitIsCorpse = _G.UnitIsCorpse
+local UnitIsUnit = _G.UnitIsUnit
 local UnitIsWildBattlePet = _G.UnitIsWildBattlePet
 local UnitLevel = _G.UnitLevel
 
@@ -21,9 +22,6 @@ local Update = function(self, event, unit)
 	end 
 
 	local element = self.Level
-	if element.PreUpdate then
-		element:PreUpdate(unit)
-	end
 
 	-- Badge, dead skull and high level skull textures
 	-- We will toggle them if they exist or ignore them otherwise. 
@@ -34,6 +32,26 @@ local Update = function(self, event, unit)
 	-- Damn you blizzard and your effective level nonsense!
 	local unitLevel = UnitLevel(unit)
 	local unitEffectiveLevel = UnitEffectiveLevel(unit)
+
+	if element.visibilityFilter then 
+		if (not element:visibilityFilter(unit)) then 
+			if badge then 
+				badge:Hide()
+			end
+			if dead then 
+				dead:Hide()
+			end
+			if skull then 
+				skull:Hide()
+			end
+			return element:Hide()
+		end
+	end
+
+	if element.PreUpdate then
+		element:PreUpdate(unit)
+	end
+
 
 	-- Showing a skull badge for dead units
 	if UnitIsDeadOrGhost(unit) then 
@@ -144,6 +162,10 @@ local Update = function(self, event, unit)
 		element:SetText("")
 	end 
 
+	if (not element:IsShown()) then 
+		element:Show()
+	end
+
 	if element.PostUpdate then 
 		return element:PostUpdate(unit, unitLevel, unitEffectiveLevel)
 	end
@@ -182,5 +204,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Level", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("Level", Enable, Disable, Proxy, 6)
 end 

@@ -41,16 +41,27 @@ local unpack = unpack
 local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
 local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
 local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
+local GetFactionInfo = _G.GetFactionInfo
+local GetFactionParagonInfo = _G.C_Reputation.GetFactionParagonInfo
 local GetFramerate = _G.GetFramerate
+local GetFriendshipReputation = _G.GetFriendshipReputation
 local GetNetStats = _G.GetNetStats
+local GetNumFactions = _G.GetNumFactions
 local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
 local GetServerTime = _G.GetServerTime
+local GetWatchedFactionInfo = _G.GetWatchedFactionInfo
+local IsFactionParagon = _G.C_Reputation.IsFactionParagon
 local IsXPUserDisabled = _G.IsXPUserDisabled
 local SetCursor = _G.SetCursor
 local ToggleCalendar = _G.ToggleCalendar
 local UnitExists = _G.UnitExists
 local UnitLevel = _G.UnitLevel
 local UnitRace = _G.UnitRace
+
+-- WoW Strings
+local REPUTATION = _G.REPUTATION 
+local STANDING = _G.STANDING 
+local UNKNOWN = _G.UNKNOWN
 
 -- SpinBar Cache
 local Spinner = {}
@@ -146,6 +157,9 @@ end
 -- Figure out if the player has a XP bar
 local PlayerHasXP = Functions.PlayerHasXP
 
+-- Figure out if the player has a rep/friendship bar
+local PlayerHasRep = Functions.PlayerHasRep
+
 
 -- Callbacks
 ----------------------------------------------------
@@ -205,7 +219,9 @@ end
 local Toggle_UpdateTooltip = function(self)
 
 	local tooltip = Module:GetMinimapTooltip()
+
 	local hasXP = PlayerHasXP()
+	local hasRep = PlayerHasRep()
 	local hasAP = FindActiveAzeriteItem()
 
 	local NC = "|r"
@@ -222,7 +238,7 @@ local Toggle_UpdateTooltip = function(self)
 	local resting, restState, restedName, mult
 	local restedLeft, restedTimeLeft
 
-	if hasXP or hasAP then 
+	if hasXP or hasAP or hasRep then 
 		tooltip:SetDefaultAnchor(self)
 		tooltip:SetMaximumWidth(360)
 	end
@@ -246,9 +262,79 @@ local Toggle_UpdateTooltip = function(self)
 		
 	end 
 
+	-- Rep tooltip
+	if hasRep then 
+
+		local name, reaction, min, max, current, factionID = GetWatchedFactionInfo()
+		if (factionID and IsFactionParagon(factionID)) then
+			local currentValue, threshold, _, hasRewardPending = GetFactionParagonInfo(factionID)
+			if (currentValue and threshold) then
+				min, max = 0, threshold
+				current = currentValue % threshold
+				if hasRewardPending then
+					current = current + threshold
+				end
+			end
+		end
+	
+		local standingID, isFriend, friendText
+		local standingLabel, standingDescription
+		for i = 1, GetNumFactions() do
+			local factionName, description, standingId, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID, hasBonusRepGain, canBeLFGBonus = GetFactionInfo(i)
+			
+			local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+			
+			if (factionName == name) then
+				if friendID then
+					isFriend = true
+					if nextFriendThreshold then 
+						min = friendThreshold
+						max = nextFriendThreshold
+					else
+						min = 0
+						max = friendMaxRep
+						current = friendRep
+					end 
+					standingLabel = friendTextLevel
+					standingDescription = friendText
+				end
+				standingID = standingId
+				break
+			end
+		end
+
+		if standingID then 
+
+			if hasXP then 
+				tooltip:AddLine(" ")
+			end 
+
+			if (not isFriend) then 
+				local nextStanding = _G["FACTION_STANDING_LABEL"..(standingID + 1)]
+				if nextStanding then 
+					standingLabel = nextStanding
+				else 
+					standingLabel = _G["FACTION_STANDING_LABEL"..standingID]
+				end 
+			end 
+			tooltip:AddDoubleLine(name, standingLabel, rt, gt, bt, rt, gt, bt)
+
+			local barMax = max - min 
+			local barValue = current - min
+			if (barMax > 0) then 
+				tooltip:AddDoubleLine(L["Current Standing: "], fullXPString:format(normal..short(current-min)..NC, normal..short(max-min)..NC, highlight..math_floor((current-min)/(max-min)*100).."%"..NC), rh, gh, bh, rgg, ggg, bgg)
+			else 
+				tooltip:AddDoubleLine(L["Current Standing: "], "100%", rh, gh, bh, r, g, b)
+			end 
+		else 
+			-- Don't add additional spaces if we can't display the information
+			hasRep = nil
+		end
+	end
+
 	-- New BfA Artifact Power tooltip!
 	if hasAP then 
-		if hasXP then 
+		if hasXP or hasRep then 
 			tooltip:AddLine(" ")
 		end 
 
@@ -315,6 +401,10 @@ local Toggle_OnUpdate = function(self, elapsed)
 		self.fadeDuration = nil
 		self.timeFading = nil
 		self:SetScript("OnUpdate", nil)
+
+		-- In case it got stuck, which happens
+		Module:GetMinimapTooltip():Hide()
+
 		return 
 	end 
 
@@ -525,36 +615,43 @@ local PostUpdate_XP = function(element, min, max, restedLeft, restedTimeLeft)
 	if description then 
 		local level = LEVEL or UnitLevel("player")
 		if (level and (level > 0)) then 
-			description:SetFormattedText("to level %s", level + 1)
+			description:SetFormattedText(L["to level %s"], level + 1)
 		else 
 			description:SetText("")
 		end 
 	end 
 end
 
-local AP_OverrideValue = function(element, min, max, level)
-	local value = element.Value or element:IsObjectType("FontString") and element 
-	if value.showDeficit then 
-		value:SetFormattedText(short(max - min))
-	else 
-		value:SetFormattedText(short(min))
-	end
-	local percent = value.Percent
-	if percent then 
-		if (max > 0) then 
-			percent:SetFormattedText("%d%%", min/max*100)
-		else 
-			percent:SetText("")
+local PostUpdate_Rep = function(element, current, min, max, factionName, standingID, standingLabel, isFriend)
+	local description = element.Value and element.Value.Description
+	if description then 
+		if (standingID == MAX_REPUTATION_REACTION) then
+			description:SetText(standingLabel)
+		else
+			if isFriend then 
+				if standingLabel then 
+					description:SetFormattedText(L["%s"], standingLabel)
+				else
+					description:SetText("")
+				end 
+			else 
+				local nextStanding = standingID and _G["FACTION_STANDING_LABEL"..(standingID + 1)]
+				if nextStanding then 
+					description:SetFormattedText(L["to %s"], nextStanding)
+				else
+					description:SetText("")
+				end 
+			end 
 		end 
 	end 
-	if element.colorValue then 
-		local color = element._owner.colors.artifact
-		value:SetTextColor(color[1], color[2], color[3])
-		if percent then 
-			percent:SetTextColor(color[1], color[2], color[3])
-		end 
+end
+
+local PostUpdate_AP = function(min, max, level)
+	local description = element.Value and element.Value.Description
+	if description then 
+		description:SetText(L["to next trait"])
 	end 
-end 
+end
 
 local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 	local value = element.Value or element:IsObjectType("FontString") and element 
@@ -586,6 +683,73 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 			local colors = element._owner.colors
 			color = colors.xpValue or colors.xp
 		end 
+		value:SetTextColor(color[1], color[2], color[3])
+		if percent then 
+			percent:SetTextColor(color[1], color[2], color[3])
+		end 
+	end 
+end 
+
+local Rep_OverrideValue = function(element, current, min, max, factionName, standingID, standingLabel, isFriend)
+	local value = element.Value or element:IsObjectType("FontString") and element 
+	local barMax = max - min 
+	local barValue = current - min
+	if value.showDeficit then 
+		if (barMax - barValue > 0) then 
+			value:SetFormattedText(short(barMax - barValue))
+		else 
+			value:SetText("100%")
+		end 
+	else 
+		value:SetFormattedText(short(current - min))
+	end
+	local percent = value.Percent
+	if percent then 
+		if (max - min > 0) then 
+			local percValue = math_floor((current - min)/(max - min)*100)
+			if (percValue > 0) then 
+				-- removing the percentage sign
+				percent:SetFormattedText("%d", percValue)
+			else 
+				percent:SetText("rp") 
+			end 
+		else 
+			percent:SetText("rp") 
+		end 
+	end 
+	if element.colorValue then 
+		local color
+		local color = Colors[isFriend and "friendship" or "reaction"][standingID]
+		value:SetTextColor(color[1], color[2], color[3])
+		if percent then 
+			percent:SetTextColor(color[1], color[2], color[3])
+		end 
+	end 
+end
+
+local AP_OverrideValue = function(element, min, max, level)
+	local value = element.Value or element:IsObjectType("FontString") and element 
+	if value.showDeficit then 
+		value:SetFormattedText(short(max - min))
+	else 
+		value:SetFormattedText(short(min))
+	end
+	local percent = value.Percent
+	if percent then 
+		if (max > 0) then 
+			local percValue = math_floor(min/max*100)
+			if (percValue > 0) then 
+				-- removing the percentage sign
+				percent:SetFormattedText("%d", percValue)
+			else 
+				percent:SetText("ap") 
+			end 
+		else 
+			percent:SetText("ap") 
+		end 
+	end 
+	if element.colorValue then 
+		local color = element._owner.colors.artifact
 		value:SetTextColor(color[1], color[2], color[3])
 		if percent then 
 			percent:SetTextColor(color[1], color[2], color[3])
@@ -891,13 +1055,17 @@ Module.SetUpMinimap = function(self)
 
 		-- outer ring value description text
 		local ring1ValueDescription = ring1:CreateFontString()
-		ring1ValueDescription:SetPoint("TOP", ring1Value, "BOTTOM", 1, 0)
+		ring1ValueDescription:SetPoint("TOP", ring1Value, "BOTTOM", 0, -1)
+		ring1ValueDescription:SetWidth(100)
 		ring1ValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
 		ring1ValueDescription:SetJustifyH("CENTER")
 		ring1ValueDescription:SetJustifyV("TOP")
 		ring1ValueDescription:SetFontObject(Fonts(12, true))
 		ring1ValueDescription:SetShadowOffset(0, 0)
 		ring1ValueDescription:SetShadowColor(0, 0, 0, 0)
+		ring1ValueDescription:SetIndentedWordWrap(false)
+		ring1ValueDescription:SetWordWrap(true)
+		ring1ValueDescription:SetNonSpaceWrap(false)
 		ring1.Value.Description = ring1ValueDescription
 
 		-- inner ring 
@@ -1091,6 +1259,184 @@ Module.UpdateInformationDisplay = function(self)
 	Handler.PerformanceFrame:SetAlpha(alpha)
 end 
 
+Module.UpdateBars = function(self, event, ...)
+	if (not Layout.UseStatusBars) then 
+		return 
+	end 
+
+	local Handler = self:GetMinimapHandler()
+
+	-- Figure out what should be shown. 
+	-- Priority us currently xp > rep > ap
+	local hasRep = PlayerHasRep()
+	local hasXP = PlayerHasXP()
+	local hasAP = FindActiveAzeriteItem()
+
+	-- Will include choices later on
+	local first, second 
+	if hasXP then 
+		first = "XP"
+	elseif hasRep then 
+		first = "Reputation"
+	elseif hasAP then 
+		first = "ArtifactPower"
+	end 
+	if first then 
+		if hasRep and (first ~= "Reputation") then 
+			second = "Reputation"
+		elseif hasAP and (first ~= "ArtifactPower") then 
+			second = "ArtifactPower"
+		end
+	end 
+
+	if (first or second) then
+		if (not Handler.Toggle:IsShown()) then  
+			Handler.Toggle:Show()
+		end
+
+		-- Dual bars
+		if (first and second) then
+
+			-- Setup the bars and backdrops for dual bar mode
+			if self.spinnerMode ~= "Dual" then 
+
+				-- Set the backdrop to the two bar backdrop
+				Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-twobars-backdrop"))
+
+				-- Update the look of the outer spinner
+				Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-two-outer"))
+				Spinner[1]:SetSparkSize(6,20 * 208/256)
+				Spinner[1]:SetSparkInset(15 * 208/256)
+				Spinner[1].Value:ClearAllPoints()
+				Spinner[1].Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
+				Spinner[1].Value:SetFontObject(Fonts(16, true)) 
+				Spinner[1].Value.Description:Hide()
+				Spinner[1].PostUpdate = nil
+			end
+
+			-- Assign the spinners to the elements
+			if (self.spinner1 ~= first) then 
+
+				-- Disable the old element 
+				self:DisableMinimapElement(first)
+
+				-- Link the correct spinner
+				Handler[first] = Spinner[1]
+
+				-- Assign the correct post updates
+				if (first == "XP") then 
+					Handler[first].OverrideValue = XP_OverrideValue
+	
+				elseif (first == "Reputation") then 
+					Handler[first].OverrideValue = Rep_OverrideValue
+	
+				elseif (first == "ArtifactPower") then 
+					Handler[first].OverrideValue = AP_OverrideValue
+				end 
+
+				-- Enable the updated element 
+				self:EnableMinimapElement(first)
+
+				-- Run an update
+				Handler[first]:ForceUpdate()
+			end
+
+			if (self.spinner2 ~= second) then 
+
+				-- Disable the old element 
+				self:DisableMinimapElement(second)
+
+				-- Link the correct spinner
+				Handler[second] = Spinner[2]
+
+				-- Assign the correct post updates
+				if (second == "XP") then 
+					Handler[second].OverrideValue = XP_OverrideValue
+	
+				elseif (second == "Reputation") then 
+					Handler[second].OverrideValue = Rep_OverrideValue
+	
+				elseif (second == "ArtifactPower") then 
+					Handler[second].OverrideValue = AP_OverrideValue
+				end 
+
+				-- Enable the updated element 
+				self:EnableMinimapElement(second)
+
+				-- Run an update
+				Handler[second]:ForceUpdate()
+			end
+
+			-- Store the current modes
+			self.spinnerMode = "Dual"
+			self.spinner1 = first
+			self.spinner2 = second
+
+		-- Single bar
+		else
+
+			-- Setup the bars and backdrops for single bar mode
+			if (self.spinnerMode ~= "Single") then 
+
+				-- Set the backdrop to the single thick bar backdrop
+				Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-onebar-backdrop"))
+
+				-- Update the look of the outer spinner to the big single bar look
+				Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-single"))
+				Spinner[1]:SetSparkSize(6,34 * 208/256)
+				Spinner[1]:SetSparkInset(22 * 208/256)
+				Spinner[1].Value:ClearAllPoints()
+				Spinner[1].Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
+				Spinner[1].Value:SetFontObject(Fonts(24, true)) 
+			end 		
+
+			-- Disable any previously active secondary element
+			if self.spinner2 and Handler[self.spinner2] then 
+				self:DisableMinimapElement(self.spinner2)
+				Handler[self.spinner2] = nil
+			end 
+
+			-- Update the element if needed
+			if (self.spinner1 ~= first) then 
+
+				-- Update pointers and callbacks to the active element
+				Handler[first] = Spinner[1]
+				Handler[first].OverrideValue = hasXP and XP_OverrideValue or hasRep and Rep_OverrideValue or AP_OverrideValue
+				Handler[first].PostUpdate = hasXP and PostUpdate_XP or hasRep and PostUpdate_Rep or PostUpdate_AP
+
+				-- Enable the active element
+				self:EnableMinimapElement(first)
+
+				-- Make sure XP description is updated
+				if hasXP then 
+					Handler[first].Value.Description:Show()
+				end
+
+				-- Update the visible element
+				Handler[first]:ForceUpdate()
+			end 
+
+			-- If the second spinner is still shown, hide it!
+			if (Spinner[2]:IsShown()) then 
+				Spinner[2]:Hide()
+			end 
+
+			-- Store the current modes
+			self.spinnerMode = "Single"
+			self.spinner1 = first
+			self.spinner2 = nil
+		end 
+
+		-- Post update the frame, could be sticky
+		Toggle_UpdateFrame(Handler.Toggle)
+
+	else 
+		Handler.Toggle:Hide()
+		Handler.Toggle.Frame:Hide()
+	end 
+
+end
+
 Module.OnEvent = function(self, event, ...)
 
 	if (event == "PLAYER_LEVEL_UP") then 
@@ -1132,143 +1478,6 @@ Module.OnEvent = function(self, event, ...)
 	end 
 end 
 
-Module.UpdateBars = function(self, event, ...)
-	if (not Layout.UseStatusBars) then 
-		return 
-	end 
-
-	local Handler = self:GetMinimapHandler()
-
-	-- Figure out what should be shown. 
-	-- *This will be optionally user configurable later on, 
-	-- but for now we're strictly using XP and AP. 
-	-- *Next thing wil be tracked reputation.
-	local hasXP = PlayerHasXP()
-	local hasAP = FindActiveAzeriteItem()
-
-	-- This will include rep(s) and honor later on
-	local first, second 
-	if hasXP then 
-		first = "XP"
-	elseif hasAP then 
-		first = "ArtifactPower"
-	end 
-	if first then 
-		if hasAP and (first ~= "ArtifactPower") then 
-			second = "ArtifactPower"
-		end
-	end 
-
-	if (first or second) then
-		if (not Handler.Toggle:IsShown()) then  
-			Handler.Toggle:Show()
-		end
-
-		-- Dual bars
-		if (first and second) then
-
-			-- Setup the bars and backdrops for dual bar mode
-			if self.spinnerMode ~= "Dual" then 
-
-				-- Set the backdrop to the two bar backdrop
-				Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-twobars-backdrop"))
-
-				-- Update the look of the outer spinner
-				Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-two-outer"))
-				Spinner[1]:SetSparkSize(6,20 * 208/256)
-				Spinner[1]:SetSparkInset(15 * 208/256)
-				Spinner[1].Value:ClearAllPoints()
-				Spinner[1].Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
-				Spinner[1].Value:SetFontObject(Fonts(16, true)) 
-				Spinner[1].Value.Description:Hide()
-				Spinner[1].OverrideValue = XP_OverrideValue
-				Spinner[1].PostUpdate = PostUpdate_XP
-			end
-
-			-- Assign the spinners to the elements
-			if (self.spinner1 ~= first) then 
-				self:DisableMinimapElement(first)
-				Handler[first] = Spinner[1]
-				self:EnableMinimapElement(first)
-				Handler[first]:ForceUpdate()
-			end
-			if (self.spinner2 ~= second) then 
-				self:DisableMinimapElement(second)
-				Handler[second] = Spinner[2]
-				self:EnableMinimapElement(second)
-				Handler[second]:ForceUpdate()
-			end
-
-			-- Store the current modes
-			self.spinnerMode = "Dual"
-			self.spinner1 = first
-			self.spinner2 = second
-
-		-- Single bar
-		else
-
-			-- Setup the bars and backdrops for single bar mode
-			if (self.spinnerMode ~= "Single") then 
-
-				-- Set the backdrop to the single thick bar backdrop
-				Handler.Toggle.Frame.Bg:SetTexture(GetMediaPath("minimap-onebar-backdrop"))
-
-				-- Update the look of the outer spinner to the big single bar look
-				Spinner[1]:SetStatusBarTexture(GetMediaPath("minimap-bars-single"))
-				Spinner[1]:SetSparkSize(6,34 * 208/256)
-				Spinner[1]:SetSparkInset(22 * 208/256)
-				Spinner[1].Value:ClearAllPoints()
-				Spinner[1].Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
-				Spinner[1].Value:SetFontObject(Fonts(24, true)) 
-			end 		
-
-			-- Disable any previously active secondary element
-			if self.spinner2 and Handler[self.spinner2] then 
-				self:DisableMinimapElement(self.spinner2)
-				Handler[self.spinner2] = nil
-			end 
-
-			-- Update the element if needed
-			if (self.spinner1 ~= first) then 
-
-				-- Update pointers and callbacks to the active element
-				Handler[first] = Spinner[1]
-				Handler[first].OverrideValue = hasXP and XP_OverrideValue or AP_OverrideValue
-				Handler[first].PostUpdate = hasXP and PostUpdate_XP or nil
-
-				-- Enable the active element
-				self:EnableMinimapElement(first)
-
-				-- Make sure XP description is updated
-				if hasXP then 
-					Handler[first].Value.Description:Show()
-				end
-
-				-- Update the visible element
-				Handler[first]:ForceUpdate()
-			end 
-
-			-- If the second spinner is still shown, hide it!
-			if (Spinner[2]:IsShown()) then 
-				Spinner[2]:Hide()
-			end 
-
-			-- Store the current modes
-			self.spinnerMode = "Single"
-			self.spinner1 = first
-			self.spinner2 = nil
-		end 
-
-		-- Post update the frame, could be sticky
-		Toggle_UpdateFrame(Handler.Toggle)
-
-	else 
-		Handler.Toggle:Hide()
-		Handler.Toggle.Frame:Hide()
-	end 
-
-end
-
 Module.OnInit = function(self)
 	self.db = self:NewConfig("Minimap", defaults, "global")
 
@@ -1296,6 +1505,7 @@ Module.OnEnable = function(self)
 		self:RegisterEvent("PLAYER_FLAGS_CHANGED", "OnEvent")
 		self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
 		self:RegisterEvent("PLAYER_XP_UPDATE", "OnEvent")
+		self:RegisterEvent("UPDATE_FACTION", "OnEvent")
 	end 
 
 	-- Enable all minimap elements

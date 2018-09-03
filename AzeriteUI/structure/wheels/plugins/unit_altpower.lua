@@ -117,6 +117,12 @@ local Update = function(self, event, unit, powerType)
 	end 
 
 	local element = self.AltPower
+	if element.visibilityFilter then 
+		if (not element:visibilityFilter(unit)) then 
+			return element:Hide()
+		end
+	end
+
 	if element.PreUpdate then
 		element:PreUpdate(unit)
 	end
@@ -190,5 +196,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 7)
 end 

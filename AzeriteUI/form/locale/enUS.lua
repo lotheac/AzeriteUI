@@ -51,6 +51,7 @@ L["Rested"] = true
 L["Resting"] = true
 L["Current Artifact Power: "] = true 
 L["Current Honor Points: "] = true
+L["Current Standing: "] = true
 L["Current XP: "] = true
 L["Rested Bonus: "] = true
 L["%s of normal experience gained from monsters."] = true
@@ -63,7 +64,9 @@ L["%s to disable sticky bars."] = true
 L["%s to enable sticky bars."] = true 
 L["Sticky Minimap bars enabled."] = true
 L["Sticky Minimap bars disabled."] = true
-
+L["to level %s"] = true 
+L["to %s"] = true
+L["to next trait"] = true
 
 -- World Map Settings
 --------------------------------------------

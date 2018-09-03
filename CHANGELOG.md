@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.53] 2018-09-03
+### Added
+- Added reputation tracking to the minimap bars. The current display priority is Experience Points > Reputation > Artifact Power, and the two first of whatever is available will be displayed. Option to manually choose what to display will come later. 
+- Boss level enemies now have a power crystal displayed instead of a level skull! Their boss status is still indicated through the red boss badge, so there should be no confusion of their status. 
+- Boss level enemy power bar should also show alternate power. Untested. 
+
 ## [1.0.52] 2018-09-01
 ### Added
 - Added our new PayPal link [www.paypal.me/azerite](https://www.paypal.me/azerite) to the README! 

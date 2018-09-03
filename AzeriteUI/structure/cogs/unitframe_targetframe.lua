@@ -318,8 +318,6 @@ local PostUpdateTextures = function(self)
 	
 end 
 
-
--- Main Styling Function
 local Style = function(self, unit, id, ...)
 
 	-- Frame
@@ -441,7 +439,7 @@ local Style = function(self, unit, id, ...)
 
 	-- Power 
 	if Layout.UsePowerBar then 
-		local power = backdrop:CreateStatusBar()
+		local power = (Layout.PowerInOverlay and overlay or backdrop):CreateStatusBar()
 		power:SetSize(unpack(Layout.PowerSize))
 		power:Place(unpack(Layout.PowerPlace))
 		power:SetStatusBarTexture(Layout.PowerBarTexture)
@@ -454,7 +452,18 @@ local Style = function(self, unit, id, ...)
 			power:SetSparkMap(Layout.PowerBarSparkMap) -- set the map the spark follows along the bar.
 		end 
 
-		power.ignoredResource = Layout.PowerIgnoredResource -- make the bar hide when MANA is the primary resource. 
+		if Layout.PowerBarSparkTexture then 
+			power:SetSparkTexture(Layout.PowerBarSparkTexture)
+		end
+
+		-- make the bar hide when MANA is the primary resource. 
+		power.ignoredResource = Layout.PowerIgnoredResource 
+
+		-- use this bar for alt power as well
+		power.showAlternate = Layout.PowerShowAlternate
+
+		-- Use filters to decide what units to show for 
+		power.visibilityFilter = Layout.PowerVisibilityFilter
 
 		self.Power = power
 		self.Power.OverrideColor = OverridePowerColor
@@ -489,7 +498,7 @@ local Style = function(self, unit, id, ...)
 				powerVal:SetFontObject(Layout.PowerValueFont)
 				powerVal:SetTextColor(unpack(Layout.PowerValueColor))
 				self.Power.Value = powerVal
-				self.Power.UpdateValue = OverrideValue
+				self.Power.OverrideValue = Layout.PowerValueOverride
 			end 
 		end		
 	end 
@@ -727,6 +736,9 @@ local Style = function(self, unit, id, ...)
 		-- Set the default level coloring when nothing special is happening
 		level.defaultColor = Layout.LevelColor
 		level.alpha = Layout.LevelAlpha
+
+		-- Use a custom method to decide visibility
+		level.visibilityFilter = Layout.LevelVisibilityFilter
 
 		-- Badge backdrop
 		if Layout.UseLevelBadge then 

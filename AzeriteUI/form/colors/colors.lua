@@ -56,7 +56,6 @@ end
 --Colors.health = prepare(191/255, 0/255, 18/255)
 Colors.health = prepare(191/255, 0/255, 38/255)
 Colors.cast = prepare(229/255, 204/255, 127/255)
---Colors.cast = prepare(70/255, 255/255, 131/255)
 Colors.disconnected = prepare(120/255, 120/255, 120/255)
 Colors.tapped = prepare(161/255, 141/255, 120/255)
 Colors.dead = prepare(121/255, 101/255, 96/255)
@@ -141,6 +140,9 @@ Colors.power.CHI = prepare(181/255 *.7, 255/255, 234/255 *.7) -- Monk
 Colors.power.ARCANE_CHARGES = prepare(121/255, 152/255, 192/255) -- Arcane Mage
 Colors.power.FURY = prepare(255/255, 0/255, 111/255) -- Vengeance Demon Hunter
 Colors.power.PAIN = prepare(190/255, 255/255, 0/255) -- Havoc Demon Hunter 
+
+-- alt power
+Colors.power.ALTERNATE = prepare(70/255, 255/255, 131/255)
 
 -- vehicle powers
 Colors.power.AMMOSLOT = prepare(204/255, 153/255, 0/255)

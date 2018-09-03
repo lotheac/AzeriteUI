@@ -19,6 +19,9 @@ local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local UnitPowerType = _G.UnitPowerType
 
+-- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
+local ALTERNATE_POWER_INDEX = Enum and Enum.PowerType.Alternate or ALTERNATE_POWER_INDEX or 10
+
 -- WoW Client Constants
 local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
 
@@ -56,7 +59,7 @@ end
 
 local UpdateValue = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
 	if element.OverrideValue then
-		return element:OverrideValue(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
+		return element:OverrideValue(unit, min, max, powerType, powerID, disconnected, dead, tapped)
 	end
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value then
@@ -120,11 +123,30 @@ local Update = function(self, event, unit)
 	end 
 
 	local element = self.Power
-	if element.PreUpdate then
-		element:PreUpdate(unit)
+	local powerID, powerType, isAlternate
+
+	if element.showAlternate then 
+		local barType, minPower, startInset, endInset, smooth, hideFromOthers, showOnRaid, opaqueSpark, opaqueFlash, anchorTop, powerName, powerTooltip = UnitAlternatePowerInfo(unit)
+
+		if (barType and (event ~= "UNIT_POWER_BAR_HIDE")) then 
+			isAlternate = true 
+			powerID = ALTERNATE_POWER_INDEX
+		end 
+	end 
+
+	if element.visibilityFilter then 
+		if (not element:visibilityFilter(unit, isAlternate)) then 
+			return element:Hide()
+		end
 	end
 
-	local powerID, powerType = UnitPowerType(unit)
+	if element.PreUpdate then
+		element:PreUpdate(unit, isAlternate)
+	end
+
+	if (not isAlternate) then 
+		powerID, powerType = UnitPowerType(unit)
+	end 
 
 	-- Check if the element is exclusive to a certain power type
 	if element.exclusiveResource then 
@@ -178,7 +200,11 @@ local Update = function(self, event, unit)
 	element:SetValue(min, (event == "Forced"))
 	element:UpdateColor(unit, min, max, powerType, powerID, disconnected, dead, tapped)
 	element:UpdateValue(unit, min, max, powerType, powerID, disconnected, dead, tapped)
-			
+	
+	if (not element:IsShown()) then 
+		element:Show()
+	end
+	
 	if element.PostUpdate then
 		return element:PostUpdate(unit, min, max, powerType, powerID)
 	end	
@@ -202,11 +228,7 @@ local Enable = function(self)
 		if element.frequent and ((unit == "player") or (unit == "pet")) then 
 			self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		else 
-			if ENGINE_801 then 
-				self:RegisterEvent("UNIT_POWER_UPDATE", Proxy)
-			else 
-				self:RegisterEvent("UNIT_POWER", Proxy)
-			end 
+			self:RegisterEvent(ENGINE_801 and "UNIT_POWER_UPDATE" or "UNIT_POWER", Proxy)
 		end 
 
 		self:RegisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
@@ -229,10 +251,9 @@ local Disable = function(self)
 		element:Hide()
 
 		self:UnregisterEvent("UNIT_POWER_FREQUENT", Proxy)
-		self:UnregisterEvent("UNIT_POWER", Proxy)
+		self:UnregisterEvent(ENGINE_801 and "UNIT_POWER_UPDATE" or "UNIT_POWER", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_HIDE", Proxy)
-		self:UnregisterEvent("UNIT_POWER_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_DISPLAYPOWER", Proxy)
 		self:UnregisterEvent("UNIT_CONNECTION", Proxy)
 		self:UnregisterEvent("UNIT_MAXPOWER", Proxy)
@@ -243,5 +264,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Power", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("Power", Enable, Disable, Proxy, 6)
 end 

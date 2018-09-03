@@ -92,7 +92,7 @@ local ActionBarMain = {
 
 	-- Overlay Glow
 	OverlayGlowPlace = { "CENTER", 0, 0 },
-	OverlayGlowSize = { 64 * 1.25, 64 * 1.25 },
+	OverlayGlowSize = { 64 * 1.45, 64 * 1.45 },
 	OverlayGlowSparkTexture = GetMediaPath("IconAlert-Circle"),
 	OverlayGlowInnerGlowTextureTexture = GetMediaPath("IconAlert-Circle"),
 	OverlayGlowInnerGlowOverTexture = GetMediaPath("IconAlert-Circle"),

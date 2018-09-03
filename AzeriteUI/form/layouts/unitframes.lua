@@ -8,6 +8,14 @@ local Fonts = LibDB:GetDatabase(ADDON..": Fonts")
 local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
+-- Lua API
+local _G = _G
+local math_floor = math.floor
+
+-- WoW API
+local UnitLevel = _G.UnitLevel
+local UnitClassification = _G.UnitClassification
+
 -- Proxy function to get media from our local media folder
 local GetMediaPath = Functions.GetMediaPath
 
@@ -770,7 +778,7 @@ local UnitFramePlayerHUD = {
 		PlayerAltPowerBarPlace = { "CENTER", "UICenter", "CENTER", 0, -(133 + 56)  }, 
 		PlayerAltPowerBarSize = { 111,14 },
 		PlayerAltPowerBarTexture = GetMediaPath("cast_bar"), 
-		PlayerAltPowerBarColor = { 70/255, 255/255, 131/255, .69 }, 
+		PlayerAltPowerBarColor = { Colors.power.ALTERNATE[1], Colors.power.ALTERNATE[2], Colors.power.ALTERNATE[3], .69 }, 
 		PlayerAltPowerBarOrientation = "RIGHT",
 		PlayerAltPowerBarSparkMap = {
 			top = {
@@ -888,6 +896,51 @@ local UnitFrameTarget = {
 			AbsorbValueJustifyV = "MIDDLE",
 			AbsorbValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
+	UsePowerBar = true,
+		PowerVisibilityFilter = function(element, unit) 
+			local unitLevel = UnitLevel(unit)
+			local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+			if (unitClassification == "boss") or (unitClassification == "worldboss") then 
+				return true
+			end 
+		end,
+
+		PowerInOverlay = true, 
+		PowerPlace ={ "CENTER", 439/2 + 79, 93/2 -62 + 4 }, 
+		PowerSize = { 68, 68 },
+		PowerType = "StatusBar", 
+		PowerBarSparkTexture = GetMediaPath("blank"),
+		PowerBarTexture = GetMediaPath("power_crystal_small_front"),
+		PowerBarTexCoord = { 0, 1, 0, 1 },
+		PowerBarOrientation = "UP",
+		PowerBarSmoothingMode = "bezier-fast-in-slow-out",
+		PowerBarSmoothingFrequency = .5,
+		PowerColorSuffix = "_CRYSTAL", 
+		PowerIgnoredResource = nil,
+		PowerShowAlternate = true, 
+	
+		UsePowerBackground = true,
+			PowerBackgroundPlace = { "CENTER", 0, 0 },
+			PowerBackgroundSize = { 68, 68 },
+			PowerBackgroundTexture = GetMediaPath("power_crystal_small_back"),
+			PowerBackgroundDrawLayer = { "BACKGROUND", -2 },
+			PowerBackgroundColor = { 1, 1, 1, .85 },
+
+		UsePowerValue = true, 
+			PowerValueOverride = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
+				if (min == 0 or max == 0) and (not value.showAtZero) then
+					element.Value:SetText("")
+				else
+					element.Value:SetFormattedText("%d", math_floor(min/max * 100))
+				end 
+			end,
+			PowerValuePlace = { "CENTER", 0, -5 },
+			PowerValueDrawLayer = { "OVERLAY", 1 },
+			PowerValueJustifyH = "CENTER", 
+			PowerValueJustifyV = "MIDDLE", 
+			PowerValueFont = Fonts(13, true),
+			PowerValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
+
 	UsePortrait = true, 
 		PortraitPlace = { "TOPRIGHT", 73, 8 },
 		PortraitSize = { 85, 85 }, 
@@ -950,6 +1003,14 @@ local UnitFrameTarget = {
 		ClassificationIndicatorRareColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 	UseLevel = true, 
+		LevelVisibilityFilter = function(element, unit) 
+			local unitLevel = UnitLevel(unit)
+			local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+			if (unitClassification ~= "boss") and (unitClassification ~= "worldboss") then 
+				return true
+			end 
+		end,
+
 		LevelPlace = { "CENTER", 439/2 + 79, 93/2 -62 }, 
 		LevelDrawLayer = { "BORDER", 1 },
 		LevelJustifyH = "CENTER",
