@@ -284,11 +284,11 @@ local PostUpdateTextures = function(self)
 	if Layout.UseThreat and Layout.UseProgressiveThreat then
 		if self.Threat.health then 
 			self.Threat.health:SetTexture(Layout[TARGET_STYLE.."HealthThreatTexture"])
-			if Layout.NoviceHealthThreatPlace then 
+			if Layout[TARGET_STYLE.."HealthThreatPlace"] then 
 				self.Threat.health:ClearAllPoints()
 				self.Threat.health:SetPoint(unpack(Layout[TARGET_STYLE.."HealthThreatPlace"]))
 			end 
-			if Layout.NoviceHealthThreatSize then 
+			if Layout[TARGET_STYLE.."HealthThreatSize"] then 
 				self.Threat.health:SetSize(unpack(Layout[TARGET_STYLE.."HealthThreatSize"]))
 			end 
 		end 
@@ -624,7 +624,10 @@ local Style = function(self, unit, id, ...)
 
 			if Layout.UseHealthThreat then 
 
-				local threatHealth = backdrop:CreateTexture()
+				local healthThreatHolder = backdrop:CreateFrame("Frame")
+				healthThreatHolder:SetAllPoints(health)
+
+				local threatHealth = healthThreatHolder:CreateTexture()
 				if Layout.ThreatHealthPlace then 
 					threatHealth:SetPoint(unpack(Layout.ThreatHealthPlace))
 				end 

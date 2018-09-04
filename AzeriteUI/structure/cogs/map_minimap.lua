@@ -304,19 +304,13 @@ local Toggle_UpdateTooltip = function(self)
 		end
 
 		if standingID then 
-
 			if hasXP then 
 				tooltip:AddLine(" ")
 			end 
-
 			if (not isFriend) then 
-				local nextStanding = _G["FACTION_STANDING_LABEL"..(standingID + 1)]
-				if nextStanding then 
-					standingLabel = nextStanding
-				else 
-					standingLabel = _G["FACTION_STANDING_LABEL"..standingID]
-				end 
+				standingLabel = _G["FACTION_STANDING_LABEL"..standingID]
 			end 
+
 			tooltip:AddDoubleLine(name, standingLabel, rt, gt, bt, rt, gt, bt)
 
 			local barMax = max - min 

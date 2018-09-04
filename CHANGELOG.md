@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.55] 2018-09-04
+### Fixed
+- Fixed a tooltip display issue with the reputation bar that would list you at one standing rank higher than you were. This was only a tooltip issue, and did not affect the bar display or the values. 
+- Fixed a bug in the boss power crystal value's update method when the boss had zero power. 
+- Fixed size alignment of boss threat texture in instances. 
+- Fixed size and alignment of boss cast bars.
+
 ## [1.0.54] 2018-09-03
 ### Changed
 - Reduced the time threshold for which unit auras get their remaining duration shown from 10 to 3 minutes. 

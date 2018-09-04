@@ -928,10 +928,11 @@ local UnitFrameTarget = {
 
 		UsePowerValue = true, 
 			PowerValueOverride = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
+				local value = element.Value
 				if (min == 0 or max == 0) and (not value.showAtZero) then
-					element.Value:SetText("")
+					value:SetText("")
 				else
-					element.Value:SetFormattedText("%d", math_floor(min/max * 100))
+					value:SetFormattedText("%d", math_floor(min/max * 100))
 				end 
 			end,
 			PowerValuePlace = { "CENTER", 0, -5 },
@@ -1233,18 +1234,18 @@ local UnitFrameTarget = {
 		BossHealthPercentVisible = true, 
 		BossHealthBackdropPlace = { "CENTER", -.5, 1 }, 
 		BossHealthBackdropSize = { 694, 190 }, 
-		BossHealthThreatPlace = { "CENTER", -.5, 1 +1 }, 
+		BossHealthThreatPlace = { "CENTER", -.5, 1 }, 
 		BossHealthThreatSize = { 694, 190 }, 
 		BossHealthBackdropTexture = GetMediaPath("hp_boss_case"),
 		BossHealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		BossHealthThreatTexture = GetMediaPath("hp_boss_case_glow"),
 		BossPowerForegroundTexture = GetMediaPath("pw_crystal_case"),
 		BossPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		BossAbsorbSize = { 385, 40 },
-		BossAbsorbTexture = GetMediaPath("hp_cap_bar"),
+		BossAbsorbSize = { 533, 40 },
+		BossAbsorbTexture = GetMediaPath("hp_boss_bar"),
 		BossCastPlace = { "TOPRIGHT", -27, -27 }, 
-		BossCastSize = { 385, 40 },
-		BossCastTexture = GetMediaPath("hp_cap_bar"),
+		BossCastSize = { 533, 40 },
+		BossCastTexture = GetMediaPath("hp_boss_bar"),
 		BossCastSparkMap = {
 			top = {
 				{ keyPercent =    0/1024, offset = -24/64 }, 
