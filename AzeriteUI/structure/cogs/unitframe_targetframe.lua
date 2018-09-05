@@ -448,6 +448,10 @@ local Style = function(self, unit, id, ...)
 		power:SetSmoothingMode(Layout.PowerBarSmoothingMode) -- set the smoothing mode.
 		power:SetSmoothingFrequency(Layout.PowerBarSmoothingFrequency or .5) -- set the duration of the smoothing.
 
+		if Layout.PowerBarSetFlippedHorizontally then 
+			power:SetFlippedHorizontally(Layout.PowerBarSetFlippedHorizontally)
+		end
+
 		if Layout.PowerBarSparkMap then 
 			power:SetSparkMap(Layout.PowerBarSparkMap) -- set the map the spark follows along the bar.
 		end 
@@ -462,6 +466,12 @@ local Style = function(self, unit, id, ...)
 		-- use this bar for alt power as well
 		power.showAlternate = Layout.PowerShowAlternate
 
+		-- hide the bar when it's empty
+		power.hideWhenEmpty = Layout.PowerHideWhenEmpty
+
+		-- hide the bar when the unit is dead
+		power.hideWhenDead = Layout.PowerHideWhenDead
+
 		-- Use filters to decide what units to show for 
 		power.visibilityFilter = Layout.PowerVisibilityFilter
 
@@ -475,6 +485,9 @@ local Style = function(self, unit, id, ...)
 			powerBg:SetPoint(unpack(Layout.PowerBackgroundPlace))
 			powerBg:SetTexture(Layout.PowerBackgroundTexture)
 			powerBg:SetVertexColor(unpack(Layout.PowerBackgroundColor)) 
+			if Layout.PowerBackgroundTexCoord then 
+				powerBg:SetTexCoord(unpack(Layout.PowerBackgroundTexCoord))
+			end 
 			self.Power.Bg = powerBg
 		end
 

@@ -254,8 +254,8 @@ Update = function(self, event, unit, ...)
 		element.total = nil
 		element.starttime = nil
 
-		element:SetMinMaxValues(0, element.total or element.max)
-		element:SetValue(element.duration) 
+		element:SetMinMaxValues(0, element.total or element.max, true)
+		element:SetValue(element.duration, true) 
 
 		if element.Name then element.Name:SetText(utf8sub(text, 32, true)) end
 		if element.Icon then element.Icon:SetTexture(texture) end
@@ -420,8 +420,8 @@ Update = function(self, event, unit, ...)
 		element.casting = nil
 		element.castID = nil
 
-		element:SetMinMaxValues(0, max)
-		element:SetValue(duration)
+		element:SetMinMaxValues(0, max, true)
+		element:SetValue(duration, true)
 		
 		if element.Name then element.Name:SetText(utf8sub(name, 32, true)) end
 		if element.Icon then element.Icon:SetTexture(texture) end
@@ -797,5 +797,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 10)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 11)
 end 

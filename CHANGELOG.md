@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.56] 2018-09-05
+### Changed
+- Target frame boss power crystals now face the same direction as the target frame does. 
+- Target frame boss power crystals are now hidden when the boss is dead. 
+- Target frame boss power crystals are now hidden when the boss has no power.
+- Target frame level badge is now hidden when the target is dead. 
+- Target frame level badge is now hidden when the target is a boss. 
+
+### Fixed
+- Fixed a visual issue where the castbars seemingly would "yoyo" back and forth when switching from a normal cast to a channel or vice versa. New casts and channelings aren't smoothed anymore, they are forced, thus assuring they're accurate.
+
 ## [1.0.55] 2018-09-04
 ### Fixed
 - Fixed a tooltip display issue with the reputation bar that would list you at one standing rank higher than you were. This was only a tooltip issue, and did not affect the bar display or the values. 

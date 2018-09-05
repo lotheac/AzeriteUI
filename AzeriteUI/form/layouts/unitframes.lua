@@ -13,8 +13,11 @@ local _G = _G
 local math_floor = math.floor
 
 -- WoW API
-local UnitLevel = _G.UnitLevel
 local UnitClassification = _G.UnitClassification
+local UnitExists = _G.UnitExists
+local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
+local UnitIsUnit = _G.UnitIsUnit
+local UnitLevel = _G.UnitLevel
 
 -- Proxy function to get media from our local media folder
 local GetMediaPath = Functions.GetMediaPath
@@ -898,24 +901,36 @@ local UnitFrameTarget = {
 
 	UsePowerBar = true,
 		PowerVisibilityFilter = function(element, unit) 
+			if UnitIsDeadOrGhost(unit) then 
+				return false 
+			end 
 			local unitLevel = UnitLevel(unit)
 			local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
 			if (unitClassification == "boss") or (unitClassification == "worldboss") then 
 				return true
 			end 
+			--for i = 1,5 do 
+			--	local bossUnit = "boss"..i
+			--	if (UnitExists(bossUnit) and UnitIsUnit(bossUnit, unit)) then 
+			--		return true
+			--	end 
+			--end 
 		end,
 
 		PowerInOverlay = true, 
-		PowerPlace ={ "CENTER", 439/2 + 79, 93/2 -62 + 4 }, 
+		PowerPlace ={ "CENTER", 439/2 + 79 +2, 93/2 -62 + 4 +6 }, 
 		PowerSize = { 68, 68 },
 		PowerType = "StatusBar", 
 		PowerBarSparkTexture = GetMediaPath("blank"),
 		PowerBarTexture = GetMediaPath("power_crystal_small_front"),
-		PowerBarTexCoord = { 0, 1, 0, 1 },
+		PowerBarTexCoord = { 1, 0, 0, 1 },
 		PowerBarOrientation = "UP",
+		PowerBarSetFlippedHorizontally = true, 
 		PowerBarSmoothingMode = "bezier-fast-in-slow-out",
 		PowerBarSmoothingFrequency = .5,
 		PowerColorSuffix = "_CRYSTAL", 
+		PowerHideWhenEmpty = true,
+		PowerHideWhenDead = true,  
 		PowerIgnoredResource = nil,
 		PowerShowAlternate = true, 
 	
@@ -923,6 +938,7 @@ local UnitFrameTarget = {
 			PowerBackgroundPlace = { "CENTER", 0, 0 },
 			PowerBackgroundSize = { 68, 68 },
 			PowerBackgroundTexture = GetMediaPath("power_crystal_small_back"),
+			PowerBackgroundTexCoord = { 1, 0, 0, 1 },
 			PowerBackgroundDrawLayer = { "BACKGROUND", -2 },
 			PowerBackgroundColor = { 1, 1, 1, .85 },
 
@@ -1005,11 +1021,21 @@ local UnitFrameTarget = {
 
 	UseLevel = true, 
 		LevelVisibilityFilter = function(element, unit) 
+			if UnitIsDeadOrGhost(unit) then 
+				return false 
+			end 
 			local unitLevel = UnitLevel(unit)
 			local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
-			if (unitClassification ~= "boss") and (unitClassification ~= "worldboss") then 
-				return true
+			if (unitClassification == "boss") or (unitClassification == "worldboss") then 
+				return false
 			end 
+			--for i = 1,5 do 
+			--	local bossUnit = "boss"..i
+			--	if (UnitExists(bossUnit) and UnitIsUnit(bossUnit, unit)) then 
+			--		return false
+			--	end 
+			--end 
+			return true
 		end,
 
 		LevelPlace = { "CENTER", 439/2 + 79, 93/2 -62 }, 
