@@ -1,6 +1,5 @@
 local ADDON = ...
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
 
 -- Shortcuts for convenience
 local auraList = Auras.auraList
@@ -598,22 +597,20 @@ end
 ------------------------------------------------------------------------
 -- Taunts (tanks only)
 ------------------------------------------------------------------------
-if Functions.PlayerCanTank(playerClass) then
-	auraList[36213]  = PlayerIsTank -- Angered Earth (SH Earth Elemental)
-	auraList[56222]  = PlayerIsTank -- Dark Command (DK)
-	auraList[57604]  = PlayerIsTank -- Death Grip (DK) -- NEEDS CHECK 49560 51399 57603
-	auraList[20736]  = PlayerIsTank -- Distracting Shot (HU)
-	auraList[6795]   = PlayerIsTank -- Growl (DR)
-	auraList[ 62124] = PlayerIsTank -- Hand of Reckoning (Paladin)
-	auraList[118585] = PlayerIsTank -- Leer of the Ox (MO)
-	auraList[114198] = PlayerIsTank -- Mocking Banner (WR)
-	auraList[116189] = PlayerIsTank -- Provoke (MO)
-	auraList[118635] = PlayerIsTank -- Provoke (MO Black Ox Statue) -- NEEDS CHECK
-	auraList[62124]  = PlayerIsTank -- Reckoning (PA)
-	auraList[17735]  = PlayerIsTank -- Suffering (WL Voidwalker)
-	auraList[355]    = PlayerIsTank -- Taunt (WR)
-	auraList[185245] = PlayerIsTank -- Torment (Demon Hunter)
-end
+auraList[36213]  = PlayerIsTank -- Angered Earth (SH Earth Elemental)
+auraList[56222]  = PlayerIsTank -- Dark Command (DK)
+auraList[57604]  = PlayerIsTank -- Death Grip (DK) -- NEEDS CHECK 49560 51399 57603
+auraList[20736]  = PlayerIsTank -- Distracting Shot (HU)
+auraList[6795]   = PlayerIsTank -- Growl (DR)
+auraList[ 62124] = PlayerIsTank -- Hand of Reckoning (Paladin)
+auraList[118585] = PlayerIsTank -- Leer of the Ox (MO)
+auraList[114198] = PlayerIsTank -- Mocking Banner (WR)
+auraList[116189] = PlayerIsTank -- Provoke (MO)
+auraList[118635] = PlayerIsTank -- Provoke (MO Black Ox Statue) -- NEEDS CHECK
+auraList[62124]  = PlayerIsTank -- Reckoning (PA)
+auraList[17735]  = PlayerIsTank -- Suffering (WL Voidwalker)
+auraList[355]    = PlayerIsTank -- Taunt (WR)
+auraList[185245] = PlayerIsTank -- Torment (Demon Hunter)
 
 ------------------------------------------------------------------------
 -- Group Buffs

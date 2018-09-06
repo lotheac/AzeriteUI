@@ -15,46 +15,11 @@
 ## X-BugReport: https://bitbucket.org/bigcogs/azeriteui/issues
 ## X-License: All Rights Reserved
 
-structure\wheels\wheel.xml
+# Back-end libraries and systems
+engine\back-end.xml
 
-form\generic\functions.lua
-form\locale\locale.xml
-form\fonts\fonts.xml
-form\fonts\fonts.lua
-form\colors\colors.lua
-form\auras\auras.xml
-form\layouts\layout.xml
+# User data for the modules
+user\user.xml
 
-structure\main.lua
-structure\menu.lua
-structure\cogs\actionbar_main.lua
-structure\cogs\blizzard_gamemenu.lua
-structure\cogs\blizzard_interface_styling.lua
-structure\cogs\blizzard_micromenu.lua
-structure\cogs\blizzard_mirrortimers.lua
-structure\cogs\blizzard_objectivestracker.lua
-structure\cogs\blizzard_popups_styling.lua
-structure\cogs\blizzard_tooltips_styling.lua
-structure\cogs\chat_bubbles.lua
-structure\cogs\chat_windows.lua
-structure\cogs\font_replacements.lua
-structure\cogs\hud_floaters.lua
-structure\cogs\hud_orderhall.lua
-structure\cogs\hud_warnings.lua
-structure\cogs\hud_worldstate.lua
-structure\cogs\map_minimap.lua
-structure\cogs\nameplates_main.lua
-structure\cogs\tooltip_styling.lua
-structure\cogs\tracker_quests.lua
-structure\cogs\tracker_mythics.lua
-structure\cogs\unitframe_arenaframes.lua
-structure\cogs\unitframe_bossframes.lua
-structure\cogs\unitframe_focusframe.lua
-structure\cogs\unitframe_partyframes.lua
-structure\cogs\unitframe_petframe.lua
-structure\cogs\unitframe_playerframe.lua
-structure\cogs\unitframe_playerhud.lua
-structure\cogs\unitframe_raidframes.lua
-structure\cogs\unitframe_targetframe.lua
-structure\cogs\unitframe_totframe.lua
-
+# Front-end module templates
+engine\front-end.xml

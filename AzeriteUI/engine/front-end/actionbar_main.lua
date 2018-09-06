@@ -722,19 +722,16 @@ Module.SpawnExitButton = function(self)
 	local button = self:CreateFrame("Button", nil, "UICenter", "SecureActionButtonTemplate")
 	button:SetFrameStrata("MEDIUM")
 	button:SetFrameLevel(100)
-	button:SetSize(32,32)
+	button:Place(unpack(Layout.ExitButtonPlace))
+	button:SetSize(unpack(Layout.ExitButtonSize))
 	button:SetAttribute("type", "macro")
 	button:SetAttribute("macrotext", "/leavevehicle [target=vehicle,exists,canexitvehicle]\n/dismount [mounted]")
 
-	-- This assumes our predefined minimap size, 
-	-- should rewrite it to react to actual sizes.
-	button:Place("CENTER", "Minimap", "TOPLEFT", 14, -36)
-
 	-- Put our texture on the button
 	button.texture = button:CreateTexture()
-	button.texture:SetSize(80,80)
-	button.texture:SetPoint("CENTER", 0, 0)
-	button.texture:SetTexture(GetMediaPath("icon_exit_flight"))
+	button.texture:SetSize(unpack(Layout.ExitButtonTextureSize))
+	button.texture:SetPoint(unpack(Layout.ExitButtonTexturePlace))
+	button.texture:SetTexture(Layout.ExitButtonTexturePath)
 
 	button:SetScript("OnEnter", function(button)
 		local tooltip = self:GetActionButtonTooltip()
@@ -771,9 +768,6 @@ Module.SpawnExitButton = function(self)
 	RegisterAttributeDriver(button, "state-visibility", "[target=vehicle,exists,canexitvehicle][mounted]show;hide")
 
 	self.VehicleExitButton = button
-end
-
-Module.SpawnTaxiExitButton = function(self)
 end
 
 Module.CreateBar = function(self, parent, width, height, padding, includeValue, includeBg, includeFg, includeGrid, includeBorder)
@@ -1267,7 +1261,10 @@ Module.OnInit = function(self)
 
 	-- Spawn the buttons
 	self:SpawnButtons()
-	self:SpawnExitButton()
+
+	if Layout.UseExitButton then 
+		self:SpawnExitButton()
+	end
 
 	-- Spawn XP/AP bars
 	if Layout.UseStatusBars then 

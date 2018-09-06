@@ -18,7 +18,6 @@ local ActionBarMain = {
 	-------------------------------------------------------
 	UseActionBarMenu = true, 
 
-
 	-- Button Layout
 	-------------------------------------------------------
 	-- Generic
@@ -122,7 +121,17 @@ local ActionBarMain = {
 		GlowTexture = GetMediaPath("actionbutton-glow-white"),
 		GlowDrawLayer = { "ARTWORK", 1 },
 		GlowBlendMode = "ADD",
-		GlowColor = { 1, 1, 1, .5 }
+		GlowColor = { 1, 1, 1, .5 },
+
+	-- Floaters
+	-------------------------------------------------------
+	UseExitButton = true, 
+		--ExitButtonPlace = { "CENTER", "Minimap", "TOPLEFT", 14,-36 }, 
+		ExitButtonPlace = { "CENTER", "Minimap", "CENTER", -math.cos(45*math.pi/180) * (213/2 + 10), math.sin(45*math.pi/180) * (213/2 + 10) }, 
+		ExitButtonSize = { 32, 32 },
+		ExitButtonTexturePlace = { "CENTER", 0, 0 }, 
+		ExitButtonTextureSize = { 80, 80 }, 
+		ExitButtonTexturePath = GetMediaPath("icon_exit_flight"),
 
 }
 

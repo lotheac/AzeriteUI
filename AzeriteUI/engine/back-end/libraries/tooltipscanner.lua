@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 18)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 19)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -808,15 +808,219 @@ LibTooltipScanner.GetTooltipDataForPetAction = function(self, actionSlot, tbl)
 	Scanner.owner = self
 	Scanner:SetOwner(self, "ANCHOR_NONE")
 
-	Scanner:SetPetAction(actionSlot)
 
-	tbl = tbl or {}
-	for i,v in pairs(tbl) do 
-		tbl[i] = nil
-	end 
+	local name, texture, isToken, isActive, autoCastAllowed, autoCastEnabled, spellID = GetPetActionInfo(actionSlot)
+	if name then 
+		
+		Scanner:SetPetAction(actionSlot)
 
+		tbl = tbl or {}
+		for i,v in pairs(tbl) do 
+			tbl[i] = nil
+		end 
 
-	return tbl
+		tbl.name = name
+		tbl.texture = texture
+		tbl.isToken = isToken
+		tbl.isActive = isActive
+		tbl.autoCastAllowed = autoCastAllowed
+		tbl.autoCastEnabled = autoCastEnabled
+		tbl.spellID = spellID
+
+		local left, right
+	
+		-- Action Name
+		left = _G[ScannerName.."TextLeft1"]
+		if left:IsShown() then 
+			local msg = left:GetText()
+			if msg and (msg ~= "") then 
+				tbl.name = msg
+			else 
+				-- if the name isn't there, no point going on
+				return nil
+			end 
+		end
+
+		local foundCost, foundRange
+		local foundCastTime, foundCooldownTime
+		local foundRemainingCooldown, foundRemainingRecharge
+		local foundDescription
+		local foundResourceMod
+		
+		local numLines = Scanner:NumLines() -- total number of lines
+		local lastInfoLine = 1 -- The last line where information exists
+
+		-- Iterate available lines for action information
+		for lineIndex = 2, (numLines < 4) and numLines or 4  do 
+
+			left, right = _G[ScannerName.."TextLeft"..lineIndex],  _G[ScannerName.."TextRight"..lineIndex]
+			if (left and right) then 
+
+				local leftMsg, rightMsg = left:GetText(), right:GetText()
+
+				-- Left side iterations
+				if (leftMsg and (leftMsg ~= "")) then 
+
+					-- search for range
+					if (not foundRange) then 
+						local id = 1
+						while Patterns["Range"..id] do 
+							if (string_find(leftMsg, Patterns["Range"..id])) then 
+							
+								-- found the range line
+								foundRange = lineIndex
+								tbl.spellRange = leftMsg
+								tbl.spellCost = nil
+
+								-- it has no cost if the range is on this side
+								foundCost = true
+
+								if (lastInfoLine < foundRange) then 
+									lastInfoLine = foundRange
+								end 
+	
+								break
+							end 
+							id = id + 1
+						end 
+					end 
+
+					-- search for cast time
+					if (not foundCastTime) then 
+						local id = 1
+						while Patterns["CastTime"..id] do 
+							if (string_find(leftMsg, Patterns["CastTime"..id])) then 
+
+								-- found the range line
+								foundCastTime = lineIndex
+								tbl.castTime = leftMsg
+
+								if (lastInfoLine < foundCastTime) then 
+									lastInfoLine = foundCastTime
+								end 
+
+								-- if there is something on the right side, it's the total cooldown
+								if (rightMsg and (rightMsg ~= "")) then 
+									foundCooldownTime = foundCooldownTime
+									tbl.cooldownTime = rightMsg
+								end  
+
+								break
+							end 
+							id = id + 1
+						end 
+					end 
+
+					--if (string_find(msg, Patterns.CooldownRemaining)) then 
+					--end 
+
+					--if (string_find(msg, SPELL_RECHARGE_TIME)) then 
+					--end 
+
+					-- Search for remaining cooldown, if one is active (?)
+					if (not foundRemainingCooldown) then 
+						local id = 1
+						while Patterns["CooldownTimeRemaining"..id] do 
+							if (string_find(leftMsg, Patterns["CooldownTimeRemaining"..id])) then 
+
+								-- Need this to figure out how far down the description starts!
+								foundRemainingCooldown = lineIndex
+
+								if (lastInfoLine < foundRemainingCooldown) then 
+									lastInfoLine = foundRemainingCooldown
+								end 
+
+								-- *not needed, we're getting that from API calls above!
+								--tbl.cooldownTimeRemaining = leftMsg
+
+								break
+							end 
+							id = id + 1
+						end 
+					end  
+
+					-- Search for remaining cooldown, if one is active (?)
+					if (not foundRemainingRecharge) then 
+						local id = 1
+						while Patterns["RechargeTimeRemaining"..id] do 
+							if (string_find(leftMsg, Patterns["RechargeTimeRemaining"..id])) then 
+
+								-- Need this to figure out how far down the description starts!
+								foundRemainingRecharge = lineIndex
+
+								if (lastInfoLine < foundRemainingRecharge) then 
+									lastInfoLine = foundRemainingRecharge
+								end 
+
+								-- *not needed, we're getting that from API calls above!
+								--tbl.rechargeTimeRemaining = leftMsg
+
+								break
+							end 
+							id = id + 1
+						end 
+					end  
+					
+				end 
+
+				-- Right side iterations
+				if (rightMsg and (rightMsg ~= "")) then 
+
+					-- search for range
+					if (not foundRange) then 
+						local id = 1
+						while Patterns["Range"..id] do 
+							if (string_find(rightMsg, Patterns["Range"..id])) then 
+							
+								-- found the range line
+								foundRange = lineIndex
+								tbl.spellRange = rightMsg
+
+								if (lastInfoLine < foundRange) then 
+									lastInfoLine = foundRange
+								end 
+	
+								-- if there is something on the left side, it's the cost
+								if (leftMsg and (leftMsg ~= "")) then 
+									foundCost = lineIndex
+									tbl.spellCost = leftMsg
+								end  
+
+								break
+							end 
+							id = id + 1
+						end 
+					end 
+
+				end 
+
+			end 
+		end
+
+		-- Just assume all remaining lines are description, 
+		-- and bunch them together to a single line. 
+		if (numLines > lastInfoLine) then 
+			for lineIndex = lastInfoLine+1, numLines do 
+				left = _G[ScannerName.."TextLeft"..lineIndex]
+				if left then 
+					local msg = left:GetText()
+					if msg then
+						if tbl.description then 
+							if (msg == "") then 
+								tbl.description = tbl.description .. "|n|n" -- empty line/space
+							else 
+								tbl.description = tbl.description .. "|n" .. msg -- normal line break
+							end 
+						else 
+							tbl.description = msg -- first line
+						end 
+					end 
+				end 
+			end 
+		end 
+
+		return tbl
+	end
 end
 
 LibTooltipScanner.GetTooltipDataForSpellID = function(self, spellID, tbl)

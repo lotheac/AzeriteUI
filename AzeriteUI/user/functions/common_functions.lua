@@ -102,5 +102,5 @@ Functions.PlayerHasRep = function()
 end
 
 Functions.GetMediaPath = function(fileName, fileType)
-	return ([[Interface\AddOns\%s\form\media\%s.%s]]):format(ADDON, fileName, fileType or "tga")
+	return ([[Interface\AddOns\%s\user\media\%s.%s]]):format(ADDON, fileName, fileType or "tga")
 end

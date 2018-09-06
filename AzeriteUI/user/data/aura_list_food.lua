@@ -1,6 +1,5 @@
 local ADDON = ...
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
 
 -- Shortcuts for convenience
 local auraList = Auras.auraList

@@ -1178,6 +1178,7 @@ Module.SetUpMinimap = function(self)
 			queueButton.Eye.texture:SetParent(UIHider)
 			queueButton.Eye.texture:SetAlpha(0)
 
+			--local iconTexture = button:CreateTexture()
 			local iconTexture = queueButton:CreateTexture()
 			iconTexture:SetDrawLayer("ARTWORK", 1)
 			iconTexture:SetPoint("CENTER", 0, 0)
@@ -1188,7 +1189,6 @@ Module.SetUpMinimap = function(self)
 			queueButton.Eye:SetSize(unpack(Layout.GroupFinderEyeSize)) 
 			queueButton.Eye.texture:SetSize(unpack(Layout.GroupFinderEyeSize))
 		end 
-	
 
 		if Layout.GroupFinderQueueStatusPlace then 
 			QueueStatusFrame:ClearAllPoints()

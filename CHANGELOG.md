@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.57] 2018-09-06
+### Changed
+- Folder restructuring. Aiming at a better logical split between back-end, front-end and configurations.
+
 ## [1.0.56] 2018-09-05
 ### Changed
 - Target frame boss power crystals now face the same direction as the target frame does. 

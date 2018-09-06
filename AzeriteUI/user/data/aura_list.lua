@@ -1,6 +1,5 @@
 local ADDON = ...
 local Auras = CogWheel("LibDB"):NewDatabase(ADDON..": Auras")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
 
 -- Bitfield filter toggles
 local ByPlayer 			= tonumber("00000000000000000000000000000001", 2) -- Show when cast by player
@@ -144,6 +143,7 @@ auraList[188029] = ByPlayer -- Unbending Potion
 	
 -- Quest related auras
 auraList[127372] = OnPlayer -- Unstable Serum (Klaxxi Enhancement: Raining Blood)
+auraList[240640] = OnPlayer -- The Shadow of the Sentinax (Mark of the Sentinax)
 	
 -- Boss debuffs that Blizzard failed to flag
 auraList[106648] = Always -- Brew Explosion (Ook Ook in Stormsnout Brewery)
