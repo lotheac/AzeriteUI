@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.58] 2018-09-09
+### Changed
+- Unitframe health elements now instantly updates on target changes for target, focus and mouseover units. 
+- Unitframe health element smoothing time reduced from .5 to .2 seconds, for a more responsive raiding expererience.
+
+### Fixed
+- Pet- and ToT unit frames now properly display the localized text "Dead" when the unit is dead. 
+- ToT frame now once again displays the localized text "Offline" when the unit is an offline player. 
+- Updated how the actionbutton library retrieves spellID from macros to properly work for 8.0.1. This was affecting spell highlighting. 
+- Updated how the unitframe cast element handles post updates, to avoid the issue with missing health numbers on the target frame after a missing post update.
+
 ## [1.0.57] 2018-09-06
 ### Changed
 - Folder restructuring. Aiming at a better logical split between back-end, front-end and configurations.

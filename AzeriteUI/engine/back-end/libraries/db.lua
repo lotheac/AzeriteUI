@@ -1,4 +1,4 @@
-local LibDB = CogWheel:Set("LibDB", 11)
+local LibDB = CogWheel:Set("LibDB", 12)
 if (not LibDB) then	
 	return
 end
@@ -223,7 +223,7 @@ LibDB.NewDatabase = function(self, name, config)
 	if (databases[name]) then
 		return error(("The static config '%s' already exists!"):format(name))
 	end	
-	databases[name] = config and copyTable(config) or {}
+	databases[name] = config or {}
 	return databases[name]
 end
 

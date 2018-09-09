@@ -146,7 +146,7 @@ local OnUpdate = function(element, elapsed)
 			
 				element:SetValue(0, true)
 			element:Hide()
-			return
+			return 
 		end
 		if element.Value then
 			if element.tradeskill then
@@ -230,45 +230,45 @@ Update = function(self, event, unit, ...)
 
 	if (event == "UNIT_SPELLCAST_START") then
 		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
-		if (not name) then
+		if name then
+			endTime = endTime / 1e3
+			startTime = startTime / 1e3
+
+			local now = GetTime()
+			local max = endTime - startTime
+
+			element.castID = castID
+			element.name = name
+			element.text = text
+			element.duration = now - startTime
+			element.max = max
+			element.delay = 0
+			element.casting = true
+			element.interrupt = notInterruptible
+			element.tradeskill = isTradeSkill
+			element.total = nil
+			element.starttime = nil
+
+			element:SetMinMaxValues(0, element.total or element.max, true)
+			element:SetValue(element.duration, true) 
+
+			if element.Name then element.Name:SetText(utf8sub(text, 32, true)) end
+			if element.Icon then element.Icon:SetTexture(texture) end
+			if element.Value then element.Value:SetText("") end
+			if element.Shield then 
+				if element.interrupt and not UnitIsUnit(unit ,"player") then
+					element.Shield:Show()
+				else
+					element.Shield:Hide()
+				end
+			end
+
+			element:Show()
+
+		else
 			element:SetValue(0, true)
 			element:Hide()
-			return
 		end
-
-		endTime = endTime / 1e3
-		startTime = startTime / 1e3
-
-		local now = GetTime()
-		local max = endTime - startTime
-
-		element.castID = castID
-		element.name = name
-		element.text = text
-		element.duration = now - startTime
-		element.max = max
-		element.delay = 0
-		element.casting = true
-		element.interrupt = notInterruptible
-		element.tradeskill = isTradeSkill
-		element.total = nil
-		element.starttime = nil
-
-		element:SetMinMaxValues(0, element.total or element.max, true)
-		element:SetValue(element.duration, true) 
-
-		if element.Name then element.Name:SetText(utf8sub(text, 32, true)) end
-		if element.Icon then element.Icon:SetTexture(texture) end
-		if element.Value then element.Value:SetText("") end
-		if element.Shield then 
-			if element.interrupt and not UnitIsUnit(unit ,"player") then
-				element.Shield:Show()
-			else
-				element.Shield:Hide()
-			end
-		end
-
-		element:Show()
 		
 	elseif (event == "UNIT_SPELLCAST_FAILED") then
 		local castID, spellID = ...
@@ -397,45 +397,43 @@ Update = function(self, event, unit, ...)
 		
 	elseif (event == "UNIT_SPELLCAST_CHANNEL_START") then	
 		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo(unit)
-		if (not name) then
+		if name then
+			endTime = endTime / 1e3
+			startTime = startTime / 1e3
+
+			local max = endTime - startTime
+			local duration = endTime - GetTime()
+
+			element.duration = duration
+			element.max = max
+			element.delay = 0
+			element.channeling = true
+			element.interrupt = notInterruptible
+			element.name = name
+			element.text = text
+
+			element.casting = nil
+			element.castID = nil
+
+			element:SetMinMaxValues(0, max, true)
+			element:SetValue(duration, true)
+			
+			if element.Name then element.Name:SetText(utf8sub(name, 32, true)) end
+			if element.Icon then element.Icon:SetTexture(texture) end
+			if element.Value then element.Value:SetText("") end
+			if element.Shield then 
+				if element.interrupt and not UnitIsUnit(unit ,"player") then
+					element.Shield:Show()
+				else
+					element.Shield:Hide()
+				end
+			end
+			element:Show()
+			
+		else
 			element:SetValue(0, true)
 			element:Hide()
-			return
 		end
-		
-		endTime = endTime / 1e3
-		startTime = startTime / 1e3
-
-		local max = endTime - startTime
-		local duration = endTime - GetTime()
-
-		element.duration = duration
-		element.max = max
-		element.delay = 0
-		element.channeling = true
-		element.interrupt = notInterruptible
-		element.name = name
-		element.text = text
-
-		element.casting = nil
-		element.castID = nil
-
-		element:SetMinMaxValues(0, max, true)
-		element:SetValue(duration, true)
-		
-		if element.Name then element.Name:SetText(utf8sub(name, 32, true)) end
-		if element.Icon then element.Icon:SetTexture(texture) end
-		if element.Value then element.Value:SetText("") end
-		if element.Shield then 
-			if element.interrupt and not UnitIsUnit(unit ,"player") then
-				element.Shield:Show()
-			else
-				element.Shield:Hide()
-			end
-		end
-
-		element:Show()
-		
 		
 	elseif (event == "UNIT_SPELLCAST_CHANNEL_UPDATE") then
 		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo(unit)

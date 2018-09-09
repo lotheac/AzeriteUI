@@ -415,8 +415,7 @@ ActionButton.GetSpellID = function(self)
 	if (actionType == "spell") then
 		return id
 	elseif (actionType == "macro") then
-		local _, _, spellID = GetMacroSpell(id)
-		return spellID
+		return (GetMacroSpell(id))
 	end
 end
 
@@ -808,4 +807,4 @@ local Disable = function(self)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 34)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 35)

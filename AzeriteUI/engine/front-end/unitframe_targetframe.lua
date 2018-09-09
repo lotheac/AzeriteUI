@@ -574,6 +574,10 @@ local Style = function(self, unit, id, ...)
 
 		self.Cast = cast
 		self.Cast.PostUpdate = Layout.CastBarPostUpdate
+
+		if Layout.CastBarPostUpdateOnHide then 
+			self.Cast:HookScript("OnHide", Layout.CastBarPostUpdate)
+		end 
 	end 
 
 	-- Portrait

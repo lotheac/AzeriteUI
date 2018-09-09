@@ -11,6 +11,7 @@ local L = CogWheel("LibLocale"):GetLocale(ADDON)
 -- Lua API
 local _G = _G
 local math_floor = math.floor
+local setmetatable = setmetatable
 
 -- WoW API
 local UnitClassification = _G.UnitClassification
@@ -25,6 +26,113 @@ local GetMediaPath = Functions.GetMediaPath
 local degreesToRadians = function(degrees)
 	return degrees/360 * 2*math.pi
 end 
+
+------------------------------------------------------------------
+-- Templates
+------------------------------------------------------------------
+
+local Template_SmallFrame = {
+	Size = { 136, 47 },
+	FrameLevel = 20, 
+	
+	HealthPlace = { "CENTER", 0, 0 }, 
+		HealthSize = { 111,14 },  -- health size
+		HealthType = "StatusBar", -- health type
+		HealthBarTexture = GetMediaPath("cast_bar"), 
+		HealthBarOrientation = "RIGHT", -- bar orientation
+		HealthBarSetFlippedHorizontally = false, 
+		HealthBarSparkMap = {
+			top = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			}
+		},
+		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
+		HealthSmoothingFrequency = .2, -- speed of the smoothing method
+		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
+
+		UseHealthBackdrop = true,
+			HealthBackdropPlace = { "CENTER", 1, -2 },
+			HealthBackdropSize = { 193,93 },
+			HealthBackdropTexture = GetMediaPath("cast_back"), 
+			HealthBackdropDrawLayer = { "BACKGROUND", -1 },
+			HealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+
+		UseHealthValue = true, 
+			HealthValuePlace = { "CENTER", 0, 0 },
+			HealthValueDrawLayer = { "OVERLAY", 1 },
+			HealthValueJustifyH = "CENTER", 
+			HealthValueJustifyV = "MIDDLE", 
+			HealthValueFont = Fonts(14, true),
+			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+			HealthShowPercent = true, 
+	
+	UseAbsorbBar = true,
+		AbsorbBarPlace = { "CENTER", 0, 0 },
+		AbsorbSize = { 111,14 },
+		AbsorbBarOrientation = "LEFT",
+		AbsorbBarSetFlippedHorizontally = false, 
+		AbsorbBarSparkMap = {
+			top = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			}
+		},
+		AbsorbBarTexture = GetMediaPath("cast_bar"),
+		AbsorbBarColor = { 1, 1, 1, .25 },
+
+	UseCastBar = true,
+		CastBarPlace = { "CENTER", 0, 0 },
+		CastBarSize = { 111,14 },
+		CastBarOrientation = "RIGHT", 
+		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
+		CastBarSmoothingFrequency = .15,
+		CastBarSparkMap = {
+			top = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			}
+		},
+		CastBarTexture = GetMediaPath("cast_bar"), 
+		CastBarColor = { 1, 1, 1, .15 }
+} 
+
+local Template_SmallFrameReversed = setmetatable({
+	HealthBarOrientation = "LEFT", 
+	HealthBarSetFlippedHorizontally = true, 
+	AbsorbBarOrientation = "RIGHT",
+	AbsorbBarSetFlippedHorizontally = true, 
+	CastBarOrientation = "LEFT", 
+	CastBarSetFlippedHorizontally = true, 
+}, { __index = Template_SmallFrame })
+
+------------------------------------------------------------------
+-- Singular Units
+------------------------------------------------------------------
 
 -- Player
 local UnitFramePlayer = { 
@@ -54,7 +162,7 @@ local UnitFramePlayer = {
 		},
 		HealthBarSetFlippedHorizontally = false, 
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
-		HealthSmoothingFrequency = .5, -- speed of the smoothing method
+		HealthSmoothingFrequency = .2, -- speed of the smoothing method
 		HealthColorTapped = false, -- color tap denied units 
 		HealthColorDisconnected = false, -- color disconnected units
 		HealthColorClass = false, -- color players by class 
@@ -845,7 +953,7 @@ local UnitFrameTarget = {
 		},
 		HealthBarSetFlippedHorizontally = true, 
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
-		HealthSmoothingFrequency = .5, -- speed of the smoothing method
+		HealthSmoothingFrequency = .2, -- speed of the smoothing method
 		HealthColorTapped = true, -- color tap denied units 
 		HealthColorDisconnected = true, -- color disconnected units
 		HealthColorClass = true, -- color players by class 
@@ -1104,6 +1212,7 @@ local UnitFrameTarget = {
 			CastBarValueFont = Fonts(18, true),
 			CastBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 	
+		--CastBarPostUpdateOnHide = true, 
 		CastBarPostUpdate = function(element, unit, duration, max, delay)
 			local owner = element._owner
 			if (owner.progressiveFrameStyle == "Critter") then 
@@ -1467,211 +1576,62 @@ local UnitFrameTarget = {
 }
 
 -- Target of Target
-local UnitFrameToT = {
-
+local UnitFrameToT = setmetatable({
 	Place = { "RIGHT", "UICenter", "TOPRIGHT", -492, -96 },
-	Size = { 136, 47 },
-	FrameLevel = 20, 
-
-	HealthPlace = { "CENTER", 0, 0 }, 
-		HealthSize = { 111,14 },  -- health size
-		HealthType = "StatusBar", -- health type
-		HealthBarTexture = GetMediaPath("cast_bar"), -- only called when non-progressive frames are used
-		HealthBarOrientation = "LEFT", -- bar orientation
-		HealthBarSetFlippedHorizontally = true, 
-		HealthBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
-		HealthSmoothingFrequency = .5, -- speed of the smoothing method
-		HealthColorTapped = true, -- color tap denied units 
-		HealthColorDisconnected = true, -- color disconnected units
-		HealthColorClass = true, -- color players by class 
-		HealthColorPetAsPlayer = true, -- color your pet as you 
-		HealthColorReaction = true, -- color NPCs by their reaction standing with us
-		HealthColorHealth = false, -- color anything else in the default health color
-		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
-
-		UseHealthBackdrop = true,
-			HealthBackdropPlace = { "CENTER", 1, -2 },
-			HealthBackdropSize = { 193,93 },
-			HealthBackdropTexture = GetMediaPath("cast_back"), 
-			HealthBackdropDrawLayer = { "BACKGROUND", -1 },
-			HealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
-
-		UseHealthValue = true, 
-			HealthValuePlace = { "CENTER", 0, 0 },
-			HealthValueDrawLayer = { "OVERLAY", 1 },
-			HealthValueJustifyH = "CENTER", 
-			HealthValueJustifyV = "MIDDLE", 
-			HealthValueFont = Fonts(14, true),
-			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-			HealthValueOverride = false, 
-			HealthShowPercent = true, 
-	
-	UseAbsorbBar = true,
-		AbsorbBarPlace = { "CENTER", 0, 0 },
-		AbsorbSize = { 111,14 },
-		AbsorbBarOrientation = "RIGHT",
-		AbsorbBarSetFlippedHorizontally = true, 
-		AbsorbBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		AbsorbBarTexture = GetMediaPath("cast_bar"),
-		AbsorbBarColor = { 1, 1, 1, .25 },
-
-
-	UseCastBar = true,
-		CastBarPlace = { "CENTER", 0, 0 },
-		CastBarSize = { 111,14 },
-		CastBarOrientation = "LEFT", 
-		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
-		CastBarSmoothingFrequency = .15,
-		CastBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		CastBarTexture = GetMediaPath("cast_bar"), 
-		CastBarColor = { 1, 1, 1, .15 },
-
-	HideWhenUnitIsPlayer = true, 
-	HideWhenTargetIsCritter = true, 
-}
+	HealthColorTapped = true, -- color tap denied units 
+	HealthColorDisconnected = true, -- color disconnected units
+	HealthColorClass = true, -- color players by class 
+	HealthColorPetAsPlayer = true, -- color your pet as you 
+	HealthColorReaction = true, -- color NPCs by their reaction standing with us
+	HealthColorHealth = false, -- color anything else in the default health color
+	HideWhenUnitIsPlayer = true, -- hide the frame when the unit is the player, or the target
+	HideWhenTargetIsCritter = true, -- hide the frame when unit is a critter
+}, { __index = Template_SmallFrameReversed })
 
 -- Player Pet
-local UnitFramePet = {
+local UnitFramePet = setmetatable({
 	Place = { "LEFT", "UICenter", "BOTTOMLEFT", 362, 125 },
-	Size = { 136, 47 },
-	FrameLevel = 20, 
-	
-	HealthPlace = { "CENTER", 0, 0 }, 
-		HealthSize = { 111,14 },  -- health size
-		HealthType = "StatusBar", -- health type
-		HealthBarTexture = GetMediaPath("cast_bar"), -- only called when non-progressive frames are used
-		HealthBarOrientation = "RIGHT", -- bar orientation
-		HealthBarSetFlippedHorizontally = false, 
-		HealthBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
-		HealthSmoothingFrequency = .5, -- speed of the smoothing method
-		HealthColorTapped = false, -- color tap denied units 
-		HealthColorDisconnected = false, -- color disconnected units
-		HealthColorClass = false, -- color players by class 
-		HealthColorPetAsPlayer = false, -- color your pet as you 
-		HealthColorReaction = false, -- color NPCs by their reaction standing with us
-		HealthColorHealth = true, -- color anything else in the default health color
-		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
+	HealthColorTapped = false, -- color tap denied units 
+	HealthColorDisconnected = false, -- color disconnected units
+	HealthColorClass = false, -- color players by class 
+	HealthColorPetAsPlayer = false, -- color your pet as you 
+	HealthColorReaction = false, -- color NPCs by their reaction standing with us
+	HealthColorHealth = true, -- color anything else in the default health color
+}, { __index = Template_SmallFrame })
 
-		UseHealthBackdrop = true,
-			HealthBackdropPlace = { "CENTER", 1, -2 },
-			HealthBackdropSize = { 193,93 },
-			HealthBackdropTexture = GetMediaPath("cast_back"), 
-			HealthBackdropDrawLayer = { "BACKGROUND", -1 },
-			HealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+------------------------------------------------------------------
+-- Grouped Units
+------------------------------------------------------------------
+-- Boss 
+local UnitFrameBoss = setmetatable({
+	Place = { "TOPRIGHT", "UICenter", "RIGHT", -64, 261 }, -- Position of the initial frame
+	GrowthX = 0, -- Horizontal growth per new unit
+	GrowthY = -97, -- Vertical growth per new unit
+	HealthColorTapped = false, -- color tap denied units 
+	HealthColorDisconnected = false, -- color disconnected units
+	HealthColorClass = false, -- color players by class 
+	HealthColorPetAsPlayer = false, -- color your pet as you 
+	HealthColorReaction = true, -- color NPCs by their reaction standing with us
+	HealthColorHealth = true, -- color anything else in the default health color
+}, { __index = Template_SmallFrameReversed })
 
-		UseHealthValue = true, 
-			HealthValuePlace = { "CENTER", 0, 0 },
-			HealthValueDrawLayer = { "OVERLAY", 1 },
-			HealthValueJustifyH = "CENTER", 
-			HealthValueJustifyV = "MIDDLE", 
-			HealthValueFont = Fonts(14, true),
-			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-			HealthValueOverride = false, 
-			HealthShowPercent = true, 
-	
-	UseAbsorbBar = true,
-		AbsorbBarPlace = { "CENTER", 0, 0 },
-		AbsorbSize = { 111,14 },
-		AbsorbBarOrientation = "LEFT",
-		AbsorbBarSetFlippedHorizontally = false, 
-		AbsorbBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		AbsorbBarTexture = GetMediaPath("cast_bar"),
-		AbsorbBarColor = { 1, 1, 1, .25 },
+-- Arena 
+local UnitFrameArena = setmetatable({
+	Place = { "TOPRIGHT", "UICenter", "RIGHT", -64, 261 }, -- Position of the initial frame
+	GrowthX = 0, -- Horizontal growth per new unit
+	GrowthY = -97, -- Vertical growth per new unit
+	HealthColorTapped = false, -- color tap denied units 
+	HealthColorDisconnected = false, -- color disconnected units
+	HealthColorClass = false, -- color players by class 
+	HealthColorPetAsPlayer = false, -- color your pet as you 
+	HealthColorReaction = true, -- color NPCs by their reaction standing with us
+	HealthColorHealth = true, -- color anything else in the default health color
+}, { __index = Template_SmallFrameReversed })
 
-
-	UseCastBar = true,
-		CastBarPlace = { "CENTER", 0, 0 },
-		CastBarSize = { 111,14 },
-		CastBarOrientation = "RIGHT", 
-		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
-		CastBarSmoothingFrequency = .15,
-		CastBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		CastBarTexture = GetMediaPath("cast_bar"), 
-		CastBarColor = { 1, 1, 1, .15 }
-}
-
-LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
 LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFramePlayerHUD)
+LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
+LibDB:NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
 LibDB:NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
 LibDB:NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
-LibDB:NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameBoss]", UnitFrameBoss)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameArena]", UnitFrameArena)

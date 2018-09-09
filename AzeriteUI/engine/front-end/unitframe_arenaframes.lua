@@ -296,7 +296,6 @@ local Style = function(self, unit, id, ...)
 	self.Health.Value = healthVal
 	self.Health.OverrideValue = OverrideHealthValue
 
-
 end 
 
 

@@ -368,12 +368,7 @@ local Style = function(self, unit, id, ...)
 		
 		self.Health.Value = healthVal
 		self.Health.Percent = healthPerc
-		
-		if (Layout.HealthValueOverride ~= nil) then 
-			self.Health.OverrideValue = Layout.HealthValueOverride
-		else 
-			self.Health.OverrideValue = OverrideHealthValue
-		end 
+		self.Health.OverrideValue = Layout.HealthValueOverride or OverrideHealthValue
 	end 
 
 	-- Absorb Value

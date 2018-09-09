@@ -135,6 +135,13 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 	end 
 end
 
+local forcedEvents = {
+	["Forced"] = true,
+	["PLAYER_TARGET_CHANGED"] = true, 
+	["PLAYER_FOCUS_CHANGED"] = true,
+	["UPDATE_MOUSEOVER_UNIT"] = true
+}
+
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
@@ -145,14 +152,15 @@ local Update = function(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
+	local forced = event and forcedEvents[event]
 	local disconnected = not UnitIsConnected(unit)
 	local dead = UnitIsDeadOrGhost(unit)
 	local min = dead and 0 or UnitHealth(unit)
 	local max = dead and 0 or UnitHealthMax(unit)
 	local tapped = (not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)
 
-	element:SetMinMaxValues(0, max)
-	element:SetValue(min, (event == "Forced"))
+	element:SetMinMaxValues(0, max, forced)
+	element:SetValue(min, forced)
 	element:UpdateColor(unit, min, max, disconnected, dead, tapped)
 	element:UpdateValue(unit, min, max, disconnected, dead, tapped)
 			
@@ -205,5 +213,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 13)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 14)
 end 
