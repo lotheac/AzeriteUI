@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.59] 2018-09-09
+### Added
+- Added basic chat bubble styling.
+
+### Changed
+- Made the aura time display format more accurate and dynamic.
+
 ## [1.0.58] 2018-09-09
 ### Changed
 - Unitframe health elements now instantly updates on target changes for target, focus and mouseover units. 

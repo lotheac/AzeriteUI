@@ -1,4 +1,4 @@
-local LibChatBubble = CogWheel:Set("LibChatBubble", 4)
+local LibChatBubble = CogWheel:Set("LibChatBubble", 7)
 if (not LibChatBubble) then	
 	return
 end
@@ -52,7 +52,7 @@ LibChatBubble.BubbleBox:Hide()
 LibChatBubble.BubbleUpdater = LibChatBubble.BubbleUpdater or CreateFrame("Frame", nil, WorldFrame)
 LibChatBubble.BubbleUpdater:SetFrameStrata("TOOLTIP")
 
-
+local customBubbles = LibChatBubble.customBubbles
 local bubbleBox = LibChatBubble.BubbleBox
 local bubbleUpdater = LibChatBubble.BubbleUpdater
 local messageToGUID = LibChatBubble.messageToGUID
@@ -72,6 +72,20 @@ end
 
 local getBackdrop = function(scale) 
 	return {
+		bgFile = [[Interface\Tooltips\CHATBUBBLE-BACKGROUND]], 
+		edgeFile = [[Interface\Tooltips\CHATBUBBLE-BACKDROP]],  
+		edgeSize = 16 * scale,
+		insets = {
+			left = 2.5 * scale,
+			right = 2.5 * scale,
+			top = 2.5 * scale,
+			bottom = 2.5 * scale
+		}
+	}
+end
+
+local getBackdropClean = function(scale) 
+	return {
 		bgFile = BLANK_TEXTURE,  
 		edgeFile = TOOLTIP_BORDER, 
 		edgeSize = 16 * scale,
@@ -84,6 +98,90 @@ local getBackdrop = function(scale)
 	}
 end
 
+local OnUpdate = function(self)
+	-- 	Reference:
+	-- 		bubble, customBubble.blizzardText = original bubble and message
+	-- 		customBubbles[bubble], customBubbles[bubble].text = our custom bubble and message
+	local scale = WorldFrame:GetHeight()/UIParent:GetHeight()
+	for _, bubble in pairs(GetAllChatBubbles()) do
+
+		if (not customBubbles[bubble]) then 
+			LibChatBubble:InitBubble(bubble)
+		end 
+
+		local customBubble = customBubbles[bubble]
+
+		if bubble:IsShown() then
+
+			-- continuing the fight against overlaps blending into each other! 
+			customBubbles[bubble]:SetFrameLevel(bubble:GetFrameLevel()) -- this works?
+			
+			local blizzTextWidth = math_floor(customBubble.blizzardText:GetWidth())
+			local blizzTextHeight = math_floor(customBubble.blizzardText:GetHeight())
+			local point, anchor, rpoint, blizzX, blizzY = customBubble.blizzardText:GetPoint()
+			local r, g, b = customBubble.blizzardText:GetTextColor()
+			customBubbles[bubble].color[1] = r
+			customBubbles[bubble].color[2] = g
+			customBubbles[bubble].color[3] = b
+
+			if blizzTextWidth and blizzTextHeight and point and rpoint and blizzX and blizzY then
+				if not customBubbles[bubble]:IsShown() then
+					customBubbles[bubble]:Show()
+				end
+				local msg = customBubble.blizzardText:GetText()
+				if msg and (customBubbles[bubble].last ~= msg) then
+					customBubbles[bubble].text:SetText(msg or "")
+					customBubbles[bubble].text:SetTextColor(r, g, b)
+					customBubbles[bubble].last = msg
+					local sWidth = customBubbles[bubble].text:GetStringWidth()
+					local maxWidth = getMaxWidth()
+					if sWidth > maxWidth then
+						customBubbles[bubble].text:SetWidth(maxWidth)
+					else
+						customBubbles[bubble].text:SetWidth(sWidth)
+					end
+				end
+				local space = getPadding()
+				local ourTextWidth = customBubbles[bubble].text:GetWidth()
+				local ourTextHeight = customBubbles[bubble].text:GetHeight()
+				local ourX = math_floor(offsetX + (blizzX - blizzTextWidth/2)/scale - (ourTextWidth-blizzTextWidth)/2) -- chatbubbles are rendered at BOTTOM, WorldFrame, BOTTOMLEFT, x, y
+				local ourY = math_floor(offsetY + blizzY/scale - (ourTextHeight-blizzTextHeight)/2) -- get correct bottom coordinate
+				local ourWidth = math_floor(ourTextWidth + space*2)
+				local ourHeight = math_floor(ourTextHeight + space*2)
+				customBubbles[bubble]:Hide() -- hide while sizing and moving, to gain fps
+				customBubbles[bubble]:SetSize(ourWidth, ourHeight)
+
+				--[[
+				local oldX, oldY = select(4, customBubbles[bubble]:GetPoint())
+				if not(oldX and oldY) or ((abs(oldX - ourX) > .5) or (abs(oldY - ourY) > .5)) then -- avoid updates if we can. performance. 
+					customBubbles[bubble]:ClearAllPoints()
+					customBubbles[bubble]:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", ourX, ourY)
+				end
+				]]--
+
+				customBubbles[bubble]:SetBackdropColor(0, 0, 0, .5)
+				customBubbles[bubble]:SetBackdropBorderColor(0, 0, 0, .25)
+				customBubbles[bubble]:Show() -- show the bubble again
+			end
+
+			customBubble.blizzardText:SetAlpha(0)
+		else
+			if customBubbles[bubble]:IsShown() then
+				customBubbles[bubble]:Hide()
+			else
+				customBubbles[bubble].last = nil -- to avoid repeated messages not being shown
+			end
+		end
+	end
+
+
+	for bubble in pairs(customBubbles) do 
+		if (not bubble:IsShown()) and (customBubbles[bubble]:IsShown()) then 
+			customBubbles[bubble]:Hide()
+		end
+	end
+end
+
 LibChatBubble.DisableBlizzard = function(self, bubble)
 	local customBubble = customBubbles[bubble]
 
@@ -93,7 +191,7 @@ LibChatBubble.DisableBlizzard = function(self, bubble)
 	customBubble.blizzardColor[3] = customBubble.blizzardText:GetTextColor()
 
 	-- Make the original blizzard text transparent
-	customBubble.blizzardText:SetTextColor(r, g, b, 0)
+	customBubble.blizzardText:SetAlpha(0)
 
 	-- Remove all the default textures
 	for region, texture in pairs(customBubbles[bubble].blizzardRegions) do
@@ -120,7 +218,8 @@ LibChatBubble.InitBubble = function(self, bubble)
 	customBubble:Hide()
 	customBubble:SetFrameStrata("BACKGROUND")
 	customBubble:SetFrameLevel(LibChatBubble.numBubbles%128 + 1) -- try to avoid overlapping bubbles blending into each other
-	customBubble:SetBackdrop(getBackdrop(1))
+	customBubble:SetBackdrop(getBackdrop(.75))
+	customBubble:SetPoint("BOTTOM", bubble, "BOTTOM", 0, 0)
 
 	customBubble.blizzardRegions = {}
 	customBubble.blizzardColor = { 1, 1, 1, 1 }
@@ -128,7 +227,7 @@ LibChatBubble.InitBubble = function(self, bubble)
 	
 	customBubble.text = customBubble:CreateFontString()
 	customBubble.text:SetPoint("BOTTOMLEFT", 12, 12)
-	customBubble.text:SetFontObject(ChatFontNormal) -- we sure?
+	customBubble.text:SetFontObject(Game12Font_o1) 
 	customBubble.text:SetShadowOffset(0, 0)
 	customBubble.text:SetShadowColor(0, 0, 0, 0)
 	
@@ -143,7 +242,7 @@ LibChatBubble.InitBubble = function(self, bubble)
 
 	customBubbles[bubble] = customBubble
 
-	LibChatBubble:HideBlizzard(bubble)
+	LibChatBubble:DisableBlizzard(bubble)
 
 	if LibChatBubble.PostCreateBubble then 
 		LibChatBubble.PostCreateBubble(bubble)
@@ -168,9 +267,11 @@ LibChatBubble.UpdateBubbleVisibility = function(self)
 	local _, instanceType = IsInInstance()
 	if (instanceType == "none") then
 		SetCVar("chatBubbles", 1)
-		bubbleUpdater:SetScript("OnUpdate", LibChatBubble.OnUpdate)
+		bubbleUpdater:SetScript("OnUpdate", OnUpdate)
+		bubbleBox:Show()
 	else
 		bubbleUpdater:SetScript("OnUpdate", nil)
+		bubbleBox:Hide()
 		SetCVar("chatBubbles", 0)
 		for bubble in pairs(customBubbles) do
 			customBubbles[bubble]:Hide()

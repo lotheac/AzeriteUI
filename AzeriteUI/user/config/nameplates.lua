@@ -13,7 +13,8 @@ local GetMediaPath = Functions.GetMediaPath
 
 -- NamePlates
 local NamePlates = {
-
+	UseNamePlates = true, 
+	
 }
 
 LibDB:NewDatabase(ADDON..": Layout [NamePlates]", NamePlates)

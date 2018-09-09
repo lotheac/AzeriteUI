@@ -7,8 +7,17 @@ end
 
 local Module = Core:NewModule("ChatBubbles", "LibEvent", "LibChatBubble")
 
+local PostCreateBubble = function(bubble)
+end
+
+local PostUpdateBubble = function(bubble)
+end
+
 Module.OnInit = function(self)
 end 
 
 Module.OnEnable = function(self)
+	self:EnableBubbleStyling(true)
+	self:SetBubblePostCreateFunc(PostCreateBubble)
+	self:SetBubblePostCreateFunc(PostUpdateBubble)
 end 

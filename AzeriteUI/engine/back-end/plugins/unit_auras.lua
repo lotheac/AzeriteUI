@@ -32,6 +32,24 @@ local DAY, HOUR, MINUTE = 86400, 3600, 60
 local LONG_THRESHOLD = MINUTE*3
 
 local formatTime = function(time)
+	if (time > DAY) then -- more than a day
+		return "%1d%s", math_ceil(time / DAY), "d"
+	elseif (time > HOUR) then -- more than an hour
+		return "%1d%s", math_ceil(time / HOUR), "h"
+	elseif (time > MINUTE) then -- more than a minute
+		return "%1d%s", math_ceil(time / MINUTE), "m"
+	elseif (time > 5) then 
+		return "%d", math_ceil(time)
+	elseif (time > .9) then 
+		return "|cffff8800%d|r", math_ceil(time)
+	elseif (time > .05) then
+		return "|cffff0000%d|r", time*10 - time*10%1
+	else
+		return ""
+	end	
+end
+
+local formatTime2 = function(time)
 	if time > DAY then -- more than a day
 		time = time + DAY/2
 		return "%d%s", time/DAY - time/DAY%1, "d"
@@ -47,22 +65,6 @@ local formatTime = function(time)
 		return "|cffff8800%d|r", time - time%1
 	elseif time > 0 then
 		return "|cffff0000%d|r", time*10 - time*10%1
-	else
-		return ""
-	end	
-end
-
-local formatTime2 = function(time)
-	if time > DAY then -- more than a day
-		return "%1d%s", math_ceil(time / DAY), "d"
-	elseif time > HOUR then -- more than an hour
-		return "%1d%s", math_ceil(time / HOUR), "h"
-	elseif time > MINUTE then -- more than a minute
-		return "%1d%s", math_ceil(time / MINUTE), "m"
-	elseif time > 5 then -- more than 5 seconds
-		return "%d", math_ceil(time)
-	elseif time > 0 then
-		return "|cffff0000%.1f|r", time
 	else
 		return ""
 	end	
@@ -173,7 +175,7 @@ local Aura_SetCooldownTimer = function(button, start, duration)
 	end 
 end 
 
-local HZ = 1/10
+local HZ = 1/20
 local Aura_UpdateTimer = function(button, elapsed)
 	if button.timeLeft then
 		button.elapsed = (button.elapsed or 0) + elapsed
@@ -706,5 +708,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 23)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 25)
 end 
