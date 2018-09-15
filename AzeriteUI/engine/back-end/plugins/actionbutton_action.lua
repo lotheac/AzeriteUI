@@ -142,18 +142,28 @@ end
 
 
 -- Called when the button action (and thus the texture) has changed
-ActionButton.UpdateAction = function(self)
+ActionButton.UpdateAction = function(self, override)
 	local oldAction = self.buttonAction
+	local oldActionExists = oldAction and HasAction(oldAction)
+	local oldActionTexture = oldActionExists and GetActionTexture(oldAction)
+
 	local newAction = self:GetAction()
+	local newActionExist = newAction and HasAction(newAction)
+	local newActionTexture = newActionExist and GetActionTexture(newAction)
+
 	local Icon = self.Icon
 	if Icon then 
-		if HasAction(newAction) then 
-			Icon:SetTexture(GetActionTexture(newAction))
+		if newActionTexture then 
+			Icon:SetTexture(newActionTexture)
 		else
 			Icon:SetTexture(nil) 
 		end 
 	end 
-	if (oldAction ~= newAction) then 
+
+	-- Throttling this can cause problems when arriving from SPELLS_CHANGED, 
+	-- as new spells in vehicles won't show up then. 
+	-- Adding the texture check in an attempt to counter that issue. 
+	if ((newAction ~= oldAction) or (newActionTexture ~= oldActionTexture) or override) then 
 		self.buttonAction = newAction
 		self:Update()
 	end
@@ -721,6 +731,7 @@ local Update = function(self, event, ...)
 		self:HideGrid()
 
 	elseif (event == "CURRENT_SPELL_CAST_CHANGED") then
+		-- Should we add some checks to figure out if the change applies to this button?
 		self:UpdateAction()
 
 	elseif (event == "LOSS_OF_CONTROL_ADDED") then
@@ -754,6 +765,9 @@ local Update = function(self, event, ...)
 			end
 		end
 
+	elseif (event == "SPELLS_CHANGED") then 
+		-- Should we add checks to figure out if the change applies here?
+		self:UpdateAction() 
 	elseif (event == "UPDATE_BINDINGS") then
 		self:UpdateBinding()
 
@@ -783,6 +797,7 @@ local Enable = function(self)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Proxy)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
 	self:RegisterEvent("SPELL_UPDATE_CHARGES", Proxy)
+	self:RegisterEvent("SPELLS_CHANGED", Proxy)
 	
 end
 
@@ -804,7 +819,8 @@ local Disable = function(self)
 	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Proxy)
 	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
 	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Proxy)
+	self:UnregisterEvent("SPELLS_CHANGED", Proxy)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 35)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 37)

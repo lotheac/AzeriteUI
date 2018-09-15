@@ -8,6 +8,7 @@ end
 local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [NamePlates]")
 
 -- Lua API
 local _G = _G
@@ -183,8 +184,8 @@ Module.PostUpdateNamePlateOptions = function(self, isInInstace)
 	-- Setting the base size involves changing the size of secure unit buttons, 
 	-- but since we're using our out of combat wrapper, we should be safe.
 	-- Default size 110, 45
-	C_NamePlate.SetNamePlateFriendlySize(80,32)
-	C_NamePlate.SetNamePlateEnemySize(80,32)
+	C_NamePlate.SetNamePlateFriendlySize(unpack(Layout.Size))
+	C_NamePlate.SetNamePlateEnemySize(unpack(Layout.Size))
 
 	NamePlateDriverFrame.UpdateNamePlateOptions = function() end
 
@@ -194,50 +195,52 @@ end
 -- This is where we create our own custom elements.
 Module.PostCreateNamePlate = function(self, plate, baseFrame)
 
-	plate:SetSize(80,32)
+	plate:SetSize(unpack(Layout.Size))
 	plate.colors = Colors 
 
 	-- Health bar
-	local health = plate:CreateStatusBar()
-	health:SetSize(80,10)
-	health:SetPoint("TOP", 0, -2)
-	health:SetStatusBarTexture(GetMediaPath("nameplate_bar"))
-	health:SetOrientation("LEFT")
-	health:SetSmoothingFrequency(.1)
-	health:SetSparkMap(map.plate)
-	health:Hide()
-	health.colorTapped = true
-	health.colorDisconnected = true
-	health.colorClass = true -- color players in their class colors
-	health.colorCivilian = true -- color friendly players as civilians
-	health.colorReaction = true
-	health.colorHealth = true
-	health.colorThreat = true
-	health.frequent = 1/120
-	plate.Health = health
+	if Layout.UseHealth then 
+		local health = plate:CreateStatusBar()
+		health:SetSize(unpack(Layout.HealthSize))
+		health:SetPoint(unpack(Layout.HealthPlace))
+		health:SetStatusBarTexture(GetMediaPath("nameplate_bar"))
+		health:SetOrientation("LEFT")
+		health:SetSmoothingFrequency(.1)
+		health:SetSparkMap(map.plate)
+		health:Hide()
+		health.colorTapped = true
+		health.colorDisconnected = true
+		health.colorClass = true -- color players in their class colors
+		health.colorCivilian = true -- color friendly players as civilians
+		health.colorReaction = true
+		health.colorHealth = true
+		health.colorThreat = true
+		health.frequent = 1/120
+		plate.Health = health
 
-	local healthBg = health:CreateTexture()
-	healthBg:SetDrawLayer("BACKGROUND", 0)
-	healthBg:SetSize(80,10)
-	healthBg:SetPoint("CENTER", 0, 0)
-	healthBg:SetTexture(GetMediaPath("nameplate_bar"))
-	healthBg:SetVertexColor(.15, .15, .15, .82)
+		local healthBg = health:CreateTexture()
+		healthBg:SetDrawLayer("BACKGROUND", 0)
+		healthBg:SetSize(80,10)
+		healthBg:SetPoint("CENTER", 0, 0)
+		healthBg:SetTexture(GetMediaPath("nameplate_bar"))
+		healthBg:SetVertexColor(.15, .15, .15, .82)
 
-	local healthBorder = health:CreateTexture()
-	healthBorder:SetDrawLayer("BACKGROUND", -1)
-	healthBorder:SetSize(84,14)
-	healthBorder:SetPoint("CENTER", 0, 0)
-	healthBorder:SetTexture(GetMediaPath("nameplate_solid"))
-	healthBorder:SetVertexColor(0, 0, 0, .82)
+		local healthBorder = health:CreateTexture()
+		healthBorder:SetDrawLayer("BACKGROUND", -1)
+		healthBorder:SetSize(84,14)
+		healthBorder:SetPoint("CENTER", 0, 0)
+		healthBorder:SetTexture(GetMediaPath("nameplate_solid"))
+		healthBorder:SetVertexColor(0, 0, 0, .82)
 
-	local healthGlow = health:CreateTexture()
-	healthGlow:SetDrawLayer("BACKGROUND", -2)
-	healthGlow:SetSize(88,18)
-	healthGlow:SetPoint("CENTER", 0, 0)
-	healthGlow:SetTexture(GetMediaPath("nameplate_solid"))
-	healthGlow:SetVertexColor(0, 0, 0, .25)
+		local healthGlow = health:CreateTexture()
+		healthGlow:SetDrawLayer("BACKGROUND", -2)
+		healthGlow:SetSize(88,18)
+		healthGlow:SetPoint("CENTER", 0, 0)
+		healthGlow:SetTexture(GetMediaPath("nameplate_solid"))
+		healthGlow:SetVertexColor(0, 0, 0, .25)
+	end 
 	
-	local cast = health:CreateStatusBar()
+	local cast = (plate.health or plate):CreateStatusBar()
 	cast:SetSize(80,10)
 	cast:SetPoint("TOP", health, "BOTTOM", 0, -6)
 	cast:SetStatusBarTexture(GetMediaPath("cast_bar"))
@@ -303,9 +306,11 @@ Module.OnEvent = function(self, event, ...)
 end
 
 Module.OnInit = function(self)
-	local WEAKAURAS = self:IsAddOnEnabled("WeakAuras")
+	WEAKAURAS = self:IsAddOnEnabled("WeakAuras")
 end 
 
 Module.OnEnable = function(self)
-	self:StartNamePlateEngine()
+	if Layout.UseNamePlates then
+		self:StartNamePlateEngine()
+	end
 end 

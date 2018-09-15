@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.60] 2018-09-15
+### Fixed
+- Changed how actionbuttons update their content to allow new spells appearing while in a vehicle.
+
 ## [1.0.59] 2018-09-09
 ### Added
 - Added basic chat bubble styling.
