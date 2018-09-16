@@ -28,17 +28,25 @@ local degreesToRadians = function(degrees)
 end 
 
 ------------------------------------------------------------------
--- Templates
+-- Config Templates
 ------------------------------------------------------------------
 
+-- Table containing common values for the templates
+local Constant = {
+	SmallFrame = { 136, 47 },
+	SmallBar = { 114, 14 },
+	SmallBarTexture = GetMediaPath("cast_bar"),
+	SmallAuraSize = 30, 
+}
+
 local Template_SmallFrame = {
-	Size = { 136, 47 },
+	Size = Constant.SmallFrame,
 	FrameLevel = 20, 
 	
 	HealthPlace = { "CENTER", 0, 0 }, 
-		HealthSize = { 111,14 },  -- health size
+		HealthSize = Constant.SmallBar,  -- health size
 		HealthType = "StatusBar", -- health type
-		HealthBarTexture = GetMediaPath("cast_bar"), 
+		HealthBarTexture = Constant.SmallBarTexture, 
 		HealthBarOrientation = "RIGHT", -- bar orientation
 		HealthBarSetFlippedHorizontally = false, 
 		HealthBarSparkMap = {
@@ -77,7 +85,7 @@ local Template_SmallFrame = {
 	
 	UseAbsorbBar = true,
 		AbsorbBarPlace = { "CENTER", 0, 0 },
-		AbsorbSize = { 111,14 },
+		AbsorbSize = Constant.SmallBar,
 		AbsorbBarOrientation = "LEFT",
 		AbsorbBarSetFlippedHorizontally = false, 
 		AbsorbBarSparkMap = {
@@ -94,12 +102,12 @@ local Template_SmallFrame = {
 				{ keyPercent = 128/128, offset = -16/32 }
 			}
 		},
-		AbsorbBarTexture = GetMediaPath("cast_bar"),
+		AbsorbBarTexture = Constant.SmallBarTexture,
 		AbsorbBarColor = { 1, 1, 1, .25 },
 
 	UseCastBar = true,
 		CastBarPlace = { "CENTER", 0, 0 },
-		CastBarSize = { 111,14 },
+		CastBarSize = Constant.SmallBar,
 		CastBarOrientation = "RIGHT", 
 		CastBarSmoothingMode = "bezier-fast-in-slow-out", 
 		CastBarSmoothingFrequency = .15,
@@ -117,9 +125,39 @@ local Template_SmallFrame = {
 				{ keyPercent = 128/128, offset = -16/32 }
 			}
 		},
-		CastBarTexture = GetMediaPath("cast_bar"), 
-		CastBarColor = { 1, 1, 1, .15 }
+		CastBarTexture = Constant.SmallBarTexture, 
+		CastBarColor = { 1, 1, 1, .15 },
 } 
+
+local Template_SmallFrame_Auras = setmetatable({
+	UseAuras = true, 
+		AuraFrameSize = { Constant.SmallAuraSize*6 + 4*5, Constant.SmallAuraSize }, 
+		AuraFramePlace = { "LEFT", Constant.SmallFrame[1] + 13, -1 },
+		AuraSize = Constant.SmallAuraSize, 
+		AuraSpaceH = 4, 
+		AuraSpaceV = 4, 
+		AuraGrowthX = "RIGHT", 
+		AuraGrowthY = "UP", 
+		AuraMax = 6, 
+		AuraMaxBuffs = nil, 
+		AuraMaxDebuffs = nil, 
+		AuraDebuffsFirst = false, 
+		ShowAuraCooldownSpirals = false, 
+		ShowAuraCooldownTime = true, 
+		AuraFilter = nil, 
+		AuraBuffFilter = "HELPFUL", 
+		AuraDebuffFilter = "HARMFUL", 
+		AuraFilterFunc = nil, 
+		BuffFilterFunc = nil, 
+		DebuffFilterFunc = nil, 
+		AuraTooltipDefaultPosition = nil, 
+		AuraTooltipPoint = "BOTTOMLEFT", 
+		AuraTooltipAnchor = nil, 
+		AuraTooltipRelPoint = "TOPLEFT", 
+		AuraTooltipOffsetX = 8, 
+		AuraTooltipOffsetY = 16
+	
+}, { __index = Template_SmallFrame })
 
 local Template_SmallFrameReversed = setmetatable({
 	HealthBarOrientation = "LEFT", 
@@ -129,6 +167,16 @@ local Template_SmallFrameReversed = setmetatable({
 	CastBarOrientation = "LEFT", 
 	CastBarSetFlippedHorizontally = true, 
 }, { __index = Template_SmallFrame })
+
+local Template_SmallFrameReversed_Auras = setmetatable({
+	AuraFramePlace = { "RIGHT", -(Constant.SmallFrame[1] + 13), -1 },
+	AuraGrowthX = "LEFT", 
+	AuraGrowthY = "DOWN", 
+	AuraTooltipPoint = "TOPRIGHT", 
+	AuraTooltipRelPoint = "BOTTOMRIGHT", 
+	AuraTooltipOffsetX = -8, 
+	AuraTooltipOffsetY = -16
+}, { __index = Template_SmallFrame_Auras })
 
 ------------------------------------------------------------------
 -- Singular Units
@@ -474,8 +522,8 @@ local UnitFramePlayerHUD = {
 
 	UseCastBar = true,
 		CastBarPlace = { "CENTER", "UICenter", "CENTER", 0, -133 }, 
-		CastBarSize = { 111,14 },
-		CastBarTexture = GetMediaPath("cast_bar"), 
+		CastBarSize = Constant.SmallBar,
+		CastBarTexture = Constant.SmallBarTexture, 
 		CastBarColor = { 70/255, 255/255, 131/255, .69 }, 
 		CastBarOrientation = "RIGHT",
 		CastBarSparkMap = {
@@ -887,8 +935,8 @@ local UnitFramePlayerHUD = {
 
 	UsePlayerAltPowerBar = true,
 		PlayerAltPowerBarPlace = { "CENTER", "UICenter", "CENTER", 0, -(133 + 56)  }, 
-		PlayerAltPowerBarSize = { 111,14 },
-		PlayerAltPowerBarTexture = GetMediaPath("cast_bar"), 
+		PlayerAltPowerBarSize = Constant.SmallBar,
+		PlayerAltPowerBarTexture = Constant.SmallBarTexture, 
 		PlayerAltPowerBarColor = { Colors.power.ALTERNATE[1], Colors.power.ALTERNATE[2], Colors.power.ALTERNATE[3], .69 }, 
 		PlayerAltPowerBarOrientation = "RIGHT",
 		PlayerAltPowerBarSparkMap = {
@@ -1212,7 +1260,6 @@ local UnitFrameTarget = {
 			CastBarValueFont = Fonts(18, true),
 			CastBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 	
-		--CastBarPostUpdateOnHide = true, 
 		CastBarPostUpdate = function(element, unit, duration, max, delay)
 			local owner = element._owner
 			if (owner.progressiveFrameStyle == "Critter") then 
@@ -1578,26 +1625,166 @@ local UnitFrameTarget = {
 -- Target of Target
 local UnitFrameToT = setmetatable({
 	Place = { "RIGHT", "UICenter", "TOPRIGHT", -492, -96 },
+
 	HealthColorTapped = true, -- color tap denied units 
 	HealthColorDisconnected = true, -- color disconnected units
 	HealthColorClass = true, -- color players by class 
 	HealthColorPetAsPlayer = true, -- color your pet as you 
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = false, -- color anything else in the default health color
-	HideWhenUnitIsPlayer = true, -- hide the frame when the unit is the player, or the target
+	HideWhenUnitIsPlayer = true, -- hide the frame when the unit is the player
+	HideWhenUnitIsTarget = true, -- hide the frame when the unit matches our target
 	HideWhenTargetIsCritter = true, -- hide the frame when unit is a critter
+
+	-- This should be the same as the health value
+	UseCastBarName = true, 
+		CastBarNameParent = "Health",
+		CastBarNamePlace = { "CENTER", 0, 1 },
+		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameFont = Fonts(12, true),
+		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+		CastBarNameJustifyH = "CENTER", 
+		CastBarNameJustifyV = "MIDDLE",
+
+	CastBarPostUpdate = function(element, unit, duration, max, delay)
+		local owner = element._owner
+		if (element.casting or element.channeling) then 
+			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
+				owner.Health.Value:Hide()
+			end 
+			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
+				owner.Absorb.Value:Hide()
+			end  
+			if (element.Value and (not element.Value:IsShown())) then 
+				element.Value:Show()
+			end
+			if (element.Name and (not element.Name:IsShown())) then 
+				element.Name:Show()
+			end
+		else 
+			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
+				owner.Health.Value:Show()
+			end  
+			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
+				owner.Absorb.Value:Show()
+			end  
+		end 
+	end,
+		
 }, { __index = Template_SmallFrameReversed })
 
 -- Player Pet
 local UnitFramePet = setmetatable({
 	Place = { "LEFT", "UICenter", "BOTTOMLEFT", 362, 125 },
+
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = false, -- color disconnected units
 	HealthColorClass = false, -- color players by class 
 	HealthColorPetAsPlayer = false, -- color your pet as you 
 	HealthColorReaction = false, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
+
+	-- This should be the same as the health value
+	UseCastBarName = true, 
+		CastBarNameParent = "Health",
+		CastBarNamePlace = { "CENTER", 0, 1 },
+		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameFont = Fonts(12, true),
+		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+		CastBarNameJustifyH = "CENTER", 
+		CastBarNameJustifyV = "MIDDLE",
+
+	CastBarPostUpdate = function(element, unit, duration, max, delay)
+		local owner = element._owner
+		if (element.casting or element.channeling) then 
+			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
+				owner.Health.Value:Hide()
+			end 
+			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
+				owner.Absorb.Value:Hide()
+			end  
+			if (element.Value and (not element.Value:IsShown())) then 
+				element.Value:Show()
+			end
+			if (element.Name and (not element.Name:IsShown())) then 
+				element.Name:Show()
+			end
+		else 
+			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
+				owner.Health.Value:Show()
+			end  
+			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
+				owner.Absorb.Value:Show()
+			end  
+		end 
+	end,
+
 }, { __index = Template_SmallFrame })
+
+-- Focus
+local UnitFrameFocus = setmetatable({
+	Place = { "RIGHT", "UICenter", "BOTTOMLEFT", 332, 270 },
+
+	UseName = true, 
+		NamePlace = { "BOTTOMLEFT", (Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
+		NameDrawLayer = { "OVERLAY", 1 },
+		NameDrawJustifyH = "LEFT",
+		NameDrawJustifyV = "TOP",
+		NameFont = Fonts(14, true),
+		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		NameSize = nil,
+
+	-- This should be the same as the health value
+	UseCastBarName = true, 
+		CastBarNameParent = "Health",
+		CastBarNamePlace = { "CENTER", 0, 1 },
+		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameFont = Fonts(12, true),
+		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+		CastBarNameJustifyH = "CENTER", 
+		CastBarNameJustifyV = "MIDDLE",
+
+	CastBarPostUpdate = function(element, unit, duration, max, delay)
+		local owner = element._owner
+		if (element.casting or element.channeling) then 
+			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
+				owner.Health.Value:Hide()
+			end 
+			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
+				owner.Absorb.Value:Hide()
+			end  
+			if (element.Value and (not element.Value:IsShown())) then 
+				element.Value:Show()
+			end
+			if (element.Name and (not element.Name:IsShown())) then 
+				element.Name:Show()
+			end
+		else 
+			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
+				owner.Health.Value:Show()
+			end  
+			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
+				owner.Absorb.Value:Show()
+			end  
+		end 
+	end,
+
+	BuffFilterFunc = Auras:GetFilterFunc("focus"), 
+	DebuffFilterFunc = Auras:GetFilterFunc("focus"), 
+
+	HealthColorTapped = true, -- color tap denied units 
+	HealthColorDisconnected = true, -- color disconnected units
+	HealthColorClass = true, -- color players by class 
+	HealthColorPetAsPlayer = true, -- color your pet as you 
+	HealthColorReaction = true, -- color NPCs by their reaction standing with us
+	HealthColorHealth = false, -- color anything else in the default health color
+	HideWhenUnitIsPlayer = false, -- hide the frame when the unit is the player, or the target
+	HideWhenTargetIsCritter = false, -- hide the frame when unit is a critter
+
+}, { __index = Template_SmallFrame_Auras })
 
 ------------------------------------------------------------------
 -- Grouped Units
@@ -1605,33 +1792,134 @@ local UnitFramePet = setmetatable({
 -- Boss 
 local UnitFrameBoss = setmetatable({
 	Place = { "TOPRIGHT", "UICenter", "RIGHT", -64, 261 }, -- Position of the initial frame
-	GrowthX = 0, -- Horizontal growth per new unit
-	GrowthY = -97, -- Vertical growth per new unit
+		GrowthX = 0, -- Horizontal growth per new unit
+		GrowthY = -97, -- Vertical growth per new unit
+
+	UseName = true, 
+		NamePlace = { "BOTTOMRIGHT", -(Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
+		NameDrawLayer = { "OVERLAY", 1 },
+		NameDrawJustifyH = "CENTER",
+		NameDrawJustifyV = "TOP",
+		NameFont = Fonts(14, true),
+		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		NameSize = nil,
+
+	-- This should be the same as the health value
+	UseCastBarName = true, 
+		CastBarNameParent = "Health",
+		CastBarNamePlace = { "CENTER", 0, 1 },
+		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameFont = Fonts(12, true),
+		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+		CastBarNameJustifyH = "CENTER", 
+		CastBarNameJustifyV = "MIDDLE",
+
+	CastBarPostUpdate = function(element, unit, duration, max, delay)
+		local owner = element._owner
+		if (element.casting or element.channeling) then 
+			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
+				owner.Health.Value:Hide()
+			end 
+			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
+				owner.Absorb.Value:Hide()
+			end  
+			if (element.Value and (not element.Value:IsShown())) then 
+				element.Value:Show()
+			end
+			if (element.Name and (not element.Name:IsShown())) then 
+				element.Name:Show()
+			end
+		else 
+			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
+				owner.Health.Value:Show()
+			end  
+			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
+				owner.Absorb.Value:Show()
+			end  
+		end 
+	end,
+
+	BuffFilterFunc = Auras:GetFilterFunc("boss"), 
+	DebuffFilterFunc = Auras:GetFilterFunc("boss"), 
+
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = false, -- color disconnected units
 	HealthColorClass = false, -- color players by class 
 	HealthColorPetAsPlayer = false, -- color your pet as you 
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
-}, { __index = Template_SmallFrameReversed })
+
+}, { __index = Template_SmallFrameReversed_Auras })
 
 -- Arena 
 local UnitFrameArena = setmetatable({
 	Place = { "TOPRIGHT", "UICenter", "RIGHT", -64, 261 }, -- Position of the initial frame
-	GrowthX = 0, -- Horizontal growth per new unit
-	GrowthY = -97, -- Vertical growth per new unit
+		GrowthX = 0, -- Horizontal growth per new unit
+		GrowthY = -97, -- Vertical growth per new unit
+
+	UseName = true, 
+		NamePlace = { "BOTTOMRIGHT", -(Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
+		NameDrawLayer = { "OVERLAY", 1 },
+		NameDrawJustifyH = "CENTER",
+		NameDrawJustifyV = "TOP",
+		NameFont = Fonts(14, true),
+		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		NameSize = nil,
+
+	-- This should be the same as the health value
+	UseCastBarName = true, 
+		CastBarNameParent = "Health",
+		CastBarNamePlace = { "CENTER", 0, 1 },
+		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameFont = Fonts(12, true),
+		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+		CastBarNameJustifyH = "CENTER", 
+		CastBarNameJustifyV = "MIDDLE",
+
+	CastBarPostUpdate = function(element, unit, duration, max, delay)
+		local owner = element._owner
+		if (element.casting or element.channeling) then 
+			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
+				owner.Health.Value:Hide()
+			end 
+			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
+				owner.Absorb.Value:Hide()
+			end  
+			if (element.Value and (not element.Value:IsShown())) then 
+				element.Value:Show()
+			end
+			if (element.Name and (not element.Name:IsShown())) then 
+				element.Name:Show()
+			end
+		else 
+			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
+				owner.Health.Value:Show()
+			end  
+			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
+				owner.Absorb.Value:Show()
+			end  
+		end 
+	end,
+
+	BuffFilterFunc = Auras:GetFilterFunc("arena"), 
+	DebuffFilterFunc = Auras:GetFilterFunc("arena"), 
+
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = false, -- color disconnected units
 	HealthColorClass = false, -- color players by class 
 	HealthColorPetAsPlayer = false, -- color your pet as you 
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
-}, { __index = Template_SmallFrameReversed })
+
+}, { __index = Template_SmallFrameReversed_Auras })
 
 LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFramePlayerHUD)
 LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
 LibDB:NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
 LibDB:NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
 LibDB:NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameFocus]", UnitFrameFocus)
 LibDB:NewDatabase(ADDON..": Layout [UnitFrameBoss]", UnitFrameBoss)
 LibDB:NewDatabase(ADDON..": Layout [UnitFrameArena]", UnitFrameArena)

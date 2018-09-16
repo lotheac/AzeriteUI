@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.61] 2018-09-16
+### Added
+- Added focus unit frame.
+- Added cast name to arena-, boss-, pet, target of target and the new focus unit frame. 
+- Added a simplistic back-end time library to easier handle time formatting and callbacks throughout the user interface. Also updated the code to retrieve server time to be more in line with what Blizzard is currently using, as the previously followed recommendations from Wowpedia seems to be based on guesswork and not facts. 
+
+### Changed
+- Changed the time mode strings visible in tooltips and output in the chat to better indicate what the difference between local and game time really is. 
+- Restructured boss-, arena-, pet, target of target and the new focus frame front-end code. 
+
+### Fixed
+- Fixed aura widget alignment, as this was miscalculating the available row size in the widget, causing the last aura to unintentionally be placed on a new row. 
+
 ## [1.0.60] 2018-09-15
 ### Fixed
 - Changed how actionbuttons update their content to allow new spells appearing while in a vehicle.

@@ -14,6 +14,9 @@
 	<Script file="functions\common_functions.lua"/>
 	<Script file="functions\aura_functions.lua"/>
 
+	<!-- requires the above function tables to work -->
+	<Script file="functions\unitframe_style_functions.lua"/>
+
 	<Script file="config\actionbars.lua"/>
 	<Script file="config\blizzard.lua"/>
 	<Script file="config\core.lua"/>

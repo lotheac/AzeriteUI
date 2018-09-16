@@ -24,13 +24,13 @@ L["New Event!"] = true
 L["New Mail!"] = true
 
 L["%s to toggle calendar."] = true
-L["%s to use local time."] = true
-L["%s to use realm time."] = true
+L["%s to use local computer time."] = true
+L["%s to use game server time."] = true
 L["%s to use standard (12-hour) time."] = true
 L["%s to use military (24-hour) time."] = true
 
-L["Now using standard local time."] = true
-L["Now using standard realm time."] = true
+L["Now using local computer time."] = true
+L["Now using game server time."] = true
 L["Now using standard (12-hour) time."] = true
 L["Now using military (24-hour) time."] = true
 

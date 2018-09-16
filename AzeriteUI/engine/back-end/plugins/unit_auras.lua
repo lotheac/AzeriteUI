@@ -6,6 +6,7 @@ assert(LibFrame, "UnitAuras requires LibFrame to be loaded.")
 local _G = _G
 local math_ceil = math.ceil
 local math_floor = math.floor
+local table_wipe = table.wipe
 
 -- WoW API
 local CancelUnitBuff = _G.CancelUnitBuff
@@ -22,11 +23,11 @@ local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
 local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
 local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
-
+-- Aura Cache
+local Cache = {}
 
 -- Utility Functions
 -----------------------------------------------------
-
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 local LONG_THRESHOLD = MINUTE*3
@@ -73,7 +74,6 @@ end
 
 -- Aura Button Template
 -----------------------------------------------------
-
 local Aura = LibFrame:CreateFrame("Button")
 local Aura_MT = { __index = Aura }
 
@@ -319,8 +319,8 @@ local SetAuraButtonPosition = function(element, button, order)
 
 	local elementW, elementH = element:GetSize()
 	local width, height = element.auraSize + element.spacingH, element.auraSize + element.spacingV
-	local numCols = math_floor((elementW + element.spacingH + .5) / width)
-	local numRows = math_floor((elementH + element.spacingV + .5) / height)
+	local numCols = math_floor(elementW + element.spacingH + .5) / width
+	local numRows = math_floor(elementH + element.spacingV + .5) / height
 
 	-- No room for this aura, return in panic!
 	if (order > numCols*numRows) then 
@@ -344,6 +344,17 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 	local visibleBuffs = 0
 	local visible = visible or 0
 
+	-- Iterate all helpful auras once, to gather priority listings
+	--local counter = 0
+	--for i = 1, BUFF_MAX_DISPLAY do 
+
+	--end
+
+	-- Clear unneeded entries
+	--for i = counter + 1, #Cache[element] do 
+	--	Cache[element][i] = nil
+	--end 
+
 	-- Iterate helpful auras
 	for i = 1, BUFF_MAX_DISPLAY do 
 
@@ -359,8 +370,13 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 		local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
 
 		-- Run the custom filter method, if it exists
+		local auraPriority
 		if customFilter then 
-			if not customFilter(element, true, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) then 
+			local displayAura, displayPriority = customFilter(element, true, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+
+			if displayAura then 
+				auraPriority = displayPriority
+			else 
 				name = nil
 			end 
 		end 
@@ -407,6 +423,7 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 			button.isBossDebuff = isBossDebuff
 			button.isCastByPlayer = isCastByPlayer
 			button.isOwnedByPlayer = isOwnedByPlayer
+			button.auraPriority = auraPriority
 
 			-- Update the icon texture
 			button.Icon:SetTexture(icon)
@@ -458,8 +475,13 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 		local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
 
 		-- Run the custom filter method, if it exists
+		local auraPriority
 		if customFilter then 
-			if not customFilter(element, false, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) then 
+			local displayAura, displayPriority = customFilter(element, false, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3) 
+			
+			if displayAura then 
+				auraPriority = displayPriority
+			else 
 				name = nil
 			end 
 		end 
@@ -507,6 +529,7 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 			button.isBossDebuff = isBossDebuff
 			button.isCastByPlayer = isCastByPlayer
 			button.isOwnedByPlayer = isOwnedByPlayer
+			button.auraPriority = auraPriority
 
 			-- Update the icon texture
 			button.Icon:SetTexture(icon)
@@ -639,16 +662,19 @@ local Enable = function(self)
 			Auras._owner = self
 			Auras.unit = unit
 			Auras.ForceUpdate = ForceUpdate
+			Cache[Auras] = Cache[Auras] or {}
 		end
 		if Buffs then
 			Buffs._owner = self
 			Buffs.unit = unit
 			Buffs.ForceUpdate = ForceUpdate
+			Cache[Buffs] = Cache[Buffs] or {}
 		end
 		if Debuffs then
 			Debuffs._owner = self
 			Debuffs.unit = unit
 			Debuffs.ForceUpdate = ForceUpdate
+			Cache[Debuffs] = Cache[Debuffs] or {}
 		end
 
 		local frequent = (Auras and Auras.frequent) or (Buffs and Buffs.frequent) or (Debuffs and Debuffs.frequent)
@@ -681,14 +707,23 @@ local Disable = function(self)
 	
 		if Auras then
 			Auras.unit = nil
+			if Cache[Auras] then 
+				table_wipe(Cache[Auras])
+			end
 		end
 	
 		if Buffs then
 			Buffs.unit = nil
+			if Cache[Buffs] then 
+				table_wipe(Cache[Buffs])
+			end
 		end
 	
 		if Debuffs then
 			Debuffs.unit = nil
+			if Cache[Debuffs] then 
+				table_wipe(Cache[Debuffs])
+			end
 		end
 	
 		if not ((Auras and Auras.frequent) or (Buffs and Buffs.frequent) or (Debuffs and Debuffs.frequent)) then
@@ -708,5 +743,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 25)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 27)
 end 

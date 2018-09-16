@@ -5,7 +5,7 @@ if (not Core) then
 end
 
 local LibMinimap = CogWheel("LibMinimap")
-local Module = Core:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip")
+local Module = Core:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip", "LibTime")
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
@@ -26,7 +26,6 @@ local MBF = Module:IsAddOnEnabled("MinimapButtonFrame")
 
 -- Lua API
 local _G = _G
-local date = date
 local math_floor = math.floor
 local math_pi = math.pi
 local select = select
@@ -48,7 +47,6 @@ local GetFriendshipReputation = _G.GetFriendshipReputation
 local GetNetStats = _G.GetNetStats
 local GetNumFactions = _G.GetNumFactions
 local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
-local GetServerTime = _G.GetServerTime
 local GetWatchedFactionInfo = _G.GetWatchedFactionInfo
 local IsFactionParagon = _G.C_Reputation.IsFactionParagon
 local IsXPUserDisabled = _G.IsXPUserDisabled
@@ -82,8 +80,8 @@ local LEVEL = UnitLevel("player")
 -- Default settings
 -- Changing these does NOT change in-game settings
 local defaults = {
-	useStandardTime = true, 
-	useServerTime = false,
+	useStandardTime = true, -- as opposed to military/24-hour time
+	useServerTime = false, -- as opposed to your local computer time
 	stickyBars = false
 }
 
@@ -98,29 +96,11 @@ local degreesToRadians = function(degrees)
 	return degrees * (2*math_pi)/180
 end 
 
-local computeStandardHours = function(hour)
-	if ( hour > 12 ) then
-		return hour - 12, TIMEMANAGER_PM
-	elseif ( hour == 0 ) then
-		return 12, TIMEMANAGER_AM
-	else
-		return hour, TIMEMANAGER_AM
-	end
-end 
-
-local getTimeStrings = function(h, m, s, suffix, useStandardTime, showSeconds, abbreviateSuffix)
+local getTimeStrings = function(h, m, suffix, useStandardTime, abbreviateSuffix)
 	if useStandardTime then 
-		if showSeconds then 
-			return "%d:%02d:%02d |cff888888%s|r", h, m, s, abbreviateSuffix and string_match(suffix, "^.") or suffix
-		else 
-			return "%d:%02d |cff888888%s|r", h, m, abbreviateSuffix and string_match(suffix, "^.") or suffix
-		end 
+		return "%d:%02d |cff888888%s|r", h, m, abbreviateSuffix and string_match(suffix, "^.") or suffix
 	else 
-		if showSeconds then 
-			return "%02d:%02d:%02d", h, m, s
-		else
-			return "%02d:%02d", h, m
-		end 
+		return "%02d:%02d", h, m
 	end 
 end 
 
@@ -170,8 +150,8 @@ local Coordinates_OverrideValue = function(element, x, y)
 	element:SetFormattedText("%s %s", xval, yval) 
 end 
 
-local Clock_OverrideValue = function(element, h, m, s, suffix)
-	element:SetFormattedText(getTimeStrings(h, m, s, suffix, element.useStandardTime, element.showSeconds, true))
+local Clock_OverrideValue = function(element, h, m, suffix)
+	element:SetFormattedText(getTimeStrings(h, m, suffix, element.useStandardTime, true))
 end 
 
 local FrameRate_OverrideValue = function(element, fps)
@@ -507,38 +487,31 @@ local Time_UpdateTooltip = function(self)
 	local green = Colors.quest.green.colorCode
 	local NC = "|r"
 
-	local timeStamp = GetServerTime()
-	local sh = tonumber(date("%H", timeStamp))
-	local sm = tonumber(date("%M", timeStamp))
-	local ss = tonumber(date("%S", timeStamp))
+	local useStandardTime = Module.db.useStandardTime
+	local useServerTime = Module.db.useServerTime
 
-	local dateTable = date("*t")
-	local lh = dateTable.hour
-	local lm = dateTable.min 
-	local ls = dateTable.sec
+	-- client time
+	local lh, lm, lsuffix = Module:GetLocalTime(useStandardTime)
 
-	local lsuffix, ssuffix
-	if Module.db.useStandardTime then 
-		lh, lsuffix = computeStandardHours(lh)
-		sh, ssuffix = computeStandardHours(sh)
-	end 
-	
+	-- server time
+	local sh, sm, ssuffix = Module:GetServerTime(useStandardTime)
+
 	tooltip:SetDefaultAnchor(self)
 	tooltip:SetMaximumWidth(360)
 	tooltip:AddLine(TIMEMANAGER_TOOLTIP_TITLE, rt, gt, bt)
 	tooltip:AddLine(" ")
-	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, ls, lsuffix, Module.db.useStandardTime, Module.db.showSeconds)), rh, gh, bh, r, g, b)
-	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, string_format(getTimeStrings(sh, sm, ss, ssuffix, Module.db.useStandardTime, Module.db.showSeconds)), rh, gh, bh, r, g, b)
+	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, lsuffix, useStandardTime)), rh, gh, bh, r, g, b)
+	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, string_format(getTimeStrings(sh, sm, ssuffix, useStandardTime)), rh, gh, bh, r, g, b)
 	tooltip:AddLine(" ")
 	tooltip:AddLine(L["%s to toggle calendar."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
 
-	if Module.db.useServerTime then 
-		tooltip:AddLine(L["%s to use local time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
+	if useServerTime then 
+		tooltip:AddLine(L["%s to use local computer time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
 	else 
-		tooltip:AddLine(L["%s to use realm time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
+		tooltip:AddLine(L["%s to use game server time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
 	end 
 
-	if Module.db.useStandardTime then 
+	if useStandardTime then 
 		tooltip:AddLine(L["%s to use military (24-hour) time."]:format(green..L["<Right-Click>"]..NC), rh, gh, bh)
 	else 
 		tooltip:AddLine(L["%s to use standard (12-hour) time."]:format(green..L["<Right-Click>"]..NC), rh, gh, bh)
@@ -572,9 +545,9 @@ local Time_OnClick = function(self, mouseButton)
 		end 
 
 		if Module.db.useServerTime then 
-			print(self._owner.colors.title.colorCode..L["Now using standard realm time."].."|r")
+			print(self._owner.colors.title.colorCode..L["Now using game server time."].."|r")
 		else
-			print(self._owner.colors.title.colorCode..L["Now using standard local time."].."|r")
+			print(self._owner.colors.title.colorCode..L["Now using local computer time."].."|r")
 		end 
 
 	elseif (mouseButton == "RightButton") then 

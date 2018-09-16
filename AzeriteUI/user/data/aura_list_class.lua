@@ -2,7 +2,7 @@ local ADDON = ...
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 
 -- Shortcuts for convenience
-local auraList = Auras.auraList
+local auraList = {}
 local filterFlags = Auras.filterFlags
 
 -- Bit filters
@@ -612,11 +612,16 @@ auraList[17735]  = PlayerIsTank -- Suffering (WL Voidwalker)
 auraList[355]    = PlayerIsTank -- Taunt (WR)
 auraList[185245] = PlayerIsTank -- Torment (Demon Hunter)
 
+-- Add all the previous as high prio auras to our list
+for id,bitFilter in pairs(auraList) do 
+	Auras.auraList[id] = bitFilter + PrioHigh
+end 
+
 ------------------------------------------------------------------------
 -- Group Buffs
 ------------------------------------------------------------------------
-auraList[  1459] = OnParty -- Arcane Intellect (Mage)
-auraList[ 21562] = OnParty -- Fortitude (Priest)
-auraList[203538] = OnParty -- Greater Blessing of Kings (Paladin)
-auraList[203528] = OnParty -- Greater Blessing of Might (Paladin)
-auraList[203539] = OnParty -- Greater Blessing of Wisdom (Paladin)
+Auras.auraList[  1459] = OnParty + PrioLow -- Arcane Intellect (Mage)
+Auras.auraList[ 21562] = OnParty + PrioLow -- Fortitude (Priest)
+Auras.auraList[203538] = OnParty + PrioLow -- Greater Blessing of Kings (Paladin)
+Auras.auraList[203528] = OnParty + PrioLow -- Greater Blessing of Might (Paladin)
+Auras.auraList[203539] = OnParty + PrioLow -- Greater Blessing of Wisdom (Paladin)

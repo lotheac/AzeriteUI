@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 6)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 8)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -418,6 +418,11 @@ LibWidgetContainer.CreateWidgetContainer = function(self, frameType, frameName, 
 
 	local frame = setmetatable(LibWidgetContainer:CreateFrame(frameType or "Frame", nil, parent, template or "SecureHandlerAttributeTemplate"), WidgetFrame_MT)
 	frame:SetFrameStrata("LOW")
+	
+	if (type(unit) == "string") then 
+		frame.unit = unit
+		frame.id = tonumber(string_match(unit, "^.-(%d+)"))
+	end 
 
 	if styleFunc then
 		styleFunc(frame, frame.unit, frame.id, ...) 
@@ -511,8 +516,6 @@ LibWidgetContainer.RegisterElement = function(self, elementName, enableFunc, dis
 		end 
 	end 
 end
-
-
 
 -- Module embedding
 local embedMethods = {

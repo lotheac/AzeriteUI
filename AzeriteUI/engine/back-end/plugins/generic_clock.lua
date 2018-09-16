@@ -1,40 +1,23 @@
+local LibTime = CogWheel("LibTime")
+assert(LibTime, "Clock requires LibTime to be loaded.")
 
 -- Lua API
 local _G = _G
 local date = date
 local tonumber = tonumber
 
--- WoW API
-local GetServerTime = _G.GetServerTime
+-- proxy method bypassing the self
+local GetTime = function(...) return LibTime:GetTime(...) end
 
-
-local computeStandardHours = function(hour)
-	if ( hour > 12 ) then
-		return hour - 12, TIMEMANAGER_PM
-	elseif ( hour == 0 ) then
-		return 12, TIMEMANAGER_AM
-	else
-		return hour, TIMEMANAGER_AM
-	end
-end 
-
-local UpdateValue = function(element, h, m, s, suffix)
+local UpdateValue = function(element, h, m, suffix)
 	if element.OverrideValue then 
-		return element:OverrideValue(h, m, s, suffix)
+		return element:OverrideValue(h, m, suffix)
 	end 
 	if (element:IsObjectType("FontString")) then 
 		if element.useStandardTime then 
-			if element.showSeconds then 
-				element:SetFormattedText("%d:%02d:%02d %s", h, m, s, suffix)
-			else 
-				element:SetFormattedText("%d:%02d %s", h, m, suffix)
-			end 
+			element:SetFormattedText("%d:%02d %s", h, m, suffix)
 		else 
-			if element.showSeconds then 
-				element:SetFormattedText("%02d:%02d:%02d", h, m, s)
-			else
-				element:SetFormattedText("%02d:%02d", h, m)
-			end 
+			element:SetFormattedText("%02d:%02d", h, m)
 		end 
 	end 
 end 
@@ -44,24 +27,10 @@ local Update = function(self, event, ...)
 	if element.PreUpdate then
 		element:PreUpdate(event, ...)
 	end
-	local h, m, s, suffix
-	if element.useServerTime then
-		local timeStamp = GetServerTime()
-		h = tonumber(date("%H", timeStamp))
-		m = tonumber(date("%M", timeStamp))
-		s = tonumber(date("%S", timeStamp))
-	else
-		local dateTable = date("*t")
-		h = dateTable.hour
-		m = dateTable.min 
-		s = dateTable.sec
-	end
-	if element.useStandardTime then 
-		h, suffix = computeStandardHours(h)
-	end 
-	element:UpdateValue(h, m, s, suffix)
+	local h, m, suffix = GetTime(element.useStandardTime, element.useServerTime)
+	element:UpdateValue(h, m, suffix)
 	if element.PostUpdate then 
-		return element:PostUpdate(event, ...)
+		return element:PostUpdate(h, m, suffix)
 	end 
 end 
 
@@ -93,5 +62,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("Clock", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("Clock", Enable, Disable, Proxy, 9)
 end 

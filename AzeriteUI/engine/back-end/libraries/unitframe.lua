@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 44)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 45)
 if (not LibUnitFrame) then	
 	return
 end
@@ -369,14 +369,14 @@ LibUnitFrame.GetScript = function(self, scriptHandler)
 end
 
 -- spawn and style a new unitframe
-LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibilityDriver, ...)
+LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 
 	local frame = LibUnitFrame:CreateWidgetContainer("Button", nil, parent, "SecureUnitButtonTemplate", unit, styleFunc, ...)
 	for method,func in pairs(UnitFrame) do 
 		frame[method] = func
 	end 
 
-	frame.id = tonumber(string_match(unit, "^.-(%d+)"))
+	--frame.id = tonumber(string_match(unit, "^.-(%d+)")) -- handled by widget container based on unit
 	frame.requireUnit = true
 	frame.colors = frame.colors or Colors
 
@@ -461,6 +461,10 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, visibility
 	RegisterAttributeDriver(frame, "state-visibility", visDriver)
 
 	frames[frame] = true 
+
+	if frame.PostCreate then 
+		frame:PostCreate()
+	end 
 	
 	return frame
 end
