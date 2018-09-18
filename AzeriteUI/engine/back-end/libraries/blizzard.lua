@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 13)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 14)
 if (not LibBlizzard) then	
 	return
 end
@@ -280,6 +280,12 @@ UIWidgets["Auras"] = function(self)
 	TemporaryEnchantFrame:SetScript("OnUpdate", nil)
 	TemporaryEnchantFrame:SetParent(UIHider)
 end 
+
+UIWidgets["BuffTimer"] = function(self)
+	PlayerBuffTimerManager:SetParent(UIHider)
+	PlayerBuffTimerManager:SetScript("OnEvent", nil)
+	PlayerBuffTimerManager:UnregisterAllEvents()
+end
 
 UIWidgets["CastBars"] = function(self)
 	local CastingBarFrame = _G.CastingBarFrame

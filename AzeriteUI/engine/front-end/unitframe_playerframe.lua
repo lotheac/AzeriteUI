@@ -716,12 +716,14 @@ local Style = function(self, unit, id, ...)
 		combat:SetDrawLayer(unpack(Layout.CombatIndicatorDrawLayer))
 		combat:SetVertexColor(unpack(Layout.CombatIndicatorColor))
 	
-		local combatGlow = overlay:CreateTexture()
-		combatGlow:SetSize(unpack(Layout.CombatIndicatorGlowSize))
-		combatGlow:SetPoint(unpack(Layout.CombatIndicatorGlowPlace)) 
-		combatGlow:SetTexture(Layout.CombatIndicatorGlowTexture)
-		combatGlow:SetDrawLayer(unpack(Layout.CombatIndicatorGlowDrawLayer))
-		combatGlow:SetVertexColor(unpack(Layout.CombatIndicatorGlowColor))
+		if Layout.UseCombatIndicatorGlow then 
+			local combatGlow = overlay:CreateTexture()
+			combatGlow:SetSize(unpack(Layout.CombatIndicatorGlowSize))
+			combatGlow:SetPoint(unpack(Layout.CombatIndicatorGlowPlace)) 
+			combatGlow:SetTexture(Layout.CombatIndicatorGlowTexture)
+			combatGlow:SetDrawLayer(unpack(Layout.CombatIndicatorGlowDrawLayer))
+			combatGlow:SetVertexColor(unpack(Layout.CombatIndicatorGlowColor))
+		end
 
 		self.Combat = combat
 		self.Combat.Glow = combatGlow

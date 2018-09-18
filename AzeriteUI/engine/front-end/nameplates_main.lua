@@ -10,6 +10,13 @@ local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [NamePlates]")
 
+-- Register incompatibilities
+Module:SetIncompatible("Kui_Nameplates")
+Module:SetIncompatible("SimplePlates")
+Module:SetIncompatible("TidyPlates")
+Module:SetIncompatible("TidyPlates_ThreatPlates")
+Module:SetIncompatible("TidyPlatesContinued")
+
 -- Lua API
 local _G = _G
 

@@ -263,16 +263,16 @@ local UnitFramePlayer = {
 		PowerBarTexCoord = { 50/255, 206/255, 37/255, 219/255 },
 		PowerBarOrientation = "UP",
 		PowerBarSmoothingMode = "bezier-fast-in-slow-out",
-		PowerBarSmoothingFrequency = .5,
+		PowerBarSmoothingFrequency = .45,
 		PowerColorSuffix = "_CRYSTAL", 
 		PowerIgnoredResource = "MANA",
 	
 		UsePowerBackground = true,
 			PowerBackgroundPlace = { "CENTER", 0, 0 },
-			PowerBackgroundSize = { 120/157*256, 140/183*256 },
+			PowerBackgroundSize = { 120/(206-50)*255, 140/(219-37)*255 },
 			PowerBackgroundTexture = GetMediaPath("power_crystal_back"),
 			PowerBackgroundDrawLayer = { "BACKGROUND", -2 },
-			PowerBackgroundColor = { 1, 1, 1, .85 },
+			PowerBackgroundColor = { 1, 1, 1, .95 },
 			PowerBarSparkMap = {
 				top = {
 					{ keyPercent =   0/256, offset =  -65/256 }, 
@@ -331,11 +331,12 @@ local UnitFramePlayer = {
 		CombatIndicatorDrawLayer = {"OVERLAY", -2 },
 		CombatIndicatorColor = { Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75 }, 
 	
-		CombatIndicatorGlowPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 - 80/2) },
-		CombatIndicatorGlowSize = { 80,80 },
-		CombatIndicatorGlowTexture = GetMediaPath("icon-combat-glow"), 
-		CombatIndicatorGlowDrawLayer = { "OVERLAY", -3 }, 
-		CombatIndicatorGlowColor = { 1, 0, 0, .5 }, 
+		UseCombatIndicatorGlow = false, 
+			CombatIndicatorGlowPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 - 80/2) },
+			CombatIndicatorGlowSize = { 80,80 },
+			CombatIndicatorGlowTexture = GetMediaPath("icon-combat-glow"), 
+			CombatIndicatorGlowDrawLayer = { "OVERLAY", -3 }, 
+			CombatIndicatorGlowColor = { 1, 0, 0, .5 }, 
 
 		
 	UseThreat = true,
@@ -413,7 +414,7 @@ local UnitFramePlayer = {
 		DebuffFilterFunc = Auras:GetFilterFunc("player"), -- debuff specific filter function
 		--BuffFilterFunc = function() return true end, -- buff specific filter function
 		--DebuffFilterFunc = function() return true end, -- debuff specific filter function
-		AuraFrameSize = { 46*8, 40 },
+		AuraFrameSize = { 40*8 + 6*7, 40 },
 		AuraFramePlace = { "BOTTOMLEFT", 27 + 10, 27 + 24 + 40 },
 		AuraTooltipDefaultPosition = nil,
 		AuraTooltipPoint = "BOTTOMLEFT",

@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 45)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 46)
 if (not LibUnitFrame) then	
 	return
 end
@@ -39,7 +39,9 @@ local unpack = unpack
 -- Blizzard API
 local CreateFrame = _G.CreateFrame
 local FriendsDropDown = _G.FriendsDropDown
+local ShowBossFrameWhenUninteractable = _G.ShowBossFrameWhenUninteractable
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
+local UnitExists = _G.UnitExists
 
 
 -- Library Registries
@@ -334,7 +336,7 @@ end
 
 UnitFrame.OverrideAllElements = function(self, event, ...)
 	local unit = self.unit
-	if (not UnitExists(unit)) then 
+	if (not UnitExists(unit)) and (not ShowBossFrameWhenUninteractable(unit)) then 
 		return 
 	end
 	return self:UpdateAllElements(event, ...)

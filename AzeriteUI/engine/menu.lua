@@ -536,10 +536,11 @@ Module.AddOptionsToMenuWindow = function(self)
 
 		-- convenience variables
 		local ADB = "ActionBars"
+		local numOptions = 2
 
 		-- Doing this totally non-systematic
 		local window = self:GetConfigWindow()
-		window:SetSize(buttonWidth*sizeMod + buttonSpacing*2, buttonHeight*sizeMod*4 + buttonSpacing*(4+1))
+		window:SetSize(buttonWidth*sizeMod + buttonSpacing*2, buttonHeight*sizeMod*numOptions + buttonSpacing*(numOptions+1))
 
 		-- primary bar window toggle
 		local option1_1 = createOptionButton(window, 1, L["Primary Bar"])
@@ -568,6 +569,7 @@ Module.AddOptionsToMenuWindow = function(self)
 				local option1_2_3_2 = createOptionButton(option1_2_3_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityComplimentary", 2)
 				local option1_2_3_3 = createOptionButton(option1_2_3_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityComplimentary", 3)
 		
+		--[[
 		local option1_3 = createOptionButton(window, 3, L["Stance Bar"])
 		option1_3:Disable()
 			local option1_3_window = createOptionsWindow(option1_3, 2, 2) 
@@ -587,9 +589,10 @@ Module.AddOptionsToMenuWindow = function(self)
 				local option1_4_2_1 = createOptionButton(option1_4_2_window, 1, L["MouseOver"], "SET_VALUE", ADB, "visibilityPet", 1)
 				local option1_4_2_2 = createOptionButton(option1_4_2_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityPet", 2)
 				local option1_4_2_3 = createOptionButton(option1_4_2_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityPet", 3)
-			
+		]]--
 
-		createSiblings(option1_1_window, option1_2_window, option1_3_window, option1_4_window)
+		--createSiblings(option1_1_window, option1_2_window, option1_3_window, option1_4_window)
+		createSiblings(option1_1_window, option1_2_window)
 		createSiblings(option1_1_1_window, option1_1_2_window)
 		createSiblings(option1_2_2_window, option1_2_3_window)
 
@@ -597,8 +600,9 @@ Module.AddOptionsToMenuWindow = function(self)
 		createSiblings(option1_1_2_1, option1_1_2_2, option1_1_2_3)
 		createSiblings(option1_2_2_1, option1_2_2_2)
 		createSiblings(option1_2_3_1, option1_2_3_2, option1_2_3_3)
-		createSiblings(option1_3_2_1, option1_3_2_2, option1_3_2_3)
-		createSiblings(option1_4_2_1, option1_4_2_2, option1_4_2_3)
+		
+		--createSiblings(option1_3_2_1, option1_3_2_2, option1_3_2_3)
+		--createSiblings(option1_4_2_1, option1_4_2_2, option1_4_2_3)
 
 	end
 end

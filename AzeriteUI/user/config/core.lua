@@ -15,6 +15,7 @@ local Core = {
 		ActionBars = true, 
 		--Alerts = true,
 		Auras = true,
+		BuffTimer = true, 
 		--CaptureBars = true,
 		CastBars = true,
 		Chat = true,

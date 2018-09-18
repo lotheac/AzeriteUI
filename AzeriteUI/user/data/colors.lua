@@ -124,7 +124,9 @@ Colors.faction.Neutral = prepare(249/255, 158/255, 35/255)
 -- power
 Colors.power = {}
 Colors.power.MANA = prepare(80/255,  116/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
-Colors.power.RAGE = prepare(255/255, 22/255, 0/255) -- Druids, Warriors
+--Colors.power.RAGE = prepare(255/255, 22/255, 0/255) -- Druids, Warriors
+Colors.power.RAGE = prepare(215/255, 7/255, 7/255) -- Druids, Warriors
+Colors.power.RAGE_CRYSTAL = prepare(125/255, 168/255, 195/255) -- Druids, Warriors
 Colors.power.FOCUS = prepare(125/255, 168/255, 195/255) -- Hunters and Hunter Pets
 Colors.power.ENERGY = prepare(254/255, 245/255, 145/255) -- Rogues, Druids, Monks
 Colors.power.ENERGY_CRYSTAL = prepare(0/255, 167/255 *1.25, 141 *1.25/255) -- Rogues, Druids, Monks

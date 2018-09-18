@@ -9,6 +9,11 @@ local Module = Core:NewModule("BlizzardTooltipStyling", "LibEvent", "LibDB", "Li
 local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [TooltipStyling]")
 
+-- Register module incompatibilities
+Module:SetIncompatible("TipTac")
+Module:SetIncompatible("TinyTip")
+Module:SetIncompatible("TinyTooltip")
+
 -- Lua API
 local _G = _G
 local math_floor = math.floor

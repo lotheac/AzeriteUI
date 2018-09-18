@@ -163,10 +163,12 @@ ActionButton.UpdateAction = function(self, override)
 	-- Throttling this can cause problems when arriving from SPELLS_CHANGED, 
 	-- as new spells in vehicles won't show up then. 
 	-- Adding the texture check in an attempt to counter that issue. 
-	if ((newAction ~= oldAction) or (newActionTexture ~= oldActionTexture) or override) then 
+	-- *Edit: 
+	--  Something isn't working, removing checks and crossing fingers for low overhead here.
+	--if ((newAction ~= oldAction) or (newActionTexture ~= oldActionTexture) or override) then 
 		self.buttonAction = newAction
 		self:Update()
-	end
+	--end
 end 
 
 -- Called when the keybinds are loaded or changed

@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.62] 2018-09-18
+### Added
+- Added bufftimers of the type that compliments that player's altpower bar in some quests like the horse riding on the Norwington Estate in Tiragarde Sound. These timers have been integrated into the same system as the instance countdown timers and breath- and fatigue timers. Why complicate a system that works?
+
+### Changed
+- Minimap bars now always show descriptions for artifact power and reputation when any of them are set to being the single visible bar. 
+
+### Fixed
+- Adjusted the icon update method for action buttons, as some updates still weren't getting through the throttling while using vehicle bars that changed when inside the vehicle. 
+- Removed some redundant code from the frame library that sometimes would cause the minimap border to remain hidden after a cinematic was shown. 
+- Removed the last of the blizzard textures from the instance/bg countdown timers. 
+- Rewrote the whole aura widget alignment, as it still wasn't working as intended. 
+- Fixed the inner ring percentage value remaining visible when switching the minimap bar display from dual to single. 
+
+### Removed
+- Removed the blizzard bufftimer bars from the interface, as we have our own now. 
+
 ## [1.0.61] 2018-09-16
 ### Added
 - Added focus unit frame.

@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 40)
+local LibFrame = CogWheel:Set("LibFrame", 41)
 if (not LibFrame) then	
 	return
 end
@@ -343,23 +343,24 @@ LibFrame.UpdateVisibility = function(self)
 	if visible then 
 		VisibilityFrame:SetAlpha(1)
 
-		self.minimapLibraryHidden = nil
+		--self.minimapLibraryHidden = nil
 
 		-- Show the map again unless it's been hidden manually
-		if (not self.minimapUserHidden) then 
-			Minimap:SetAlpha(1)
-		end
+		--if (not self.minimapUserHidden) then 
+		--	Minimap:SetAlpha(1)
+		--end
 	else 
 		VisibilityFrame:SetAlpha(0)
 		
-		self.minimapLibraryHidden = true
+		--self.minimapLibraryHidden = true
 
 		-- This shouldn't be fine even in combat
 		-- *edit: cannot change visibility, it taints.
-		Minimap:SetAlpha(0)
+		--Minimap:SetAlpha(0)
 	end 
 end 
 
+--[[
 LibFrame.UpdateMinimapVisibility = function(self)
 	-- Was the map shown?
 	local shown = Minimap:IsShown()
@@ -378,6 +379,7 @@ LibFrame.UpdateMinimapVisibility = function(self)
 	-- Still update the variable(?)
 	self.minimapUserHidden = not shown
 end
+]]--
 
 LibFrame.OnEvent = function(self, event, ...)
 	-- Always update the visibility, don't want to get stuck with no UI!
@@ -419,7 +421,7 @@ LibFrame.Enable = function(self)
 	self:SetHook(CinematicFrame, "OnShow", "UpdateVisibility", "LibFrame_CinematicFrame_OnShow")
 	self:SetHook(CinematicFrame, "OnHide", "UpdateVisibility", "LibFrame_CinematicFrame_OnHide")
 	self:SetSecureHook("SetUIVisibility", "UpdateVisibility", "LibFrame_SetUIVisibility")
-	self:SetSecureHook("ToggleMinimap", "UpdateMinimapVisibility", "LibFrame_ToggleMinimap")
+	--self:SetSecureHook("ToggleMinimap", "UpdateMinimapVisibility", "LibFrame_ToggleMinimap")
 
 end 
 

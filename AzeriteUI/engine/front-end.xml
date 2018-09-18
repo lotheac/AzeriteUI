@@ -7,9 +7,9 @@
 	<Script file="front-end\blizzard_gamemenu.lua"/>
 	<Script file="front-end\blizzard_interface_styling.lua"/>
 	<Script file="front-end\blizzard_micromenu.lua"/>
-	<Script file="front-end\blizzard_mirrortimers.lua"/>
 	<Script file="front-end\blizzard_objectivestracker.lua"/>
 	<Script file="front-end\blizzard_popups_styling.lua"/>
+	<Script file="front-end\blizzard_timers.lua"/>
 	<Script file="front-end\blizzard_tooltips_styling.lua"/>
 	<Script file="front-end\chat_bubbles.lua"/>
 	<Script file="front-end\chat_windows.lua"/>

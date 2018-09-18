@@ -978,8 +978,8 @@ Module.SetUpMinimap = function(self)
 
 		-- ring frame backdrops
 		local ringFrameBg = ringFrame:CreateTexture()
-		ringFrameBg:SetPoint("CENTER", 0, -.5)
-		ringFrameBg:SetSize(413, 410)  
+		ringFrameBg:SetPoint("CENTER", 0, 0)
+		ringFrameBg:SetSize(413, 413)  
 		ringFrameBg:SetTexture(GetMediaPath("minimap-twobars-backdrop"))
 		ringFrameBg:SetDrawLayer("BACKGROUND", 1)
 		ringFrameBg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
@@ -987,7 +987,7 @@ Module.SetUpMinimap = function(self)
 
 		-- outer ring
 		local ring1 = ringFrame:CreateSpinBar()
-		ring1:SetPoint("CENTER", 0, 1)
+		ring1:SetPoint("CENTER", 0, 2)
 		ring1:SetSize(208,208) 
 		ring1:SetStatusBarTexture(GetMediaPath("minimap-bars-two-outer"))
 		ring1:SetSparkOffset(-1/10)
@@ -1037,7 +1037,7 @@ Module.SetUpMinimap = function(self)
 
 		-- inner ring 
 		local ring2 = ringFrame:CreateSpinBar()
-		ring2:SetPoint("CENTER", 0, 1)
+		ring2:SetPoint("CENTER", 0, 2)
 		ring2:SetSize(208,208)
 		ring2:SetStatusBarTexture(GetMediaPath("minimap-bars-two-inner"))
 		ring2:SetSparkSize(6, 27 * 208/256)
@@ -1067,14 +1067,6 @@ Module.SetUpMinimap = function(self)
 		ring2Value:SetShadowColor(0, 0, 0, 0)
 		ring2Value.showDeficit = true -- show what's missing 
 		ring2.Value = ring2Value
-
-		-- extra thin ring (for resting...?)
-		local resting = ringFrame:CreateTexture()
-		resting:SetPoint("CENTER", ringFrameBg, "CENTER", 0, 0)
-		resting:SetSize(211,211)
-		resting:SetTexture(GetMediaPath("xp_ring"))
-		resting:SetDrawLayer("BACKGROUND", 3)
-		resting:Hide()
 
 		-- Store the bars locally
 		Spinner[1] = ring1
@@ -1355,6 +1347,10 @@ Module.UpdateBars = function(self, event, ...)
 				Spinner[1].Value:ClearAllPoints()
 				Spinner[1].Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
 				Spinner[1].Value:SetFontObject(Fonts(24, true)) 
+
+				-- Hide 2nd spinner values
+				Spinner[2].Value:SetText("")
+				Spinner[2].Value.Percent:SetText("")
 			end 		
 
 			-- Disable any previously active secondary element
@@ -1374,10 +1370,8 @@ Module.UpdateBars = function(self, event, ...)
 				-- Enable the active element
 				self:EnableMinimapElement(first)
 
-				-- Make sure XP description is updated
-				if hasXP then 
-					Handler[first].Value.Description:Show()
-				end
+				-- Make sure descriptions are updated
+				Handler[first].Value.Description:Show()
 
 				-- Update the visible element
 				Handler[first]:ForceUpdate()

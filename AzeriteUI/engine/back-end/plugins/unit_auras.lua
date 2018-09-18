@@ -6,6 +6,8 @@ assert(LibFrame, "UnitAuras requires LibFrame to be loaded.")
 local _G = _G
 local math_ceil = math.ceil
 local math_floor = math.floor
+local table_insert = table.insert
+local table_remove = table.remove
 local table_wipe = table.wipe
 
 -- WoW API
@@ -317,43 +319,79 @@ end
 
 local SetAuraButtonPosition = function(element, button, order)
 
+	-- Get the accurate size of the container
 	local elementW, elementH = element:GetSize()
-	local width, height = element.auraSize + element.spacingH, element.auraSize + element.spacingV
-	local numCols = math_floor(elementW + element.spacingH + .5) / width
-	local numRows = math_floor(elementH + element.spacingV + .5) / height
+	elementW = (elementW + .5) - (elementW + .5)%1
+	elementH = (elementH + .5) - (elementH + .5)%1
+
+	-- Get the accurate size of the slots with spacing 
+	local width = element.auraSize + element.spacingH
+	local height = element.auraSize + element.spacingV
+	
+	-- Number of columns
+	local numCols = (elementW + element.spacingH)/width
+	numCols = numCols - numCols%1
+
+	-- Number of Rows
+	local numRows = (elementH + element.spacingV)/height
+	numRows = numRows - numRows%1
 
 	-- No room for this aura, return in panic!
 	if (order > numCols*numRows) then 
 		return true
 	end 
 
-	-- figure out the origin
+	-- Figure out the origin
 	local point = ((element.growthY == "UP") and "BOTTOM" or (element.growthY == "DOWN") and "TOP") .. ((element.growthX == "RIGHT") and "LEFT" or (element.growthX == "LEFT") and "RIGHT")
 
-	-- figure out where to grow
-	local offsetX = (order%numCols - 1) * width * (element.growthX == "LEFT" and -1 or 1)
-	local offsetY = math_floor(order/numCols) * height * (element.growthY == "DOWN" and -1 or 1)
+	-- Figure out the positions in the grid
+	order = order - 1 
+	local posX = order%numCols
+	local posY = order/numCols - order/numCols%1
 
-	-- position the button
+	-- Figure out where to grow
+	local offsetX = posX * width * (element.growthX == "LEFT" and -1 or 1)
+	local offsetY = posY * height * (element.growthY == "DOWN" and -1 or 1)
+
+	-- Position the button
 	button:ClearAllPoints()
 	button:SetPoint(point, offsetX, offsetY)
 end 
 
+local CacheElementData = function(element, unit, filter, customFilter)
+end
+
+local IterateElementData = function(element)
+end
+
+local tables = {}
 local IterateBuffs = function(element, unit, filter, customFilter, visible)
 
 	local visibleBuffs = 0
 	local visible = visible or 0
 
 	-- Iterate all helpful auras once, to gather priority listings
-	--local counter = 0
-	--for i = 1, BUFF_MAX_DISPLAY do 
-
-	--end
+	--[[
+	local counter = 0
+	for i = 1, BUFF_MAX_DISPLAY do 
+		local cache = Cache[element][i]
+		if not cache then 
+			local tbl = table_remove(tables) or {}
+			Cache[element][i] = tbl
+			cache = tbl
+		end 
+	end
 
 	-- Clear unneeded entries
-	--for i = counter + 1, #Cache[element] do 
-	--	Cache[element][i] = nil
-	--end 
+	for i = counter + 1, #Cache[element] do 
+		local tbl = Cache[element][i]
+		table_insert(tables, tbl)
+		for i in pairs(tbl) do 
+			tbl[i] = nil
+		end 
+		Cache[element][i] = nil
+	end 
+	]]
 
 	-- Iterate helpful auras
 	for i = 1, BUFF_MAX_DISPLAY do 
@@ -743,5 +781,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 27)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 28)
 end 

@@ -6,6 +6,9 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("UnitFrameArena", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+Module:SetIncompatible("Gladius")
+Module:SetIncompatible("GladiusEx")
+
 local Layout = CogWheel("LibDB"):GetDatabase(ADDON..": Layout [UnitFrameArena]")
 local UnitFrameStyles = CogWheel("LibDB"):GetDatabase(ADDON..": UnitFrameStyles")
 
