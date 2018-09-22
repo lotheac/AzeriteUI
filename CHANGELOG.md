@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.0.63] 2018-09-22
 ### Changed
-- New classification badge for bosses! They should now stand out more elites and rares. 
+- New classification badge for bosses! They should now stand out more from elites and rares. 
 - Actionbutton performance upgrades.
 - Adjusted size of most small bars. 
 - Adjusted alignment of small bar backdrops. 
