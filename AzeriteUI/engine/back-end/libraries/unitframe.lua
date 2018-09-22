@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 46)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 47)
 if (not LibUnitFrame) then	
 	return
 end
@@ -15,9 +15,7 @@ assert(LibWidgetContainer, "LibUnitFrame requires LibWidgetContainer to be loade
 local LibTooltip = CogWheel("LibTooltip")
 assert(LibTooltip, "LibUnitFrame requires LibTooltip to be loaded.")
 
--- Embed needed libraries
 LibEvent:Embed(LibUnitFrame)
-LibFrame:Embed(LibUnitFrame)
 LibFrame:Embed(LibUnitFrame)
 LibTooltip:Embed(LibUnitFrame)
 LibWidgetContainer:Embed(LibUnitFrame)
@@ -43,17 +41,9 @@ local ShowBossFrameWhenUninteractable = _G.ShowBossFrameWhenUninteractable
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 local UnitExists = _G.UnitExists
 
-
 -- Library Registries
 LibUnitFrame.embeds = LibUnitFrame.embeds or {} -- who embeds this?
 LibUnitFrame.frames = LibUnitFrame.frames or  {} -- global unitframe registry
---LibUnitFrame.elements = LibUnitFrame.elements or {} -- global element registry
---LibUnitFrame.callbacks = LibUnitFrame.callbacks or {} -- global frame and element callback registry
---LibUnitFrame.unitEvents = LibUnitFrame.unitEvents or {} -- global frame unitevent registry
---LibUnitFrame.frequentUpdates = LibUnitFrame.frequentUpdates or {} -- global element frequent update registry
---LibUnitFrame.frequentUpdateFrames = LibUnitFrame.frequentUpdateFrames or {} -- global frame frequent update registry
---LibUnitFrame.frameElements = LibUnitFrame.frameElements or {} -- per unitframe element registry
---LibUnitFrame.frameElementsEnabled = LibUnitFrame.frameElementsEnabled or {} -- per unitframe element enabled registry
 LibUnitFrame.scriptHandlers = LibUnitFrame.scriptHandlers or {} -- tracked library script handlers
 LibUnitFrame.scriptFrame = LibUnitFrame.scriptFrame -- library script frame, will be created on demand later on
 
@@ -290,17 +280,8 @@ end
 
 -- Unitframe Template
 --------------------------------------------------------------------------
-local UnitFrame = {} -- LibUnitFrame:CreateFrame("Button")
+local UnitFrame = {} 
 local UnitFrame_MT = { __index = UnitFrame }
-
-
--- Methods we don't wish to expose to the modules
---------------------------------------------------------------------------
-local IsEventRegistered = UnitFrame_MT.__index.IsEventRegistered
-local RegisterEvent = UnitFrame_MT.__index.RegisterEvent
-local RegisterUnitEvent = UnitFrame_MT.__index.RegisterUnitEvent
-local UnregisterEvent = UnitFrame_MT.__index.UnregisterEvent
-local UnregisterAllEvents = UnitFrame_MT.__index.UnregisterAllEvents
 
 -- Return or create the library default tooltip
 -- This is shared by all unitframes, unless these methods 

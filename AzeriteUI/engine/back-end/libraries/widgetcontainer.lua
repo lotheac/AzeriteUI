@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 8)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 9)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -59,11 +59,8 @@ local frameElementsEnabled = LibWidgetContainer.frameElementsEnabled
 local scriptHandlers = LibWidgetContainer.scriptHandlers
 local scriptFrame = LibWidgetContainer.scriptFrame
 
-
-
 -- Utility Functions
 --------------------------------------------------------------------------
-
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -87,10 +84,8 @@ local embed = function(target, source)
 	return target
 end
 
-
 -- Library Updates
 --------------------------------------------------------------------------
-
 -- global update limit, no elements can go above this
 local THROTTLE = 1/30 
 local OnUpdate = function(self, elapsed)
@@ -123,16 +118,13 @@ end
 local WidgetFrame = LibWidgetContainer:CreateFrame("Button")
 local WidgetFrame_MT = { __index = WidgetFrame }
 
-
 -- Methods we don't wish to expose to the modules
 --------------------------------------------------------------------------
-
 local IsEventRegistered = WidgetFrame_MT.__index.IsEventRegistered
 local RegisterEvent = WidgetFrame_MT.__index.RegisterEvent
 local RegisterUnitEvent = WidgetFrame_MT.__index.RegisterUnitEvent
 local UnregisterEvent = WidgetFrame_MT.__index.UnregisterEvent
 local UnregisterAllEvents = WidgetFrame_MT.__index.UnregisterAllEvents
-
 
 local UpdateAllElements = function(self, ...)
 	return (self.OverrideAllElements or self.UpdateAllElements) (self, ...)
@@ -391,7 +383,6 @@ end
 
 -- Library API
 --------------------------------------------------------------------------
-
 LibWidgetContainer.SetScript = function(self, scriptHandler, script)
 	scriptHandlers[scriptHandler] = script
 	if (scriptHandler == "OnUpdate") then
@@ -411,7 +402,6 @@ end
 LibWidgetContainer.GetScript = function(self, scriptHandler)
 	return scriptHandlers[scriptHandler]
 end
-
 
 -- Create a frame with certain extra methods we like to have
 LibWidgetContainer.CreateWidgetContainer = function(self, frameType, frameName, parent, template, unit, styleFunc, ...) 

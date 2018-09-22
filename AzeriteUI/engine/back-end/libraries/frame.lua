@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 41)
+local LibFrame = CogWheel:Set("LibFrame", 43)
 if (not LibFrame) then	
 	return
 end
@@ -328,75 +328,18 @@ LibFrame.GetFrame = function(self, anchor)
 end
 
 LibFrame.UpdateDisplaySize = function(self)
-
-	-- Can't change secure frame sizes through lua in combat
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
 	end 
-
 	SetDisplaySize(self)
 end
 
-LibFrame.UpdateVisibility = function(self)
-	local visible = not CinematicFrame:IsShown() and UIParent:IsShown()
-
-	if visible then 
-		VisibilityFrame:SetAlpha(1)
-
-		--self.minimapLibraryHidden = nil
-
-		-- Show the map again unless it's been hidden manually
-		--if (not self.minimapUserHidden) then 
-		--	Minimap:SetAlpha(1)
-		--end
-	else 
-		VisibilityFrame:SetAlpha(0)
-		
-		--self.minimapLibraryHidden = true
-
-		-- This shouldn't be fine even in combat
-		-- *edit: cannot change visibility, it taints.
-		--Minimap:SetAlpha(0)
-	end 
-end 
-
---[[
-LibFrame.UpdateMinimapVisibility = function(self)
-	-- Was the map shown?
-	local shown = Minimap:IsShown()
-
-	-- Don't allow the map to be forced back in when the UI is hidden 
-	if shown then 
-		if self.minimapLibraryHidden then 
-			Minimap:SetAlpha(0)
-		else 
-			Minimap:SetAlpha(1)
-		end 
-	else
-		Minimap:SetAlpha(0)
-	end 
-
-	-- Still update the variable(?)
-	self.minimapUserHidden = not shown
-end
-]]--
-
 LibFrame.OnEvent = function(self, event, ...)
-	-- Always update the visibility, don't want to get stuck with no UI!
-	-- *this is just alpha, doesn't require us to be out of combat.
-	self:UpdateVisibility()
-
-	-- Can't change secure frame sizes through lua in combat
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
-	end 
-
-	-- Don't need this for the time being
-	if (event == "PLAYER_REGEN_ENABLED") then 
+	elseif (event == "PLAYER_REGEN_ENABLED") then 
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	end 
-
-	-- Update size and visibility of our frames
 	self:UpdateDisplaySize()
 end
 
@@ -418,16 +361,11 @@ LibFrame.Enable = function(self)
 	-- Could it be enough to just track frame changes and not events?
 	self:SetHook(UIParent, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_UIParent_OnSizeChanged")
 	self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
-	self:SetHook(CinematicFrame, "OnShow", "UpdateVisibility", "LibFrame_CinematicFrame_OnShow")
-	self:SetHook(CinematicFrame, "OnHide", "UpdateVisibility", "LibFrame_CinematicFrame_OnHide")
-	self:SetSecureHook("SetUIVisibility", "UpdateVisibility", "LibFrame_SetUIVisibility")
-	--self:SetSecureHook("ToggleMinimap", "UpdateMinimapVisibility", "LibFrame_ToggleMinimap")
 
 end 
 
 LibFrame:UnregisterAllEvents()
 LibFrame:Enable()
-
 
 -- Module embedding
 local embedMethods = {

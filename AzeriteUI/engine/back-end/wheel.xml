@@ -30,6 +30,7 @@
 	<Script file="libraries\unitframe.lua"/>
 	<Script file="libraries\blizzard.lua"/>
 	<Script file="libraries\slash.lua"/>
+	<Script file="libraries\aura.lua"/>
 	<Script file="libraries\quest.lua"/>
 	<Script file="libraries\bonusquest.lua"/>
 	<Script file="libraries\chatbubble.lua"/>

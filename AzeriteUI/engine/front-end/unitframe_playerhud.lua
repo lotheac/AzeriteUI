@@ -202,6 +202,9 @@ local Style = function(self, unit, id, ...)
 		-- Intended to be used alongside actioncam
 		classPower.flipSide = Layout.ClassPowerReverseSides 
 
+		-- Sort order of the runes
+		classPower.runeSortOrder = Layout.ClassPowerRuneSortOrder 
+
 	
 		-- Creating 6 frames since runes require it
 		for i = 1,6 do 

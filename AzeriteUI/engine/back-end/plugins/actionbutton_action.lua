@@ -28,11 +28,11 @@ local IsConsumableAction = _G.IsConsumableAction
 local IsStackableAction = _G.IsStackableAction
 local IsUsableAction = _G.IsUsableAction
 local SetClampedTextureRotation = _G.SetClampedTextureRotation
+local UnitClass = _G.UnitClass
 
 -- Blizzard Textures
 local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
 local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
-local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
 -- Utility Functions
 ----------------------------------------------------
@@ -140,36 +140,25 @@ local OnUpdate = function(self, elapsed)
 
 end 
 
-
 -- Called when the button action (and thus the texture) has changed
-ActionButton.UpdateAction = function(self, override)
-	local oldAction = self.buttonAction
-	local oldActionExists = oldAction and HasAction(oldAction)
-	local oldActionTexture = oldActionExists and GetActionTexture(oldAction)
-
-	local newAction = self:GetAction()
-	local newActionExist = newAction and HasAction(newAction)
-	local newActionTexture = newActionExist and GetActionTexture(newAction)
-
-	local Icon = self.Icon
-	if Icon then 
-		if newActionTexture then 
-			Icon:SetTexture(newActionTexture)
-		else
-			Icon:SetTexture(nil) 
-		end 
+ActionButton.UpdateAction = function(self)
+	self.buttonAction = self:GetAction()
+	local texture = GetActionTexture(self.buttonAction)
+	if texture then 
+		self.Icon:SetTexture(texture)
+	else
+		self.Icon:SetTexture(nil) 
 	end 
-
-	-- Throttling this can cause problems when arriving from SPELLS_CHANGED, 
-	-- as new spells in vehicles won't show up then. 
-	-- Adding the texture check in an attempt to counter that issue. 
-	-- *Edit: 
-	--  Something isn't working, removing checks and crossing fingers for low overhead here.
-	--if ((newAction ~= oldAction) or (newActionTexture ~= oldActionTexture) or override) then 
-		self.buttonAction = newAction
-		self:Update()
-	--end
+	self:Update()
 end 
+
+ActionButton.UpdateState = function(self)
+	if IsCurrentAction(self.buttonAction) or IsAutoRepeatAction(self.buttonAction) then
+		self:SetChecked(true)
+	else
+		self:SetChecked(false)
+	end
+end
 
 -- Called when the keybinds are loaded or changed
 ActionButton.UpdateBinding = function(self) 
@@ -519,16 +508,13 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 
 	-- Create an additional visibility layer to handle manual toggling
 	local visibility = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
+	visibility:Hide() -- driver will show it later on
 	visibility:SetAttribute("_onattributechanged", [=[
 		if (name == "state-vis") then
 			if (value == "show") then 
-				if (not self:IsShown()) then 
-					self:Show(); 
-				end 
+				self:Show(); 
 			elseif (value == "hide") then 
-				if (self:IsShown()) then 
-					self:Hide(); 
-				end 
+				self:Hide(); 
 			end 
 		end
 	]=])
@@ -539,6 +525,7 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	page:SetID(barID) 
 	page:SetAttribute("_onattributechanged", [=[ 
 		if (name == "state-page") then 
+
 			if (value == "possess") or (value == "11") then
 				if HasVehicleActionBar() then
 					value = GetVehicleBarIndex(); 
@@ -556,31 +543,17 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 				end
 			end
 
-			-- set the page of the "bar"
 			self:SetAttribute("state", value);
 
-			-- set the actionpage of the button, and run its lua callback
-			self:RunFor(self:GetFrameRef("Button"), [[
-				local newpage = ...
-				local oldpage = self:GetAttribute("actionpage"); 
-				if (oldpage ~= newpage) then
+			local button = self:GetFrameRef("Button"); 
+			local buttonPage = button:GetAttribute("actionpage"); 
+			local id = button:GetID(); 
+			local actionpage = tonumber(value); 
+			local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
 
-					local id = self:GetID(); 
-					local actionpage = tonumber(newpage)
-					local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
-
-					self:SetAttribute("actionpage", actionpage or 0); 
-					self:SetAttribute("action", slot); 
-
-					--local actionType, actionId, subType = GetActionInfo(slot); 
-					--if (actionType == "flyout") then 
-					--end
-				end 
-
-				-- call this anyway?
-				self:CallMethod("UpdateAction"); 
-
-			]], value)
+			button:SetAttribute("actionpage", actionpage or 0); 
+			button:SetAttribute("action", slot); 
+			button:CallMethod("UpdateAction"); 
 		end 
 	]=])
 	
@@ -608,8 +581,6 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	button:SetScript("OnLeave", ActionButton.OnLeave)
 	button:SetScript("PreClick", ActionButton.PreClick)
 	button:SetScript("PostClick", ActionButton.PostClick)
-
-	-- Not exposing this one
 	button:SetScript("OnUpdate", OnUpdate)
 
 	-- secure references
@@ -658,24 +629,22 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 		driver = "[vehicleui][overridebar][possessbar][shapeshift]possess; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
 
 		local _, playerClass = UnitClass("player")
-		if playerClass == "DRUID" then
+		if (playerClass == "DRUID") then
 			driver = driver .. "; [bonusbar:1,nostealth] 7; [bonusbar:1,stealth] 7; [bonusbar:2] 8; [bonusbar:3] 9; [bonusbar:4] 10"
 
-		elseif playerClass == "MONK" then
+		elseif (playerClass == "MONK") then
 			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8; [bonusbar:3] 9"
 
-		elseif playerClass == "PRIEST" then
+		elseif (playerClass == "PRIEST") then
 			driver = driver .. "; [bonusbar:1] 7"
 
-		elseif playerClass == "ROGUE" then
+		elseif (playerClass == "ROGUE") then
 			driver = driver .. "; [bonusbar:1] 7"
-			--driver = driver .. "; [form:1] 7;  [form:2] 7; [form:3] 7"
 
-		elseif playerClass == "WARRIOR" then
-			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8" -- [bonusbar:3] 9
+		elseif (playerClass == "WARRIOR") then
+			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8" 
 		end
 		driver = driver .. "; [form] 1; 1"
-		--driver = driver .. "; 1"
 	else 
 		driver = tostring(barID)
 	end 
@@ -699,6 +668,8 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	-- enable the page driver
 	RegisterAttributeDriver(page, "state-page", driver) 
 
+	-- initial action update
+	button:UpdateAction()
 
 	return button
 end
@@ -706,17 +677,15 @@ end
 local Update = function(self, event, ...)
 	local arg1 = ...
 
-	if (event == "PLAYER_ENTERING_WORLD") or (event == "UPDATE_SHAPESHIFT_FORM") then 
+	if (event == "PLAYER_ENTERING_WORLD") or (event == "UPDATE_SHAPESHIFT_FORM") or (event == "UPDATE_VEHICLE_ACTIONBAR") then 
 		self:Update()
 
-	elseif (event == "PLAYER_ENTER_COMBAT") then
-		self:UpdateFlash()
-
-	elseif (event == "PLAYER_LEAVE_COMBAT") then
+	elseif (event == "PLAYER_ENTER_COMBAT") or (event == "PLAYER_LEAVE_COMBAT") then
 		self:UpdateFlash()
 
 	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
-		if ((arg1 == 0) or (arg1 == tonumber(self.buttonAction))) then
+		if ((arg1 == 0) or (arg1 == self.buttonAction)) then
+			self:HideOverlayGlow()
 			self:Update()
 		end
 
@@ -726,15 +695,16 @@ local Update = function(self, event, ...)
 	elseif (event == "ACTIONBAR_UPDATE_USABLE") then
 		self:UpdateUsable()
 
+	elseif 	(event == "ACTIONBAR_UPDATE_STATE") or
+			((event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITED_VEHICLE") and (arg1 == "player")) or
+			((event == "COMPANION_UPDATE") and (arg1 == "MOUNT")) then
+		self:UpdateState()
+
 	elseif (event == "ACTIONBAR_SHOWGRID") then
 		self:ShowGrid()
 
 	elseif (event == "ACTIONBAR_HIDEGRID") then
 		self:HideGrid()
-
-	elseif (event == "CURRENT_SPELL_CAST_CHANGED") then
-		-- Should we add some checks to figure out if the change applies to this button?
-		self:UpdateAction()
 
 	elseif (event == "LOSS_OF_CONTROL_ADDED") then
 		self:UpdateCooldown()
@@ -742,8 +712,8 @@ local Update = function(self, event, ...)
 	elseif (event == "LOSS_OF_CONTROL_UPDATE") then
 		self:UpdateCooldown()
 
-	elseif (event == "SPELL_UPDATE_CHARGES") then
-		self:UpdateCount()
+	elseif (event == "PLAYER_MOUNT_DISPLAY_CHANGED") then 
+		self:UpdateUsable()
 
 	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW") then
 		local spellID = self:GetSpellID()
@@ -767,62 +737,96 @@ local Update = function(self, event, ...)
 			end
 		end
 
-	elseif (event == "SPELLS_CHANGED") then 
-		-- Should we add checks to figure out if the change applies here?
-		self:UpdateAction() 
+	elseif (event == "SPELL_UPDATE_CHARGES") then
+		self:UpdateCount()
+
+	elseif (event == "SPELL_UPDATE_ICON") then
+		self:Update()
+
+	elseif (event == "TRADE_SKILL_SHOW") or (event == "TRADE_SKILL_CLOSE") or (event == "ARCHAEOLOGY_CLOSED") then
+		self:UpdateState()
+
 	elseif (event == "UPDATE_BINDINGS") then
 		self:UpdateBinding()
+
+	elseif (event == "UPDATE_SUMMONPETS_ACTION") then 
+		local actionType, id = GetActionInfo(self.buttonAction)
+		if actionType == "summonpet" then
+			local texture = GetActionTexture(self.buttonAction)
+			if texture then
+				button.Icon:SetTexture(texture)
+			end
+		end
 
 	end 
 end
 
-local Proxy = function(self, ...)
-	return (self.Override or Update)(self, ...)
-end 
-
--- Register events and update handlers here
 local Enable = function(self)
 
-	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
-	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
-	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
-	self:RegisterEvent("ACTIONBAR_HIDEGRID", Proxy)
-	self:RegisterEvent("ACTIONBAR_SHOWGRID", Proxy)
-	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
-	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Proxy)
-	self:RegisterEvent("LOSS_OF_CONTROL_UPDATE", Proxy)
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
-	self:RegisterEvent("PLAYER_ENTER_COMBAT", Proxy)
-	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
-	self:RegisterEvent("UPDATE_BINDINGS", Proxy)
-	--self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
-	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Proxy)
-	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
-	self:RegisterEvent("SPELL_UPDATE_CHARGES", Proxy)
-	self:RegisterEvent("SPELLS_CHANGED", Proxy)
-	
+	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Update)
+	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Update)
+	self:RegisterEvent("ACTIONBAR_UPDATE_STATE", Update)
+	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Update)
+	self:RegisterEvent("ACTIONBAR_HIDEGRID", Update)
+	self:RegisterEvent("ACTIONBAR_SHOWGRID", Update)
+	self:RegisterEvent("ARCHAEOLOGY_CLOSED", Update)
+	self:RegisterEvent("COMPANION_UPDATE", Update)
+	--self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
+	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Update)
+	self:RegisterEvent("LOSS_OF_CONTROL_UPDATE", Update)
+	self:RegisterEvent("PLAYER_ENTER_COMBAT", Update)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", Update)
+	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Update)
+	self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
+	self:RegisterEvent("PLAYER_TARGET_CHANGED", Update)
+	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
+	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
+	self:RegisterEvent("SPELL_UPDATE_CHARGES", Update)
+	self:RegisterEvent("SPELL_UPDATE_ICON", Update)
+	self:RegisterEvent("TRADE_SKILL_CLOSE", Update)
+	self:RegisterEvent("TRADE_SKILL_SHOW", Update)
+	--self:RegisterEvent("SPELLS_CHANGED", Update)
+	self:RegisterEvent("UNIT_ENTERED_VEHICLE", Update)
+	self:RegisterEvent("UNIT_EXITED_VEHICLE", Update)
+	self:RegisterEvent("UPDATE_BINDINGS", Update)
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", Update)
+	self:RegisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
+	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
+
 end
 
--- Disable events and update handlers here
 local Disable = function(self)
-	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED", Proxy)
-	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Proxy)
-	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Proxy)
-	self:UnregisterEvent("ACTIONBAR_HIDEGRID", Proxy)
-	self:UnregisterEvent("ACTIONBAR_SHOWGRID", Proxy)
-	self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Proxy)
-	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Proxy)
-	self:UnregisterEvent("LOSS_OF_CONTROL_UPDATE", Proxy)
-	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
-	self:UnregisterEvent("PLAYER_ENTER_COMBAT", Proxy)
-	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Proxy)
-	self:UnregisterEvent("UPDATE_BINDINGS", Proxy)
-	--self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Proxy)
-	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Proxy)
-	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Proxy)
-	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Proxy)
-	self:UnregisterEvent("SPELLS_CHANGED", Proxy)
+
+	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED", Update)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Update)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_STATE", Update)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Update)
+	self:UnregisterEvent("ACTIONBAR_HIDEGRID", Update)
+	self:UnregisterEvent("ACTIONBAR_SHOWGRID", Update)
+	self:UnregisterEvent("ARCHAEOLOGY_CLOSED", Update)
+	self:UnregisterEvent("COMPANION_UPDATE", Update)
+	--self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
+	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Update)
+	self:UnregisterEvent("LOSS_OF_CONTROL_UPDATE", Update)
+	self:UnregisterEvent("PLAYER_ENTER_COMBAT", Update)
+	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Update)
+	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Update)
+	self:UnregisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
+	self:UnregisterEvent("PLAYER_TARGET_CHANGED", Update)
+	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
+	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
+	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Update)
+	self:UnregisterEvent("SPELL_UPDATE_ICON", Update)
+	self:UnregisterEvent("TRADE_SKILL_CLOSE", Update)
+	self:UnregisterEvent("TRADE_SKILL_SHOW", Update)
+	--self:UnregisterEvent("SPELLS_CHANGED", Update)
+	self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Update)
+	self:UnregisterEvent("UNIT_EXITED_VEHICLE", Update)
+	self:UnregisterEvent("UPDATE_BINDINGS", Update)
+	self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Update)
+	self:UnregisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
+	self:UnregisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Proxy, 37)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 39)

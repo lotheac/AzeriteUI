@@ -4,21 +4,23 @@ This is a custom user interface for World of Warcraft: Battle For Azeroth, with 
 
 The motivation of this user interface is immersion. This game has SO much information that if not handled carefully becomes cumbersome, therefore blocking the most important asset of the game, the world. The best interface is no interface at all, but in a game such as this that is not possible. But if we have to block away parts of the game world to see information about the game mechanics, then at least let’s make it dynamic, beautiful and in sync with the game's aesthetics. Let's make it Warcraft!  
 
+Be aware that the expected download location of this user interface is either [CurseForge](https://www.curseforge.com/wow/addons/azeriteui), the [Twitch App](https://app.twitch.tv/download), or [tagged releases](https://bitbucket.org/bigcogs/azeriteui/downloads/?tab=tags), and anything else should be considered developer versions, or nightly builds. 
+
 ## How can I get more action buttons?
 
-Right-Click the cogwheel icon in the bottom right corner of the screen for actionbar options. You can have a maximum of 24 buttons, which in effect is the main actionbar and the bar known in the default interface as the "bottom left multi action bar".    
+Right-Click the cogwheel icon in the bottom right corner of the screen for actionbar options. You can have a maximum of 24 buttons, which in effect is the main actionbar and the bar known in the default interface as the "bottom left multi action bar". 
+
+## Where are the pet- and stance bars?  
+
+Not here, that's for sure! Even though we do have a few plans for extended actionbar functionality, and also plan to implement these as optional plugins to the user interface, they are at this point NOT a part of AzeriteUI. Both stance- and pet buttons can be placed on normal actionbars, and their functionality can be baked into macros or keybound as well. We simply do not feel that the need for a full pet or stance bar is present at this point in time. 
 
 ## How can I move things? 
 
 You can't. This is as much UX as UI, meaning the interface is designed around a concept, this isn't meant to be a pretty skin over your current interface, it's instead a full user experience system where how you interact with the game is affected.
 
-## I can't track my quests!
-
-This is currently one of the unfinished features. For now you can use the addon [EskaTracker](https://www.curseforge.com/wow/addons/eskatracker), just remember to read its install description properly. We're not affiliated with the creators of this addon, so any question would have to be directed to them, not us. 
-
 ## Where's the rest?  
 
-It's still in its early stages here, but we'll be adding new features and improve the current ones one on almost a daily basis. 
+It's still in its early stages here, but we'll be adding new features and improve the current ones one on almost a daily basis. If what you're looking for is more actionbars, then you can always use bartender to fill that desire. Coupled with [our Masque skin](https://www.curseforge.com/wow/addons/masque-azerite) matching our actionbuttons you should still be able to maintain the look and feel to a certain degree. 
 
 ## I found a bug, where to report?
 

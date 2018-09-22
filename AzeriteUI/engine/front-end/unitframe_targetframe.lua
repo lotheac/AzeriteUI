@@ -389,9 +389,14 @@ local Style = function(self, unit, id, ...)
 	health.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
 	health.colorClass = Layout.HealthColorClass -- color players by class 
 	health.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
+	health.colorThreat = Layout.HealthColorThreat -- color units with threat in threat color
 	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
 	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
+	health.threatFeedbackUnit = Layout.HealthThreatFeedbackUnit
+	health.threatHideSolo = Layout.HealthThreatHideSolo
+
 	self.Health = health
+	self.Health.PostUpdate = Layout.HealthBarPostUpdate
 	
 	if Layout.UseHealthBackdrop then 
 		local healthBg = health:CreateTexture()
@@ -574,10 +579,7 @@ local Style = function(self, unit, id, ...)
 
 		self.Cast = cast
 		self.Cast.PostUpdate = Layout.CastBarPostUpdate
-
-		if Layout.CastBarPostUpdateOnHide then 
-			self.Cast:HookScript("OnHide", Layout.CastBarPostUpdate)
-		end 
+		
 	end 
 
 	-- Portrait

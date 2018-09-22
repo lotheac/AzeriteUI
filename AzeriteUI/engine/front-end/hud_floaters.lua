@@ -319,6 +319,7 @@ Module.StyleExtraActionButton = function(self)
 		button.BorderFrame:SetAllPoints(button)
 
 		button.HotKey:SetParent(button.BorderFrame)
+		button.Count:SetParent(button.BorderFrame)
 
 		if Layout.UseExtraActionButtonBorderBackdrop then 
 			button.BorderFrame:ClearAllPoints()

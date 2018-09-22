@@ -33,25 +33,6 @@ local WEAKAURAS
 -- Current player level
 local LEVEL = UnitLevel("player") 
 
-local map = {
-	-- Nameplate Bar Map
-	-- (Texture Size 256x32, Growth: RIGHT)
-	plate = {
-		top = {
-			{ keyPercent =   0/256, offset = -16/32 }, 
-			{ keyPercent =  19/256, offset =   0/32 }, 
-			{ keyPercent = 236/256, offset =   0/32 }, 
-			{ keyPercent = 256/256, offset = -16/32 }
-		},
-		bottom = {
-			{ keyPercent =   0/256, offset = -16/32 }, 
-			{ keyPercent =  19/256, offset =   0/32 }, 
-			{ keyPercent = 236/256, offset =   0/32 }, 
-			{ keyPercent = 256/256, offset = -16/32 }
-		}
-	}
-}
-
 -- Utility Functions
 -----------------------------------------------------------------
 -- Returns the correct difficulty color compared to the player
@@ -70,46 +51,6 @@ local getDifficultyColorByLevel = function(level)
 	end
 end
 
--- Proxy function to get media from our local media folder
-local GetMediaPath = Functions.GetMediaPath
-
-local PostUpdateCast = function(element, unit)
-end
-
--- Castbar updates. Only called when the bar is visible. 
-local PostUpdateCast = function(cast, unit)
-	local colors = cast._owner.colors
-	if cast.interrupt then 
-		cast:SetSize(68,9) 
-		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -10)
-		cast:SetStatusBarTexture(GetMediaPath("cast_bar"))
-
-		cast.Bg:SetSize(cast:GetSize())
-		cast.Bg:SetTexture(GetMediaPath("cast_bar"))
-
-		cast.Border:Hide()
-		cast.Glow:Hide()
-	else
-		cast:SetSize(80,10) 
-		cast:SetPoint("TOP", cast._owner.Health, "BOTTOM", 0, -6)
-		cast:SetStatusBarTexture(GetMediaPath("nameplate_bar"))
-
-		cast.Bg:SetSize(cast:GetSize())
-		cast.Bg:SetTexture(GetMediaPath("nameplate_solid"))
-
-		cast.Border:Show() 
-		cast.Glow:Show()
-	end 
-	if cast.interrupt then
-		if UnitIsEnemy(unit, "player") then 
-			cast:SetStatusBarColor(colors.quest.red[1], colors.quest.red[2], colors.quest.red[3]) 
-		else 
-			cast:SetStatusBarColor(colors.quest.green[1], colors.quest.green[2], colors.quest.green[3]) 
-		end  
-	else 
-		cast:SetStatusBarColor(colors.cast[1], colors.cast[2], colors.cast[3]) 
-	end 
-end
 
 -- Library Updates
 -- *will be called by the library at certain times
@@ -141,52 +82,11 @@ Module.PostUpdateNamePlateOptions = function(self, isInInstace)
 	-- Make an extra call to the preupdate
 	self:PreUpdateNamePlateOptions()
 
-	-- Because we want friendly NPC nameplates
-	-- We're toning them down a lot as it is, 
-	-- but we still prefer to have them visible, 
-	-- and not the fugly super sized names we get otherwise.
-	--SetCVar("nameplateShowFriendlyNPCs", 1)
-
-	-- Insets at the top and bottom of the screen 
-	-- which the target nameplate will be kept away from. 
-	-- Used to avoid the target plate being overlapped 
-	-- by the target frame or actionbars and keep it in view.
-	SetCVar("nameplateLargeTopInset", .05) -- default .1
-	SetCVar("nameplateOtherTopInset", .05) -- default .08
-	SetCVar("nameplateLargeBottomInset", .02) -- default .15
-	SetCVar("nameplateOtherBottomInset", .02) -- default .1
-	
-	SetCVar("nameplateClassResourceTopInset", 0)
-	SetCVar("nameplateGlobalScale", 1)
-	SetCVar("NamePlateHorizontalScale", 1)
-	SetCVar("NamePlateVerticalScale", 1)
-
-	-- Scale modifier for large plates, used for important monsters
-	SetCVar("nameplateLargerScale", 1) -- default 1.2
-
-	-- The minimum scale and alpha of nameplates
-	SetCVar("nameplateMinScale", 1) -- .5 default .8
-	SetCVar("nameplateMinAlpha", .3) -- default .5
-
-	-- The minimum distance from the camera plates will reach their minimum scale and alpa
-	SetCVar("nameplateMinScaleDistance", 30) -- default 10
-	SetCVar("nameplateMinAlphaDistance", 30) -- default 10
-
-	-- The maximum scale and alpha of nameplates
-	SetCVar("nameplateMaxScale", 1) -- default 1
-	SetCVar("nameplateMaxAlpha", 0.85) -- default 0.9
-	
-	-- The maximum distance from the camera where plates will still have max scale and alpa
-	SetCVar("nameplateMaxScaleDistance", 10) -- default 10
-	SetCVar("nameplateMaxAlphaDistance", 10) -- default 10
-
-	-- Show nameplates above heads or at the base (0 or 2)
-	SetCVar("nameplateOtherAtBase", 0)
-
-	-- Scale and Alpha of the selected nameplate (current target)
-	SetCVar("nameplateSelectedAlpha", 1) -- default 1
-	SetCVar("nameplateSelectedScale", 1) -- default 1
-	
+	if Layout.SetConsoleVars then 
+		for cVarName, value in pairs(Layout.SetConsoleVars) do 
+			SetCVar(cVarName, value)
+		end 
+	end 
 
 	-- Setting the base size involves changing the size of secure unit buttons, 
 	-- but since we're using our out of combat wrapper, we should be safe.
@@ -208,88 +108,106 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 	-- Health bar
 	if Layout.UseHealth then 
 		local health = plate:CreateStatusBar()
+		health:Hide()
 		health:SetSize(unpack(Layout.HealthSize))
 		health:SetPoint(unpack(Layout.HealthPlace))
-		health:SetStatusBarTexture(GetMediaPath("nameplate_bar"))
-		health:SetOrientation("LEFT")
+		health:SetStatusBarTexture(Layout.HealthTexture)
+		health:SetOrientation(Layout.HealthOrientation)
 		health:SetSmoothingFrequency(.1)
-		health:SetSparkMap(map.plate)
-		health:Hide()
-		health.colorTapped = true
-		health.colorDisconnected = true
-		health.colorClass = true -- color players in their class colors
-		health.colorCivilian = true -- color friendly players as civilians
-		health.colorReaction = true
-		health.colorHealth = true
-		health.colorThreat = true
-		health.frequent = 1/120
+		if Layout.HealthSparkMap then 
+			health:SetSparkMap(HealthSparkMap)
+		end
+		if Layout.HealthTexCoord then 
+			health:SetTexCoord(unpack(Layout.HealthTexCoord))
+		end 
+		health.colorTapped = Layout.HealthColorTapped
+		health.colorDisconnected = Layout.HealthColorDisconnected
+		health.colorClass = Layout.HealthColorClass
+		health.colorCivilian = Layout.HealthColorCivilian
+		health.colorReaction = Layout.HealthColorReaction
+		health.colorThreat = Layout.HealthColorThreat -- color units with threat in threat color
+		health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+		health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
+		health.threatFeedbackUnit = Layout.HealthThreatFeedbackUnit
+		health.threatHideSolo = Layout.HealthThreatHideSolo
+		health.frequent = Layout.HealthFrequent
 		plate.Health = health
 
-		local healthBg = health:CreateTexture()
-		healthBg:SetDrawLayer("BACKGROUND", 0)
-		healthBg:SetSize(80,10)
-		healthBg:SetPoint("CENTER", 0, 0)
-		healthBg:SetTexture(GetMediaPath("nameplate_bar"))
-		healthBg:SetVertexColor(.15, .15, .15, .82)
-
-		local healthBorder = health:CreateTexture()
-		healthBorder:SetDrawLayer("BACKGROUND", -1)
-		healthBorder:SetSize(84,14)
-		healthBorder:SetPoint("CENTER", 0, 0)
-		healthBorder:SetTexture(GetMediaPath("nameplate_solid"))
-		healthBorder:SetVertexColor(0, 0, 0, .82)
-
-		local healthGlow = health:CreateTexture()
-		healthGlow:SetDrawLayer("BACKGROUND", -2)
-		healthGlow:SetSize(88,18)
-		healthGlow:SetPoint("CENTER", 0, 0)
-		healthGlow:SetTexture(GetMediaPath("nameplate_solid"))
-		healthGlow:SetVertexColor(0, 0, 0, .25)
+		if Layout.UseHealthBackdrop then 
+			local healthBg = health:CreateTexture()
+			healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
+			healthBg:SetSize(unpack(Layout.HealthBackdropSize))
+			healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
+			healthBg:SetTexture(Layout.HealthBackdropTexture)
+			healthBg:SetVertexColor(unpack(Layout.HealthBackdropColor))
+			plate.Health.Bg = healthBg
+		end 
 	end 
+
+	if Layout.UseCast then 
+		local cast = (plate.Health or plate):CreateStatusBar()
+		cast:SetSize(unpack(Layout.CastSize))
+		cast:SetPoint(unpack(Layout.CastPlace))
+		cast:SetStatusBarTexture(Layout.CastTexture)
+		cast:SetOrientation(Layout.CastOrientation)
+		cast:SetSmoothingFrequency(.1)
+		if Layout.CastSparkMap then 
+			cast:SetSparkMap(CastSparkMap)
+		end
+		if Layout.CastTexCoord then 
+			cast:SetTexCoord(unpack(Layout.CastTexCoord))
+		end 
+		plate.Cast = cast
+
+		if Layout.UseCastBackdrop then 
+			local castBg = cast:CreateTexture()
+			castBg:SetPoint(unpack(Layout.CastBackdropPlace))
+			castBg:SetSize(unpack(Layout.CastBackdropSize))
+			castBg:SetDrawLayer(unpack(Layout.CastBackdropDrawLayer))
+			castBg:SetTexture(Layout.CastBackdropTexture)
+			castBg:SetVertexColor(unpack(Layout.CastBackdropColor))
+			plate.Cast.Bg = castBg
+		end 
+
+		if Layout.UseCastName then 
+			local castName = cast:CreateFontString()
+			castName:SetPoint(unpack(Layout.CastNamePlace))
+			castName:SetDrawLayer(unpack(Layout.CastNameDrawLayer))
+			castName:SetFontObject(Layout.CastNameFont)
+			castName:SetTextColor(unpack(Layout.CastNameColor))
+			castName:SetJustifyH(Layout.CastNameJustifyH)
+			castName:SetJustifyV(Layout.CastNameJustifyV)
+			cast.Name = castName
+		end 
+
+		if Layout.UseCastShield then 
+			local castShield = cast:CreateTexture()
+			castShield:SetPoint(unpack(Layout.CastShieldPlace))
+			castShield:SetSize(unpack(Layout.CastShieldSize))
+			castShield:SetTexture(Layout.CastShieldTexture) 
+			castShield:SetDrawLayer(unpack(Layout.CastShieldDrawLayer))
+			castShield:SetVertexColor(unpack(Layout.CastShieldColor))
+			
+			cast.Shield = castShield
+		end 
 	
-	local cast = (plate.health or plate):CreateStatusBar()
-	cast:SetSize(80,10)
-	cast:SetPoint("TOP", health, "BOTTOM", 0, -6)
-	cast:SetStatusBarTexture(GetMediaPath("cast_bar"))
-	cast:SetStatusBarColor(Colors.cast[1], Colors.cast[2], Colors.cast[3], 1) 
-	cast:SetOrientation("LEFT")
-	cast:SetSmoothingFrequency(.1)
-	cast:SetSparkMap(map.plate)
-	cast.PostUpdate = PostUpdateCast
-	plate.Cast = cast
+		plate.Cast = cast
+		plate.Cast.PostUpdate = Layout.CastPostUpdate
+	end 
 
-	local castBg = cast:CreateTexture()
-	castBg:SetDrawLayer("BACKGROUND", -1)
-	castBg:SetSize(80,10)
-	castBg:SetPoint("CENTER", 0, 0)
-	castBg:SetTexture(GetMediaPath("cast_bar"))
-	castBg:SetVertexColor(.15, .15, .15, .82)
-	cast.Bg = castBg
-
-	local castBorder = cast:CreateTexture()
-	castBorder:SetDrawLayer("BACKGROUND", -3)
-	castBorder:SetSize(84,14)
-	castBorder:SetPoint("CENTER", 0, 0)
-	castBorder:SetTexture(GetMediaPath("cast_bar"))
-	castBorder:SetVertexColor(0, 0, 0, 1 or .82)
-	cast.Border = castBorder
-
-	local castGlow = cast:CreateTexture()
-	castGlow:SetDrawLayer("BACKGROUND", -4)
-	castGlow:SetSize(88,18)
-	castGlow:SetPoint("CENTER", 0, 0)
-	castGlow:SetTexture(GetMediaPath("cast_bar"))
-	castGlow:SetVertexColor(0, 0, 0, .25)
-	cast.Glow = castGlow
-
-		
-	local castShield = cast:CreateTexture()
-	castShield:SetDrawLayer("BACKGROUND", -2)
-	castShield:SetSize(124,69) 
-	castShield:SetPoint("CENTER", 0, -1)
-	castShield:SetTexture(GetMediaPath("cast_back_spiked")) 
-	castShield:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-	cast.Shield = castShield
+	if Layout.UseThreat then 
+		local threat = (plate.Health or plate):CreateTexture()
+		threat:SetPoint(unpack(Layout.ThreatPlace))
+		threat:SetSize(unpack(Layout.ThreatSize))
+		threat:SetTexture(Layout.ThreatTexture)
+		threat:SetDrawLayer(unpack(Layout.ThreatDrawLayer))
+		if Layout.ThreatColor then 
+			threat:SetVertexColor(unpack(Layout.ThreatColor))
+		end
+		threat.hideSolo = Layout.ThreatHideSolo
+		threat.feedbackUnit = "player"
+		plate.Threat = threat
+	end 
 
 end
 

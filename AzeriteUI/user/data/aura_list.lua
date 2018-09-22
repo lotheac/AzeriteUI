@@ -85,6 +85,14 @@ auraList[ 32182] = OnPlayer + PrioHigh -- Heroism
 auraList[160452] = OnPlayer + PrioHigh -- Netherwinds
 auraList[ 80353] = OnPlayer + PrioHigh -- Time Warp
 
+-- Deserters
+auraList[ 26013] = OnPlayer + PrioHigh -- Deserter
+auraList[ 99413] = OnPlayer + PrioHigh -- Deserter
+auraList[ 71041] = OnPlayer + PrioHigh -- Dungeon Deserter
+auraList[144075] = OnPlayer + PrioHigh -- Dungeon Deserter
+auraList[170616] = OnPlayer + PrioHigh -- Pet Deserter
+
+
 -- Other big ones
 auraList[ 67556] = OnPlayer -- Cooking Speed
 auraList[ 29166] = OnPlayer -- Innervate

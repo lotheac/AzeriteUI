@@ -1,6 +1,8 @@
-
 local LibFrame = CogWheel("LibFrame")
 assert(LibFrame, "UnitAuras requires LibFrame to be loaded.")
+
+local LibAura = CogWheel("LibAura")
+assert(LibAura, "UnitAuras requires LibAura to be loaded.")
 
 -- Lua API
 local _G = _G

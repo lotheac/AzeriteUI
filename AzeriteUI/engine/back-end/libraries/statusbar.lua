@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 40)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 42)
 if (not LibStatusBar) then	
 	return
 end
@@ -362,7 +362,7 @@ local Update = function(self, elapsed)
 	end
 
 	-- Allow modules to add their postupdates here
-	if (self.PostUpdate) then 
+	if (self.PostUpdate and (elapsed ~= true)) then 
 		self:PostUpdate(value, min, max)
 	end
 
@@ -450,7 +450,7 @@ end
 StatusBar.SetTexCoord = function(self, ...)
 	local tex = Textures[self]
 	tex[1], tex[2], tex[3], tex[4] = ...
-	Update(self)
+	Update(self, true)
 end
 
 StatusBar.GetTexCoord = function(self)
@@ -560,7 +560,7 @@ StatusBar.SetStatusBarTexture = function(self, ...)
 	end
 	-- Causes a stack overflow if the texture is changed in PostUpdate, 
 	-- as could easily be the case with some bars. 
-	--Update(self)
+	Update(self, true)
 end
 
 StatusBar.SetFlippedHorizontally = function(self, reversed)

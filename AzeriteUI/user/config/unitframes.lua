@@ -34,7 +34,7 @@ end
 -- Table containing common values for the templates
 local Constant = {
 	SmallFrame = { 136, 47 },
-	SmallBar = { 114, 14 },
+	SmallBar = { 112, 11 }, -- 114, 14
 	SmallBarTexture = GetMediaPath("cast_bar"),
 	SmallAuraSize = 30, 
 }
@@ -52,14 +52,17 @@ local Template_SmallFrame = {
 		HealthBarSparkMap = {
 			top = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =   4/128, offset = -16/32 }, 
 				{ keyPercent =  10/128, offset =   0/32 }, 
 				{ keyPercent = 119/128, offset =   0/32 }, 
 				{ keyPercent = 128/128, offset = -16/32 }
 			},
 			bottom = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =   4/128, offset = -16/32 }, 
 				{ keyPercent =  10/128, offset =   0/32 }, 
 				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 126/128, offset = -16/32 },
 				{ keyPercent = 128/128, offset = -16/32 }
 			}
 		},
@@ -91,14 +94,18 @@ local Template_SmallFrame = {
 		AbsorbBarSparkMap = {
 			top = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =   4/128, offset = -16/32 }, 
 				{ keyPercent =  10/128, offset =   0/32 }, 
 				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 126/128, offset = -16/32 },
 				{ keyPercent = 128/128, offset = -16/32 }
 			},
 			bottom = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =   4/128, offset = -16/32 }, 
 				{ keyPercent =  10/128, offset =   0/32 }, 
 				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 126/128, offset = -16/32 },
 				{ keyPercent = 128/128, offset = -16/32 }
 			}
 		},
@@ -114,19 +121,51 @@ local Template_SmallFrame = {
 		CastBarSparkMap = {
 			top = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =   4/128, offset = -16/32 }, 
 				{ keyPercent =  10/128, offset =   0/32 }, 
 				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 126/128, offset = -16/32 },
 				{ keyPercent = 128/128, offset = -16/32 }
 			},
 			bottom = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =   4/128, offset = -16/32 }, 
 				{ keyPercent =  10/128, offset =   0/32 }, 
 				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 126/128, offset = -16/32 },
 				{ keyPercent = 128/128, offset = -16/32 }
 			}
 		},
 		CastBarTexture = Constant.SmallBarTexture, 
 		CastBarColor = { 1, 1, 1, .15 },
+
+	-- This should be the same as the health value
+	UseCastBarName = true, 
+		CastBarNameParent = "Health",
+		CastBarNamePlace = { "CENTER", 0, 1 },
+		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameFont = Fonts(12, true),
+		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
+		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+		CastBarNameJustifyH = "CENTER", 
+		CastBarNameJustifyV = "MIDDLE",
+
+	CastBarPostUpdate = function(cast, unit)
+		local health = cast._owner.Health
+		local isCasting = cast.casting or cast.channeling
+	
+		health.Value:SetShown(not isCasting)
+		cast.Name:SetShown(isCasting)
+	end,
+
+	HealthBarPostUpdate = function(health, unit)
+		local cast = health._owner.Cast
+		local isCasting = cast.casting or cast.channeling
+	
+		health.Value:SetShown(not isCasting)
+		cast.Name:SetShown(isCasting)
+	end, 
+
 } 
 
 local Template_SmallFrame_Auras = setmetatable({
@@ -169,6 +208,12 @@ local Template_SmallFrameReversed = setmetatable({
 }, { __index = Template_SmallFrame })
 
 local Template_SmallFrameReversed_Auras = setmetatable({
+	HealthBarOrientation = "LEFT", 
+	HealthBarSetFlippedHorizontally = true, 
+	AbsorbBarOrientation = "RIGHT",
+	AbsorbBarSetFlippedHorizontally = true, 
+	CastBarOrientation = "LEFT", 
+	CastBarSetFlippedHorizontally = true, 
 	AuraFramePlace = { "RIGHT", -(Constant.SmallFrame[1] + 13), -1 },
 	AuraGrowthX = "LEFT", 
 	AuraGrowthY = "DOWN", 
@@ -543,7 +588,7 @@ local UnitFramePlayerHUD = {
 		},
 
 		UseCastBarBackground = true, 
-			CastBarBackgroundPlace = { "CENTER", 1, -2 }, 
+			CastBarBackgroundPlace = { "CENTER", 1, -1 }, 
 			CastBarBackgroundSize = { 193,93 },
 			CastBarBackgroundTexture = GetMediaPath("cast_back"), 
 			CastBarBackgroundDrawLayer = { "BACKGROUND", 1 },
@@ -582,6 +627,7 @@ local UnitFramePlayerHUD = {
 		ClassPowerAlphaWhenEmpty = .5, 
 		ClassPowerAlphaWhenOutOfCombat = 1,
 		ClassPowerReverseSides = false, 
+		ClassPowerRuneSortOrder = "ASC",
 
 		ClassPowerPostCreatePoint = function(element, id, point)
 			point.case = point:CreateTexture()
@@ -1007,6 +1053,9 @@ local UnitFrameTarget = {
 		HealthColorDisconnected = true, -- color disconnected units
 		HealthColorClass = true, -- color players by class 
 		HealthColorReaction = true, -- color NPCs by their reaction standing with us
+		HealthColorThreat = true, 
+			HealthThreatFeedbackUnit = "player",
+			HealthThreatHideSolo = false, 
 		HealthColorHealth = false, -- color anything else in the default health color
 		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
 	
@@ -1163,7 +1212,7 @@ local UnitFrameTarget = {
 	UseClassificationIndicator = true, 
 		ClassificationIndicatorBossPlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
 		ClassificationIndicatorBossSize = { 84,84 },
-		ClassificationIndicatorBossTexture = GetMediaPath("icon_classification_boss"),
+		ClassificationIndicatorBossTexture = GetMediaPath("icon_badges_boss"),
 		ClassificationIndicatorBossColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 		ClassificationIndicatorElitePlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
@@ -1175,6 +1224,8 @@ local UnitFrameTarget = {
 		ClassificationIndicatorRareSize = { 84,84 },
 		ClassificationIndicatorRareTexture = GetMediaPath("icon_classification_rare"),
 		ClassificationIndicatorRareColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+
+	UseFactionIndicator = true, 
 
 	UseLevel = true, 
 		LevelVisibilityFilter = function(element, unit) 
@@ -1261,52 +1312,6 @@ local UnitFrameTarget = {
 			CastBarValueFont = Fonts(18, true),
 			CastBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 	
-		CastBarPostUpdate = function(element, unit, duration, max, delay)
-			local owner = element._owner
-			if (owner.progressiveFrameStyle == "Critter") then 
-				if (element.casting or element.channeling) then 
-					if element.Value and element.Value:IsShown() then 
-						element.Value:Hide()
-					end
-					if element.Name and element.Name:IsShown() then 
-						element.Name:Hide()
-					end
-				end 
-			else
-				if (element.casting or element.channeling) then 
-					if (owner.progressiveFrameStyle == "Boss") then 
-						if (owner.Health.Percent and (owner.Health.Percent:IsShown())) then 
-							owner.Health.Percent:Hide()
-						end 
-					end 
-					if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
-						owner.Health.Value:Hide()
-					end 
-					if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
-						owner.Absorb.Value:Hide()
-					end  
-					if (element.Value and (not element.Value:IsShown())) then 
-						element.Value:Show()
-					end
-					if (element.Name and (not element.Name:IsShown())) then 
-						element.Name:Show()
-					end
-				else 
-					if (owner.progressiveFrameStyle == "Boss") then 
-						if (owner.Health.Percent and (not owner.Health.Percent:IsShown())) then 
-							owner.Health.Percent:Show()
-						end 
-					end 
-					if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
-						owner.Health.Value:Show()
-					end  
-					if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
-						owner.Absorb.Value:Show()
-					end  
-				end 
-			end
-		end,
-
 	UseCombatIndicator = true, 
 		CombatIndicatorPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 + 80/2) },
 		CombatIndicatorSize = { 80,80 },
@@ -1621,6 +1626,42 @@ local UnitFrameTarget = {
 		CritterPortraitForegroundTexture = GetMediaPath("portrait_frame_lo"),
 		CritterPortraitForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] }, 
 
+
+	CastBarPostUpdate =	function(cast, unit)
+		local absorb = cast._owner.Absorb
+		local health = cast._owner.Health
+
+		local isBoss = cast._owner.progressiveFrameStyle == "Boss"
+		local isCritter = cast._owner.progressiveFrameStyle == "Critter" 
+		local isCasting = cast.casting or cast.channeling
+		
+		health.Percent:SetShown(isBoss and not isCasting)
+		cast.Value:SetShown(not isCritter)
+		cast.Name:SetShown(not isCritter)
+	
+		health.Value:SetShown(not isCasting)
+		absorb.Value:SetShown(not isCasting)
+		cast.Name:SetShown(isCasting)
+		cast.Value:SetShown(isCasting)
+	end,
+
+	HealthBarPostUpdate = function(health, unit)
+		local absorb = health._owner.Absorb
+		local cast = health._owner.Cast
+
+		local isBoss = health._owner.progressiveFrameStyle == "Boss"
+		local isCritter = health._owner.progressiveFrameStyle == "Critter" 
+		local isCasting = cast.casting or cast.channeling
+		
+		health.Percent:SetShown(isBoss and not isCasting)
+		cast.Value:SetShown(not isCritter)
+		cast.Name:SetShown(not isCritter)
+	
+		health.Value:SetShown(not isCasting)
+		absorb.Value:SetShown(not isCasting)
+		cast.Name:SetShown(isCasting)
+		cast.Value:SetShown(isCasting)
+	end
 }
 
 -- Target of Target
@@ -1636,42 +1677,6 @@ local UnitFrameToT = setmetatable({
 	HideWhenUnitIsPlayer = true, -- hide the frame when the unit is the player
 	HideWhenUnitIsTarget = true, -- hide the frame when the unit matches our target
 	HideWhenTargetIsCritter = true, -- hide the frame when unit is a critter
-
-	-- This should be the same as the health value
-	UseCastBarName = true, 
-		CastBarNameParent = "Health",
-		CastBarNamePlace = { "CENTER", 0, 1 },
-		CastBarNameSize = Constant.SmallBar, 
-		CastBarNameFont = Fonts(12, true),
-		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
-		CastBarNameJustifyH = "CENTER", 
-		CastBarNameJustifyV = "MIDDLE",
-
-	CastBarPostUpdate = function(element, unit, duration, max, delay)
-		local owner = element._owner
-		if (element.casting or element.channeling) then 
-			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
-				owner.Health.Value:Hide()
-			end 
-			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
-				owner.Absorb.Value:Hide()
-			end  
-			if (element.Value and (not element.Value:IsShown())) then 
-				element.Value:Show()
-			end
-			if (element.Name and (not element.Name:IsShown())) then 
-				element.Name:Show()
-			end
-		else 
-			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
-				owner.Health.Value:Show()
-			end  
-			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
-				owner.Absorb.Value:Show()
-			end  
-		end 
-	end,
 		
 }, { __index = Template_SmallFrameReversed })
 
@@ -1685,42 +1690,6 @@ local UnitFramePet = setmetatable({
 	HealthColorPetAsPlayer = false, -- color your pet as you 
 	HealthColorReaction = false, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
-
-	-- This should be the same as the health value
-	UseCastBarName = true, 
-		CastBarNameParent = "Health",
-		CastBarNamePlace = { "CENTER", 0, 1 },
-		CastBarNameSize = Constant.SmallBar, 
-		CastBarNameFont = Fonts(12, true),
-		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
-		CastBarNameJustifyH = "CENTER", 
-		CastBarNameJustifyV = "MIDDLE",
-
-	CastBarPostUpdate = function(element, unit, duration, max, delay)
-		local owner = element._owner
-		if (element.casting or element.channeling) then 
-			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
-				owner.Health.Value:Hide()
-			end 
-			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
-				owner.Absorb.Value:Hide()
-			end  
-			if (element.Value and (not element.Value:IsShown())) then 
-				element.Value:Show()
-			end
-			if (element.Name and (not element.Name:IsShown())) then 
-				element.Name:Show()
-			end
-		else 
-			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
-				owner.Health.Value:Show()
-			end  
-			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
-				owner.Absorb.Value:Show()
-			end  
-		end 
-	end,
 
 }, { __index = Template_SmallFrame })
 
@@ -1736,42 +1705,6 @@ local UnitFrameFocus = setmetatable({
 		NameFont = Fonts(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
-
-	-- This should be the same as the health value
-	UseCastBarName = true, 
-		CastBarNameParent = "Health",
-		CastBarNamePlace = { "CENTER", 0, 1 },
-		CastBarNameSize = Constant.SmallBar, 
-		CastBarNameFont = Fonts(12, true),
-		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
-		CastBarNameJustifyH = "CENTER", 
-		CastBarNameJustifyV = "MIDDLE",
-
-	CastBarPostUpdate = function(element, unit, duration, max, delay)
-		local owner = element._owner
-		if (element.casting or element.channeling) then 
-			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
-				owner.Health.Value:Hide()
-			end 
-			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
-				owner.Absorb.Value:Hide()
-			end  
-			if (element.Value and (not element.Value:IsShown())) then 
-				element.Value:Show()
-			end
-			if (element.Name and (not element.Name:IsShown())) then 
-				element.Name:Show()
-			end
-		else 
-			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
-				owner.Health.Value:Show()
-			end  
-			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
-				owner.Absorb.Value:Show()
-			end  
-		end 
-	end,
 
 	BuffFilterFunc = Auras:GetFilterFunc("focus"), 
 	DebuffFilterFunc = Auras:GetFilterFunc("focus"), 
@@ -1805,42 +1738,6 @@ local UnitFrameBoss = setmetatable({
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
-	-- This should be the same as the health value
-	UseCastBarName = true, 
-		CastBarNameParent = "Health",
-		CastBarNamePlace = { "CENTER", 0, 1 },
-		CastBarNameSize = Constant.SmallBar, 
-		CastBarNameFont = Fonts(12, true),
-		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
-		CastBarNameJustifyH = "CENTER", 
-		CastBarNameJustifyV = "MIDDLE",
-
-	CastBarPostUpdate = function(element, unit, duration, max, delay)
-		local owner = element._owner
-		if (element.casting or element.channeling) then 
-			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
-				owner.Health.Value:Hide()
-			end 
-			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
-				owner.Absorb.Value:Hide()
-			end  
-			if (element.Value and (not element.Value:IsShown())) then 
-				element.Value:Show()
-			end
-			if (element.Name and (not element.Name:IsShown())) then 
-				element.Name:Show()
-			end
-		else 
-			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
-				owner.Health.Value:Show()
-			end  
-			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
-				owner.Absorb.Value:Show()
-			end  
-		end 
-	end,
-
 	BuffFilterFunc = Auras:GetFilterFunc("boss"), 
 	DebuffFilterFunc = Auras:GetFilterFunc("boss"), 
 
@@ -1867,42 +1764,6 @@ local UnitFrameArena = setmetatable({
 		NameFont = Fonts(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
-
-	-- This should be the same as the health value
-	UseCastBarName = true, 
-		CastBarNameParent = "Health",
-		CastBarNamePlace = { "CENTER", 0, 1 },
-		CastBarNameSize = Constant.SmallBar, 
-		CastBarNameFont = Fonts(12, true),
-		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
-		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
-		CastBarNameJustifyH = "CENTER", 
-		CastBarNameJustifyV = "MIDDLE",
-
-	CastBarPostUpdate = function(element, unit, duration, max, delay)
-		local owner = element._owner
-		if (element.casting or element.channeling) then 
-			if (owner.Health.Value and (owner.Health.Value:IsShown())) then 
-				owner.Health.Value:Hide()
-			end 
-			if (owner.Absorb and owner.Absorb.Value and owner.Absorb.Value:IsShown()) then
-				owner.Absorb.Value:Hide()
-			end  
-			if (element.Value and (not element.Value:IsShown())) then 
-				element.Value:Show()
-			end
-			if (element.Name and (not element.Name:IsShown())) then 
-				element.Name:Show()
-			end
-		else 
-			if (owner.Health.Value and (not owner.Health.Value:IsShown())) then
-				owner.Health.Value:Show()
-			end  
-			if (owner.Absorb and owner.Absorb.Value and (not owner.Absorb.Value:IsShown())) then
-				owner.Absorb.Value:Show()
-			end  
-		end 
-	end,
 
 	BuffFilterFunc = Auras:GetFilterFunc("arena"), 
 	DebuffFilterFunc = Auras:GetFilterFunc("arena"), 

@@ -94,7 +94,7 @@ local UpdateValue = function(element, unit, min, max, disconnected, dead, tapped
 		end
 	end
 end 
---UnitIsBattlePet
+
 local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped)
 	if element.OverrideColor then
 		return element:OverrideColor(unit, min, max, disconnected, dead, tapped)
@@ -116,7 +116,17 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 		local _, class = UnitClass("player")
 		color = class and self.colors.class[class]
 	else 
-		local threat = UnitThreatSituation("player", unit)
+		-- BUG: Non-existent '*target' or '*pet' units cause UnitThreatSituation() errors (thank you oUF!)
+		local threat
+		if ((not element.hideThreatSolo) or (IsInGroup() or IsInInstance())) then
+			local feedbackUnit = element.threatFeedbackUnit
+			if (feedbackUnit and (feedbackUnit ~= unit) and UnitExists(feedbackUnit)) then
+				threat = UnitThreatSituation(feedbackUnit, unit)
+			else
+				threat = UnitThreatSituation(unit)
+			end
+		end
+
 		if (element.colorThreat and threat and (threat > 0)) then
 			color = self.colors.threat[threat]
 		elseif (element.colorReaction and UnitReaction(unit, "player")) then
@@ -213,5 +223,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 14)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 15)
 end 

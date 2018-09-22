@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.63] 2018-09-22
+### Changed
+- New classification badge for bosses! They should now stand out more elites and rares. 
+- Actionbutton performance upgrades.
+- Adjusted size of most small bars. 
+- Adjusted alignment of small bar backdrops. 
+- Target frame health bar now change color according to your current threat towards the target. 
+- Name plate health bar color now follows the same threat coloring scheme as the previously mentioned target frame.
+- Removed some post updates from the statusbar library to allow for more dynamic texture changes. 
+
+### Fixed
+- Death Knight rune sort order is functioning properly again, and rune depletion should once again match the order and the transparency.
+- Rewrote cast name and value post updates for target unit frame as well as all the small frames. 
+- Fixed the issue where reversed small bars with auras (namely boss- and arena unit frames) weren't reversed at all. They now grow from their own side of the screen, like intended.
+- Further removed any global alpha handling during cinematics, as our interface master frame is parented to UIParent now, and visibility handled by WoW.
+- Spell charges on the extra action button should no longer be covered by the button border. 
+
 ## [1.0.62] 2018-09-18
 ### Added
 - Added bufftimers of the type that compliments that player's altpower bar in some quests like the horse riding on the Norwington Estate in Tiragarde Sound. These timers have been integrated into the same system as the instance countdown timers and breath- and fatigue timers. Why complicate a system that works?

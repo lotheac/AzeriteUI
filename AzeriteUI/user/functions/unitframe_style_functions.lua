@@ -268,7 +268,9 @@ UnitFrameStyles.StyleSmallFrame = function(self, unit, id, Layout, ...)
 	health.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
 	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
 	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
+
 	self.Health = health
+	self.Health.PostUpdate = Layout.HealthBarPostUpdate
 	
 	if Layout.UseHealthBackdrop then 
 		local healthBg = health:CreateTexture()

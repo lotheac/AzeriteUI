@@ -124,8 +124,7 @@ local OnUpdate = function(element, elapsed)
 		
 		element:SetValue(0, true)
 		element:Hide()
-		
-		return 
+		return element.PostUpdate and element:PostUpdate(unit)
 	end
 	local r, g, b
 	if (element.casting or element.tradeskill) then
@@ -143,10 +142,9 @@ local OnUpdate = function(element, elapsed)
 			if element.Value then 
 				element.Value:SetText("")
 			end
-			
-				element:SetValue(0, true)
+			element:SetValue(0, true)
 			element:Hide()
-			return 
+			return element.PostUpdate and element:PostUpdate(unit)
 		end
 		if element.Value then
 			if element.tradeskill then
@@ -179,8 +177,8 @@ local OnUpdate = function(element, elapsed)
 			end
 			
 			element:SetValue(0, true)
-			element:Hide()
-			return
+			return element.PostUpdate and element:PostUpdate(unit)
+
 		end
 		if element.Value then
 			if element.tradeskill then
@@ -213,8 +211,8 @@ local OnUpdate = function(element, elapsed)
 		end
 		
 		element:SetValue(0, true)
-		element:Hide()
-		return
+		return element.PostUpdate and element:PostUpdate(unit)
+
 	end
 end 
 
@@ -795,5 +793,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 11)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 13)
 end 
