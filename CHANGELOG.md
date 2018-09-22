@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.64] 2018-09-22
+### Fixed
+- Fixed a nil error introduced in the previous statusbar library update. 
+- Fixed a wrong method usage in the nameplate castbar post update.
+
 ## [1.0.63] 2018-09-22
 ### Changed
 - New classification badge for bosses! They should now stand out more from elites and rares. 

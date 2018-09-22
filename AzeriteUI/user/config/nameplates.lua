@@ -148,7 +148,7 @@ local NamePlates = {
 					cast:SetStatusBarTexture(GetMediaPath("nameplate_bar"))
 					cast:SetTexCoord(14/256, 242/256, 14/64, 50/64)
 
-					cast.Bg:SetTexCoord(84*256/228, 14*64/36)
+					cast.Bg:SetSize(84*256/228, 14*64/36)
 					cast.Bg:SetTexture(GetMediaPath("nameplate_backdrop"))
 					cast.Bg:SetVertexColor(1, 1, 1, 1)
 

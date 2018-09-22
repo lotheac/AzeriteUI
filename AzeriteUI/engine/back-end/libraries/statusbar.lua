@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 42)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 43)
 if (not LibStatusBar) then	
 	return
 end
@@ -18,6 +18,7 @@ local math_max = math.max
 local pairs = pairs
 local select = select
 local setmetatable = setmetatable
+local tonumber = tonumber
 local type = type
 
 -- WoW API
@@ -206,6 +207,12 @@ local Update = function(self, elapsed)
 	local width, height = data.statusbar:GetSize() 
 	local bar = data.bar
 	local spark = data.spark
+
+	local skipPost
+	if (elapsed == true) then 
+		elapsed = nil 
+		skipPost = true
+	end 
 	
 	if (value > max) then
 		value = max
@@ -362,7 +369,7 @@ local Update = function(self, elapsed)
 	end
 
 	-- Allow modules to add their postupdates here
-	if (self.PostUpdate and (elapsed ~= true)) then 
+	if (self.PostUpdate and (not skipPost)) then 
 		self:PostUpdate(value, min, max)
 	end
 
