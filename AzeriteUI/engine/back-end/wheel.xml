@@ -31,6 +31,7 @@
 	<Script file="libraries\blizzard.lua"/>
 	<Script file="libraries\slash.lua"/>
 	<Script file="libraries\aura.lua"/>
+	<Script file="libraries\menu.lua"/>
 	<Script file="libraries\quest.lua"/>
 	<Script file="libraries\bonusquest.lua"/>
 	<Script file="libraries\chatbubble.lua"/>
@@ -66,7 +67,9 @@
 	<Script file="plugins\unit_classification.lua"/>
 	<Script file="plugins\unit_classpower.lua"/>
 	<Script file="plugins\unit_combat.lua"/>
+	<Script file="plugins\unit_crowdcontrol.lua"/>
 	<Script file="plugins\unit_extrapower.lua"/>
+	<Script file="plugins\unit_groupdebuff.lua"/>
 	<Script file="plugins\unit_grouprole.lua"/>
 	<Script file="plugins\unit_health.lua"/>
 	<Script file="plugins\unit_level.lua"/>
@@ -75,6 +78,7 @@
 	<Script file="plugins\unit_power.lua"/>
 	<Script file="plugins\unit_range.lua"/>
 	<Script file="plugins\unit_raidrole.lua"/>
+	<Script file="plugins\unit_raidtarget.lua"/>
 	<Script file="plugins\unit_spec.lua"/>
 	<Script file="plugins\unit_targeted.lua"/>
 	<Script file="plugins\unit_threat.lua"/>

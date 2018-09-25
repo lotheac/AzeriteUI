@@ -569,29 +569,6 @@ Module.AddOptionsToMenuWindow = function(self)
 				local option1_2_3_2 = createOptionButton(option1_2_3_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityComplimentary", 2)
 				local option1_2_3_3 = createOptionButton(option1_2_3_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityComplimentary", 3)
 		
-		--[[
-		local option1_3 = createOptionButton(window, 3, L["Stance Bar"])
-		option1_3:Disable()
-			local option1_3_window = createOptionsWindow(option1_3, 2, 2) 
-			local option1_3_1 = createOptionButton(option1_3_window, 1, L["Enable"], "TOGGLE_VALUE", ADB, "enableStance")
-			local option1_3_2 = createOptionButton(option1_3_window, 2, L["Button Visibility"], "SLAVE", ADB, "enableStance")
-				local option1_3_2_window = createOptionsWindow(option1_3_2, 3, 3) 
-				local option1_3_2_1 = createOptionButton(option1_3_2_window, 1, L["MouseOver"], "SET_VALUE", ADB, "visibilityStance", 1)
-				local option1_3_2_2 = createOptionButton(option1_3_2_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityStance", 2)
-				local option1_3_2_3 = createOptionButton(option1_3_2_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityStance", 3)
-			
-		local option1_4 = createOptionButton(window, 4, L["Pet Bar"])
-		option1_4:Disable()
-			local option1_4_window = createOptionsWindow(option1_4, 2, 2) 
-			local option1_4_1 = createOptionButton(option1_4_window, 1, L["Enable"], "TOGGLE_VALUE", ADB, "enablePet")
-			local option1_4_2 = createOptionButton(option1_4_window, 2, L["Button Visibility"], "SLAVE", ADB, "enablePet")
-				local option1_4_2_window = createOptionsWindow(option1_4_2, 3, 3) 
-				local option1_4_2_1 = createOptionButton(option1_4_2_window, 1, L["MouseOver"], "SET_VALUE", ADB, "visibilityPet", 1)
-				local option1_4_2_2 = createOptionButton(option1_4_2_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityPet", 2)
-				local option1_4_2_3 = createOptionButton(option1_4_2_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityPet", 3)
-		]]--
-
-		--createSiblings(option1_1_window, option1_2_window, option1_3_window, option1_4_window)
 		createSiblings(option1_1_window, option1_2_window)
 		createSiblings(option1_1_1_window, option1_1_2_window)
 		createSiblings(option1_2_2_window, option1_2_3_window)
@@ -600,9 +577,6 @@ Module.AddOptionsToMenuWindow = function(self)
 		createSiblings(option1_1_2_1, option1_1_2_2, option1_1_2_3)
 		createSiblings(option1_2_2_1, option1_2_2_2)
 		createSiblings(option1_2_3_1, option1_2_3_2, option1_2_3_3)
-		
-		--createSiblings(option1_3_2_1, option1_3_2_2, option1_3_2_3)
-		--createSiblings(option1_4_2_1, option1_4_2_2, option1_4_2_3)
 
 	end
 end

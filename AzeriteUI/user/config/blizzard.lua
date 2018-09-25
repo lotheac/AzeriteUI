@@ -13,8 +13,8 @@ local UICenter = CogWheel("LibFrame"):GetFrame()
 local GetMediaPath = Functions.GetMediaPath
 	
 local BlizzardChatFrames = {
-	DefaultChatFramePlace = { "LEFT", 85, 0 },
-	DefaultChatFrameSize = { 519, 196 },
+	DefaultChatFramePlace = { "LEFT", 85, -60 },
+	DefaultChatFrameSize = { 499, 176 }, -- 519, 196
 	DefaultClampRectInsets = { -54, -54, -310, -330 },
 	UseButtonTextures = true
 }

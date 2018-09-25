@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.65] 2018-09-26
+### Added
+- Added raid target icons to the nameplates!
+
+### Fixed
+- Fixed a wrong upvalue in the actionbutton element that would sometimes cause nil errors when the icons of available pets to summon were changed or updated. 
+
+### Removed 
+- Removed a lot of unused and redundant code from the nameplate library, as it's been using the same plugin system as the unitframes for some time, and no longer needs its own post updates for the various nameplate elements. 
+
 ## [1.0.64] 2018-09-22
 ### Fixed
 - Fixed a nil error introduced in the previous statusbar library update. 

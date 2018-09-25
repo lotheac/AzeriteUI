@@ -751,10 +751,10 @@ local Update = function(self, event, ...)
 
 	elseif (event == "UPDATE_SUMMONPETS_ACTION") then 
 		local actionType, id = GetActionInfo(self.buttonAction)
-		if actionType == "summonpet" then
+		if (actionType == "summonpet") then
 			local texture = GetActionTexture(self.buttonAction)
 			if texture then
-				button.Icon:SetTexture(texture)
+				self.Icon:SetTexture(texture)
 			end
 		end
 
@@ -829,4 +829,4 @@ local Disable = function(self)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 39)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 40)

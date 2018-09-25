@@ -25,37 +25,10 @@ local GetQuestGreenRange = _G.GetQuestGreenRange
 local InCombatLockdown = _G.InCombatLockdown
 local IsInInstance = _G.IsInInstance 
 local SetCVar = _G.SetCVar
-local UnitReaction = _G.UnitReaction
-
--- Adding support for WeakAuras' personal resource attachments
-local WEAKAURAS
-
--- Current player level
-local LEVEL = UnitLevel("player") 
-
--- Utility Functions
------------------------------------------------------------------
--- Returns the correct difficulty color compared to the player
-local getDifficultyColorByLevel = function(level)
-	level = level - LEVEL
-	if (level > 4) then
-		return Colors.quest.red.colorCode
-	elseif (level > 2) then
-		return Colors.quest.orange.colorCode
-	elseif (level >= -2) then
-		return Colors.quest.yellow.colorCode
-	elseif (level >= -GetQuestGreenRange()) then
-		return Colors.quest.green.colorCode
-	else
-		return Colors.quest.gray.colorCode
-	end
-end
-
 
 -- Library Updates
 -- *will be called by the library at certain times
 -----------------------------------------------------------------
-
 -- Called on PLAYER_ENTERING_WORLD by the library, 
 -- but before the library calls its own updates.
 Module.PreUpdateNamePlateOptions = function(self)
@@ -209,29 +182,20 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		plate.Threat = threat
 	end 
 
+	if Layout.UseRaidTarget then 
+		local raidTarget = plate:CreateTexture()
+		raidTarget:SetPoint(unpack(Layout.RaidTargetPlace))
+		raidTarget:SetSize(unpack(Layout.RaidTargetSize))
+		raidTarget:SetDrawLayer(unpack(Layout.RaidTargetDrawLayer))
+		raidTarget:SetTexture(Layout.RaidTargetTexture)
+		plate.RaidTarget = raidTarget
+	end 
+
 end
-
-
 
 -- Module Updates
 -----------------------------------------------------------------
-
-Module.OnEvent = function(self, event, ...)
-	if (event == "PLAYER_LEVEL_UP") then 
-		local level = ...
-		if (level and (level ~= LEVEL)) then
-			LEVEL = level
-		else
-			local level = UnitLevel("player")
-			if (level ~= LEVEL) then
-				LEVEL = level
-			end
-		end
-	end
-end
-
 Module.OnInit = function(self)
-	WEAKAURAS = self:IsAddOnEnabled("WeakAuras")
 end 
 
 Module.OnEnable = function(self)

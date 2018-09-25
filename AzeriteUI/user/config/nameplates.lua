@@ -168,6 +168,15 @@ local NamePlates = {
 		ThreatDrawLayer = { "BACKGROUND", -3 },
 		ThreatHideSolo = true, 
 
+	UseAuras = true, 
+		
+
+	UseRaidTarget = true, 
+		RaidTargetPlace = { "TOP", 0, 10 + 64 },
+		RaidTargetSize = { 64, 64 },
+		RaidTargetTexture = GetMediaPath("raid_target_icons"),
+		RaidTargetDrawLayer = { "ARTWORK", 0 },
+
 	-- CVars adjusted at startup
 	SetConsoleVars = {
 		-- Because we want friendly NPC nameplates
