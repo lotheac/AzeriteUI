@@ -31,6 +31,7 @@ You can talk to us on our [Discord](https://discord.gg/MUSfWXd) channel, or if i
 Join our social communities to talk about the development, the concepts, the future or just to hang out with like-minded people. 
 
 * Discord: [discord.gg/MUSfWXd](https://discord.gg/MUSfWXd)
+* YouTube: [youtube.com/channel/UChE6I9HirNw5m14Vytah0cQ](https://www.youtube.com/channel/UChE6I9HirNw5m14Vytah0cQ)
 * Facebook: [@AzeriteUI](https://www.facebook.com/AzeriteUI/)
 * Twitter: [@AzeriteUI](https://twitter.com/AzeriteUI)
 
