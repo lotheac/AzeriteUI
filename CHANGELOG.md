@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.66] 2018-09-28
 ## Added
 - Added pet autocast textures to the action buttons. 
+- Added pet autocast toggling when right-clicking action buttons containing autocastable pet spells. 
 
 ### Changed
 - Changed the spell activation highlight textures to something less Blizz. 
