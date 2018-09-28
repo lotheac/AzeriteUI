@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.65] 2018-09-26
+## [1.0.66] 2018-09-28
+## Added
+- Added pet autocast textures to the action buttons. 
+
+### Changed
+- Changed the spell activation highlight textures to something less Blizz. 
+
+## [1.0.65] 2018-09-25
 ### Added
 - Added raid target icons to the nameplates!
 

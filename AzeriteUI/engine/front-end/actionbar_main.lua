@@ -615,31 +615,24 @@ ActionButton.PostCreate = function(self, ...)
 	self.Keybind:SetShadowColor(unpack(Layout.KeybindShadowColor))
 	self.Keybind:SetTextColor(unpack(Layout.KeybindColor))
 
-	self.OverlayGlow:ClearAllPoints()
-	self.OverlayGlow:SetPoint(unpack(Layout.OverlayGlowPlace))
-	self.OverlayGlow:SetSize(unpack(Layout.OverlayGlowSize))
-
-	if Layout.OverlayGlowSparkTexture then 
-		self.OverlayGlow.spark:SetTexture(Layout.OverlayGlowSparkTexture)
-	end
-	if Layout.OverlayGlowInnerGlowTexture then 
-		self.OverlayGlow.innerGlow:SetTexture(Layout.OverlayGlowInnerGlowTexture)
-	end 
-	if Layout.OverlayGlowInnerGlowOverTexture then 
-		self.OverlayGlow.innerGlowOver:SetTexture(Layout.OverlayGlowInnerGlowOverTexture)
-	end 
-	if Layout.OverlayGlowOuterGlowTexture then 
-		self.OverlayGlow.outerGlow:SetTexture(Layout.OverlayGlowOuterGlowTexture)
-	end 
-	if Layout.OverlayGlowOuterGlowOverTexture then 
-		self.OverlayGlow.outerGlowOver:SetTexture(Layout.OverlayGlowOuterGlowOverTexture)
-	end 
-	if Layout.OverlayGlowAntsTexture then 
-		self.OverlayGlow.ants:SetTexture(Layout.OverlayGlowAntsTexture)
+	if Layout.UseSpellHighlight then 
+		self.SpellHighlight:ClearAllPoints()
+		self.SpellHighlight:SetPoint(unpack(Layout.SpellHighlightPlace))
+		self.SpellHighlight:SetSize(unpack(Layout.SpellHighlightSize))
+		self.SpellHighlight.Texture:SetTexture(Layout.SpellHighlightTexture)
+		self.SpellHighlight.Texture:SetVertexColor(unpack(Layout.SpellHighlightColor))
 	end 
 
-	-- Our own style layers
-	-----------------------------------------------------
+	if Layout.UseSpellAutoCast then 
+		self.SpellAutoCast:ClearAllPoints()
+		self.SpellAutoCast:SetPoint(unpack(Layout.SpellAutoCastPlace))
+		self.SpellAutoCast:SetSize(unpack(Layout.SpellAutoCastSize))
+		self.SpellAutoCast.Ants:SetTexture(Layout.SpellAutoCastAntsTexture)
+		self.SpellAutoCast.Ants:SetVertexColor(unpack(Layout.SpellAutoCastAntsColor))	
+		self.SpellAutoCast.Glow:SetTexture(Layout.SpellAutoCastGlowTexture)
+		self.SpellAutoCast.Glow:SetVertexColor(unpack(Layout.SpellAutoCastGlowColor))	
+	end 
+
 	if Layout.UseBackdropTexture then 
 		self.Backdrop = self:CreateTexture()
 		self.Backdrop:SetSize(unpack(Layout.BackdropSize))
@@ -675,7 +668,6 @@ ActionButton.PostCreate = function(self, ...)
 		if Layout.UseBorderBackdrop then 
 			self.BorderFrame:Place(unpack(Layout.BorderFramePlace))
 			self.BorderFrame:SetSize(unpack(Layout.BorderFrameSize))
-			--self.BorderFrame:SetFrameLevel(self.Overlay:GetFrameLevel() - 1) -- will overwrite the overlayglow
 			self.BorderFrame:SetBackdrop(Layout.BorderFrameBackdrop)
 			self.BorderFrame:SetBackdropColor(unpack(Layout.BorderFrameBackdropColor))
 			self.BorderFrame:SetBackdropBorderColor(unpack(Layout.BorderFrameBackdropBorderColor))

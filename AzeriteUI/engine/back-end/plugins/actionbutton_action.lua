@@ -24,7 +24,9 @@ local GetMacroSpell = _G.GetMacroSpell
 local GetTime = _G.GetTime
 local HasAction = _G.HasAction
 local IsActionInRange = _G.IsActionInRange
+local IsAutoCastPetAction = _G.C_ActionBar.IsAutoCastPetAction
 local IsConsumableAction = _G.IsConsumableAction
+local IsEnabledAutoCastPetAction = _G.C_ActionBar.IsEnabledAutoCastPetAction
 local IsStackableAction = _G.IsStackableAction
 local IsUsableAction = _G.IsUsableAction
 local SetClampedTextureRotation = _G.SetClampedTextureRotation
@@ -151,6 +153,19 @@ ActionButton.UpdateAction = function(self)
 	end 
 	self:Update()
 end 
+
+ActionButton.UpdateAutoCastMacro = function(self)
+	if InCombatLockdown() then 
+		self.queuedForMacroUpdate = true
+		return 
+	end
+	local name = IsAutoCastPetAction(self.buttonAction) and GetSpellInfo(self:GetSpellID())
+	if name then 
+		self:SetAttribute("macrotext", "/petautocasttoggle "..name)
+	else 
+		self:SetAttribute("macrotext", nil)
+	end 
+end
 
 ActionButton.UpdateState = function(self)
 	if IsCurrentAction(self.buttonAction) or IsAutoRepeatAction(self.buttonAction) then
@@ -326,37 +341,53 @@ ActionButton.UpdateUsable = function(self)
 
 end 
 
-local gridCounter = 0
-ActionButton.ShowGrid = function(self)
-	self.gridCounter = (self.gridCounter or 0) + 1
-	if (self.gridCounter >= 1) then
-		if self:IsShown() then
-			self:SetAlpha(1)
-		end
-	end
-end 
-
-ActionButton.HideGrid = function(self)
-	if (self.gridCounter and (self.gridCounter > 0)) then
-		self.gridCounter = self.gridCounter - 1
-	end
-	if ((self.gridCounter or 0) == 0) then
-		if (self:IsShown() and (not HasAction(self.buttonAction)) and (not self.showGrid)) then
-			self:SetAlpha(0)
-		end
-	end
-end 
-
 ActionButton.UpdateGrid = function(self)
-	if self.showGrid then
+	if self.showGrid or self:IsShown() and (HasAction(self.buttonAction) or (GetCursorInfo() == "petaction") or CursorHasSpell() or CursorHasItem()) then
 		self:SetAlpha(1)
-	elseif (((self.gridCounter or 0) == 0) and self:IsShown() and (not HasAction(self.buttonAction))) then
+	else
 		self:SetAlpha(0)
 	end
 end
 
-ActionButton.Update = function(self)
+ActionButton.ShowSpellHighlight = function(self)
+	self.SpellHighlight:Show()
+end
 
+ActionButton.HideSpellHighlight = function(self)
+	self.SpellHighlight:Hide()
+end
+
+ActionButton.UpdateSpellHighlight = function(self)
+	local spellId = self:GetSpellID()
+	if (spellId and IsSpellOverlayed(spellId)) then
+		self.SpellHighlight:Show()
+	else
+		self.SpellHighlight:Hide()
+	end
+end
+
+ActionButton.UpdateAutoCast = function(self)
+	if (HasAction(self.buttonAction) and IsAutoCastPetAction(self.buttonAction)) then 
+		if IsEnabledAutoCastPetAction(self.buttonAction) then 
+			if (not self.SpellAutoCast.Ants.Anim:IsPlaying()) then
+				self.SpellAutoCast.Ants.Anim:Play()
+				self.SpellAutoCast.Glow.Anim:Play()
+			end
+			self.SpellAutoCast:SetAlpha(1)
+		else 
+			if (self.SpellAutoCast.Ants.Anim:IsPlaying()) then
+				self.SpellAutoCast.Ants.Anim:Pause()
+				self.SpellAutoCast.Glow.Anim:Pause()
+			end
+			self.SpellAutoCast:SetAlpha(.5)
+		end 
+		self.SpellAutoCast:Show()
+	else 
+		self.SpellAutoCast:Hide()
+	end 
+end
+
+ActionButton.Update = function(self)
 	if HasAction(self.buttonAction) then 
 		self.hasAction = true
 		self.Icon:SetTexture(GetActionTexture(self.buttonAction))
@@ -372,19 +403,17 @@ ActionButton.Update = function(self)
 	self:UpdateFlash()
 	self:UpdateUsable()
 	self:UpdateGrid()
-	self:UpdateOverlayGlow()
+	self:UpdateSpellHighlight()
+	self:UpdateAutoCast()
 	self:UpdateFlyout()
 
-	-- Allow modules to add in methods this way
 	if self.PostUpdate then 
 		self:PostUpdate()
 	end 
 end
 
-
 -- Getters
 ----------------------------------------------------
-
 ActionButton.GetAction = function(self)
 	local actionpage = tonumber(self:GetAttribute("actionpage"))
 	local id = self:GetID()
@@ -420,14 +449,8 @@ ActionButton.GetSpellID = function(self)
 	end
 end
 
--- Setters
-----------------------------------------------------
-
-
-
 -- Isers
 ----------------------------------------------------
-
 ActionButton.IsInRange = function(self)
 	local unit = self:GetAttribute("unit")
 	if (unit == "player") then
@@ -444,11 +467,8 @@ ActionButton.IsInRange = function(self)
 	return val
 end
 
-
-
 -- Script Handlers
 ----------------------------------------------------
-
 local UpdateTooltip = function(self)
 	local tooltip = self:GetTooltip()
 	tooltip:Hide()
@@ -493,7 +513,8 @@ local AddElements = function(button)
 	LibActionButton:CreateButtonCooldowns(button)
 	LibActionButton:CreateButtonCount(button)
 	LibActionButton:CreateButtonKeybind(button)
-	LibActionButton:CreateButtonOverlayGlow(button)
+	LibActionButton:CreateButtonSpellHighlight(button)
+	LibActionButton:CreateButtonAutoCast(button)
 	LibActionButton:CreateFlyoutArrow(button)
 
 	return button
@@ -557,7 +578,6 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 		end 
 	]=])
 	
-	-- Create the button
 	local button = AddElements(setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT))
 	button:SetFrameStrata("LOW")
 	button:RegisterForDrag("LeftButton", "RightButton")
@@ -572,18 +592,42 @@ local Spawn = function(self, parent, name, buttonTemplate, ...)
 	button.id = buttonID
 	button.action = 0
 
-	-- I don't like exposing these, but it's the simplest way right now
 	button._owner = visibility
 	button._pager = page
 
-	-- Frame Scripts
 	button:SetScript("OnEnter", ActionButton.OnEnter)
 	button:SetScript("OnLeave", ActionButton.OnLeave)
 	button:SetScript("PreClick", ActionButton.PreClick)
 	button:SetScript("PostClick", ActionButton.PostClick)
 	button:SetScript("OnUpdate", OnUpdate)
 
-	-- secure references
+	-- A little magic to allow us to toggle autocasting of pet abilities
+	page:WrapScript(button, "PreClick", [[
+		if (button ~= "RightButton") then 
+			if (self:GetAttribute("type2")) then 
+				self:SetAttribute("type2", nil); 
+			end 
+			return 
+		end
+		local actionpage = self:GetAttribute("actionpage"); 
+		if (not actionpage) then
+			if (self:GetAttribute("type2")) then 
+				self:SetAttribute("type2", nil); 
+			end 
+			return
+		end
+		local id = self:GetID(); 
+		local action = (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+		local actionType, id, subType = GetActionInfo(action);
+		if (subType == "pet") and (id ~= 0) then 
+			self:SetAttribute("type2", "macro"); 
+		else 
+			if (self:GetAttribute("type2")) then 
+				self:SetAttribute("type2", nil); 
+			end 
+		end 
+	]]) 
+
 	page:SetFrameRef("Visibility", visibility)
 	page:SetFrameRef("Button", button)
 	visibility:SetFrameRef("Page", page)
@@ -677,7 +721,17 @@ end
 local Update = function(self, event, ...)
 	local arg1 = ...
 
-	if (event == "PLAYER_ENTERING_WORLD") or (event == "UPDATE_SHAPESHIFT_FORM") or (event == "UPDATE_VEHICLE_ACTIONBAR") then 
+	if (event == "PLAYER_ENTERING_WORLD") then 
+		self:Update()
+		self:UpdateAutoCastMacro()
+
+	elseif (event == "PLAYER_REGEN_ENABLED") then 
+		if self.queuedForMacroUpdate then 
+			self:UpdateAutoCastMacro()
+			self.queuedForMacroUpdate = nil
+		end 
+
+	elseif (event == "UPDATE_SHAPESHIFT_FORM") or (event == "UPDATE_VEHICLE_ACTIONBAR") then 
 		self:Update()
 
 	elseif (event == "PLAYER_ENTER_COMBAT") or (event == "PLAYER_LEAVE_COMBAT") then
@@ -685,8 +739,9 @@ local Update = function(self, event, ...)
 
 	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
 		if ((arg1 == 0) or (arg1 == self.buttonAction)) then
-			self:HideOverlayGlow()
+			self:HideSpellHighlight()
 			self:Update()
+			self:UpdateAutoCastMacro()
 		end
 
 	elseif (event == "ACTIONBAR_UPDATE_COOLDOWN") then
@@ -700,11 +755,13 @@ local Update = function(self, event, ...)
 			((event == "COMPANION_UPDATE") and (arg1 == "MOUNT")) then
 		self:UpdateState()
 
-	elseif (event == "ACTIONBAR_SHOWGRID") then
-		self:ShowGrid()
+	elseif (event == "CURSOR_UPDATE") 
+		or (event == "ACTIONBAR_SHOWGRID") or (event == "PET_BAR_SHOWGRID") 
+		or (event == "ACTIONBAR_HIDEGRID") or (event == "PET_BAR_HIDEGRID") then 
+			self:UpdateGrid()
 
-	elseif (event == "ACTIONBAR_HIDEGRID") then
-		self:HideGrid()
+	elseif (event == "PET_BAR_UPDATE") then 
+		self:UpdateAutoCast()
 
 	elseif (event == "LOSS_OF_CONTROL_ADDED") then
 		self:UpdateCooldown()
@@ -718,22 +775,22 @@ local Update = function(self, event, ...)
 	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW") then
 		local spellID = self:GetSpellID()
 		if (spellID and (spellID == arg1)) then
-			self:ShowOverlayGlow()
+			self:ShowSpellHighlight()
 		else
 			local actionType, id = GetActionInfo(self.buttonAction)
 			if (actionType == "flyout") and FlyoutHasSpell(id, arg1) then
-				self:ShowOverlayGlow()
+				self:ShowSpellHighlight()
 			end
 		end
 
 	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_HIDE") then
 		local spellID = self:GetSpellID()
 		if (spellID and (spellID == arg1)) then
-			self:HideOverlayGlow()
+			self:HideSpellHighlight()
 		else
 			local actionType, id = GetActionInfo(self.buttonAction)
 			if actionType == "flyout" and FlyoutHasSpell(id, arg1) then
-				self:HideOverlayGlow()
+				self:HideSpellHighlight()
 			end
 		end
 
@@ -741,7 +798,7 @@ local Update = function(self, event, ...)
 		self:UpdateCount()
 
 	elseif (event == "SPELL_UPDATE_ICON") then
-		self:Update()
+		self:Update() -- really? how often is this called?
 
 	elseif (event == "TRADE_SKILL_SHOW") or (event == "TRADE_SKILL_CLOSE") or (event == "ARCHAEOLOGY_CLOSED") then
 		self:UpdateState()
@@ -772,12 +829,17 @@ local Enable = function(self)
 	self:RegisterEvent("ARCHAEOLOGY_CLOSED", Update)
 	self:RegisterEvent("COMPANION_UPDATE", Update)
 	--self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
+	self:RegisterEvent("CURSOR_UPDATE", Update)
 	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Update)
 	self:RegisterEvent("LOSS_OF_CONTROL_UPDATE", Update)
+	self:RegisterEvent("PET_BAR_HIDEGRID", Update)
+	self:RegisterEvent("PET_BAR_SHOWGRID", Update)
+	self:RegisterEvent("PET_BAR_UPDATE", Update)
 	self:RegisterEvent("PLAYER_ENTER_COMBAT", Update)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", Update)
 	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Update)
 	self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", Update)
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", Update)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
@@ -806,12 +868,17 @@ local Disable = function(self)
 	self:UnregisterEvent("ARCHAEOLOGY_CLOSED", Update)
 	self:UnregisterEvent("COMPANION_UPDATE", Update)
 	--self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
+	self:UnregisterEvent("CURSOR_UPDATE", Update)
 	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Update)
 	self:UnregisterEvent("LOSS_OF_CONTROL_UPDATE", Update)
+	self:UnregisterEvent("PET_BAR_HIDEGRID", Update)
+	self:UnregisterEvent("PET_BAR_SHOWGRID", Update)
+	self:UnregisterEvent("PET_BAR_UPDATE", Update)
 	self:UnregisterEvent("PLAYER_ENTER_COMBAT", Update)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Update)
 	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Update)
 	self:UnregisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED", Update)
 	self:UnregisterEvent("PLAYER_TARGET_CHANGED", Update)
 	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
 	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
@@ -829,4 +896,4 @@ local Disable = function(self)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 40)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 44)

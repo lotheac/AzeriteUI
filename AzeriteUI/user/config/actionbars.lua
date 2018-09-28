@@ -89,15 +89,21 @@ local ActionBarMain = {
 	KeybindShadowColor = { 0, 0, 0, 1 },
 	KeybindColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3], .75 },
 
-	-- Overlay Glow
-	OverlayGlowPlace = { "CENTER", 0, 0 },
-	OverlayGlowSize = { 64 * 1.45, 64 * 1.45 },
-	OverlayGlowSparkTexture = GetMediaPath("IconAlert-Circle"),
-	OverlayGlowInnerGlowTextureTexture = GetMediaPath("IconAlert-Circle"),
-	OverlayGlowInnerGlowOverTexture = GetMediaPath("IconAlert-Circle"),
-	OverlayGlowOuterGlowTexture = GetMediaPath("IconAlert-Circle"),
-	OverlayGlowOuterGlowOverTexture = GetMediaPath("IconAlert-Circle"),
-	OverlayGlowAntsTexture = GetMediaPath("IconAlertAnts-Circle"),
+	-- Spell Highlights
+	UseSpellHighlight = true, 
+		SpellHighlightPlace = { "CENTER", 0, 0 },
+		SpellHighlightSize = { 64/(122/256), 64/(122/256) },
+		SpellHighlightTexture = GetMediaPath("actionbutton-spellhighlight"),
+		SpellHighlightColor = { 255/255, 225/255, 125/255, .75 }, 
+
+	-- Spell AutoCast
+	UseSpellAutoCast = true, 
+		SpellAutoCastPlace = { "CENTER", 0, 0 },
+		SpellAutoCastSize = { 64/(122/256), 64/(122/256) },
+		SpellAutoCastAntsTexture = GetMediaPath("actionbutton-ants-small"),
+		SpellAutoCastAntsColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3] },
+		SpellAutoCastGlowTexture = GetMediaPath("actionbutton-ants-small-glow"),
+		SpellAutoCastGlowColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3] },
 
 	-- Backdrop 
 	UseBackdropTexture = true, 
