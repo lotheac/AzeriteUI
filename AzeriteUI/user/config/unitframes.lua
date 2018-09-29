@@ -1631,42 +1631,77 @@ local UnitFrameTarget = {
 		local absorb = cast._owner.Absorb
 		local health = cast._owner.Health
 
-		local isBoss = cast._owner.progressiveFrameStyle == "Boss"
-		local isCritter = cast._owner.progressiveFrameStyle == "Critter" 
-		local isCasting = cast.casting or cast.channeling
-		
-		health.Percent:SetShown(isBoss and not isCasting)
-		cast.Value:SetShown(not isCritter)
-		cast.Name:SetShown(not isCritter)
-	
-		health.Value:SetShown(not isCasting)
-		absorb.Value:SetShown(not isCasting)
-		cast.Name:SetShown(isCasting)
-		cast.Value:SetShown(isCasting)
+		local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
+		local unitLevel = UnitLevel(unit)
+		local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+		local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
+		local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
+
+		if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+			health.Percent:Hide()
+			health.Value:Hide()
+			absorb.Value:Hide()
+			cast.Value:Hide()
+			cast.Name:Hide()
+		elseif (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
+			health.Percent:Hide()
+			health.Value:Hide()
+			absorb.Value:Hide()
+			cast.Value:Show()
+			cast.Name:Show()
+		else 
+			health.Percent:SetShown(isBoss or isPlayer or isEliteOrRare)
+			health.Value:Show()
+			absorb.Value:Show()
+			cast.Value:Hide()
+			cast.Name:Hide()
+		end 
 	end,
 
 	HealthBarPostUpdate = function(health, unit)
 		local absorb = health._owner.Absorb
 		local cast = health._owner.Cast
 
-		local isBoss = health._owner.progressiveFrameStyle == "Boss"
-		local isCritter = health._owner.progressiveFrameStyle == "Critter" 
-		local isCasting = cast.casting or cast.channeling
-		
-		health.Percent:SetShown(isBoss and not isCasting)
-		cast.Value:SetShown(not isCritter)
-		cast.Name:SetShown(not isCritter)
-	
-		health.Value:SetShown(not isCasting)
-		absorb.Value:SetShown(not isCasting)
-		cast.Name:SetShown(isCasting)
-		cast.Value:SetShown(isCasting)
+		local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
+		local unitLevel = UnitLevel(unit)
+		local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+		local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
+		local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
+
+		if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+			health.Percent:Hide()
+			health.Value:Hide()
+			absorb.Value:Hide()
+			cast.Value:Hide()
+			cast.Name:Hide()
+		elseif (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
+			health.Percent:Hide()
+			health.Value:Hide()
+			absorb.Value:Hide()
+			cast.Value:Show()
+			cast.Name:Show()
+		else 
+			health.Percent:SetShown(isBoss or isPlayer or isEliteOrRare)
+			health.Value:Show()
+			absorb.Value:Show()
+			cast.Value:Hide()
+			cast.Name:Hide()
+		end 
 	end
 }
 
 -- Target of Target
 local UnitFrameToT = setmetatable({
 	Place = { "RIGHT", "UICenter", "TOPRIGHT", -492, -96 },
+
+	UseName = true, 
+		NamePlace = { "BOTTOMLEFT", (Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
+		NameDrawLayer = { "OVERLAY", 1 },
+		NameDrawJustifyH = "RIGHT",
+		NameDrawJustifyV = "TOP",
+		NameFont = Fonts(14, true),
+		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		NameSize = nil,
 
 	HealthColorTapped = true, -- color tap denied units 
 	HealthColorDisconnected = true, -- color disconnected units

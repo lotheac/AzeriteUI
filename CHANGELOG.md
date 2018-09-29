@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.67] 2018-09-29
+## Fixed
+- The game menu will no longer disappear when using the addon ConsolePort.
+- Health/Castbar value/name visibility update for various target frame types. 
+
 ## [1.0.66] 2018-09-28
 ## Added
 - Added pet autocast textures to the action buttons. 

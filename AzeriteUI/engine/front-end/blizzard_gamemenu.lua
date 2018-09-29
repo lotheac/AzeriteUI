@@ -10,6 +10,8 @@ local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
 
+Module:SetIncompatible("ConsolePort")
+
 -- Lua API
 local _G = _G
 local ipairs = ipairs
