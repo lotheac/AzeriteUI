@@ -95,6 +95,9 @@ local UpdateValue = function(element, unit, min, max, powerType, powerID, discon
 end 
 
 local UpdateColor = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
+	if element.OverrideColor then
+		return element:OverrideColor(unit, min, max, powerType, powerID, disconnected, dead, tapped)
+	end
 	local self = element._owner
 	local r, g, b
 	if disconnected then
@@ -243,5 +246,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 3)
 end 

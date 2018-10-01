@@ -95,6 +95,25 @@ local OverridePowerColor = function(element, unit, min, max, powerType, powerID,
 	element:SetStatusBarColor(r, g, b)
 end 
 
+local OverrideExtraPowerColor = function(element, unit, min, max, powerType, powerID, disconnected, dead, tapped)
+	local self = element._owner
+	local r, g, b
+	if disconnected then
+		r, g, b = unpack(self.colors.disconnected)
+	elseif dead then
+		r, g, b = unpack(self.colors.dead)
+	elseif tapped then
+		r, g, b = unpack(self.colors.tapped)
+	else
+		if Layout.ManaColorSuffix then 
+			r, g, b = unpack(powerType and self.colors.power[powerType .. Layout.ManaColorSuffix] or self.colors.power[powerType] or self.colors.power.UNUSED)
+		else 
+			r, g, b = unpack(powerType and self.colors.power[powerType] or self.colors.power.UNUSED)
+		end 
+	end
+	element:SetStatusBarColor(r, g, b)
+end 
+
 local Threat_UpdateColor = function(element, unit, status, r, g, b)
 	if (element:IsObjectType("Texture")) then 
 		element:SetVertexColor(r, g, b)
@@ -539,6 +558,7 @@ local Style = function(self, unit, id, ...)
 			extraPower:SetSize(unpack(Layout.ManaSize)) 
 			extraPower.exclusiveResource = Layout.ManaExclusiveResource or "MANA" 
 			self.ExtraPower = extraPower
+			self.ExtraPower.OverrideColor = OverrideExtraPowerColor
 		
 			if Layout.UseManaBackground then 
 				local extraPowerBg = extraPower:CreateBackdropTexture()
