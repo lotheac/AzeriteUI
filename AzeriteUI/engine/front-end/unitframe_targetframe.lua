@@ -177,23 +177,56 @@ local PostCreateAuraButton = function(element, button)
 	button.Darken:SetPoint("CENTER", 0, 0)
 	button.Darken:SetColorTexture(0, 0, 0, .25)
 
+	button.Overlay:SetFrameLevel(button:GetFrameLevel() + 10)
 	button.Overlay:ClearAllPoints()
 	button.Overlay:SetPoint("CENTER", 0, 0)
 	button.Overlay:SetSize(button.Icon:GetSize())
 
 	button.Border = button.Border or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
-	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 1)
+	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 5)
 	button.Border:ClearAllPoints()
 	button.Border:SetPoint(unpack(Layout.AuraBorderFramePlace))
 	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
 	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
 	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
 	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
+
+	if Layout.UseAuraSpellHightlight then 
+		button.SpellHighlight = button.SpellHighlight or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
+		button.SpellHighlight:Hide()
+		button.SpellHighlight:SetFrameLevel(button.Overlay:GetFrameLevel() - 6)
+		button.SpellHighlight:ClearAllPoints()
+		button.SpellHighlight:SetPoint(unpack(Layout.AuraSpellHighlightFramePlace))
+		button.SpellHighlight:SetSize(unpack(Layout.AuraSpellHighlightFrameSize))
+		button.SpellHighlight:SetBackdrop(Layout.AuraSpellHighlightBackdrop)
+	end 
+
 end
 
 local PostUpdateAuraButton = function(element, button)
-	if (not button) or (not button:IsVisible()) then 
+	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
 		return 
+	end 
+	if UnitIsFriend("player", button.unit) then 
+		if button.isBuff then 
+			button.SpellHighlight:Hide()
+		else
+			button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
+			button.SpellHighlight:SetBackdropBorderColor(1, 0, 0, 1)
+			button.SpellHighlight:Show()
+		end
+	else 
+		if button.isStealable then 
+			button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
+			button.SpellHighlight:SetBackdropBorderColor(Colors.power.ARCANE_CHARGES[1], Colors.power.ARCANE_CHARGES[2], Colors.power.ARCANE_CHARGES[3], 1)
+			button.SpellHighlight:Show()
+		elseif button.isBuff then 
+			button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
+			button.SpellHighlight:SetBackdropBorderColor(0, .7, 0, 1)
+			button.SpellHighlight:Show()
+		else
+			button.SpellHighlight:Hide()
+		end
 	end 
 end
 

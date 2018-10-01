@@ -150,22 +150,47 @@ local Template_SmallFrame = {
 		CastBarNameJustifyH = "CENTER", 
 		CastBarNameJustifyV = "MIDDLE",
 
-	CastBarPostUpdate = function(cast, unit)
+	CastBarPostUpdate =	function(cast, unit)
 		local health = cast._owner.Health
-		local isCasting = cast.casting or cast.channeling
-	
-		health.Value:SetShown(not isCasting)
-		cast.Name:SetShown(isCasting)
+
+		local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
+		local unitLevel = UnitLevel(unit)
+		local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+		local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
+		local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
+
+		if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+			health.Value:Hide()
+			cast.Name:Hide()
+		elseif (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
+			health.Value:Hide()
+			cast.Name:Show()
+		else 
+			health.Value:Show()
+			cast.Name:Hide()
+		end 
 	end,
 
 	HealthBarPostUpdate = function(health, unit)
 		local cast = health._owner.Cast
-		local isCasting = cast.casting or cast.channeling
-	
-		health.Value:SetShown(not isCasting)
-		cast.Name:SetShown(isCasting)
-	end, 
 
+		local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
+		local unitLevel = UnitLevel(unit)
+		local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+		local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
+		local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
+
+		if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+			health.Value:Hide()
+			cast.Name:Hide()
+		elseif (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
+			health.Value:Hide()
+			cast.Name:Show()
+		else 
+			health.Value:Show()
+			cast.Name:Hide()
+		end 
+	end
 } 
 
 local Template_SmallFrame_Auras = setmetatable({
@@ -421,6 +446,7 @@ local UnitFramePlayer = {
 		ManaPlace = { "BOTTOMLEFT", -97 +5, 22 + 5 }, 
 		ManaSize = { 103, 103 },
 		ManaOrbTextures = { GetMediaPath("pw_orb_bar4"), GetMediaPath("pw_orb_bar3"), GetMediaPath("pw_orb_bar3") },
+		ManaColorSuffix = "_ORB", 
 
 		UseManaBackground = true, 
 			ManaBackgroundPlace = { "CENTER", 0, 0 }, 
@@ -483,6 +509,15 @@ local UnitFramePlayer = {
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 	
+		UseAuraSpellHightlight = true,
+			AuraSpellHighlightFramePlace = { "CENTER", 0, 0 },
+			AuraSpellHighlightFrameSize = { 54, 54 },
+			AuraSpellHighlightBackdrop = {
+				edgeFile = GetMediaPath("border-glow-overlay"),
+				edgeSize = 16
+			},
+
+
 	UseProgressiveFrames = true,
 		UseProgressiveHealthThreat = true, 
 		UseProgressiveManaForeground = true, 
@@ -1296,7 +1331,7 @@ local UnitFrameTarget = {
 		UseCastBarName = true, 
 			CastBarNameParent = "Health",
 			CastBarNamePlace = { "RIGHT", -27, 4 },
-			CastBarNameSize = { 385, 40 }, 
+			CastBarNameSize = { 250, 40 }, 
 			CastBarNameFont = Fonts(18, true),
 			CastBarNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 			CastBarNameDrawLayer = { "OVERLAY", 1 }, 
@@ -1381,12 +1416,22 @@ local UnitFrameTarget = {
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
+		UseAuraSpellHightlight = true,
+			AuraSpellHighlightFramePlace = { "CENTER", 0, 0 },
+			AuraSpellHighlightFrameSize = { 54, 54 },
+			AuraSpellHighlightBackdrop = {
+				edgeFile = GetMediaPath("border-glow-overlay"),
+				edgeSize = 16
+			},
+
+
 	UseName = true, 
 		NamePlace = { "TOPRIGHT", -40, 18 },
+		NameSize = { 250, 18 },
 		NameFont = Fonts(18, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameDrawLayer = { "OVERLAY", 1 }, 
-		NameDrawJustifyH = "CENTER", 
+		NameDrawJustifyH = "RIGHT", 
 		NameDrawJustifyV = "TOP",
 
 
@@ -1692,7 +1737,7 @@ local UnitFrameTarget = {
 
 -- Target of Target
 local UnitFrameToT = setmetatable({
-	Place = { "RIGHT", "UICenter", "TOPRIGHT", -492, -96 },
+	Place = { "RIGHT", "UICenter", "TOPRIGHT", -492, -96 + 4 }, -- adding 4 pixels up to avoid it covering the targetframe health percentage / cast time values
 
 	UseName = true, 
 		NamePlace = { "BOTTOMLEFT", (Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
