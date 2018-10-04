@@ -22,7 +22,7 @@ If you're looking for a very high amount of actionbuttons and for some reason is
 
 ## **I found a bug, where to report?**  
 
-Bugs are reported over at [BitBucket](https://bitbucket.org/bigcogs/azeriteui/issues?status=new&status=open). You can also try hearing if the community over at our [Discord](https://discord.gg/MUSfWXd) as a solution, just keep in mind that it's not a helpdesk, the devs and mods are not there to answer your questions, and that in the end we're all just gaming enthusiasts. 
+Bugs are reported over at [BitBucket](https://bitbucket.org/bigcogs/azeriteui/issues?status=new&status=open). You can also try hearing if the community over at our [Discord](https://discord.gg/MUSfWXd) has a solution, just keep in mind that it's not a helpdesk, the devs and mods are not there to answer your questions, and that in the end we're all just gaming enthusiasts. 
 
 ## **Join the community**  
 
