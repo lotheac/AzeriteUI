@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+## Added
+- Added unit name to the target of target unit frame. 
+- Added optional aura display to the nameplates. 
+- Added aura consolidation frames for player and target, with cancelable buffs for player.
+- Added raid frames. 
+
+## Changed
+- Debuffs on friendly targets and buffs on hostile targets are now highlighted with red and green colors.
+- Stealable buffs for Mages on the target frame are now highlighted with an arcane blue color. 
+- Small (boss, arena, pet, focus, tot) and tiny (party, raid) unit frames will now display their health values as a percentage of the maximum health when the unit has less than full health. This is to aid players in knowing when to use their various class abilities. 
+- Slightly adusted the target of target unitframe position to not cover parts of the target unitframe's health percentage and castbar time value.
+- Major rewrite of the loading order, to have style- and layout data loaded last in the loading chain before initialization begins.
+- Made more steps towards making both the back- and front end code separated from the style- and layout methods.
+- Moved all unit frame element spawning code into the styling section of the addon. First of many similar changes to come. 
+- Further renamed front-end files to better indicate what is custom and what is modified blizzard elements. 
+- Redid the options menu to be structured by module. Also includes a few new options. 
+
+## Fixed
+- Updated the cast- and health bar post updates for small unit frames with the same code used in the target frame, to avoid the "blank bar" issue that would sometimes happen after a spellcast. 
+
 ## [1.0.67] 2018-09-29
 ## Fixed
 - The game menu will no longer disappear when using the addon ConsolePort.
