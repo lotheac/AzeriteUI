@@ -12,6 +12,8 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
+local CursorHasItem = _G.CursorHasItem
+local CursorHasSpell = _G.CursorHasSpell
 local FlyoutHasSpell = _G.FlyoutHasSpell
 local GetActionCharges = _G.GetActionCharges
 local GetActionCooldown = _G.GetActionCooldown
@@ -20,6 +22,7 @@ local GetActionLossOfControlCooldown = _G.GetActionLossOfControlCooldown
 local GetActionCount = _G.GetActionCount
 local GetActionTexture = _G.GetActionTexture
 local GetBindingKey = _G.GetBindingKey 
+local GetCursorInfo = _G.GetCursorInfo
 local GetMacroSpell = _G.GetMacroSpell
 local GetTime = _G.GetTime
 local HasAction = _G.HasAction
@@ -342,11 +345,21 @@ ActionButton.UpdateUsable = function(self)
 end 
 
 ActionButton.UpdateGrid = function(self)
-	if self.showGrid or self:IsShown() and (HasAction(self.buttonAction) or (GetCursorInfo() == "petaction") or CursorHasSpell() or CursorHasItem()) then
-		self:SetAlpha(1)
-	else
-		self:SetAlpha(0)
-	end
+	if self.showGrid then 
+		return self:SetAlpha(1)
+	elseif (self:IsShown()) then 
+		if HasAction(self.buttonAction) then 
+			return self:SetAlpha(1)
+		elseif (CursorHasSpell() or CursorHasItem()) then 
+			return self:SetAlpha(1)
+		else 
+			local cursor = GetCursorInfo()
+			if cursor == "petaction" or cursor == "spell" or cursor == "macro" or cursor == "mount" or cursor == "item" or cursor == "battlepet" then 
+				return self:SetAlpha(1)
+			end 
+		end 
+	end 
+	self:SetAlpha(0)
 end
 
 ActionButton.ShowSpellHighlight = function(self)
@@ -896,4 +909,4 @@ local Disable = function(self)
 	
 end
 
-LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 44)
+LibActionButton:RegisterElement("action", Spawn, Enable, Disable, Update, 45)

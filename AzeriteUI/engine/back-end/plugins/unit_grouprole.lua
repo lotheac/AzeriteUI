@@ -16,28 +16,29 @@ local Update = function(self, event, unit)
 	if element.PreUpdate then
 		element:PreUpdate(unit)
 	end
-	
-	local groupRole = UnitGroupRolesAssigned(self.unit)
 
-	-- Check for sub elements
-	local subElement = groupRole and roleToObject[groupRole]
-	if (subElement) and element[subElement] then
+	local groupRole = UnitGroupRolesAssigned(self.unit)
+	if (groupRole == "TANK" or groupRole == "HEALER" or groupRole == "DAMAGER") then
 		for role, objectName in pairs(roleToObject) do 
 			local object = element[objectName]
 			if object then 
 				object:SetShown(role == groupRole)
 			end 
 		end 
-	end 
-
-	-- Don't assume the element is an UI widget, could be just a table
-	if element:IsObjectType("Frame") then 
-		if (subElement and (not element:IsShown())) then 
+		if element.Show then 
 			element:Show()
-		elseif ((not subElement) and element:IsShown()) then 
+		end 
+	else
+		for role, objectName in pairs(roleToObject) do 
+			local object = element[objectName]
+			if object then 
+				object:Hide()
+			end 
+		end 
+		if element.Hide then 
 			element:Hide()
-		end
-	end 
+		end 
+	end
 
 	if element.PostUpdate then 
 		return element:PostUpdate(unit, groupRole)
@@ -58,6 +59,16 @@ local Enable = function(self)
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 
+		for role, objectName in pairs(roleToObject) do 
+			local object = element[objectName]
+			if object then 
+				object:Hide()
+			end 
+		end 
+		if element.Hide then 
+			element:Hide()
+		end 
+
 		if (self.unit == "player") then
 			self:RegisterEvent("PLAYER_ROLES_ASSIGNED", Proxy, true)
 		else
@@ -71,6 +82,17 @@ end
 local Disable = function(self)
 	local element = self.GroupRole
 	if element then
+
+		for role, objectName in pairs(roleToObject) do 
+			local object = element[objectName]
+			if object then 
+				object:Hide()
+			end 
+		end 
+		if element.Hide then 
+			element:Hide()
+		end 
+
 		self:UnregisterEvent("PLAYER_ROLES_ASSIGNED", Proxy)
 		self:UnregisterEvent("GROUP_ROSTER_UPDATE", Proxy)
 	end
@@ -78,5 +100,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 5)
+	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 9)
 end 

@@ -3,10 +3,13 @@ if (not LibMenu) then
 	return
 end
 
+local LibFrame = CogWheel("LibFrame")
+assert(LibFrame, "LibMenu requires LibFrame to be loaded.")
+
 local LibMessage = CogWheel("LibMessage")
 assert(LibMessage, "LibMenu requires LibMessage to be loaded.")
 
--- Embed event functionality into this
+LibFrame:Embed(LibMenu)
 LibMessage:Embed(LibMenu)
 
 -- Lua API
@@ -26,14 +29,16 @@ local type = type
 
 -- Library registries
 LibMenu.embeds = LibMenu.embeds or {}
-LibMenu.buttons = LibMenu.buttons or {}
+LibMenu.entries = LibMenu.entries or {}
 LibMenu.menus = LibMenu.menus or {}
-LibMenu.windows = LibMenu.windows or {}
+LibMenu.toggles = LibMenu.toggles or {}
+LibMenu.containers = LibMenu.containers or {}
 
 -- Shortcuts
-local Buttons = LibMenu.buttons
+local Entries = LibMenu.entries
 local Menus = LibMenu.menus
-local Windows = LibMenu.windows
+local Toggles = LibMenu.toggles
+local Containers = LibMenu.containers
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -56,30 +61,22 @@ local secureSnippets = {
 local Menu = {}
 local Menu_MT = { __index = Menu }
 
--- Window template
-local Window = {}
-local Window_MT = { __index = Window }
+-- Container template
+local Container = {}
+local Container_MT = { __index = Container }
 
--- Button template
-local Button = {}
-local Button_MT = { __index = Button }
+-- Entry template
+local Entry = {}
+local Entry_MT = { __index = Entry }
 
 -- Toggle Button template
 local Toggle = {}
 local Toggle_MT = { __index = Toggle }
 
-Menu.AddWindow = function(self, level, buttonID)
-
-
-	if Menu.PostCreateWindow then 
-		Menu:PostCreatePostCreateWindow()
-	end 
-end
-
 Menu.AddToogle = function(self)
 
-	local toggle = setmetatable({}, Toggle_MT)
-
+	local toggle = setmetatable(self:CreateFrame("CheckButton", nil, "UICenter", "SecureHandlerClickTemplate"), Toggle_MT)
+	
 
 	if Menu.PostCreateToggle then 
 		Menu:PostCreateToggle(toggle)
@@ -88,15 +85,36 @@ Menu.AddToogle = function(self)
 	return toggle
 end
 
-Window.AddOption = function(self, parentWindowID, order, text, updateType, optionDB, optionName, ...)
+Menu.AddContainer = function(self, level, entryID)
 
-	local button = setmetatable({}, Button_MT)
-
-	if Window.PostCreateButton then 
-		Window:PostCreateButton()
+	local container = setmetatable(self:CreateFrame("Frame", nil, parent or "UICenter", "SecureHandlerAttributeTemplate"), Container_MT)
+	container:Hide()
+	container:EnableMouse(true)
+	container:SetFrameStrata("DIALOG")
+	container:SetFrameLevel(frameLevel)
+	if (level > 1) then 
+		self:AddFrameToAutoHide(container)
 	end 
 
-	return button
+
+	if Menu.PostCreateContainer then 
+		Menu:PostCreateContainer(container)
+	end 
+end
+
+Container.AddEntry = function(self, optionType, optionDB, optionName, ...)
+
+	local entry = setmetatable(self:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate"), Entry_MT)
+
+	if Container.PostCreateEntry then 
+		Container:PostCreateEntry()
+	end 
+
+	return entry
+end
+
+LibMenu.CreateSecureCallbackHandler = function(self, menuID)
+	check(menuID, 1, "string")
 end
 
 LibMenu.CreateOptionsMenu = function(self, menuID, menuTable)
@@ -107,7 +125,7 @@ LibMenu.CreateOptionsMenu = function(self, menuID, menuTable)
 		error(("A menu with the ID '%s' is already registered to the module."):format(menu), 3)
 	end
 
-	local menu = setmetatable({}, Menu_MT)
+	local menu = setmetatable(LibMenu:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate"), Menu_MT)
 	menu.id = menuID
 
 	if menuTable then 
@@ -127,9 +145,15 @@ LibMenu.GetOptionsMenu = function(self, menuID)
 	return LibMenu[self] and LibMenu[self][menuID]
 end
 
+LibMenu.GetSecureCallbackHandler = function(self, menuID)
+	check(menuID, 1, "string")
+end
+
 local embedMethods = {
 	CreateOptionsMenu = true,
-	GetOptionsMenu = true
+	CreateSecureCallbackHandler = true, 
+	GetOptionsMenu = true,
+	GetSecureCallbackHandler = true
 }
 
 LibMenu.Embed = function(self, target)
@@ -145,6 +169,8 @@ for target in pairs(LibMenu.embeds) do
 	LibMenu:Embed(target)
 end
 
--- Upgrade metatables of existing menus
--- Upgrade metatables of existing windows
--- Upgrade metatables of existing buttons
+-- Upgrade metatables of existing objects
+for menu in pairs(Menus) do setmetatable(menu, Menu_MT) end 
+for toggle in pairs(Toggles) do setmetatable(toggle, Toggle_MT) end 
+for container in pairs(Containers) do setmetatable(container, Container_MT) end 
+for entry in pairs(Entries) do setmetatable(entry, Entry_MT) end 

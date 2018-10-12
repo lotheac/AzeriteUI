@@ -1,8 +1,8 @@
 ## Interface: 80000
 ## Name: AzeriteUI
 ## Title: |cff7284abAzerite|r|cffffffffUI|r
-## Author: Daniel Troconis, Lars "Goldpaw" Norberg
-## Notes: Custom user graphical interface.|n|nDesign by Daniel Troconis.|nCode by Lars Norberg.|n|n|cff4488ffPayPal|r|cffffffff:|r |n|cffffffffwww.paypal.me/azerite|r|n|n|cff4488ffPatreon|r|cffffffff:|r |n|cffffffffwww.patreon.com/AzeriteUI|r
+## Author: Daniel Troko, Lars "Goldpaw" Norberg
+## Notes: Custom user graphical interface.|n|nDesign by Daniel Troko.|nCode by Lars Norberg.|n|n|cff4488ffPayPal|r|cffffffff:|r |n|cffffffffwww.paypal.me/azerite|r|n|n|cff4488ffPatreon|r|cffffffff:|r |n|cffffffffwww.patreon.com/AzeriteUI|r
 ## Version: 1.0
 ## DefaultState: Enabled
 ## SavedVariables: AzeriteUI_DB
@@ -15,11 +15,5 @@
 ## X-BugReport: https://bitbucket.org/bigcogs/azeriteui/issues
 ## X-License: All Rights Reserved
 
-# Back-end libraries and systems
-engine\back-end.xml
-
-# User data for the modules
-user\user.xml
-
-# Front-end module templates
-engine\front-end.xml
+engine\engine.xml
+config\config.xml

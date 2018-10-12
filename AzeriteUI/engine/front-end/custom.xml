@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+	<Script file="custom\actionbars.lua"/>
+	<Script file="custom\arenaframes.lua"/>
+	<Script file="custom\bossframes.lua"/>
+	<Script file="custom\focusframe.lua"/>
+	<Script file="custom\nameplates.lua"/>
+	<Script file="custom\partyframes.lua"/>
+	<Script file="custom\petframe.lua"/>
+	<Script file="custom\playerframe.lua"/>
+	<Script file="custom\playerhud.lua"/>
+	<Script file="custom\raidframes.lua"/>
+	<Script file="custom\targetframe.lua"/>
+	<Script file="custom\tooltips.lua"/>
+	<Script file="custom\totframe.lua"/>
+
+</Ui>

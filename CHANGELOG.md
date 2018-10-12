@@ -6,10 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ## Added
-- Added unit name to the target of target unit frame. 
 - Added optional aura display to the nameplates. 
 - Added aura consolidation frames for player and target, with cancelable buffs for player.
 - Added raid frames. 
+
+## Changed
+- Redid the options menu to be structured by module. Also includes a few new options. 
+
+## [1.0.68] 2018-10-12
+## Added
+- Added unit name to the target of target unit frame. 
 
 ## Changed
 - Debuffs on friendly targets and buffs on hostile targets are now highlighted with red and green colors.
@@ -20,7 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Made more steps towards making both the back- and front end code separated from the style- and layout methods.
 - Moved all unit frame element spawning code into the styling section of the addon. First of many similar changes to come. 
 - Further renamed front-end files to better indicate what is custom and what is modified blizzard elements. 
-- Redid the options menu to be structured by module. Also includes a few new options. 
+- Timer bars like Fatigue, Breath, instance start countdowns and similar has been moved slightly down to not crash so often with the objective popups in the middle of the screen. 
+- Arena enemy frames (also used in battlegrounds for flag carriers) now properly display the class color of the players. 
+- The UI now fades in more visibly after entering the world. Unless you have addons activated that severely delay the reload process, like TradeSkillMaster, Zygor Guides or similar addons with large database iterations upon loading. 
 
 ## Fixed
 - The actionbutton backdrop grids should now also become visible when the cursor holds spells, macros, companions, mounts and items that can be placed on the actionbars. 

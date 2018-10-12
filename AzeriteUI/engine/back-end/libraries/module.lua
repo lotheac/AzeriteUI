@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 20)
+local LibModule = CogWheel:Set("LibModule", 21)
 if (not LibModule) then	
 	return
 end
@@ -103,8 +103,17 @@ local ModuleProtoType = {
 
 		if (not initializedModules[self]) then 
 			initializedModules[self] = true
+
+			if self.PreInit then 
+				self:PreInit(...)
+			end 
+
 			if self.OnInit then 
 				self:OnInit(...)
+			end 
+
+			if self.PostInit then 
+				self:PostInit(...)
 			end 
 
 			-- Init all submodules
@@ -133,9 +142,19 @@ local ModuleProtoType = {
 				self:Init("Forced")
 			end
 			enabledModules[self] = true
+
+			if self.PreEnable then 
+				self:PreEnable(...)
+			end
+
 			if self.OnEnable then 
 				self:OnEnable(...)
 			end
+
+			if self.PostEnable then 
+				self:PostEnable(...)
+			end
+
 			-- Enable all remaining sub-modules
 			for i = 3, #PRIORITY_INDEX do
 				self:ForAll("Enable", PRIORITY_INDEX[i], event, ...)

@@ -1,0 +1,27 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+	<Include file="media\fonts.xml"/>
+	<Include file="locale\locale.xml"/>
+
+	<Script file="db\auralist.lua"/>
+	<Script file="db\aura_cc.lua"/>
+	<Script file="db\aura_class.lua"/>
+	<Script file="db\aura_dungeon.lua"/>
+	<Script file="db\aura_food.lua"/>
+	<Script file="db\colors.lua"/>
+
+	<Script file="functions\font_functions.lua"/>
+	<Script file="functions\common_functions.lua"/>
+	<Script file="functions\aura_functions.lua"/>
+	<Script file="functions\unitframe_style_functions.lua"/>
+
+	<Script file="layout\actionbars.lua"/>
+	<Script file="layout\blizzard.lua"/>
+	<Script file="layout\core.lua"/>
+	<Script file="layout\huds.lua"/>
+	<Script file="layout\maps.lua"/>
+	<Script file="layout\nameplates.lua"/>
+	<Script file="layout\tooltips.lua"/>
+	<Script file="layout\unitframes.lua"/>
+
+</Ui>

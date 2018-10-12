@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 14)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 15)
 if (not LibBlizzard) then	
 	return
 end
@@ -460,6 +460,14 @@ UIWidgets["TimerTracker"] = function(self)
 			bar:UnregisterAllEvents()
 		end
 	end
+end
+
+UIWidgets["TotemFrame"] = function(self)
+	local TotemFrame = _G.TotemFrame
+	TotemFrame:UnregisterAllEvents()
+	TotemFrame:SetScript("OnEvent", nil)
+	TotemFrame:SetScript("OnShow", nil)
+	TotemFrame:SetScript("OnHide", nil)
 end
 
 UIWidgets["Tutorials"] = function(self)

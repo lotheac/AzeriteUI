@@ -191,7 +191,6 @@ local Enable = function(self)
 		self:RegisterEvent("ZONE_CHANGED_INDOORS", Proxy)
 		self:RegisterEvent("ZONE_CHANGED_NEW_AREA", Proxy)
 		self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy)
-		self:RegisterMessage("CG_WORLD_MAP_CLOSED", Proxy)
 
 		return true
 	end
@@ -204,11 +203,10 @@ local Disable = function(self)
 		self:UnregisterEvent("ZONE_CHANGED", Proxy)
 		self:UnregisterEvent("ZONE_CHANGED_INDOORS", Proxy)
 		self:UnregisterEvent("ZONE_CHANGED_NEW_AREA", Proxy)
-		self:UnregisterEvent("CG_WORLD_MAP_CLOSED", Proxy)
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("Difficulty", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("Difficulty", Enable, Disable, Proxy, 3)
 end 

@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+	<Script file="blizzard\actioncam.lua"/>
+	<Script file="blizzard\chatbubbles.lua"/>
+	<Script file="blizzard\chatwindows.lua"/>
+	<Script file="blizzard\floaters.lua"/>
+	<Script file="blizzard\fonts.lua"/>
+	<Script file="blizzard\gamemenu.lua"/>
+	<Script file="blizzard\micromenu.lua"/>
+	<Script file="blizzard\minimap.lua"/>
+	<Script file="blizzard\objectivestracker.lua"/>
+	<Script file="blizzard\popups.lua"/>
+	<Script file="blizzard\timers.lua"/>
+	<Script file="blizzard\tooltips.lua"/>
+	<Script file="blizzard\tradeskillframe.lua"/>
+
+</Ui>

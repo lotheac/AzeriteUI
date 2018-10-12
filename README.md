@@ -1,10 +1,10 @@
 [ ![Pledge to us on Patreon](http://i.imgur.com/kVU2d3f.png) ](https://www.patreon.com/AzeriteUI)
 
-This is a custom user interface for World of Warcraft: Battle For Azeroth, with a fresh new design and brand new custom codebase at its core. It's designed by Daniel Troconis & coded by Lars "Goldpaw" Norberg. 
+This is a custom user interface for World of Warcraft: Battle For Azeroth, with a fresh new design and brand new custom codebase at its core. It's designed by Daniel Troko & coded by Lars "Goldpaw" Norberg. 
 
 The motivation of this user interface is immersion. This game has SO much information that if not handled carefully becomes cumbersome, therefore blocking the most important asset of the game, the world. The best interface is no interface at all, but in a game such as this that is not possible. But if we have to block away parts of the game world to see information about the game mechanics, then at least let’s make it dynamic, beautiful and in sync with the game's aesthetics. Let's make it Warcraft!  
 
-Be aware that the expected download location of this user interface is either [CurseForge](https://www.curseforge.com/wow/addons/azeriteui), the [Twitch App](https://app.twitch.tv/download), or [tagged releases](https://bitbucket.org/bigcogs/azeriteui/downloads/?tab=tags), and anything else should be considered developer versions, or nightly builds. 
+Be aware that the expected download location of this user interface is either [CurseForge](https://www.curseforge.com/wow/addons/azeriteui), the [Twitch App](https://app.twitch.tv/download), or [tagged releases](https://bitbucket.org/bigcogs/azeriteui/downloads/?tab=tags), and anything else should be considered developer versions or nightly builds and are unsupported when it comes to bugs or issues. 
 
 ## **How can I move things?**  
 
