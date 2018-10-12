@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Debuffs on friendly targets and buffs on hostile targets are now highlighted with red and green colors.
 - Stealable buffs for Mages on the target frame are now highlighted with an arcane blue color. 
 - Small (boss, arena, pet, focus, tot) and tiny (party, raid) unit frames will now display their health values as a percentage of the maximum health when the unit has less than full health. This is to aid players in knowing when to use their various class abilities. 
-- Slightly adusted the target of target unitframe position to not cover parts of the target unitframe's health percentage and castbar time value.
+- Slightly adjusted the target of target unitframe position to not cover parts of the target unitframe's health percentage and castbar time value.
 - Major rewrite of the loading order, to have style- and layout data loaded last in the loading chain before initialization begins.
 - Made more steps towards making both the back- and front end code separated from the style- and layout methods.
 - Moved all unit frame element spawning code into the styling section of the addon. First of many similar changes to come. 
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Redid the options menu to be structured by module. Also includes a few new options. 
 
 ## Fixed
+- The actionbutton backdrop grids should now also become visible when the cursor holds spells, macros, companions, mounts and items that can be placed on the actionbars. 
 - Updated the cast- and health bar post updates for small unit frames with the same code used in the target frame, to avoid the "blank bar" issue that would sometimes happen after a spellcast. 
 
 ## [1.0.67] 2018-09-29
