@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added raid frames. 
 
 ## Changed
+- Increased the scale of the objectives tracker by one tenth of its original size. 
 - Redid the options menu to be structured by module. Also includes a few new options. 
+
+## Fixed
+- Fixed the position of the unit name on the target of target unit frame.
 
 ## [1.0.68] 2018-10-12
 ## Added
