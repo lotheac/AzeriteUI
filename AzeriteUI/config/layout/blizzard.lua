@@ -42,6 +42,7 @@ local BlizzardMicroMenu = {
 local BlizzardObjectivesTracker = {
 	Place = { "TOPRIGHT", -60, -260 },
 	Width = 235, -- 235 default
+	Scale = 1.1, 
 	SpaceTop = 260, 
 	SpaceBottom = 330, 
 	MaxHeight = 480,
