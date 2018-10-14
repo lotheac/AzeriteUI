@@ -56,8 +56,16 @@ Module.PositionTracker = function(self)
 	local maxHeight = screenHeight - (Layout.SpaceBottom + Layout.SpaceTop)
 	local objectiveFrameHeight = math_min(maxHeight, Layout.MaxHeight)
 
-	ObjectiveTrackerFrame:SetWidth(Layout.Width)
-	ObjectiveTrackerFrame:SetHeight(objectiveFrameHeight)
+	if Layout.Scale then 
+		ObjectiveTrackerFrame:SetScale(Layout.Scale)
+		ObjectiveTrackerFrame:SetWidth(Layout.Width / Layout.Scale)
+		ObjectiveTrackerFrame:SetHeight(objectiveFrameHeight / Layout.Scale)
+	else
+		ObjectiveTrackerFrame:SetScale(1)
+		ObjectiveTrackerFrame:SetWidth(Layout.Width)
+		ObjectiveTrackerFrame:SetHeight(objectiveFrameHeight)
+	end	
+
 	ObjectiveTrackerFrame:SetClampedToScreen(false)
 	ObjectiveTrackerFrame:SetAlpha(.9)
 
