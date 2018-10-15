@@ -149,7 +149,6 @@ local Update = function(self, event, unit)
 	end 
 
 	-- Check if the element is exclusive to a certain power type
-	local showElement -- not actually used(?)
 	if element.exclusiveResource then 
 
 		-- If the new powertype isn't the one tracked, 
@@ -159,12 +158,6 @@ local Update = function(self, event, unit)
 			element:Clear()
 			element:Hide()
 			return 
-
-		-- If the previous powertype wasn't the one tracked, 
-		-- but the current one is, we need to show the element again. 
-		elseif (element.powerType ~= element.exclusiveResource) then 
-			element.powerType = powerType
-			showElement = true
 		end 
 
 	-- Check if the min should be hidden on a certain resource type
@@ -177,12 +170,6 @@ local Update = function(self, event, unit)
 			element:Clear()
 			element:Hide()
 			return
-
-		-- If the previous powertype was the ignored type, 
-		-- but the current is something else, 
-		-- we need to show the element again. 
-		elseif (element.powerType == element.ignoredResource) then 
-			showElement = true
 		end  
 	end 
 
@@ -193,8 +180,8 @@ local Update = function(self, event, unit)
 
 	local disconnected = not UnitIsConnected(unit)
 	local dead = UnitIsDeadOrGhost(unit)
-	local min = dead and 0 or UnitPower(unit, powerID)
-	local max = dead and 0 or UnitPowerMax(unit, powerID)
+	local min = (disconnected or dead) and 0 or UnitPower(unit, powerID, true)
+	local max = (disconnected or dead) and 0 or UnitPowerMax(unit, powerID, true)
 	local tapped = (not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)
 
 	if (element.hideWhenEmpty and (min == 0)) or (element.hideWhenDead and dead) then 
@@ -271,5 +258,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Power", Enable, Disable, Proxy, 8)
+	Lib:RegisterElement("Power", Enable, Disable, Proxy, 9)
 end 

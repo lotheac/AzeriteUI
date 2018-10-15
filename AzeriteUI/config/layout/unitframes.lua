@@ -439,6 +439,22 @@ local UnitFramePlayer = {
 			PowerValueFont = Fonts(18, true),
 			PowerValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .4 },
 
+	UseManaText = true,
+		ManaTextParent = "Power", 
+		ManaTextPlace = { "CENTER", 1, -32 },
+		ManaTextDrawLayer = { "OVERLAY", 1 },
+		ManaTextJustifyH = "CENTER", 
+		ManaTextJustifyV = "MIDDLE", 
+		ManaTextFont = Fonts(14, true),
+		ManaTextColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .6 },
+		ManaTextOverride = function(element, unit, min, max)
+			if (min == 0) or (max == 0) or (min == max) then
+				element:SetText("")
+			else
+				element:SetFormattedText("%d", math_floor(min/max * 100))
+			end 
+		end,
+
 	UseCastBar = true,
 		CastBarPlace = { "BOTTOMLEFT", 27, 27 },
 		CastBarSize = { 385, 40 },
@@ -530,7 +546,15 @@ local UnitFramePlayer = {
 			ManaForegroundPlace = { "CENTER", 0, 0 }, 
 			ManaForegroundSize = { 188, 188 }, 
 			ManaForegroundDrawLayer = { "BORDER", 1 },
-	
+
+		UseManaValue = true, 
+			ManaValuePlace = { "CENTER", 3, 0 },
+			ManaValueDrawLayer = { "OVERLAY", 1 },
+			ManaValueJustifyH = "CENTER", 
+			ManaValueJustifyV = "MIDDLE", 
+			ManaValueFont = Fonts(18, true),
+			ManaValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .4 },
+
 	UseAuras = true,
 		AuraSize = 40, -- aurasize
 		AuraSpaceH = 6, -- horizontal spacing between auras

@@ -2218,20 +2218,35 @@ UnitFrameStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		end 
 	end
 
+	-- Mana Value
 	if Layout.UseMana then 
-		if hasMana then 
+		if hasMana and Layout.UseManaValue then 
 			local extraPowerVal = self.ExtraPower:CreateFontString()
-			extraPowerVal:SetPoint("CENTER", 3, 0)
-			extraPowerVal:SetDrawLayer("OVERLAY")
-			extraPowerVal:SetJustifyH("CENTER")
-			extraPowerVal:SetJustifyV("MIDDLE")
-			extraPowerVal:SetFontObject(Fonts(18, true))
-			extraPowerVal:SetTextColor(240/255, 240/255, 240/255, .4)
-		
+			extraPowerVal:SetPoint(unpack(Layout.ManaValuePlace))
+			extraPowerVal:SetDrawLayer(unpack(Layout.ManaValueDrawLayer))
+			extraPowerVal:SetJustifyH(Layout.ManaValueJustifyH)
+			extraPowerVal:SetJustifyV(Layout.ManaValueJustifyV)
+			extraPowerVal:SetFontObject(Layout.ManaValueFont)
+			extraPowerVal:SetTextColor(unpack(Layout.ManaValueColor))
 			self.ExtraPower.Value = extraPowerVal
 			self.ExtraPower.UpdateValue = Player_OverrideValue
 		end 
 	end 
+
+	-- Mana Value when Mana isn't visible  
+	if Layout.UseManaText then 
+		local parent = self[Layout.ManaTextParent or self.Power and "Power" or "Health"]
+		local manaText = parent:CreateFontString()
+		manaText:SetPoint(unpack(Layout.ManaTextPlace))
+		manaText:SetDrawLayer(unpack(Layout.ManaTextDrawLayer))
+		manaText:SetJustifyH(Layout.ManaTextJustifyH)
+		manaText:SetJustifyV(Layout.ManaTextJustifyV)
+		manaText:SetFontObject(Layout.ManaTextFont)
+		manaText:SetTextColor(unpack(Layout.ManaTextColor))
+		manaText.frequent = true
+		self.ManaText = manaText
+		self.ManaText.OverrideValue = Layout.ManaTextOverride
+	end
 
 	-- Update textures according to player level
 	if Layout.UseProgressiveFrames then 

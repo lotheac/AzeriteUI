@@ -28,6 +28,7 @@
 	<Script file="plugins\unit_grouprole.lua"/>
 	<Script file="plugins\unit_health.lua"/>
 	<Script file="plugins\unit_level.lua"/>
+	<Script file="plugins\unit_manatext.lua"/>
 	<Script file="plugins\unit_name.lua"/>
 	<Script file="plugins\unit_portrait.lua"/>
 	<Script file="plugins\unit_power.lua"/>
