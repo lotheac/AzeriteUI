@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added optional aura display to the nameplates. 
 - Added aura consolidation frames for player and target, with cancelable buffs for player.
 - Added raid frames. 
+- Added the option to disable the party frames.
+- Added the option to disable the arena frames.
 
 ## Changed
 - Redid the options menu to be structured by module. Also includes a few new options. 
