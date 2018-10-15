@@ -1,3 +1,11 @@
+--[[--
+
+*Note that this file is currently in a transition
+towards becoming a generic library, so we advice 
+against manually manipulating it as it'll change frequently.
+-Lars
+
+--]]--
 local ADDON = ...
 
 local Core = CogWheel("LibModule"):GetModule(ADDON)
@@ -6,8 +14,38 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
-local Colors, Fonts, Functions, Layout, L
+local Colors, Fonts, Functions, Layout, L, MenuTable
 local GetMediaPath
+
+-- Registries
+Module.buttons = Module.buttons or {}
+Module.menus = Module.menus or {}
+Module.toggles = Module.toggles or {}
+Module.siblings =  Module.siblings or {}
+Module.windows = Module.windows or {}
+
+-- Shortcuts
+local Buttons = Module.buttons
+local Menus = Module.menus
+local Toggles = Module.toggles
+local Siblings = Module.siblings
+local Windows = Module.windows
+
+-- Menu Template
+local Menu = {}
+local Menu_MT = { __index = Menu }
+
+-- Toggle Button template
+local Toggle = {}
+local Toggle_MT = { __index = Toggle }
+
+-- Container template
+local Window = Module:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+local Window_MT = { __index = Window }
+
+-- Entry template
+local Button = Module:CreateFrame("CheckButton", nil, "UICenter", "SecureHandlerClickTemplate")
+local Button_MT = { __index = Button }
 
 -- Lua API
 local _G = _G
@@ -17,7 +55,7 @@ local math_min = math.min
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
 
 -- Generic button styling
-local buttonWidth, buttonHeight, buttonSpacing, sizeMod = 300,50,10, .75
+local buttonWidth, buttonHeight, buttonSpacing, sizeMod = 300, 50, 10, .75
 
 -- Secure script snippets
 local secureSnippets = {
@@ -142,10 +180,10 @@ local secureSnippets = {
 
 				-- Find the child menu buttons that have a slave setting
 				local child = select(i, window:GetChildren()); 
-				if (child and (child:GetAttribute("updateType") == "SLAVE")) then 
+				if (child and child:GetAttribute("isSlave")) then 
 
 					-- figure out the window attribute name for the current menu button's attached setting
-					local childAttributeName = "DB_"..child:GetAttribute("optionDB").."_"..child:GetAttribute("optionName"); 
+					local childAttributeName = "DB_"..child:GetAttribute("slaveDB").."_"..child:GetAttribute("slaveKey"); 
 
 					-- if the menu button is slave to the window's attribute, enable/disable the menu button as needed
 					if (childAttributeName == attributeName) then 
@@ -201,7 +239,6 @@ end
 
 local configButton_Update = function(self)
 	if (self.updateType == "GET_VALUE") then 
-
 	elseif (self.updateType == "SET_VALUE") then 
 		local db = Module:GetConfig(self.optionDB, defaults, "global")
 		local option = db[self.optionName]
@@ -227,9 +264,25 @@ local configButton_Update = function(self)
 		local db = Module:GetConfig(self.optionDB, defaults, "global")
 		local option = db[self.optionName]
 		if option then 
-			self.Msg:SetText(L["Disable"])
+			self.Msg:SetText(self.enabledTitle or L["Disable"])
+
+			local texture = self.Bg:GetTexture()
+			local pushed = GetMediaPath("menu_button_pushed")
+			if (texture ~= pushed) then 
+				self.Bg:SetTexture(pushed)
+				self.Bg:SetVertexColor(1,1,1)
+				self.Msg:SetPoint("CENTER", 0, -2)
+			end 
 		else 
-			self.Msg:SetText(L["Enable"])
+			self.Msg:SetText(self.disabledTitle or L["Enable"])
+
+			local texture = self.Bg:GetTexture()
+			local normal = GetMediaPath("menu_button_disabled")
+			if (texture ~= normal) then 
+				self.Bg:SetTexture(normal)
+				self.Bg:SetVertexColor(.9, .9, .9)
+				self.Msg:SetPoint("CENTER", 0, 0)
+			end 
 		end 
 	end 
 end
@@ -266,10 +319,10 @@ local createBorder = function(frame, sizeMod)
 	return border
 end 
 
-local createOptionButton = function(window, order, text, updateType, optionDB, optionName, ...)
-	local option = window:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate")
+Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
+	local option = setmetatable(self:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate"), Button_MT)
 	option:SetSize(buttonWidth*sizeMod, buttonHeight*sizeMod)
-	option:SetPoint("BOTTOMRIGHT", -buttonSpacing, buttonSpacing + (buttonHeight*sizeMod + buttonSpacing)*(order-1))
+	option:SetPoint("BOTTOMRIGHT", -buttonSpacing, buttonSpacing + (buttonHeight*sizeMod + buttonSpacing)*(self.numButtons))
 	option:HookScript("OnEnable", configButton_OnEnable)
 	option:HookScript("OnDisable", configButton_OnDisable)
 	option:HookScript("OnShow", configButton_Update)
@@ -279,7 +332,7 @@ local createOptionButton = function(window, order, text, updateType, optionDB, o
 	option:SetAttribute("optionDB", optionDB)
 	option:SetAttribute("optionName", optionName)
 
-	option:SetFrameRef("Window", window)
+	option:SetFrameRef("Window", self)
 
 	for i = 1, select("#", ...) do 
 		local value = select(i, ...)
@@ -294,21 +347,15 @@ local createOptionButton = function(window, order, text, updateType, optionDB, o
 	option.optionDB = optionDB
 	option.optionName = optionName
 
-	if (updateType == "SET_VALUE") then 
-		option:SetAttribute("_onclick", secureSnippets.buttonClick)
-	elseif (updateType == "GET_VALUE") then 
-		option:SetAttribute("_onclick", secureSnippets.buttonClick)
-	elseif (updateType == "TOGGLE_VALUE") then 
+	if (updateType == "SET_VALUE") or (updateType == "GET_VALUE") or (updateType == "TOGGLE_VALUE") then 
 		option:SetAttribute("_onclick", secureSnippets.buttonClick)
 	end
-	
 
 	if (not Module.optionCallbacks) then 
 		Module.optionCallbacks = {}
 	end 
 
-	Module.optionCallbacks[option] = window
-
+	Module.optionCallbacks[option] = self
 
 	local msg = option:CreateFontString()
 	msg:SetPoint("CENTER", 0, 0)
@@ -332,42 +379,79 @@ local createOptionButton = function(window, order, text, updateType, optionDB, o
 	bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
 	option.Bg = bg
 
+	self.numButtons = self.numButtons + 1
+	self.buttons[self.numButtons] = option
+
+	self:PostUpdateSize()
+	self:UpdateSiblings()
+
 	return option
 end 
 
-local createOptionsWindow = function(button, level, numButtons)
-	local window = Module:CreateConfigWindowLevel(level, button)
-	window:SetSize(buttonWidth*sizeMod + buttonSpacing*2, buttonHeight*sizeMod*numButtons + buttonSpacing*(numButtons+1))
-	window:SetPoint("BOTTOM", Module:GetConfigWindow(), "BOTTOM", 0, 0)
-	window:SetPoint("RIGHT", button, "LEFT", -buttonSpacing*2, 0)
-	window.Border = createBorder(window, sizeMod)
+Window.PostUpdateSize = function(self)
+	local numButtons = self.numButtons
+	self:SetSize(buttonWidth*sizeMod + buttonSpacing*2, buttonHeight*sizeMod*numButtons + buttonSpacing*(numButtons+1))
+end
 
+Button.CreateWindow = function(self, level)
+	local window = Module:CreateConfigWindowLevel(level, self)
+	window:SetPoint("BOTTOM", Module:GetConfigWindow(), "BOTTOM", 0, 0)
+	window:SetPoint("RIGHT", self, "LEFT", -buttonSpacing*2, 0)
+
+	window.Border = createBorder(window, sizeMod)
 	window.OnHide = configWindow_OnHide
 	window.OnShow = configWindow_OnShow
 
-	button:SetAttribute("_onclick", secureSnippets.windowToggle)
-	button:SetFrameRef("Window", window)
-	
+	self:SetAttribute("_onclick", secureSnippets.windowToggle)
+	self:SetFrameRef("Window", window)
+
 	Module:AddFrameToAutoHide(window)
+
+	local owner = self:GetParent()
+	if (not owner.windows) then 
+		owner.numWindows = 0
+		owner.windows = {}
+	end 
+
+	owner.numWindows = owner.numWindows + 1
+	owner.windows[owner.numWindows] = window
+	owner:UpdateSiblings()
 	
 	return window
 end
 
-local createSiblings = function(...)
-	local totalSiblings = select("#", ...)
-	for currentID = 1, totalSiblings do 
+Button.SetAsSlave = function(self, slaveDB, slaveKey)
+	self.slaveDB = slaveDB
+	self.slaveKey = slaveKey
+	self.isSlave = true
+	self:SetAttribute("slaveDB", slaveDB)
+	self:SetAttribute("slaveKey", slaveKey)
+	self:SetAttribute("isSlave", true)
+end
+
+Window.UpdateSiblings = function(self)
+	for id,button in ipairs(self.buttons) do 
 		local siblingCount = 0
-		for otherID = 1, totalSiblings do 
-			if (currentID ~= otherID) then 
+		for i = 1, self.numButtons do 
+			if (i ~= id) then 
 				siblingCount = siblingCount + 1
-				select(currentID, ...):SetFrameRef("Sibling"..siblingCount, (select(otherID, ...)))
+				button:SetFrameRef("Sibling"..siblingCount, self.buttons[i])
 			end 
 		end 
+	end
+	if self.windows then 
+		for id,button in ipairs(self.windows) do 
+			local siblingCount = 0
+			for i = 1, self.numWindows do 
+				if (i ~= id) then 
+					siblingCount = siblingCount + 1
+					button:SetFrameRef("Sibling"..siblingCount, self.windows[i])
+				end 
+			end 
+		end
 	end 
-end 
+end
 
--- Script Handlers
---------------------------------------------------------------
 local ConfigButton_OnEnter = function(self)
 	if (not self.leftButtonTooltip) and (not self.rightButtonTooltip) then 
 		return 
@@ -415,14 +499,19 @@ end
 
 Module.CreateConfigWindowLevel = function(self, level, parent)
 	local frameLevel = 10 + (level-1)*5
-	local window = self:CreateFrame("Frame", nil, parent or "UICenter", "SecureHandlerAttributeTemplate")
+	local window = setmetatable(self:CreateFrame("Frame", nil, parent or "UICenter", "SecureHandlerAttributeTemplate"), Window_MT)
 	window:Hide()
 	window:EnableMouse(true)
 	window:SetFrameStrata("DIALOG")
 	window:SetFrameLevel(frameLevel)
+
+	window.numButtons = 0
+	window.buttons = {}
+
 	if (level > 1) then 
 		self:AddFrameToAutoHide(window)
 	end 
+
 	return window
 end
 
@@ -477,7 +566,7 @@ Module.GetConfigWindow = function(self)
 		window:SetScript("OnShow", ConfigWindow_OnShow)
 		window:SetScript("OnHide", ConfigWindow_OnHide)
 		window.Border = createBorder(window, sizeMod)
-
+	
 		self.ConfigWindow = window
 
 	end 
@@ -523,55 +612,31 @@ Module.AddOptionsToMenuButton = function(self)
 	end
 end 
 
-Module.AddOptionsToMenuWindow = function(self)
-	if (not self.addedToMenuWindow) then 
-		self.addedToMenuWindow = true
-
-		-- convenience variables
-		local ADB = "ActionBars"
-		local numOptions = 2
-
-		-- Doing this totally non-systematic
-		local window = self:GetConfigWindow()
-		window:SetSize(buttonWidth*sizeMod + buttonSpacing*2, buttonHeight*sizeMod*numOptions + buttonSpacing*(numOptions+1))
-
-		-- primary bar window toggle
-		local option1_1 = createOptionButton(window, 1, L["Primary Bar"])
-			local option1_1_window = createOptionsWindow(option1_1, 2, 2) 
-			local option1_1_1 = createOptionButton(option1_1_window, 1, L["Button Count"])
-				local option1_1_1_window = createOptionsWindow(option1_1_1, 3, 3) 
-				local option1_1_1_1 = createOptionButton(option1_1_1_window, 1, L["%d Buttons"]:format(7), "SET_VALUE", ADB, "buttonsPrimary", 1)
-				local option1_1_1_2 = createOptionButton(option1_1_1_window, 2, L["%d Buttons"]:format(10), "SET_VALUE", ADB, "buttonsPrimary", 2)
-				local option1_1_1_3 = createOptionButton(option1_1_1_window, 3, L["%d Buttons"]:format(12), "SET_VALUE", ADB, "buttonsPrimary", 3)
-			local option1_1_2 = createOptionButton(option1_1_window, 2, L["Button Visibility"], "GET_VALUE", ADB, "buttonsPrimary", 2, 3)
-				local option1_1_2_window = createOptionsWindow(option1_1_2, 3, 3) 
-				local option1_1_2_1 = createOptionButton(option1_1_2_window, 1, L["MouseOver"], "SET_VALUE", ADB, "visibilityPrimary", 1)
-				local option1_1_2_2 = createOptionButton(option1_1_2_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityPrimary", 2)
-				local option1_1_2_3 = createOptionButton(option1_1_2_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityPrimary", 3)
-
-		local option1_2 = createOptionButton(window, 2, L["Complimentary Bar"])
-			local option1_2_window = createOptionsWindow(option1_2, 2, 3) 
-			local option1_2_1 = createOptionButton(option1_2_window, 1, L["Enable"], "TOGGLE_VALUE", ADB, "enableComplimentary")
-			local option1_2_2 = createOptionButton(option1_2_window, 2, L["Button Count"], "SLAVE", ADB, "enableComplimentary")
-				local option1_2_2_window = createOptionsWindow(option1_2_2, 3, 2) 
-				local option1_2_2_1 = createOptionButton(option1_2_2_window, 1, L["%d Buttons"]:format(6), "SET_VALUE", ADB, "buttonsComplimentary", 1)
-				local option1_2_2_2 = createOptionButton(option1_2_2_window, 2, L["%d Buttons"]:format(12), "SET_VALUE", ADB, "buttonsComplimentary", 2)
-			local option1_2_3 = createOptionButton(option1_2_window, 3, L["Button Visibility"], "SLAVE", ADB, "enableComplimentary")
-				local option1_2_3_window = createOptionsWindow(option1_2_3, 3, 3) 
-				local option1_2_3_1 = createOptionButton(option1_2_3_window, 1, L["MouseOver"], "SET_VALUE", ADB, "visibilityComplimentary", 1)
-				local option1_2_3_2 = createOptionButton(option1_2_3_window, 2, L["MouseOver + Combat"], "SET_VALUE", ADB, "visibilityComplimentary", 2)
-				local option1_2_3_3 = createOptionButton(option1_2_3_window, 3, L["Always Visible"], "SET_VALUE", ADB, "visibilityComplimentary", 3)
-		
-		createSiblings(option1_1_window, option1_2_window)
-		createSiblings(option1_1_1_window, option1_1_2_window)
-		createSiblings(option1_2_2_window, option1_2_3_window)
-
-		createSiblings(option1_1_1_1, option1_1_1_2, option1_1_1_3)
-		createSiblings(option1_1_2_1, option1_1_2_2, option1_1_2_3)
-		createSiblings(option1_2_2_1, option1_2_2_2)
-		createSiblings(option1_2_3_1, option1_2_3_2, option1_2_3_3)
-
+Window.ParseOptionsTable = function(self, tbl, parentLevel)
+	local level = (parentLevel or 1) + 1
+	for id,data in ipairs(tbl) do
+		local button = self:AddButton(data.title, data.type, data.configDB, data.configKey, data.optionArgs and unpack(data.optionArgs))
+		button.enabledTitle = data.enabledTitle
+		button.disabledTitle = data.disabledTitle
+		button.proxyModule = data.proxyModule
+		if data.isSlave then 
+			button:SetAsSlave(data.slaveDB, data.slaveKey)
+		end 
+		if data.hasWindow then 
+			local window = button:CreateWindow(level)
+			if data.buttons then 
+				window:ParseOptionsTable(data.buttons)
+			end 
+		end
 	end
+end
+
+Module.AddOptionsToMenuWindow = function(self)
+	if (self.addedToMenuWindow) then 
+		return 
+	end 
+	self:GetConfigWindow():ParseOptionsTable(MenuTable, 1)
+	self.addedToMenuWindow = true
 end
 
 Module.PostUpdateOptions = function(self, event, ...)
@@ -584,7 +649,10 @@ Module.PostUpdateOptions = function(self, event, ...)
 				local db = self:GetConfig(option.optionDB, defaults, "global")
 				local value = db[option.optionName]
 
-				option:SetFrameRef("proxyUpdater", Core:GetModule("ActionBarMain"):GetSecureUpdater())
+				if option.proxyModule then 
+					option:SetFrameRef("proxyUpdater", Core:GetModule(option.proxyModule):GetSecureUpdater())
+				end 
+
 				option:SetAttribute("optionValue", value)
 				option:Update()
 
@@ -592,14 +660,17 @@ Module.PostUpdateOptions = function(self, event, ...)
 				local db = self:GetConfig(option.optionDB, defaults, "global")
 				local value = db[option.optionName]
 
-				option:SetFrameRef("proxyUpdater", Core:GetModule("ActionBarMain"):GetSecureUpdater())
+				if option.proxyModule then 
+					option:SetFrameRef("proxyUpdater", Core:GetModule(option.proxyModule):GetSecureUpdater())
+				end 
+
 				option:SetAttribute("optionValue", value)
 				option:Update()
-
-			elseif (option.updateType == "SLAVE") then 
-				local attributeName = "DB_"..option.optionDB.."_"..option.optionName
-				local db = self:GetConfig(option.optionDB, defaults, "global")
-				local value = db[option.optionName]
+			end 
+			if (option.isSlave) then 
+				local attributeName = "DB_"..option.slaveDB.."_"..option.slaveKey
+				local db = self:GetConfig(option.slaveDB, defaults, "global")
+				local value = db[option.slaveKey]
 
 				window:SetAttribute(attributeName, value)
 
@@ -608,6 +679,7 @@ Module.PostUpdateOptions = function(self, event, ...)
 				else
 					option:Disable()
 				end 
+
 				option:Update()
 			end 
 		end 
@@ -626,6 +698,151 @@ Module.PreInit = function(self)
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 
 	GetMediaPath = Functions.GetMediaPath
+
+	MenuTable = {
+		{
+			title = L["ActionBars"], type = nil, hasWindow = true, 
+			buttons = {
+				-- Primary bar options
+				{
+					title = L["Primary Bar"], type = nil, hasWindow = true, 
+					buttons = {
+						{
+							title = L["Button Count"], type = nil, hasWindow = true, 
+							buttons = {
+								{
+									title = L["%d Buttons"]:format(7), type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 1 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["%d Buttons"]:format(10),	type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 2 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["%d Buttons"]:format(12), type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 3 }, 
+									proxyModule = "ActionBarMain", 
+								}
+							}
+						},
+						{
+							title = L["Button Visibility"],	type = "GET_VALUE", hasWindow = true, 
+							configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 2, 3 }, 
+							buttons = {
+								{
+									title = L["MouseOver"], 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 1 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["MouseOver + Combat"], 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 2 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["Always Visible"], 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 3 }, 
+									proxyModule = "ActionBarMain", 
+								}
+							}
+						}
+					}
+				},
+				-- Complimentary bar options
+				{
+					title = L["Complimentary Bar"], type = nil, hasWindow = true, 
+					buttons = {
+						{
+							title = L["Enable"],
+							type = "TOGGLE_VALUE", hasWindow = false, 
+							configDB = "ActionBars", configKey = "enableComplimentary", 
+							proxyModule = "ActionBarMain", 
+						},
+						{
+							title = L["Button Count"], isSlave = true, hasWindow = true, 
+							slaveDB = "ActionBars", slaveKey = "enableComplimentary",
+							proxyModule = "ActionBarMain", 
+							buttons = {
+								{
+									title = L["%d Buttons"]:format(6), 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "buttonsComplimentary", optionArgs = { 1 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["%d Buttons"]:format(12), 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "buttonsComplimentary", optionArgs = { 2 }, 
+									proxyModule = "ActionBarMain", 
+								}
+							}
+						},
+						{
+							title = L["Button Visibility"], isSlave = true, hasWindow = true, 
+							slaveDB = "ActionBars", slaveKey = "enableComplimentary", 
+							buttons = {
+								{
+									title = L["MouseOver"], 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 1 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["MouseOver + Combat"], 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 2 }, 
+									proxyModule = "ActionBarMain", 
+								},
+								{
+									title = L["Always Visible"], 
+									type = "SET_VALUE", 
+									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 3 }, 
+									proxyModule = "ActionBarMain", 
+								}
+							}
+						}
+					}
+				}
+			}, 
+		},
+		--[[{
+			title = L["NamePlates"], type = nil, hasWindow = true, 
+			buttons = {
+				
+			}
+		},--]]
+		{
+			title = L["UnitFrames"], type = nil, hasWindow = true, 
+			buttons = {
+				{
+					title = L["Party Frames"], type = nil, hasWindow = true, 
+					buttons = {
+						{
+							type = "TOGGLE_VALUE", hasWindow = false, 
+							configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
+							proxyModule = "UnitFrameParty", 
+						}
+					}
+				},
+				{
+					title = L["PvP Frames"], type = nil, hasWindow = true, 
+					buttons = {
+						{
+							type = "TOGGLE_VALUE", 
+							configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
+							proxyModule = "UnitFrameArena", 
+						}
+					}
+				}
+			}
+		}
+	}
+
 end
 
 Module.OnInit = function(self)
