@@ -11,8 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added raid frames. 
 
 ## Changed
-- Increased the scale of the objectives tracker by one tenth of its original size. 
 - Redid the options menu to be structured by module. Also includes a few new options. 
+
+## [1.0.69] 2018-10-15
+## Added
+- Added a player mana value text to the power crystal when mana is available, below maximum and not the currently active power type.
+
+## Changed
+- Increased the scale of the objectives tracker by one tenth of its original size. 
 
 ## Fixed
 - Fixed the position of the unit name on the target of target unit frame.
