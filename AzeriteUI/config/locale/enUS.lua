@@ -89,6 +89,7 @@ L["%s to toggle Blizzard Menu."] = "%s to toggle Blizzard Micro Menu."
 L["%s to toggle Options Menu."] = "%s to toggle "..ADDON.." Options Menu."
 
 -- Config Menu
+L["ActionBars"] = true
 L["Primary Bar"] = true
 L["Button Count"] = true
 L["%d Buttons"] = true
@@ -106,8 +107,11 @@ L["Click to disable the Stance Bar."] = true
 L["Pet Bar"] = true
 L["Click to enable the Pet Action Bar."] = true
 L["Click to disable the Pet Action Bar."] = true
-
-
+L["NamePlates"] = true
+L["UnitFrames"] = true
+L["Party Frames"] = true
+L["Raid Frames"] = true 
+L["PvP Frames"] = true 
 
 -- Various Button Tooltips
 --------------------------------------------
