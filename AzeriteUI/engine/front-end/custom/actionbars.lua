@@ -1078,25 +1078,21 @@ Module.SpawnButtons = function(self)
 	self.hoverButtons1 = hoverButtons1
 	self.hoverButtons2 = hoverButtons2
 
-	-- options proxy
 	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
 	proxy.UpdateFading = function(proxy) self:UpdateFading() end
 	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
 	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
 	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", BOTTOMLEFT_ACTIONBAR_PAGE);
 
-	-- Store references to all buttons and their pagers
 	for id,button in ipairs(buttons) do 
 		proxy:SetFrameRef("Button"..id, button)
 		proxy:SetFrameRef("Pager"..id, button:GetPager())
 	end 
 
-	-- store all the saved settings
 	for key,value in pairs(db) do 
 		proxy:SetAttribute(key,value)
 	end 
 
-	-- insert buttons into an indexed table
 	proxy:Execute([=[
 		Buttons = table.new(); 
 		Pagers = table.new();
@@ -1111,10 +1107,7 @@ Module.SpawnButtons = function(self)
 		end 
 	]=])
 
-	-- arrange buttons according to the stored settings
 	proxy:SetAttribute("arrangeButtons", secureSnippets.arrangeButtons)
-
-	-- fires when the menu module changes a stored setting
 	proxy:SetAttribute("_onattributechanged", secureSnippets.attributeChanged)
 
 	self.proxyUpdater = proxy
