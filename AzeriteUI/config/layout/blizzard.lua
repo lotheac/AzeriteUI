@@ -16,9 +16,7 @@ local BlizzardChatFrames = {
 	DefaultChatFramePlace = { "LEFT", 85, -60 },
 	DefaultChatFrameSize = { 499, 176 }, -- 519, 196
 	DefaultClampRectInsets = { -54, -54, -310, -330 },
-	UseButtonTextures = true,
-
-	
+	UseButtonTextures = true
 }
 
 local BlizzardMicroMenu = {
