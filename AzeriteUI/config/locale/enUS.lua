@@ -107,11 +107,17 @@ L["Click to disable the Stance Bar."] = true
 L["Pet Bar"] = true
 L["Click to enable the Pet Action Bar."] = true
 L["Click to disable the Pet Action Bar."] = true
-L["NamePlates"] = true
 L["UnitFrames"] = true
 L["Party Frames"] = true
 L["Raid Frames"] = true 
 L["PvP Frames"] = true 
+L["NamePlates"] = true
+L["HUD"] = true
+L["Disable Talking Head"] = true
+L["Enable Talking Head"] = true
+L["Enable Player Resources"] = true
+L["Mirror"] = true
+
 
 -- Various Button Tooltips
 --------------------------------------------
