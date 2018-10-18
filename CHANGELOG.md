@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added optional aura display to the nameplates. 
 - Added aura consolidation frames for player and target, with cancelable buffs for player.
 - Added raid frames. 
+- Added short duration nameplate auras cast by the player. Optional. 
+
+## [1.0.70] 2018-10-18
+## Added
 - Added the option to disable the party frames.
 - Added the option to disable the arena frames.
 
 ## Changed
-- Redid the options menu to be structured by module. Also includes a few new options. 
+- New custom designed raid target icons for the nameplates!
+- Nameplate raid target icons now remains fully opaque even when the nameplate itself is faded out, as we felt it made no sense to tone down markers put there with the intention of keeping track of a unit. 
+- Slightly shrunk the talking head frame. 
+- Redid the options menu to be structured by module. 
+- Sub-windows in the options menu now open relative to their parent buttons instead of their parent button's window. 
+
+## Fixed
+- The issue where some classes like Warriors suddenly appeared to have ten times more total rage have been resolved. 
 
 ## [1.0.69] 2018-10-15
 ## Added
