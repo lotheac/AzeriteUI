@@ -309,7 +309,7 @@ local Template_TinyFrame = {
 		CastBarColor = { 1, 1, 1, .15 },
 
 	UseRange = true, 
-		RangeOutsideAlpha = .35,
+		RangeOutsideAlpha = .6, -- was .35, but that's too hard to see
 
 }
 
