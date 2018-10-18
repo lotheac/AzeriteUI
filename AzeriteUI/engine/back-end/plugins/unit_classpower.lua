@@ -140,7 +140,7 @@ local Generic = setmetatable({
 		local powerType = element.powerType
 		local powerID = element.powerID 
 
-		local min = UnitPower("player", powerID, true) or 0
+		local min = UnitPower("player", powerID) or 0
 		local max = UnitPowerMax("player", powerID) or 0
 
 		local maxDisplayed = element.maxDisplayed or element.max or max
@@ -337,7 +337,7 @@ ClassPower.ComboPoints = setmetatable({
 					element.isEnabled = element.ShouldEnable(self)
 				end 
 			end
-			min = UnitPower("player", element.powerID, true) or 0
+			min = UnitPower("player", element.powerID) or 0
 			max = UnitPowerMax("player", element.powerID) or 0
 		end 
 		if (not element.isEnabled) then 
@@ -571,7 +571,7 @@ ClassPower.SoulShards = setmetatable({
 		local powerType = element.powerType
 		local powerID = element.powerID 
 
-		local min = UnitPower("player", powerID, true) or 0
+		local min = UnitPower("player", powerID) or 0
 		local max = UnitPowerMax("player", powerID) or 0
 		local mod = UnitPowerDisplayMod(powerID)
 
@@ -918,5 +918,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 15)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 16)
 end 

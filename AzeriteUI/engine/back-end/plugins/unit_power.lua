@@ -180,8 +180,8 @@ local Update = function(self, event, unit)
 
 	local disconnected = not UnitIsConnected(unit)
 	local dead = UnitIsDeadOrGhost(unit)
-	local min = (disconnected or dead) and 0 or UnitPower(unit, powerID, true)
-	local max = (disconnected or dead) and 0 or UnitPowerMax(unit, powerID, true)
+	local min = (disconnected or dead) and 0 or UnitPower(unit, powerID)
+	local max = (disconnected or dead) and 0 or UnitPowerMax(unit, powerID)
 	local tapped = (not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)
 
 	if (element.hideWhenEmpty and (min == 0)) or (element.hideWhenDead and dead) then 
@@ -258,5 +258,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Power", Enable, Disable, Proxy, 9)
+	Lib:RegisterElement("Power", Enable, Disable, Proxy, 10)
 end 
