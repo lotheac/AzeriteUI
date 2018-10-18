@@ -1,4 +1,4 @@
-[ ![Pledge to us on Patreon](http://i.imgur.com/kVU2d3f.png) ](https://www.patreon.com/AzeriteUI)
+[ ![Becoma a Patreon](http://azerite.org/img/social-media-buttons-patreon-small.jpg) ](https://www.patreon.com/AzeriteUI) [ ![Donate with PayPal](http://azerite.org/img/social-media-buttons-paypal-small.jpg) ](https://www.paypal.me/azerite)
 
 This is a custom user interface for World of Warcraft: Battle For Azeroth, with a fresh new design and brand new custom codebase at its core. It's designed by Daniel Troko & coded by Lars "Goldpaw" Norberg. 
 
