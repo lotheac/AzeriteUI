@@ -180,11 +180,15 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 	end 
 
 	if Layout.UseRaidTarget then 
-		local raidTarget = plate:CreateTexture()
+		local raidTarget = baseFrame:CreateTexture()
 		raidTarget:SetPoint(unpack(Layout.RaidTargetPlace))
 		raidTarget:SetSize(unpack(Layout.RaidTargetSize))
 		raidTarget:SetDrawLayer(unpack(Layout.RaidTargetDrawLayer))
 		raidTarget:SetTexture(Layout.RaidTargetTexture)
+		raidTarget:SetScale(plate:GetScale())
+		
+		hooksecurefunc(plate, "SetScale", function(plate,scale) raidTarget:SetScale(scale) end)
+
 		plate.RaidTarget = raidTarget
 	end 
 
