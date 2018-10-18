@@ -170,7 +170,7 @@ local microButtonScripts = {
 
 local ConfigWindow_OnShow = function(self) 
 	local tooltip = Module:GetOptionsMenuTooltip()
-	local button = Module:GetConfigButton()
+	local button = Module:GetToggleButton()
 	if (tooltip:IsShown() and (tooltip:GetOwner() == button)) then 
 		tooltip:Hide()
 	end 
@@ -178,7 +178,7 @@ end
 
 local ConfigWindow_OnHide = function(self) 
 	local tooltip = Module:GetOptionsMenuTooltip()
-	local button = Module:GetConfigButton()
+	local button = Module:GetToggleButton()
 	if (button:IsMouseOver(0,0,0,0) and ((not tooltip:IsShown()) or (tooltip:GetOwner() ~= button))) then 
 		button:GetScript("OnEnter")(button)
 	end 
@@ -250,8 +250,8 @@ Module.GetConfigWindow = function(self)
 	return self.ConfigWindow
 end
 
-Module.GetConfigButton = function(self)
-	return Core:GetModule("OptionsMenu"):GetConfigButton()
+Module.GetToggleButton = function(self)
+	return Core:GetModule("OptionsMenu"):GetToggleButton()
 end
 
 Module.GetConfigButtons = function(self)
@@ -272,9 +272,9 @@ Module.AddOptionsToMenuButton = function(self)
 	if (not self.addedToMenuButton) then 
 		self.addedToMenuButton = true
 
-		local configButton = self:GetConfigButton()
-		configButton:SetFrameRef("MicroMenu", self:GetConfigWindow())
-		configButton:SetAttribute("leftclick", [[
+		local ToggleButton = self:GetToggleButton()
+		ToggleButton:SetFrameRef("MicroMenu", self:GetConfigWindow())
+		ToggleButton:SetAttribute("leftclick", [[
 			local window = self:GetFrameRef("MicroMenu");
 			if window:IsShown() then
 				window:Hide();
@@ -298,7 +298,7 @@ Module.AddOptionsToMenuButton = function(self)
 		for reference,frame in pairs(self:GetAutoHideReferences()) do 
 			self:GetConfigWindow():SetFrameRef(reference,frame)
 		end 
-		configButton.leftButtonTooltip = L["%s to toggle Blizzard Menu."]:format(L["<Left-Click>"])
+		ToggleButton.leftButtonTooltip = L["%s to toggle Blizzard Menu."]:format(L["<Left-Click>"])
 	end 
 end 
 
