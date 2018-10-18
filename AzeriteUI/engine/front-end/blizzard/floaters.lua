@@ -469,6 +469,7 @@ Module.StyleTalkingHeadFrame = function(self)
 
 	-- Prevent blizzard from moving this one around
 	frame.ignoreFramePositionManager = true
+	frame:SetScale(.8) -- shrink it, it's too big.
 
 	self:CreateHolder(frame, unpack(Layout.StyleTalkingHeadFramePlace))
 	self:CreatePointHook(frame)
