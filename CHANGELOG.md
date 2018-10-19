@@ -5,42 +5,54 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-## Added
+### Added
 - Added optional aura display to the nameplates. 
 - Added aura consolidation frames for player and target, with cancelable buffs for player.
 - Added raid frames. 
 - Added short duration nameplate auras cast by the player. Optional. 
 
+## [1.0.71] 2018-10-19
+### Added
+- Added the option to disable the talking head frame.
+- Added the option to disable alerts. Alerts are the rectengular messages telling you about loot, currencies and similar appearing at the top of your screen.
+- Added Jack-o'-Lanterned! to the aura whitelist for the player frame so we can disable those f'ing pumpkins they keep putting on us! >:(
+
+### Changed
+- Simplified some menu options, and added some coloring. 
+
+### Fixed
+- Fixed how the arena- and party frame visibility drivers are registered at startup, to deal with the issue where frames set to be hidden wouldn't be hidden until the option was toggle on and back off again. 
+
 ## [1.0.70] 2018-10-18
-## Added
+### Added
 - Added the option to disable the party frames.
 - Added the option to disable the arena frames.
 
-## Changed
+### Changed
 - New custom designed raid target icons for the nameplates!
 - Nameplate raid target icons now remains fully opaque even when the nameplate itself is faded out, as we felt it made no sense to tone down markers put there with the intention of keeping track of a unit. 
 - Slightly shrunk the talking head frame. 
 - Redid the options menu to be structured by module. 
 - Sub-windows in the options menu now open relative to their parent buttons instead of their parent button's window. 
 
-## Fixed
+### Fixed
 - The issue where some classes like Warriors suddenly appeared to have ten times more total rage have been resolved. 
 
 ## [1.0.69] 2018-10-15
-## Added
+### Added
 - Added a player mana value text to the power crystal when mana is available, below maximum and not the currently active power type.
 
-## Changed
+### Changed
 - Increased the scale of the objectives tracker by one tenth of its original size. 
 
-## Fixed
+### Fixed
 - Fixed the position of the unit name on the target of target unit frame.
 
 ## [1.0.68] 2018-10-12
-## Added
+### Added
 - Added unit name to the target of target unit frame. 
 
-## Changed
+### Changed
 - Debuffs on friendly targets and buffs on hostile targets are now highlighted with red and green colors.
 - Stealable buffs for Mages on the target frame are now highlighted with an arcane blue color. 
 - Small (boss, arena, pet, focus, tot) and tiny (party, raid) unit frames will now display their health values as a percentage of the maximum health when the unit has less than full health. This is to aid players in knowing when to use their various class abilities. 
@@ -53,17 +65,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Arena enemy frames (also used in battlegrounds for flag carriers) now properly display the class color of the players. 
 - The UI now fades in more visibly after entering the world. Unless you have addons activated that severely delay the reload process, like TradeSkillMaster, Zygor Guides or similar addons with large database iterations upon loading. 
 
-## Fixed
+### Fixed
 - The actionbutton backdrop grids should now also become visible when the cursor holds spells, macros, companions, mounts and items that can be placed on the actionbars. 
 - Updated the cast- and health bar post updates for small unit frames with the same code used in the target frame, to avoid the "blank bar" issue that would sometimes happen after a spellcast. 
 
 ## [1.0.67] 2018-09-29
-## Fixed
+### Fixed
 - The game menu will no longer disappear when using the addon ConsolePort.
 - Health/Castbar value/name visibility update for various target frame types. 
 
 ## [1.0.66] 2018-09-28
-## Added
+### Added
 - Added pet autocast textures to the action buttons. 
 - Added pet autocast toggling when right-clicking action buttons containing autocastable pet spells. 
 
