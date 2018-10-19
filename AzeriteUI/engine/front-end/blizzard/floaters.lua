@@ -5,12 +5,14 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("FloaterHUD", "LibEvent", "LibFrame", "LibTooltip")
+local Module = Core:NewModule("FloaterHUD", "LibEvent", "LibFrame", "LibTooltip", "LibDB", "LibBlizzard")
 
 -- Lua API
 local _G = _G
 local ipairs = ipairs
 local table_remove = table.remove
+
+local MAPPY = Module:IsAddOnEnabled("Mappy")
 
 local mt = getmetatable(CreateFrame("Frame")).__index
 local Frame_ClearAllPoints = mt.ClearAllPoints
@@ -18,11 +20,15 @@ local Frame_IsShown = mt.IsShown
 local Frame_SetParent = mt.SetParent
 local Frame_SetPoint = mt.SetPoint
 
-local Holder = {}
-
-local MAPPY = Module:IsAddOnEnabled("Mappy")
-
+local HolderCache, StyleCache = {}, {}
 local Layout
+
+-- Default settings
+local defaults = {
+	enableTalkingHead = true,
+	enableAlerts = true, 
+
+}
 
 local DisableTexture = function(texture, _, loop)
 	if loop then
@@ -32,7 +38,7 @@ local DisableTexture = function(texture, _, loop)
 end
 
 local ResetPoint = function(object, _, anchor) 
-	local holder = object and Holder[object]
+	local holder = object and HolderCache[object]
 	if (holder) then 
 		if (anchor ~= holder) then
 			Frame_SetParent(object, holder)
@@ -148,7 +154,7 @@ local AlertFrame_PostUpdatePosition = function(self, subSystem)
 end
 
 local AlertFrame_PostUpdateAnchors = function(self)
-	local holder = Holder[AlertFrame]
+	local holder = HolderCache[AlertFrame]
 	holder:ClearAllPoints()
 
 	if (TalkingHeadFrame and Frame_IsShown(TalkingHeadFrame)) then 
@@ -167,15 +173,20 @@ local AlertFrame_PostUpdateAnchors = function(self)
 end
 
 Module.CreateHolder = function(self, object, ...)
-	Holder[object] = self:CreateFrame("Frame", nil, "UICenter")
-	Holder[object]:Place(...)
-	Holder[object]:SetSize(2,2)
-	return Holder[object]
+	HolderCache[object] = HolderCache[object] or self:CreateFrame("Frame", nil, "UICenter")
+	HolderCache[object]:Place(...)
+	HolderCache[object]:SetSize(2,2)
+	return HolderCache[object]
 end
 
 Module.CreatePointHook = function(self, object)
+	-- Always do this.
 	ResetPoint(object)
-	hooksecurefunc(object, "SetPoint", ResetPoint)
+
+	-- Don't create multiple hooks
+	if (not StyleCache[object]) then 
+		hooksecurefunc(object, "SetPoint", ResetPoint)
+	end
 end 
 
 Module.DisableMappy = function(object)
@@ -187,6 +198,20 @@ Module.DisableMappy = function(object)
 		object.ClearAllPoints = nil -- return the SetPoint method to its original metamethod
 	end 
 end
+
+Module.UpdateAlertFrames = function(self)
+	local db = self.db
+	local frame = AlertFrame
+	if db.enableAlerts then 
+		if (frame:GetParent() ~= UIParent) then 
+			frame:SetParent(UIParent)
+			frame:OnLoad()
+		end
+		return self:StyleAlertFrames()
+	else
+		self:DisableUIWidget("Alerts")
+	end
+end 
 
 Module.StyleAlertFrames = function(self)
 	if (not Layout.StyleAlertFrames) then 
@@ -207,9 +232,14 @@ Module.StyleAlertFrames = function(self)
 		AlertSubSystem_AdjustPosition(alertFrameSubSystem)
 	end
 
-	hooksecurefunc(alertFrame, "AddAlertFrameSubSystem", AlertFrame_PostUpdatePosition)
-	hooksecurefunc(alertFrame, "UpdateAnchors", AlertFrame_PostUpdateAnchors)
-	hooksecurefunc("GroupLootContainer_Update", GroupLootContainer_PostUpdate)
+	-- Only ever do this once
+	if (not StyleCache[alertFrame]) then 
+		hooksecurefunc(alertFrame, "AddAlertFrameSubSystem", AlertFrame_PostUpdatePosition)
+		hooksecurefunc(alertFrame, "UpdateAnchors", AlertFrame_PostUpdateAnchors)
+		hooksecurefunc("GroupLootContainer_Update", GroupLootContainer_PostUpdate)
+	end
+
+	StyleCache[alertFrame] = true
 
 end
 
@@ -449,23 +479,60 @@ Module.StyleVehicleSeatIndicator = function(self)
 	
 end 
 
+Module.UpdateTalkingHead = function(self, event, ...)
+	if (event == "ADDON_LOADED") then 
+		local addon = ... 
+		if (addon ~= "Blizzard_TalkingHeadUI") then 
+			return 
+		end
+		self:UnregisterEvent("ADDON_LOADED", "UpdateTalkingHead")
+	end 
+
+	local db = self.db
+	local frame = TalkingHeadFrame
+
+	if db.enableTalkingHead then 
+		if frame then 
+			-- The frame is loaded, so we re-register any needed events, 
+			-- just in case this is a manual user called re-enabling. 
+			-- Or in case another addon has disabled it.  
+			frame:RegisterEvent("TALKINGHEAD_REQUESTED")
+			frame:RegisterEvent("TALKINGHEAD_CLOSE")
+			frame:RegisterEvent("SOUNDKIT_FINISHED")
+			frame:RegisterEvent("LOADING_SCREEN_ENABLED")
+
+			self:StyleTalkingHeadFrame()
+		else 
+			-- If the head hasn't been loaded yet, we queue the event.
+			return self:RegisterEvent("ADDON_LOADED", "UpdateTalkingHead")
+		end 
+
+	else 
+		if frame then 
+			frame:UnregisterEvent("TALKINGHEAD_REQUESTED")
+			frame:UnregisterEvent("TALKINGHEAD_CLOSE")
+			frame:UnregisterEvent("SOUNDKIT_FINISHED")
+			frame:UnregisterEvent("LOADING_SCREEN_ENABLED")
+			frame:Hide()
+		else 
+			-- If no frame is found, the addon hasn't been loaded yet, 
+			-- and it should have been enough to just prevent blizzard from showing it. 
+			UIParent:UnregisterEvent("TALKINGHEAD_REQUESTED")
+
+			-- Since other addons might load it contrary to our settings, though, 
+			-- we register our addon listener to take control of it when it's loaded. 
+			return self:RegisterEvent("ADDON_LOADED", "UpdateTalkingHead")
+		end 
+	end 
+end
+
 Module.StyleTalkingHeadFrame = function(self)
 	if (not Layout.StyleTalkingHeadFrame) then 
 		return 
 	end 
 
+	local db = self.db
 	local frame = TalkingHeadFrame
-
-	-- This means the addon hasn't been loaded, 
-	-- so we register a listener and return.
-	if (not frame) then
-		return self:RegisterEvent("ADDON_LOADED", "OnEvent")
-	end
-
-	-- This will prevent the talking head frame size from affecting other blizzard anchors,
-	-- it will also prevent the blizzard frame manager from moving it at all.
-	-- This is tainting?
-	--frame.IsShown = function() return false end
 
 	-- Prevent blizzard from moving this one around
 	frame.ignoreFramePositionManager = true
@@ -483,9 +550,13 @@ Module.StyleTalkingHeadFrame = function(self)
 		end
 	end
 
-	frame:HookScript("OnShow", AlertFrame_PostUpdateAnchors)
-	frame:HookScript("OnHide", AlertFrame_PostUpdateAnchors)
-	
+	-- Only ever do this once
+	if (not StyleCache[frame]) then 
+		frame:HookScript("OnShow", AlertFrame_PostUpdateAnchors)
+		frame:HookScript("OnHide", AlertFrame_PostUpdateAnchors)
+	end
+
+	StyleCache[frame] = true
 end
 
 Module.StyleErrorFrame = function(self)
@@ -504,27 +575,43 @@ Module.GetFloaterTooltip = function(self)
 	return self:GetTooltip("CG_FloaterTooltip") or self:CreateTooltip("CG_FloaterTooltip")
 end
 
-Module.OnEvent = function(self, event, ...)
-	if (event == "ADDON_LOADED") then 
-		local addon = ... 
-		if (addon == "Blizzard_TalkingHeadUI") then 
-			self:StyleTalkingHeadFrame()
-			self:UnregisterEvent("ADDON_LOADED", "OnEvent")
-		end 
-	end 
-end
-
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [FloaterHUD]")
 end 
 
 Module.OnInit = function(self)
+	self.db = self:NewConfig("FloaterHUD", defaults, "global")
+
+	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	proxy.UpdateTalkingHead = function(proxy, ...) self:UpdateTalkingHead() end 
+	for key,value in pairs(self.db) do 
+		proxy:SetAttribute(key,value)
+	end 
+	proxy:SetAttribute("_onattributechanged", [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enabletalkinghead") then 
+			self:SetAttribute("enableTalkingHead", value); 
+			self:CallMethod("UpdateTalkingHead"); 
+		end 
+		
+	]=])
+	self.proxyUpdater = proxy
+end 
+
+Module.OnEnable = function(self)
 	self:StyleDurabilityFrame()
 	self:StyleVehicleSeatIndicator()
 	self:StyleExtraActionButton()
 	self:StyleZoneAbilityButton()
-	self:StyleTalkingHeadFrame()
-	self:StyleAlertFrames()
 	self:StyleErrorFrame()
+
+	self:UpdateAlertFrames()
+	self:UpdateTalkingHead()
+end
+
+Module.GetSecureUpdater = function(self)
+	return self.proxyUpdater
 end
