@@ -108,16 +108,13 @@ L["Pet Bar"] = true
 L["Click to enable the Pet Action Bar."] = true
 L["Click to disable the Pet Action Bar."] = true
 L["UnitFrames"] = true
-L["Party Frames"] = true
-L["Raid Frames"] = true 
-L["PvP Frames"] = true 
-L["NamePlates"] = true
+L["Party Frames: %s"] = true
+L["PvP Frames: %s"] = true
 L["HUD"] = true
-L["Disable Talking Head"] = true
-L["Enable Talking Head"] = true
-L["Enable Player Resources"] = true
-L["Mirror"] = true
-
+L["Alerts: %s"] = true
+L["TalkingHead: %s"] = true
+L["Enabled"] = "|cff00aa00Enabled|r"
+L["Disabled"] = "|cffff0000Disabled|r"
 
 -- Various Button Tooltips
 --------------------------------------------
