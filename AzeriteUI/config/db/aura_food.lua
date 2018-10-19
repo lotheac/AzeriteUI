@@ -37,6 +37,9 @@ local PrioHigh = filterFlags.PrioHigh
 local PrioBoss = filterFlags.PrioBoss
 local Always = filterFlags.Always
 
+-- Halloween Lantern
+auraList[ 44212] = OnPlayer -- Jack-o'-Lanterned!
+
 ------------------------------------------------------------------------
 -- Well Fed!
 ------------------------------------------------------------------------
