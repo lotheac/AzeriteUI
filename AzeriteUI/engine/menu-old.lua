@@ -756,7 +756,8 @@ Module.CreateMenuTable = function(self)
 					title = L["Complimentary Bar"], type = nil, hasWindow = true, 
 					buttons = {
 						{
-							title = L["Enable"],
+							enabledTitle = L["Enabled"],
+							disabledTitle = L["Disabled"],
 							type = "TOGGLE_VALUE", hasWindow = false, 
 							configDB = "ActionBars", configKey = "enableComplimentary", 
 							proxyModule = "ActionBarMain", 
@@ -821,28 +822,22 @@ Module.CreateMenuTable = function(self)
 	local UnitFrameParty = Core:GetModule("UnitFrameParty")
 	if UnitFrameParty and not (UnitFrameParty:IsIncompatible() or UnitFrameParty:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
-			title = L["Party Frames"], type = nil, hasWindow = true, 
-			buttons = {
-				{
-					type = "TOGGLE_VALUE", hasWindow = false, 
-					configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
-					proxyModule = "UnitFrameParty", 
-				}
-			}
+			enabledTitle = L["Party Frames: %s"]:format(L["Enabled"]),
+			disabledTitle = L["Party Frames: %s"]:format(L["Disabled"]),
+			type = "TOGGLE_VALUE", 
+			configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
+			proxyModule = "UnitFrameParty", 
 		})
 	end
 
 	local UnitFrameArena = Core:GetModule("UnitFrameArena")
 	if UnitFrameArena and not (UnitFrameArena:IsIncompatible() or UnitFrameArena:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
-			title = L["PvP Frames"], type = nil, hasWindow = true, 
-			buttons = {
-				{
-					type = "TOGGLE_VALUE", 
-					configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
-					proxyModule = "UnitFrameArena", 
-				}
-			}
+			enabledTitle = L["PvP Frames: %s"]:format(L["Enabled"]),
+			disabledTitle = L["PvP Frames: %s"]:format(L["Disabled"]),
+			type = "TOGGLE_VALUE", 
+			configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
+			proxyModule = "UnitFrameArena", 
 		})
 	end
 	table_insert(MenuTable, UnitFrameMenu)
@@ -856,22 +851,38 @@ Module.CreateMenuTable = function(self)
 			title = L["NamePlates"], type = nil, hasWindow = true, 
 			buttons = {
 				-- Disable player auras
+
 				
 			}
 		})
 	end 
+	--]]--
 
 	-- HUD elements
 	table_insert(MenuTable,	{
 		title = L["HUD"], type = nil, hasWindow = true, 
 		buttons = {
 			-- Talking Head
+			{
+				enabledTitle = L["TalkingHead: %s"]:format(L["Enabled"]),
+				disabledTitle = L["TalkingHead: %s"]:format(L["Disabled"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "FloaterHUD", configKey = "enableTalkingHead", 
+				proxyModule = "FloaterHUD", 
+			},
 
-			-- Player Resources
+			-- Alerts 
+			{
+				enabledTitle = L["Alerts: %s"]:format(L["Enabled"]),
+				disabledTitle = L["Alerts: %s"]:format(L["Disabled"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "FloaterHUD", configKey = "enableAlerts", 
+				proxyModule = "FloaterHUD", 
+			},
 
+			
 		}
 	})
-	--]]--
 	
 end
 
