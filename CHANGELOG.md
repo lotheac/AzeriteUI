@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Simplified some menu options, and added some coloring. 
+- Modified the backdrop of the nameplate glow texture so units with threat that aren't your primary target won't appear bright red as their health declines anymore. 
 
 ### Fixed
 - Fixed how the arena- and party frame visibility drivers are registered at startup, to deal with the issue where frames set to be hidden wouldn't be hidden until the option was toggle on and back off again. 
