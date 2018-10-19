@@ -46,7 +46,11 @@ Module.OnInit = function(self)
 			end 
 		end
 	]=])
-	RegisterAttributeDriver(self.frame, "state-vis", "[@arena1,exists]show;hide")
+	if self.db.enableArenaFrames then 
+		RegisterAttributeDriver(self.frame, "state-vis", "[@arena1,exists]show;hide")
+	else 
+		RegisterAttributeDriver(self.frame, "state-vis", "hide")
+	end 
 
 	for i = 1,5 do 
 		--self.frame[i] = self:SpawnUnitFrame("arena"..i, self.frame, Style)
@@ -54,10 +58,10 @@ Module.OnInit = function(self)
 	end 
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
-	proxy:SetFrameRef("VisibilityFrame", self.frame)
 	for key,value in pairs(self.db) do 
 		proxy:SetAttribute(key,value)
 	end 
+	proxy:SetFrameRef("VisibilityFrame", self.frame)
 	proxy:SetAttribute("_onattributechanged", [=[
 		if name then 
 			name = string.lower(name); 
@@ -73,7 +77,6 @@ Module.OnInit = function(self)
 				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide")
 			end 
 		end 
-		
 	]=])
 	self.proxyUpdater = proxy
 end 

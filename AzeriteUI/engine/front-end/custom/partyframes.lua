@@ -43,7 +43,11 @@ Module.OnInit = function(self)
 
 	-- Hide it in raids of 6 or more players 
 	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
-	RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]hide;[group]show;hide")
+	if self.db.enablePartyFrames then 
+		RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]hide;[group]show;hide")
+	else 
+		RegisterAttributeDriver(self.frame, "state-vis", "hide")
+	end 
 
 	for i = 1,4 do 
 		self.frame[i] = self:SpawnUnitFrame("party"..i, self.frame, Style)
@@ -51,10 +55,10 @@ Module.OnInit = function(self)
 	end 
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
-	proxy:SetFrameRef("VisibilityFrame", self.frame)
 	for key,value in pairs(self.db) do 
 		proxy:SetAttribute(key,value)
 	end 
+	proxy:SetFrameRef("VisibilityFrame", self.frame)
 	proxy:SetAttribute("_onattributechanged", [=[
 		if name then 
 			name = string.lower(name); 
