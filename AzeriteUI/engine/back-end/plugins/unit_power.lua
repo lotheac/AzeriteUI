@@ -1,7 +1,3 @@
-
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "Power requires LibClientBuild to be loaded.")
-
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -21,9 +17,6 @@ local UnitPowerType = _G.UnitPowerType
 
 -- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
 local ALTERNATE_POWER_INDEX = Enum and Enum.PowerType.Alternate or ALTERNATE_POWER_INDEX or 10
-
--- WoW Client Constants
-local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
 
 -- Number abbreviations
 ---------------------------------------------------------------------	
@@ -222,7 +215,7 @@ local Enable = function(self)
 		if element.frequent and ((unit == "player") or (unit == "pet")) then 
 			self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		else 
-			self:RegisterEvent(ENGINE_801 and "UNIT_POWER_UPDATE" or "UNIT_POWER", Proxy)
+			self:RegisterEvent("UNIT_POWER_UPDATE", Proxy)
 		end 
 
 		self:RegisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
@@ -231,6 +224,7 @@ local Enable = function(self)
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
 		self:RegisterEvent("UNIT_MAXPOWER", Proxy)
 		self:RegisterEvent("UNIT_FACTION", Proxy)
+		self:RegisterEvent("PLAYER_ALIVE", Proxy, true)
 
 		element.UpdateColor = UpdateColor
 		element.UpdateValue = UpdateValue
@@ -245,7 +239,7 @@ local Disable = function(self)
 		element:Hide()
 
 		self:UnregisterEvent("UNIT_POWER_FREQUENT", Proxy)
-		self:UnregisterEvent(ENGINE_801 and "UNIT_POWER_UPDATE" or "UNIT_POWER", Proxy)
+		self:UnregisterEvent("UNIT_POWER_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_HIDE", Proxy)
 		self:UnregisterEvent("UNIT_DISPLAYPOWER", Proxy)
@@ -258,5 +252,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Power", Enable, Disable, Proxy, 10)
+	Lib:RegisterElement("Power", Enable, Disable, Proxy, 12)
 end 

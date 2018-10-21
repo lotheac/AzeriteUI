@@ -1,7 +1,3 @@
-
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "ExtraPower requires LibClientBuild to be loaded.")
-
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -18,9 +14,6 @@ local UnitPlayerControlled = _G.UnitPlayerControlled
 local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local UnitPowerType = _G.UnitPowerType
-
--- WoW Client Constants
-local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
 
 
 -- Number abbreviations
@@ -200,11 +193,7 @@ local Enable = function(self)
 		if element.frequent and ((unit == "player") or (unit == "pet")) then 
 			self:RegisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		else 
-			if ENGINE_801 then 
-				self:RegisterEvent("UNIT_POWER_UPDATE", Proxy)
-			else 
-				self:RegisterEvent("UNIT_POWER", Proxy)
-			end 
+			self:RegisterEvent("UNIT_POWER_UPDATE", Proxy)
 		end 
 
 		self:RegisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
@@ -213,6 +202,7 @@ local Enable = function(self)
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
 		self:RegisterEvent("UNIT_MAXPOWER", Proxy)
 		self:RegisterEvent("UNIT_FACTION", Proxy)
+		self:RegisterEvent("PLAYER_ALIVE", Proxy, true)
 
 		if (not element.UpdateColor) then 
 			element.UpdateColor = UpdateColor
@@ -246,5 +236,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 4)
 end 
