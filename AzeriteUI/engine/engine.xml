@@ -8,11 +8,11 @@
 	<!-- root module -->
 	<Script file="front-end\root.lua"/>
 
-	<!-- old menu -->
-	<Script file="menu-old.lua"/>
-
 	<!-- front-end modules -->
 	<Include file="front-end\blizzard.xml"/>
 	<Include file="front-end\custom.xml"/>
+
+	<!-- old menu -->
+	<Script file="menu-old.lua"/>
 
 </Ui>
