@@ -4,6 +4,7 @@
 	<Script file="custom\arenaframes.lua"/>
 	<Script file="custom\bossframes.lua"/>
 	<Script file="custom\focusframe.lua"/>
+	<Script file="custom\groupleadertools.lua"/>
 	<Script file="custom\nameplates.lua"/>
 	<Script file="custom\partyframes.lua"/>
 	<Script file="custom\petframe.lua"/>
