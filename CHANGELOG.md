@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added raid frames. 
 - Added short duration nameplate auras cast by the player. Optional. 
 
+## [1.0.72] 2018-10-21
+### Changed
+- Changed the player- and target unitframe aura filters to work differently in and out of combat. Made the filters in combat stricter to remove some of the excessive spam we've been seeing lately, but also allowed the display of most long duration auras or non duration auras like toys and mounts out of combat. 
+
+### Fixed
+- The mana orb for druids should no longer be empty when instantly resurrecting in an instance without a ghost period between the death and the resurrection. 
+- Fixed an issue where the player- and target frame aura highlighting sometimes would remain visible on fresh auras that shouldn't have them.
+
 ## [1.0.71] 2018-10-19
 ### Added
 - Added the option to disable the talking head frame.
