@@ -6,10 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Added optional aura display to the nameplates. 
-- Added aura consolidation frames for player and target, with cancelable buffs for player.
-- Added raid frames. 
-- Added short duration nameplate auras cast by the player. Optional. 
+- Added optional short duration nameplate auras cast by the player. 
+- Added optional raid frames. 
 
 ## [1.0.72] 2018-10-21
 ### Changed
