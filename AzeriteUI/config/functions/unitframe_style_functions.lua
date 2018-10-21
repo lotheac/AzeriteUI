@@ -473,7 +473,7 @@ end
 local Player_PostUpdateAuraButton = function(element, button)
 	local Layout = element._owner.layout
 	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
-		return 
+		return button.SpellHighlight:Hide()
 	end 
 	if button.isBuff then 
 		button.SpellHighlight:Hide()
@@ -741,7 +741,7 @@ end
 local Target_PostUpdateAuraButton = function(element, button)
 	local Layout = element._owner.layout
 	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
-		return 
+		return button.SpellHighlight:Hide()
 	end 
 	if UnitIsFriend("player", button.unit) then 
 		if button.isBuff then 
