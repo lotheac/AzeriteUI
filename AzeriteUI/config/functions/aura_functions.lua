@@ -48,12 +48,139 @@ end
 
 local filters = {}
 
-filters.default = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+filters.default = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+
 	local auraFlags = auraList[spellID]
-	return (not auraFlags) or (bit_band(auraFlags, filterFlags.Always) ~= 0) or (bit_band(auraFlags, filterFlags.Never) == 0)
+	
+	local timeLeft 
+	if (expirationTime and expirationTime > 0) then 
+		timeLeft = expirationTime - GetTime()
+	end
+
+	if (isBossDebuff or (unitCaster == "vehicle")) then
+		return true
+	elseif (count and (count > 1)) then 
+		return true
+	elseif InCombatLockdown() then 
+		if (duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180)) then
+			return true
+		end 
+	else 
+		if isBuff then 
+			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
+				return true
+			end 
+		else
+			if (duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180)) then
+				return true
+			end
+		end 
+	end 
 end
 
-filters.player = function(element, button, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+filters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+
+	local auraFlags = auraList[spellID]
+
+	local timeLeft 
+	if (expirationTime and expirationTime > 0) then 
+		timeLeft = expirationTime - GetTime()
+	end
+
+	if (isBossDebuff or (unitCaster == "vehicle")) then
+		return true
+
+	elseif InCombatLockdown() then 
+
+		if (unitCaster and unitIsPlayer[unitCaster]) then 
+			if ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))) then
+				if auraFlags then 
+					if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+						return true  
+					end
+				end 
+			end
+		end
+
+		-- Auras from hostile npc's
+		if (not unitCaster) or (UnitCanAttack("player", unitCaster) and (not UnitPlayerControlled(unitCaster))) then 
+			return ((not isBuff) and (duration and duration < 180))
+		end
+
+	else 
+		if isBuff then 
+			if (unitCaster and unitIsPlayer[unitCaster]) then 
+				if ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))) then
+					if auraFlags then 
+						if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+							return true  
+						end
+					end 
+				end
+			end
+
+			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
+				return true
+			end 
+		else
+			return true
+		end 
+	end 
+end 
+
+filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+
+	local auraFlags = auraList[spellID]
+	local timeLeft 
+	if (expirationTime and expirationTime > 0) then 
+		timeLeft = expirationTime - GetTime()
+	end
+
+	if (isStealable or isBossDebuff) then 
+		return true 
+	else
+		if InCombatLockdown() then 
+
+			-- Aura list parsing
+			if auraFlags then 
+				if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+					return unitIsPlayer[unitCaster] 
+				elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 
+					return (CURRENT_ROLE == "TANK")
+				else
+					return (bit_band(auraFlags, filterFlags.OnEnemy) ~= 0)
+				end 
+			end 
+
+			-- Short auras by the player
+			if (unitCaster and unitIsPlayer[unitCaster]) and ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))) then
+				return true
+			end
+
+		else 
+
+			if isBuff then 
+				if (unitCaster and unitIsPlayer[unitCaster]) then 
+					if ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))) then
+						if auraFlags then 
+							if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+								return true  
+							end
+						end 
+					end
+				end
+			end
+
+			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
+				return true
+			end 
+
+		end  
+	end
+
+end
+
+filters.player2 = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
 
 	local timeLeft 
 	if (expirationTime and expirationTime > 0) then 
@@ -100,7 +227,7 @@ filters.player = function(element, button, unit, isOwnedByPlayer, name, icon, co
 
 end
 
-filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
+filters.target2 = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
 	local auraFlags = auraList[spellID]
 	if auraFlags then
 

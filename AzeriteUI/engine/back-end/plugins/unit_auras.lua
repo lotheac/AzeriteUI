@@ -723,11 +723,13 @@ local Enable = function(self)
 		else
 			self:RegisterEvent("UNIT_AURA", Proxy)
 			self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy, true)
-			self:RegisterEvent("VEHICLE_UPDATE", Proxy, true)
+			self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)
+			self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
 			self:RegisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
 			self:RegisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
 			self:RegisterEvent("UNIT_EXITING_VEHICLE", Proxy)
 			self:RegisterEvent("UNIT_EXITED_VEHICLE", Proxy)
+			self:RegisterEvent("VEHICLE_UPDATE", Proxy, true)
 
 			if (unit == "target") or (unit == "targettarget") then
 				self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy, true)
@@ -769,10 +771,13 @@ local Disable = function(self)
 		if not ((Auras and Auras.frequent) or (Buffs and Buffs.frequent) or (Debuffs and Debuffs.frequent)) then
 			self:UnregisterEvent("UNIT_AURA", Proxy)
 			self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
+			self:UnregisterEvent("PLAYER_REGEN_DISABLED", Proxy)
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", Proxy)
 			self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
 			self:UnregisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
 			self:UnregisterEvent("UNIT_EXITING_VEHICLE", Proxy)
 			self:UnregisterEvent("UNIT_EXITED_VEHICLE", Proxy)
+			self:UnregisterEvent("VEHICLE_UPDATE", Proxy)
 
 			if (unit == "target") or (unit == "targettarget") then
 				self:UnregisterEvent("PLAYER_TARGET_CHANGED", Proxy)
@@ -783,5 +788,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 28)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 30)
 end 
