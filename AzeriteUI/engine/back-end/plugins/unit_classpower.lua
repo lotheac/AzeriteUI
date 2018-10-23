@@ -571,7 +571,7 @@ ClassPower.SoulShards = setmetatable({
 		local powerType = element.powerType
 		local powerID = element.powerID 
 
-		local min = UnitPower("player", powerID) or 0
+		local min = UnitPower("player", powerID, true) or 0
 		local max = UnitPowerMax("player", powerID) or 0
 		local mod = UnitPowerDisplayMod(powerID)
 
@@ -918,5 +918,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 16)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 17)
 end 
