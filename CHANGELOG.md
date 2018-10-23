@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added optional short duration nameplate auras cast by the player. 
 - Added optional raid frames. 
 
+## [1.0.73] 2018-10-23
+### Fixed
+- Fixed an issue for Warlocks that would only show 1/10th of their actual soul shards, leading to the impression that shards were always empty.
+
 ## [1.0.72] 2018-10-21
 ### Changed
 - Changed the player- and target unitframe aura filters to work differently in and out of combat. Made the filters in combat stricter to remove some of the excessive spam we've been seeing lately, but also allowed the display of most long duration auras or non duration auras like toys and mounts out of combat. 
