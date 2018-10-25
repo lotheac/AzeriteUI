@@ -10,25 +10,18 @@ L["<Left-Click>"] = true
 L["<Middle-Click>"] = true
 L["<Right-Click>"] = true
 L["CTRL+C"] = true
-
--- Welcome messages
---------------------------------------------
-L["Welcome to the UI!"] = "|cffccccccWelcome to |r" .. GetAddOnMetadata(ADDON, "Title") .. "|cffcccccc!|r" 
-L["Menu button location."] = "|cffe5b226<Left-Click>|r |cffcccccccog for game windows.|r|n"
-						  .. "|cffe5b226<Right-Click>|r |cffcccccccog for actionbar options.|r"
+L["oom"] = true -- out of mana
 
 
 -- Clock & Time Settings
 --------------------------------------------
 L["New Event!"] = true
 L["New Mail!"] = true
-
 L["%s to toggle calendar."] = true
 L["%s to use local computer time."] = true
 L["%s to use game server time."] = true
 L["%s to use standard (12-hour) time."] = true
 L["%s to use military (24-hour) time."] = true
-
 L["Now using local computer time."] = true
 L["Now using game server time."] = true
 L["Now using standard (12-hour) time."] = true
@@ -67,16 +60,6 @@ L["Sticky Minimap bars disabled."] = true
 L["to level %s"] = true 
 L["to %s"] = true
 L["to next trait"] = true
-
--- World Map Settings
---------------------------------------------
-L["Reveal"] = true
-L["Reveal Hidden Areas"] = true
-L["Hide Undiscovered Areas"] = true
-L["Disable to hide areas|nyou have not yet discovered."] = true
-L["Enable to show hidden areas|nyou have not yet discovered."] = true
-L["Press %s to copy."] = true
-
 
 -- Config & Micro Menu
 --------------------------------------------
