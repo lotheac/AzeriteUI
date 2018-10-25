@@ -39,6 +39,9 @@ local Constant = {
 	TinyFrame = { 130, 30 }, 
 	TinyBar = { 80, 14 }, 
 	TinyBarTexture = GetMediaPath("cast_bar"),
+
+	RaidFrame = { 110 *.94, 30 *.94 }, 
+	RaidBar = { 80 *.94, 14  *.94}, 
 }
 
 local Template_SmallFrame = {
@@ -1519,8 +1522,8 @@ local UnitFrameTarget = {
 		NameFont = Fonts(18, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameDrawLayer = { "OVERLAY", 1 }, 
-		NameDrawJustifyH = "RIGHT", 
-		NameDrawJustifyV = "TOP",
+		NameJustifyH = "RIGHT", 
+		NameJustifyV = "TOP",
 
 
 	UseProgressiveFrames = true,
@@ -1830,8 +1833,8 @@ local UnitFrameToT = setmetatable({
 	UseName = true, 
 		NamePlace = { "BOTTOMRIGHT", -(Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 - 4 }, 
 		NameDrawLayer = { "OVERLAY", 1 },
-		NameDrawJustifyH = "RIGHT",
-		NameDrawJustifyV = "TOP",
+		NameJustifyH = "RIGHT",
+		NameJustifyV = "TOP",
 		NameFont = Fonts(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
@@ -1868,8 +1871,8 @@ local UnitFrameFocus = setmetatable({
 	UseName = true, 
 		NamePlace = { "BOTTOMLEFT", (Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
 		NameDrawLayer = { "OVERLAY", 1 },
-		NameDrawJustifyH = "LEFT",
-		NameDrawJustifyV = "TOP",
+		NameJustifyH = "LEFT",
+		NameJustifyV = "TOP",
 		NameFont = Fonts(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
@@ -1900,8 +1903,8 @@ local UnitFrameBoss = setmetatable({
 	UseName = true, 
 		NamePlace = { "BOTTOMRIGHT", -(Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
 		NameDrawLayer = { "OVERLAY", 1 },
-		NameDrawJustifyH = "CENTER",
-		NameDrawJustifyV = "TOP",
+		NameJustifyH = "CENTER",
+		NameJustifyV = "TOP",
 		NameFont = Fonts(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
@@ -1927,8 +1930,8 @@ local UnitFrameArena = setmetatable({
 	UseName = true, 
 		NamePlace = { "BOTTOMRIGHT", -(Constant.SmallFrame[1] - Constant.SmallBar[1])/2, Constant.SmallFrame[2] - Constant.SmallBar[2] + 16 }, 
 		NameDrawLayer = { "OVERLAY", 1 },
-		NameDrawJustifyH = "CENTER",
-		NameDrawJustifyV = "TOP",
+		NameJustifyH = "CENTER",
+		NameJustifyV = "TOP",
 		NameFont = Fonts(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
@@ -2025,6 +2028,58 @@ local UnitFrameParty = setmetatable({
 
 -- Raid
 local UnitFrameRaid = setmetatable({
+
+	Size = Constant.RaidFrame, 
+	Place = { "TOPLEFT", "UICenter", "TOPLEFT", 64, -42 }, -- Position of the initial frame
+
+		GroupSizeNormal = 5,
+		GrowthXNormal = 0, -- Horizontal growth per new unit within a group
+		GrowthYNormal = -38 - 4, -- Vertical growth per new unit within a group
+		GroupGrowthXNormal = 110, 
+		GroupGrowthYNormal = -(38 + 8)*5 - 10,
+		GroupColsNormal = 5, 
+		GroupRowsNormal = 1, 
+		GroupAnchorNormal = "TOPLEFT", 
+
+		GroupSizeEpic = 8,
+		GrowthXEpic = 0, 
+		GrowthYEpic = -38 - 4,
+		GroupGrowthXEpic = 110, 
+		GroupGrowthYEpic = -(38 + 8)*8 - 10,
+		GroupColsEpic = 5, 
+		GroupRowsEpic = 1, 
+		GroupAnchorEpic = "TOPLEFT", 
+
+	HealthSize = Constant.RaidBar, 
+	HealthBackdropSize = { 140 *.94, 90 *.94 },
+
+	UseHealthValue = false,
+
+	HealthColorTapped = false, -- color tap denied units 
+	HealthColorDisconnected = true, -- color disconnected units
+	HealthColorClass = true, -- color players by class
+	HealthColorPetAsPlayer = true, -- color your pet as you 
+	HealthColorReaction = true, -- color NPCs by their reaction standing with us
+	HealthColorHealth = true, -- color anything else in the default health color
+	
+	UseName = true, 
+		NamePlace = { "TOP", 0, 1 }, 
+		NameDrawLayer = { "OVERLAY", 1 },
+		NameJustifyH = "CENTER",
+		NameJustifyV = "TOP",
+		NameFont = Fonts(11, true),
+		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		NameSize = nil,
+
+	UseUnitStatus = true, 
+		UnitStatusPlace = { "CENTER", 0, -6 },
+		UnitStatusDrawLayer = { "OVERLAY", 1 },
+		UnitStatusJustifyH = "CENTER",
+		UnitStatusJustifyV = "MIDDLE",
+		UnitStatusFont = Fonts(12, true),
+		UnitStatusColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		UnitStatusSize = nil, 
+
 
 }, { __index = Template_TinyFrame })
 

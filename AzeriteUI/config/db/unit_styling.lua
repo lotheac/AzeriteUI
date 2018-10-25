@@ -19,7 +19,7 @@ local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
 local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
 
 -- Define this database
-local UnitFrameStyles = CogWheel("LibDB"):NewDatabase(ADDON..": UnitFrameStyles")
+local UnitStyles = CogWheel("LibDB"):NewDatabase(ADDON..": UnitStyles")
 
 -- Lua API
 local _G = _G
@@ -1213,8 +1213,8 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		local name = overlay:CreateFontString()
 		name:SetPoint(unpack(Layout.NamePlace))
 		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
-		name:SetJustifyH(Layout.NameDrawJustifyH)
-		name:SetJustifyV(Layout.NameDrawJustifyV)
+		name:SetJustifyH(Layout.NameJustifyH)
+		name:SetJustifyV(Layout.NameJustifyV)
 		name:SetFontObject(Layout.NameFont)
 		name:SetTextColor(unpack(Layout.NameColor))
 		if Layout.NameSize then 
@@ -1309,11 +1309,36 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 	-- Todo: iterate on this for a grid layout
 	local id = tonumber(id)
 	if id then 
+
+		-- Array to calculate the position of this specific frame
 		local place = { unpack(Layout.Place) }
+
+		-- Growth internally in groups
 		local growthX = Layout.GrowthX
 		local growthY = Layout.GrowthY
 
-		if (growthX and growthY) then 
+		if Layout.GroupSize then 
+			-- Group layouts
+			local groupGrowthX = Layout.GroupGrowthX
+			local groupGrowthY = Layout.GroupGrowthY
+			local groupSize = Layout.GroupSize
+			local groupCols = Layout.GroupCols
+			local groupRows = Layout.GroupRows
+
+			local groupID = math_floor((id-1)/groupSize) + 1
+			local groupX = ((groupID-1)%groupCols) * groupGrowthX
+			local groupY = math_floor((groupID-1)/groupCols) * groupGrowthY
+
+			local modID = (id-1)%groupSize + 1
+
+			if (type(place[#place]) == "number") then 
+				place[#place - 1] = place[#place - 1] + growthX*(modID-1) + groupX
+				place[#place] = place[#place] + growthY*(modID-1) + groupY
+			else 
+				place[#place + 1] = growthX + groupX
+				place[#place + 1] = growthY + groupY
+			end 
+		else 
 			if (type(place[#place]) == "number") then 
 				place[#place - 1] = place[#place - 1] + growthX*(id-1)
 				place[#place] = place[#place] + growthY*(id-1)
@@ -1322,6 +1347,7 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 				place[#place + 1] = growthY
 			end 
 		end 
+
 
 		self:Place(unpack(place))
 	else 
@@ -1590,8 +1616,8 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 		local name = overlay:CreateFontString()
 		name:SetPoint(unpack(Layout.NamePlace))
 		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
-		name:SetJustifyH(Layout.NameDrawJustifyH)
-		name:SetJustifyV(Layout.NameDrawJustifyV)
+		name:SetJustifyH(Layout.NameJustifyH)
+		name:SetJustifyV(Layout.NameJustifyV)
 		name:SetFontObject(Layout.NameFont)
 		name:SetTextColor(unpack(Layout.NameColor))
 		if Layout.NameSize then 
@@ -1667,13 +1693,380 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 		end 
 	end 
 
-	self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
+	if Layout.UseHealthValue then 
+		self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
+	end
+end
+
+local StyleRaidFrame = function(self, unit, id, Layout, ...)
+
+	-- Frame
+	-----------------------------------------------------------
+	self:SetSize(unpack(Layout.Size)) 
+
+	if Layout.FrameLevel then 
+		self:SetFrameLevel(self:GetFrameLevel() + Layout.FrameLevel)
+	end 
+
+	if Layout.HitRectInsets then 
+		self:SetHitRectInsets(unpack(Layout.HitRectInsets))
+	else 
+		self:SetHitRectInsets(0, 0, 0, 0)
+	end 
+
+	-- Assign our own global custom colors
+	self.colors = Colors
+
+	-- Scaffolds
+	-----------------------------------------------------------
+	-- frame to contain art backdrops, shadows, etc
+	local backdrop = self:CreateFrame("Frame")
+	backdrop:SetAllPoints()
+	backdrop:SetFrameLevel(self:GetFrameLevel())
+	
+	-- frame to contain bars, icons, etc
+	local content = self:CreateFrame("Frame")
+	content:SetAllPoints()
+	content:SetFrameLevel(self:GetFrameLevel() + 5)
+
+	-- frame to contain art overlays, texts, etc
+	local overlay = self:CreateFrame("Frame")
+	overlay:SetAllPoints()
+	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+
+
+	-- Border
+	-----------------------------------------------------------	
+	if Layout.UseBorderBackdrop then 
+		local border = self:CreateFrame("Frame")
+		border:SetFrameLevel(self:GetFrameLevel() + 8)
+		border:SetSize(unpack(Layout.BorderFrameSize))
+		border:Place(unpack(Layout.BorderFramePlace))
+		border:SetBackdrop(Layout.BorderFrameBackdrop)
+		border:SetBackdropColor(unpack(Layout.BorderFrameBackdropColor))
+		border:SetBackdropBorderColor(unpack(Layout.BorderFrameBackdropBorderColor))
+		self.Border = border
+	end 
+
+	-- Health Bar
+	-----------------------------------------------------------	
+	local health 
+
+	if (Layout.HealthType == "Orb") then 
+		health = content:CreateOrb()
+
+	elseif (Layout.HealthType == "SpinBar") then 
+		health = content:CreateSpinBar()
+
+	else 
+		health = content:CreateStatusBar()
+		health:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
+		health:SetFlippedHorizontally(Layout.HealthBarSetFlippedHorizontally)
+		if Layout.HealthBarSparkMap then 
+			health:SetSparkMap(Layout.HealthBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+	end 
+	if (not Layout.UseProgressiveFrames) then 
+		health:SetStatusBarTexture(Layout.HealthBarTexture)
+		health:SetSize(unpack(Layout.HealthSize))
+	end 
+
+	health:Place(unpack(Layout.HealthPlace))
+	health:SetSmoothingMode(Layout.HealthSmoothingMode or "bezier-fast-in-slow-out") -- set the smoothing mode.
+	health:SetSmoothingFrequency(Layout.HealthSmoothingFrequency or .5) -- set the duration of the smoothing.
+	health.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
+	health.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
+	health.colorClass = Layout.HealthColorClass -- color players by class 
+	health.colorPetAsPlayer = Layout.HealthColorPetAsPlayer -- color your pet as you
+	health.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
+	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
+
+	self.Health = health
+	self.Health.PostUpdate = Layout.HealthBarPostUpdate
+	
+	if Layout.UseHealthBackdrop then 
+		local healthBg = health:CreateTexture()
+		healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
+		healthBg:SetSize(unpack(Layout.HealthBackdropSize))
+		healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
+		if (not Layout.UseProgressiveFrames) then 
+			healthBg:SetTexture(Layout.HealthBackdropTexture)
+		end 
+		if Layout.HealthBackdropColor then 
+			healthBg:SetVertexColor(unpack(Layout.HealthBackdropColor))
+		end
+		self.Health.Bg = healthBg
+	end 
+
+	if Layout.UseHealthForeground then 
+		local healthFg = health:CreateTexture()
+		healthFg:SetDrawLayer("BORDER", 1)
+		healthFg:SetSize(unpack(Layout.HealthForegroundSize))
+		healthFg:SetPoint(unpack(Layout.HealthForegroundPlace))
+		healthFg:SetTexture(Layout.HealthForegroundTexture)
+		healthFg:SetDrawLayer(unpack(Layout.HealthForegroundDrawLayer))
+		if Layout.HealthForegroundColor then 
+			healthFg:SetVertexColor(unpack(Layout.HealthForegroundColor))
+		end 
+		self.Health.Fg = healthFg
+	end 
+
+	-- Absorb Bar
+	-----------------------------------------------------------	
+	if Layout.UseAbsorbBar then 
+		local absorb = content:CreateStatusBar()
+		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
+		absorb:Place(unpack(Layout.AbsorbBarPlace))
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
+
+		if (not Layout.UseProgressiveFrames) then
+			absorb:SetSize(unpack(Layout.AbsorbSize))
+			absorb:SetStatusBarTexture(Layout.AbsorbBarTexture)
+		end
+
+		if Layout.AbsorbBarSparkMap then 
+			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
+		end 
+
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
+		self.Absorb = absorb
+	end 
+
+	-- Portrait
+	-----------------------------------------------------------
+	if Layout.UsePortrait then 
+		local portrait = backdrop:CreateFrame("PlayerModel")
+		portrait:SetPoint(unpack(Layout.PortraitPlace))
+		portrait:SetSize(unpack(Layout.PortraitSize)) 
+		portrait:SetAlpha(Layout.PortraitAlpha)
+		portrait.distanceScale = Layout.PortraitDistanceScale
+		portrait.positionX = Layout.PortraitPositionX
+		portrait.positionY = Layout.PortraitPositionY
+		portrait.positionZ = Layout.PortraitPositionZ
+		portrait.rotation = Layout.PortraitRotation -- in degrees
+		portrait.showFallback2D = Layout.PortraitShowFallback2D -- display 2D portraits when unit is out of range of 3D models
+		self.Portrait = portrait
+		
+		-- To allow the backdrop and overlay to remain 
+		-- visible even with no visible player model, 
+		-- we add them to our backdrop and overlay frames, 
+		-- not to the portrait frame itself.  
+		if Layout.UsePortraitBackground then 
+			local portraitBg = backdrop:CreateTexture()
+			portraitBg:SetPoint(unpack(Layout.PortraitBackgroundPlace))
+			portraitBg:SetSize(unpack(Layout.PortraitBackgroundSize))
+			portraitBg:SetTexture(Layout.PortraitBackgroundTexture)
+			portraitBg:SetDrawLayer(unpack(Layout.PortraitBackgroundDrawLayer))
+			portraitBg:SetVertexColor(unpack(Layout.PortraitBackgroundColor))
+			self.Portrait.Bg = portraitBg
+		end 
+
+		if Layout.UsePortraitShade then 
+			local portraitShade = content:CreateTexture()
+			portraitShade:SetPoint(unpack(Layout.PortraitShadePlace))
+			portraitShade:SetSize(unpack(Layout.PortraitShadeSize)) 
+			portraitShade:SetTexture(Layout.PortraitShadeTexture)
+			portraitShade:SetDrawLayer(unpack(Layout.PortraitShadeDrawLayer))
+			self.Portrait.Shade = portraitShade
+		end 
+
+		if Layout.UsePortraitForeground then 
+			local portraitFg = content:CreateTexture()
+			portraitFg:SetPoint(unpack(Layout.PortraitForegroundPlace))
+			portraitFg:SetSize(unpack(Layout.PortraitForegroundSize))
+			portraitFg:SetTexture(Layout.PortraitForegroundTexture)
+			portraitFg:SetDrawLayer(unpack(Layout.PortraitForegroundDrawLayer))
+			portraitFg:SetVertexColor(unpack(Layout.PortraitForegroundColor))
+			self.Portrait.Fg = portraitFg
+		end 
+	end 
+
+	-- Cast Bar
+	-----------------------------------------------------------
+	if Layout.UseCastBar then
+		local cast = content:CreateStatusBar()
+		cast:SetSize(unpack(Layout.CastBarSize))
+		cast:SetFrameLevel(health:GetFrameLevel() + 1)
+		cast:Place(unpack(Layout.CastBarPlace))
+		cast:SetOrientation(Layout.CastBarOrientation) -- set the bar to grow towards the right.
+		cast:SetSmoothingMode(Layout.CastBarSmoothingMode) -- set the smoothing mode.
+		cast:SetSmoothingFrequency(Layout.CastBarSmoothingFrequency)
+		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) -- the alpha won't be overwritten. 
+
+		if (not Layout.UseProgressiveFrames) then 
+			cast:SetStatusBarTexture(Layout.CastBarTexture)
+		end 
+
+		if Layout.CastBarSparkMap then 
+			cast:SetSparkMap(Layout.CastBarSparkMap) -- set the map the spark follows along the bar.
+		end
+
+		self.Cast = cast
+		self.Cast.PostUpdate = Layout.CastBarPostUpdate
+	end 
+
+	-- Group Role
+	-----------------------------------------------------------
+	if Layout.UseGroupRole then 
+		local groupRole = overlay:CreateFrame()
+		groupRole:SetPoint(unpack(Layout.GroupRolePlace))
+		groupRole:SetSize(unpack(Layout.GroupRoleSize))
+		self.GroupRole = groupRole
+
+		if Layout.UseGroupRoleBackground then 
+			local groupRoleBg = groupRole:CreateTexture()
+			groupRoleBg:SetDrawLayer(unpack(Layout.GroupRoleBackgroundDrawLayer))
+			groupRoleBg:SetTexture(Layout.GroupRoleBackgroundTexture)
+			groupRoleBg:SetVertexColor(unpack(Layout.GroupRoleBackgroundColor))
+			groupRoleBg:SetSize(unpack(Layout.GroupRoleBackgroundSize))
+			groupRoleBg:SetPoint(unpack(Layout.GroupRoleBackgroundPlace))
+			self.GroupRole.Bg = groupRoleBg
+		end 
+
+		if Layout.UseGroupRoleHealer then 
+			local roleHealer = groupRole:CreateTexture()
+			roleHealer:SetPoint(unpack(Layout.GroupRoleHealerPlace))
+			roleHealer:SetSize(unpack(Layout.GroupRoleHealerSize))
+			roleHealer:SetDrawLayer(unpack(Layout.GroupRoleHealerDrawLayer))
+			roleHealer:SetTexture(Layout.GroupRoleHealerTexture)
+			self.GroupRole.Healer = roleHealer 
+		end 
+
+		if Layout.UseGroupRoleTank then 
+			local roleTank = groupRole:CreateTexture()
+			roleTank:SetPoint(unpack(Layout.GroupRoleTankPlace))
+			roleTank:SetSize(unpack(Layout.GroupRoleTankSize))
+			roleTank:SetDrawLayer(unpack(Layout.GroupRoleTankDrawLayer))
+			roleTank:SetTexture(Layout.GroupRoleTankTexture)
+			self.GroupRole.Tank = roleTank 
+		end 
+
+		if Layout.UseGroupRoleDPS then 
+			local roleDPS = groupRole:CreateTexture()
+			roleDPS:SetPoint(unpack(Layout.GroupRoleDPSPlace))
+			roleDPS:SetSize(unpack(Layout.GroupRoleDPSSize))
+			roleDPS:SetDrawLayer(unpack(Layout.GroupRoleDPSDrawLayer))
+			roleDPS:SetTexture(Layout.GroupRoleDPSTexture)
+			self.GroupRole.Damager = roleDPS 
+		end 
+	end
+
+	-- Range
+	-----------------------------------------------------------
+	if Layout.UseRange then 
+		self.Range = { outsideAlpha = Layout.RangeOutsideAlpha }
+	end 
+
+	-- Texts
+	-----------------------------------------------------------
+	-- Unit Name
+	if Layout.UseName then 
+		local name = overlay:CreateFontString()
+		name:SetPoint(unpack(Layout.NamePlace))
+		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
+		name:SetJustifyH(Layout.NameJustifyH)
+		name:SetJustifyV(Layout.NameJustifyV)
+		name:SetFontObject(Layout.NameFont)
+		name:SetTextColor(unpack(Layout.NameColor))
+		if Layout.NameSize then 
+			name:SetSize(unpack(Layout.NameSize))
+		end 
+		self.Name = name
+	end 
+
+	-- Unit Status
+	if Layout.UseUnitStatus then 
+		local unitStatus = overlay:CreateFontString()
+		unitStatus:SetPoint(unpack(Layout.UnitStatusPlace))
+		unitStatus:SetDrawLayer(unpack(Layout.UnitStatusDrawLayer))
+		unitStatus:SetJustifyH(Layout.UnitStatusJustifyH)
+		unitStatus:SetJustifyV(Layout.UnitStatusJustifyV)
+		unitStatus:SetFontObject(Layout.UnitStatusFont)
+		unitStatus:SetTextColor(unpack(Layout.UnitStatusColor))
+		if Layout.UnitStatusSize then 
+			unitStatus:SetSize(unpack(Layout.UnitStatusSize))
+		end 
+		self.UnitStatus = unitStatus
+	end 
+	
+	-- Health Value
+	if Layout.UseHealthValue then 
+		local healthVal = health:CreateFontString()
+		healthVal:SetPoint(unpack(Layout.HealthValuePlace))
+		healthVal:SetDrawLayer(unpack(Layout.HealthValueDrawLayer))
+		healthVal:SetJustifyH(Layout.HealthValueJustifyH)
+		healthVal:SetJustifyV(Layout.HealthValueJustifyV)
+		healthVal:SetFontObject(Layout.HealthValueFont)
+		healthVal:SetTextColor(unpack(Layout.HealthValueColor))
+		healthVal.showPercent = Layout.HealthShowPercent
+
+		if Layout.UseHealthPercent then 
+			local healthPerc = health:CreateFontString()
+			healthPerc:SetPoint(unpack(Layout.HealthPercentPlace))
+			healthPerc:SetDrawLayer(unpack(Layout.HealthPercentDrawLayer))
+			healthPerc:SetJustifyH(Layout.HealthPercentJustifyH)
+			healthPerc:SetJustifyV(Layout.HealthPercentJustifyV)
+			healthPerc:SetFontObject(Layout.HealthPercentFont)
+			healthPerc:SetTextColor(unpack(Layout.HealthPercentColor))
+			self.Health.Percent = healthPerc
+		end 
+		
+		self.Health.Value = healthVal
+		self.Health.Percent = healthPerc
+		self.Health.OverrideValue = Layout.HealthValueOverride or TinyFrame_OverrideHealthValue
+	end 
+
+	-- Cast Name
+	if Layout.UseCastBar then
+		if Layout.UseCastBarName then 
+			local name, parent 
+			if Layout.CastBarNameParent then 
+				parent = self[Layout.CastBarNameParent]
+			end 
+			local name = (parent or overlay):CreateFontString()
+			name:SetPoint(unpack(Layout.CastBarNamePlace))
+			name:SetFontObject(Layout.CastBarNameFont)
+			name:SetDrawLayer(unpack(Layout.CastBarNameDrawLayer))
+			name:SetJustifyH(Layout.CastBarNameJustifyH)
+			name:SetJustifyV(Layout.CastBarNameJustifyV)
+			name:SetTextColor(unpack(Layout.CastBarNameColor))
+			if Layout.CastBarNameSize then 
+				name:SetSize(unpack(Layout.CastBarNameSize))
+			end 
+			self.Cast.Name = name
+		end 
+	end
+
+	-- Absorb Value
+	if Layout.UseAbsorbBar then 
+		if Layout.UseAbsorbValue then 
+			local absorbVal = overlay:CreateFontString()
+			if Layout.AbsorbValuePlaceFunction then 
+				absorbVal:SetPoint(Layout.AbsorbValuePlaceFunction(self))
+			else 
+				absorbVal:SetPoint(unpack(Layout.AbsorbValuePlace))
+			end 
+			absorbVal:SetDrawLayer(unpack(Layout.AbsorbValueDrawLayer))
+			absorbVal:SetJustifyH(Layout.AbsorbValueJustifyH)
+			absorbVal:SetJustifyV(Layout.AbsorbValueJustifyV)
+			absorbVal:SetFontObject(Layout.AbsorbValueFont)
+			absorbVal:SetTextColor(unpack(Layout.AbsorbValueColor))
+			self.Absorb.Value = absorbVal 
+			self.Absorb.OverrideValue = TinyFrame_OverrideValue
+		end 
+	end 
+
+	if Layout.UseHealthValue then 
+		self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
+	end
 end
 
 -----------------------------------------------------------
 -- Singular Unit Styling
 -----------------------------------------------------------
-UnitFrameStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
+UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 
 	-- Frame
 	-----------------------------------------------------------
@@ -2161,8 +2554,8 @@ UnitFrameStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		local name = overlay:CreateFontString()
 		name:SetPoint(unpack(Layout.NamePlace))
 		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
-		name:SetJustifyH(Layout.NameDrawJustifyH)
-		name:SetJustifyV(Layout.NameDrawJustifyV)
+		name:SetJustifyH(Layout.NameJustifyH)
+		name:SetJustifyV(Layout.NameJustifyV)
 		name:SetFontObject(Layout.NameFont)
 		name:SetTextColor(unpack(Layout.NameColor))
 		if Layout.NameSize then 
@@ -2255,7 +2648,7 @@ UnitFrameStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 	end 
 end
 
-UnitFrameStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
+UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 
 	-- Frame
 	self:SetSize(unpack(Layout.Size)) 
@@ -2495,7 +2888,7 @@ UnitFrameStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 	
 end
 
-UnitFrameStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
+UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 	-- Frame
 	self:SetSize(unpack(Layout.Size)) 
 	self:Place(unpack(Layout.Place)) 
@@ -3123,8 +3516,8 @@ UnitFrameStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		local name = overlay:CreateFontString()
 		name:SetPoint(unpack(Layout.NamePlace))
 		name:SetDrawLayer(unpack(Layout.NameDrawLayer))
-		name:SetJustifyH(Layout.NameDrawJustifyH)
-		name:SetJustifyV(Layout.NameDrawJustifyV)
+		name:SetJustifyH(Layout.NameJustifyH)
+		name:SetJustifyV(Layout.NameJustifyV)
 		name:SetFontObject(Layout.NameFont)
 		name:SetTextColor(unpack(Layout.NameColor))
 		if Layout.NameSize then 
@@ -3190,15 +3583,15 @@ UnitFrameStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 	end 
 end
 
-UnitFrameStyles.StyleToTFrame = function(self, unit, id, Layout, ...)
+UnitStyles.StyleToTFrame = function(self, unit, id, Layout, ...)
 	return StyleSmallFrame(self, unit, id, Layout, ...)
 end
 
-UnitFrameStyles.StyleFocusFrame = function(self, unit, id, Layout, ...)
+UnitStyles.StyleFocusFrame = function(self, unit, id, Layout, ...)
 	return StyleSmallFrame(self, unit, id, Layout, ...)
 end
 
-UnitFrameStyles.StylePetFrame = function(self, unit, id, Layout, ...)
+UnitStyles.StylePetFrame = function(self, unit, id, Layout, ...)
 	return StyleSmallFrame(self, unit, id, Layout, ...)
 end
 
@@ -3208,7 +3601,7 @@ end
 -- Dummy counters for testing purposes only
 local fakeArenaId, fakeBossId, fakePartyId, fakeRaidId = 0, 0, 0, 0
 
-UnitFrameStyles.StyleArenaFrames = function(self, unit, id, Layout, ...)
+UnitStyles.StyleArenaFrames = function(self, unit, id, Layout, ...)
 	if (not id) then 
 		fakeArenaId = fakeArenaId + 1
 		id = fakeArenaId
@@ -3216,7 +3609,7 @@ UnitFrameStyles.StyleArenaFrames = function(self, unit, id, Layout, ...)
 	return StyleSmallFrame(self, unit, id, Layout, ...)
 end
 
-UnitFrameStyles.StyleBossFrames = function(self, unit, id, Layout, ...)
+UnitStyles.StyleBossFrames = function(self, unit, id, Layout, ...)
 	if (not id) then 
 		fakeBossId = fakeBossId + 1
 		id = fakeBossId
@@ -3224,7 +3617,7 @@ UnitFrameStyles.StyleBossFrames = function(self, unit, id, Layout, ...)
 	return StyleSmallFrame(self, unit, id, Layout, ...)
 end
 
-UnitFrameStyles.StylePartyFrames = function(self, unit, id, Layout, ...)
+UnitStyles.StylePartyFrames = function(self, unit, id, Layout, ...)
 	if (not id) then 
 		fakePartyId = fakePartyId + 1
 		id = fakePartyId
@@ -3232,10 +3625,10 @@ UnitFrameStyles.StylePartyFrames = function(self, unit, id, Layout, ...)
 	return StyleTinyFrame(self, unit, id, Layout, ...)
 end
 
-UnitFrameStyles.StyleRaidFrames = function(self, unit, id, Layout, ...)
+UnitStyles.StyleRaidFrames = function(self, unit, id, Layout, ...)
 	if (not id) then 
 		fakeRaidId = fakeRaidId + 1
 		id = fakeRaidId
 	end 
-	return StyleTinyFrame(self, unit, id, Layout, ...)
+	return StyleRaidFrame(self, unit, id, Layout, ...)
 end
