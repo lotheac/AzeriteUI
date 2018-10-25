@@ -109,16 +109,6 @@ filters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 
 	else 
 		if isBuff then 
-			if (unitCaster and unitIsPlayer[unitCaster]) then 
-				if ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))) then
-					if auraFlags then 
-						if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-							return true  
-						end
-					end 
-				end
-			end
-
 			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
 				return true
 			end 
@@ -141,15 +131,33 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 	else
 		if InCombatLockdown() then 
 
-			-- Aura list parsing
-			if auraFlags then 
-				if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-					return unitIsPlayer[unitCaster] 
-				elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 
-					return (CURRENT_ROLE == "TANK")
-				else
-					return (bit_band(auraFlags, filterFlags.OnEnemy) ~= 0)
+			if isBuff then 
+				if unitCaster and UnitIsUnit(unit, unitCaster) and UnitCanAttack("player", unitCaster) then 
+					return ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180)))
+				end
+
+				-- Aura list parsing
+				if auraFlags then 
+					if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+						return unitIsPlayer[unitCaster] 
+					elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 
+						return (CURRENT_ROLE == "TANK")
+					else
+						return (bit_band(auraFlags, filterFlags.OnEnemy) ~= 0)
+					end 
 				end 
+			else 
+				if unitCaster and UnitCanAttack("player", unitCaster) then 
+					if auraFlags then 
+						if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+							return unitIsPlayer[unitCaster] 
+						elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 
+							return (CURRENT_ROLE == "TANK")
+						else
+							return (bit_band(auraFlags, filterFlags.OnEnemy) ~= 0)
+						end 
+					end 
+				end
 			end 
 
 			-- Short auras by the player
@@ -171,9 +179,9 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 				end
 			end
 
-			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
-				return true
-			end 
+			--if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
+			--	return true
+			--end 
 
 		end  
 	end
