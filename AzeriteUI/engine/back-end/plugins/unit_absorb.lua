@@ -76,12 +76,12 @@ local Update = function(self, event, unit)
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
 
 	local hasOverHealAbsorb = false
-	if(healAbsorb > allIncomingHeal) then
+	if (healAbsorb > allIncomingHeal) then
 		healAbsorb = healAbsorb - allIncomingHeal
 		allIncomingHeal = 0
 		myIncomingHeal = 0
 
-		if(health < healAbsorb) then
+		if (health < healAbsorb) then
 			hasOverHealAbsorb = true
 			healAbsorb = health
 		end
@@ -105,19 +105,18 @@ local Update = function(self, event, unit)
 		if (absorb > 0) then
 			hasOverAbsorb = true
 		end
-		--absorb = math.max(0, maxHealth - health - allIncomingHeal)
 	end
 
-	--if(element.absorbBar) then
-	--	element.absorbBar:SetMinMaxValues(0, maxHealth)
-	--	element.absorbBar:SetValue(absorb)
-	--	element.absorbBar:Show()
-	--end
 	local maxAbsorb = element.maxAbsorb or maxAbsorbDisplaySize
 	local absorbDisplay = absorb
 	if absorb > maxHealth * maxAbsorb then 
 		absorbDisplay = maxHealth * maxAbsorb
 	end 
+
+	-- prevent tiny shields
+	if absorbDisplay < maxHealth * .15 then
+		absorbDisplay = 0
+	end
 
 	element:SetMinMaxValues(0, maxHealth) 
 	element:SetValue(absorbDisplay, (event == "Forced")) 
@@ -175,5 +174,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Absorb", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("Absorb", Enable, Disable, Proxy, 3)
 end 
