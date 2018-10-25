@@ -6,7 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("UnitFrameParty", "LibDB", "LibEvent", "LibFrame", "LibUnitFrame")
-local Layout, UnitFrameStyles
+local Layout, UnitStyles
 
 -- Default settings
 local defaults = {
@@ -14,13 +14,13 @@ local defaults = {
 }
 
 local Style = function(self, unit, id, _, ...)
-	return UnitFrameStyles.StylePartyFrames(self, unit, id, Layout, ...)
+	return UnitStyles.StylePartyFrames(self, unit, id, Layout, ...)
 end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [UnitFrameParty]")
-	UnitFrameStyles = CogWheel("LibDB"):GetDatabase(PREFIX..": UnitFrameStyles")
+	UnitStyles = CogWheel("LibDB"):GetDatabase(PREFIX..": UnitStyles")
 end
 
 Module.OnInit = function(self)

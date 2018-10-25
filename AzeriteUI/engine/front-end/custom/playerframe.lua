@@ -11,10 +11,10 @@ local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFr
 local UnitLevel = _G.UnitLevel
 
 local _,PlayerLevel = UnitLevel("player")
-local Layout, UnitFrameStyles
+local Layout, UnitStyles
 
 local Style = function(self, unit, id, _, ...)
-	local StyleFunc = UnitFrameStyles and (UnitFrameStyles.StylePlayerFrame or UnitFrameStyles.Style)
+	local StyleFunc = UnitStyles and (UnitStyles.StylePlayerFrame or UnitStyles.Style)
 	if StyleFunc then 
 		return StyleFunc(self, unit, id, Layout, ...)
 	end 
@@ -23,7 +23,7 @@ end
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [UnitFramePlayer]", true)
-	UnitFrameStyles = CogWheel("LibDB"):GetDatabase(PREFIX..": UnitFrameStyles", true)
+	UnitStyles = CogWheel("LibDB"):GetDatabase(PREFIX..": UnitStyles", true)
 end 
 
 Module.OnInit = function(self)

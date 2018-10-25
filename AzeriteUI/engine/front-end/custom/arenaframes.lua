@@ -9,7 +9,7 @@ local Module = Core:NewModule("UnitFrameArena", "LibDB", "LibEvent", "LibUnitFra
 Module:SetIncompatible("Gladius")
 Module:SetIncompatible("GladiusEx")
 
-local Layout, UnitFrameStyles
+local Layout, UnitStyles
 
 -- Default settings
 local defaults = {
@@ -17,7 +17,7 @@ local defaults = {
 }
 
 local Style = function(self, unit, id, _, ...)
-	local StyleFunc = UnitFrameStyles and (UnitFrameStyles.StyleArenaFrames or UnitFrameStyles.Style)
+	local StyleFunc = UnitStyles and (UnitStyles.StyleArenaFrames or UnitStyles.Style)
 	if StyleFunc then 
 		return StyleFunc(self, unit, id, Layout, ...)
 	end 
@@ -26,7 +26,7 @@ end
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [UnitFrameArena]", true)
-	UnitFrameStyles = CogWheel("LibDB"):GetDatabase(PREFIX..": UnitFrameStyles", true)
+	UnitStyles = CogWheel("LibDB"):GetDatabase(PREFIX..": UnitStyles", true)
 end
 
 Module.OnInit = function(self)
@@ -53,8 +53,8 @@ Module.OnInit = function(self)
 	end 
 
 	for i = 1,5 do 
-		--self.frame[i] = self:SpawnUnitFrame("arena"..i, self.frame, Style)
-		self.frame[i] = self:SpawnUnitFrame("player", self.frame, Style)
+		self.frame[i] = self:SpawnUnitFrame("arena"..i, self.frame, Style)
+		--self.frame[i] = self:SpawnUnitFrame("player", self.frame, Style)
 	end 
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
