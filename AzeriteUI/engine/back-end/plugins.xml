@@ -36,6 +36,7 @@
 	<Script file="plugins\unit_raidrole.lua"/>
 	<Script file="plugins\unit_raidtarget.lua"/>
 	<Script file="plugins\unit_spec.lua"/>
+	<Script file="plugins\unit_status.lua"/>
 	<Script file="plugins\unit_targeted.lua"/>
 	<Script file="plugins\unit_totem.lua"/>
 	<Script file="plugins\unit_threat.lua"/>
