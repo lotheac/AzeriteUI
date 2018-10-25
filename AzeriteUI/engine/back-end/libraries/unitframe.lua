@@ -395,9 +395,11 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 
 	elseif (unit:match("party%d?$")) then 
 		frame.unitGroup = "party"
+		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("raid%d?$")) then 
 		frame.unitGroup = "raid"
+		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("%w+target")) then
 		frame:EnableFrameFrequent(.5, "unit")
