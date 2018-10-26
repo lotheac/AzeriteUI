@@ -830,6 +830,17 @@ Module.CreateMenuTable = function(self)
 		})
 	end
 
+	local UnitFrameRaid = Core:GetModule("UnitFrameRaid")
+	if UnitFrameRaid and not (UnitFrameRaid:IsIncompatible() or UnitFrameRaid:DependencyFailed()) then 
+		table_insert(UnitFrameMenu.buttons, {
+			enabledTitle = L["Raid Frames: %s"]:format(L["Enabled"]),
+			disabledTitle = L["Raid Frames: %s"]:format(L["Disabled"]),
+			type = "TOGGLE_VALUE", 
+			configDB = "UnitFrameRaid", configKey = "enableRaidFrames", 
+			proxyModule = "UnitFrameRaid", 
+		})
+	end
+
 	local UnitFrameArena = Core:GetModule("UnitFrameArena")
 	if UnitFrameArena and not (UnitFrameArena:IsIncompatible() or UnitFrameArena:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
