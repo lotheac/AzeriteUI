@@ -24,6 +24,20 @@ local SetActionBarToggles = _G.SetActionBarToggles
 
 local L, Layout, PREFIX
 
+local fixMinimap = function()
+	local currentZoom = Minimap:GetZoom()
+	local maxLevels = Minimap:GetZoomLevels()
+	if currentZoom and maxLevels then 
+		if maxLevels > currentZoom then 
+			MinimapZoomIn:Click()
+			MinimapZoomOut:Click()
+		else
+			MinimapZoomOut:Click()
+			MinimapZoomIn:Click()
+		end 
+	end 
+end
+
 Core.SwitchTo = function(self, editBox, ...)
 	local addon = ...
 	if (addon and (addon ~= "") and self.EasySwitch.Cmd[addon]) then
@@ -157,6 +171,7 @@ Core.OnEvent = function(self, event, ...)
 						self.totalElapsed = 0
 						self.fading = nil
 						self:SetScript("OnUpdate", nil)
+						fixMinimap()
 						return 
 					else 
 						Core:GetFrame("UICenter"):SetAlpha(self.alpha)
