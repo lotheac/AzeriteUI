@@ -148,7 +148,7 @@ local Template_SmallFrame = {
 	UseCastBarName = true, 
 		CastBarNameParent = "Health",
 		CastBarNamePlace = { "CENTER", 0, 1 },
-		CastBarNameSize = Constant.SmallBar, 
+		CastBarNameSize = { Constant.SmallBar[1] - 20, Constant.SmallBar[2] }, 
 		CastBarNameFont = Fonts(12, true),
 		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
 		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
@@ -194,7 +194,22 @@ local Template_SmallFrame_Auras = setmetatable({
 		AuraTooltipAnchor = nil, 
 		AuraTooltipRelPoint = "TOPLEFT", 
 		AuraTooltipOffsetX = 8, 
-		AuraTooltipOffsetY = 16
+		AuraTooltipOffsetY = 16,
+
+		AuraIconPlace = { "CENTER", 0, 0 },
+		AuraIconSize = { Constant.SmallAuraSize - 6, Constant.SmallAuraSize - 6 },
+		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
+		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
+		AuraCountFont = Fonts(12, true),
+		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+		AuraTimePlace = { "CENTER", 0, 0 },
+		AuraTimeFont = Fonts(11, true),
+		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
+		AuraBorderFrameSize = { Constant.SmallAuraSize + 14, Constant.SmallAuraSize + 14 },
+		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 16 },
+		AuraBorderBackdropColor = { 0, 0, 0, 0 },
+		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
+
 	
 }, { __index = Template_SmallFrame })
 
@@ -596,18 +611,9 @@ local UnitFramePlayer = {
 		AuraTimeFont = Fonts(14, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
 		AuraBorderFrameSize = { 40 + 14, 40 + 14 },
-		AuraBorderBackdrop = { edgeFile = GetMediaPath("tooltip_border"), edgeSize = 16 },
+		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 16 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
-		AuraBorderBackdropBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-	
-		UseAuraSpellHightlight = true,
-			AuraSpellHighlightFramePlace = { "CENTER", 0, 0 },
-			AuraSpellHighlightFrameSize = { 54, 54 },
-			AuraSpellHighlightBackdrop = {
-				edgeFile = GetMediaPath("border-glow-overlay"),
-				edgeSize = 16
-			},
-
+		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
 
 	UseProgressiveFrames = true,
 		UseProgressiveHealthThreat = true, 
@@ -1503,18 +1509,9 @@ local UnitFrameTarget = {
 		AuraTimeFont = Fonts(14, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
 		AuraBorderFrameSize = { 40 + 14, 40 + 14 },
-		AuraBorderBackdrop = { edgeFile = GetMediaPath("tooltip_border"), edgeSize = 16 },
+		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 16 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
-		AuraBorderBackdropBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-
-		UseAuraSpellHightlight = true,
-			AuraSpellHighlightFramePlace = { "CENTER", 0, 0 },
-			AuraSpellHighlightFrameSize = { 54, 54 },
-			AuraSpellHighlightBackdrop = {
-				edgeFile = GetMediaPath("border-glow-overlay"),
-				edgeSize = 16
-			},
-
+		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 }, 
 
 	UseName = true, 
 		NamePlace = { "TOPRIGHT", -40, 18 },
@@ -2062,6 +2059,8 @@ local UnitFrameRaid = setmetatable({
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
 	
+	AbsorbBarColor = { 1, 1, 1, .5 },
+
 	UseName = true, 
 		NamePlace = { "TOP", 0, 1 }, 
 		NameDrawLayer = { "OVERLAY", 1 },
@@ -2072,13 +2071,17 @@ local UnitFrameRaid = setmetatable({
 		NameSize = nil,
 
 	UseUnitStatus = true, 
-		UnitStatusPlace = { "CENTER", 0, -6 },
+		UnitStatusPlace = { "CENTER", 0, -7 },
 		UnitStatusDrawLayer = { "OVERLAY", 1 },
 		UnitStatusJustifyH = "CENTER",
 		UnitStatusJustifyV = "MIDDLE",
 		UnitStatusFont = Fonts(12, true),
 		UnitStatusColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		UseUnitStatusMessageOOM = L["oom"],
 		UnitStatusSize = nil, 
+
+	UseRaidDebuff = true, 
+		
 
 
 }, { __index = Template_TinyFrame })

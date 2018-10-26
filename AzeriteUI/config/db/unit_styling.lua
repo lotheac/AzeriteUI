@@ -82,6 +82,91 @@ end
 -----------------------------------------------------------
 -- Callbacks
 -----------------------------------------------------------
+local PostCreateAuraButton = function(element, button)
+	local Layout = element._owner.layout
+
+	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
+	button.Icon:SetSize(unpack(Layout.AuraIconSize))
+	button.Icon:ClearAllPoints()
+	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
+
+	button.Count:SetFontObject(Layout.AuraCountFont)
+	button.Count:SetJustifyH("CENTER")
+	button.Count:SetJustifyV("MIDDLE")
+	button.Count:ClearAllPoints()
+	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
+	if Layout.AuraCountColor then 
+		button.Count:SetTextColor(unpack(Layout.AuraCountColor))
+	end 
+
+	button.Time:SetFontObject(Layout.AuraTimeFont)
+	button.Time:ClearAllPoints()
+	button.Time:SetPoint(unpack(Layout.AuraTimePlace))
+
+	local layer, level = button.Icon:GetDrawLayer()
+
+	button.Darken = button.Darken or button:CreateTexture()
+	button.Darken:SetDrawLayer(layer, level + 1)
+	button.Darken:SetSize(button.Icon:GetSize())
+	button.Darken:SetPoint("CENTER", 0, 0)
+	button.Darken:SetColorTexture(0, 0, 0, .25)
+
+	button.Overlay:SetFrameLevel(button:GetFrameLevel() + 10)
+	button.Overlay:ClearAllPoints()
+	button.Overlay:SetPoint("CENTER", 0, 0)
+	button.Overlay:SetSize(button.Icon:GetSize())
+
+	button.Border = button.Border or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
+	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 5)
+	button.Border:ClearAllPoints()
+	button.Border:SetPoint(unpack(Layout.AuraBorderFramePlace))
+	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
+	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
+	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
+	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
+end
+
+local PostUpdateAuraButton = function(element, button)
+	local Layout = element._owner.layout
+	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
+		local color = Layout.AuraBorderBackdropBorderColor
+		if color then 
+			button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+		end 
+		return 
+	end 
+	if UnitIsFriend("player", button.unit) then 
+		if button.isBuff then 
+			local color = Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		else
+			local color = Colors.debuff[button.debuffType or "none"] or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		end
+	else 
+		if button.isStealable then 
+			local color = Colors.power.ARCANE_CHARGES or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		elseif button.isBuff then 
+			local color = Colors.quest.green or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		else
+			local color = Colors.debuff.none or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		end
+	end 
+end
+
 local SmallFrame_OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
 	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 		-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
@@ -111,68 +196,6 @@ local SmallFrame_OverrideHealthValue = function(element, unit, min, max, disconn
 		end 
 	end 
 end 
-
-local SmallFrame_PostCreateAuraButton = function(element, button)
-	
-	-- Downscale factor of the border backdrop
-	local sizeMod = 2/4
-
-
-	-- Restyle original elements
-	----------------------------------------------------
-
-	-- Spell icon
-	-- We inset the icon, so the border aligns with the button edge
-	local icon = button.Icon
-	icon:SetTexCoord(5/64, 59/64, 5/64, 59/64)
-	icon:ClearAllPoints()
-	icon:SetPoint("TOPLEFT", 9*sizeMod, -9*sizeMod)
-	icon:SetPoint("BOTTOMRIGHT", -9*sizeMod, 9*sizeMod)
-
-	-- Aura stacks
-	local count = button.Count
-	count:SetFontObject(Fonts(11, true))
-	count:ClearAllPoints()
-	count:SetPoint("BOTTOMRIGHT", 2, -2)
-
-	-- Aura time remaining
-	local time = button.Time
-	time:SetFontObject(Fonts(11, true))
-
-
-	-- Create custom elements
-	----------------------------------------------------
-
-	-- Retrieve the icon drawlayer, and put our darkener right above
-	local iconDrawLayer, iconDrawLevel = icon:GetDrawLayer()
-
-	-- Darken the icons slightly, don't want them too bright
-	local darken = button:CreateTexture()
-	darken:SetDrawLayer(iconDrawLayer, iconDrawLevel + 1)
-	darken:SetSize(icon:GetSize())
-	darken:SetAllPoints(icon)
-	darken:SetColorTexture(0, 0, 0, .25)
-
-	-- Create our own custom border.
-	-- Using our new thick tooltip border, just scaled down slightly.
-	sizeMod = 1/4
-
-	local border = button.Overlay:CreateFrame("Frame")
-	border:SetPoint("TOPLEFT", -8 *sizeMod, 8*sizeMod)
-	border:SetPoint("BOTTOMRIGHT", 8 *sizeMod, -8 *sizeMod)
-	border:SetBackdrop({
-		edgeFile = GetMediaPath("tooltip_border"),
-		edgeSize = 32 *sizeMod
-	})
-	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-
-	-- This one we reference, for magic school coloring later on
-	button.Border = border
-
-end
-
-local SmallFrame_PostUpdateAuraButton = function(element, button)
-end
 
 local SmallFrame_PostUpdateAlpha = function(self)
 	local unit = self.unit
@@ -415,75 +438,6 @@ local Player_Threat_Hide = function(element)
 	end 
 end 
 
-local Player_PostCreateAuraButton = function(element, button)
-	local Layout = element._owner.layout
-
-	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
-	button.Icon:SetSize(unpack(Layout.AuraIconSize))
-	button.Icon:ClearAllPoints()
-	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
-
-	button.Count:SetFontObject(Layout.AuraCountFont)
-	button.Count:SetJustifyH("CENTER")
-	button.Count:SetJustifyV("MIDDLE")
-	button.Count:ClearAllPoints()
-	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
-	if Layout.AuraCountColor then 
-		button.Count:SetTextColor(unpack(Layout.AuraCountColor))
-	end 
-
-	button.Time:SetFontObject(Layout.AuraTimeFont)
-	button.Time:ClearAllPoints()
-	button.Time:SetPoint(unpack(Layout.AuraTimePlace))
-
-	local layer, level = button.Icon:GetDrawLayer()
-
-	button.Darken = button.Darken or button:CreateTexture()
-	button.Darken:SetDrawLayer(layer, level + 1)
-	button.Darken:SetSize(button.Icon:GetSize())
-	button.Darken:SetPoint("CENTER", 0, 0)
-	button.Darken:SetColorTexture(0, 0, 0, .25)
-
-	button.Overlay:SetFrameLevel(button:GetFrameLevel() + 10)
-	button.Overlay:ClearAllPoints()
-	button.Overlay:SetPoint("CENTER", 0, 0)
-	button.Overlay:SetSize(button.Icon:GetSize())
-
-	button.Border = button.Border or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
-	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 5)
-	button.Border:ClearAllPoints()
-	button.Border:SetPoint(unpack(Layout.AuraBorderFramePlace))
-	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
-	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
-	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
-	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
-
-	if Layout.UseAuraSpellHightlight then 
-		button.SpellHighlight = button.SpellHighlight or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
-		button.SpellHighlight:Hide()
-		button.SpellHighlight:SetFrameLevel(button.Overlay:GetFrameLevel() - 6)
-		button.SpellHighlight:ClearAllPoints()
-		button.SpellHighlight:SetPoint(unpack(Layout.AuraSpellHighlightFramePlace))
-		button.SpellHighlight:SetSize(unpack(Layout.AuraSpellHighlightFrameSize))
-		button.SpellHighlight:SetBackdrop(Layout.AuraSpellHighlightBackdrop)
-	end 
-
-end
-
-local Player_PostUpdateAuraButton = function(element, button)
-	local Layout = element._owner.layout
-	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
-		return button.SpellHighlight:Hide()
-	end 
-	if button.isBuff then 
-		button.SpellHighlight:Hide()
-	else
-		button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
-		button.SpellHighlight:SetBackdropBorderColor(1, 0, 0, 1)
-		button.SpellHighlight:Show()
-	end
-end
-
 local Player_PostUpdateTextures = function(self, playerLevel)
 	local Layout = self.layout
 	if (not Layout.UseProgressiveFrames) then 
@@ -684,88 +638,6 @@ local Target_Threat_Hide = function(element)
 	end
 end 
 
-local Target_PostCreateAuraButton = function(element, button)
-	local Layout = element._owner.layout
-	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
-	button.Icon:SetSize(unpack(Layout.AuraIconSize))
-	button.Icon:ClearAllPoints()
-	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
-
-	button.Count:SetFontObject(Layout.AuraCountFont)
-	button.Count:SetJustifyH("CENTER")
-	button.Count:SetJustifyV("MIDDLE")
-	button.Count:ClearAllPoints()
-	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
-	if Layout.AuraCountColor then 
-		button.Count:SetTextColor(unpack(Layout.AuraCountColor))
-	end 
-
-	button.Time:SetFontObject(Layout.AuraTimeFont)
-	button.Time:ClearAllPoints()
-	button.Time:SetPoint(unpack(Layout.AuraTimePlace))
-
-	local layer, level = button.Icon:GetDrawLayer()
-
-	button.Darken = button.Darken or button:CreateTexture()
-	button.Darken:SetDrawLayer(layer, level + 1)
-	button.Darken:SetSize(button.Icon:GetSize())
-	button.Darken:SetPoint("CENTER", 0, 0)
-	button.Darken:SetColorTexture(0, 0, 0, .25)
-
-	button.Overlay:SetFrameLevel(button:GetFrameLevel() + 10)
-	button.Overlay:ClearAllPoints()
-	button.Overlay:SetPoint("CENTER", 0, 0)
-	button.Overlay:SetSize(button.Icon:GetSize())
-
-	button.Border = button.Border or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
-	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 5)
-	button.Border:ClearAllPoints()
-	button.Border:SetPoint(unpack(Layout.AuraBorderFramePlace))
-	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
-	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
-	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
-	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
-
-	if Layout.UseAuraSpellHightlight then 
-		button.SpellHighlight = button.SpellHighlight or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
-		button.SpellHighlight:Hide()
-		button.SpellHighlight:SetFrameLevel(button.Overlay:GetFrameLevel() - 6)
-		button.SpellHighlight:ClearAllPoints()
-		button.SpellHighlight:SetPoint(unpack(Layout.AuraSpellHighlightFramePlace))
-		button.SpellHighlight:SetSize(unpack(Layout.AuraSpellHighlightFrameSize))
-		button.SpellHighlight:SetBackdrop(Layout.AuraSpellHighlightBackdrop)
-	end 
-
-end
-
-local Target_PostUpdateAuraButton = function(element, button)
-	local Layout = element._owner.layout
-	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
-		return button.SpellHighlight:Hide()
-	end 
-	if UnitIsFriend("player", button.unit) then 
-		if button.isBuff then 
-			button.SpellHighlight:Hide()
-		else
-			button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
-			button.SpellHighlight:SetBackdropBorderColor(1, 0, 0, 1)
-			button.SpellHighlight:Show()
-		end
-	else 
-		if button.isStealable then 
-			button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
-			button.SpellHighlight:SetBackdropBorderColor(Colors.power.ARCANE_CHARGES[1], Colors.power.ARCANE_CHARGES[2], Colors.power.ARCANE_CHARGES[3], 1)
-			button.SpellHighlight:Show()
-		elseif button.isBuff then 
-			button.SpellHighlight:SetBackdropColor(0, 0, 0, 0)
-			button.SpellHighlight:SetBackdropBorderColor(0, .7, 0, 1)
-			button.SpellHighlight:Show()
-		else
-			button.SpellHighlight:Hide()
-		end
-	end 
-end
-
 local Target_PostUpdateTextures = function(self)
 	local Layout = self.layout
 	if (not Layout.UseProgressiveFrames) or (not UnitExists("target")) then 
@@ -936,6 +808,7 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 
 	-- Assign our own global custom colors
 	self.colors = Colors
+	self.layout = Layout
 
 	-- Scaffolds
 	-----------------------------------------------------------
@@ -1150,8 +1023,8 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
 			
 		self.Auras = auras
-		self.Auras.PostCreateButton = SmallFrame_PostCreateAuraButton -- post creation styling
-		self.Auras.PostUpdateButton = SmallFrame_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	if Layout.UseBuffs then 
@@ -1176,8 +1049,8 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		buffs.tooltipOffsetY = Layout.BuffTooltipOffsetY
 			
 		self.Buffs = buffs
-		self.Buffs.PostCreateButton = SmallFrame_PostCreateAuraButton -- post creation styling
-		self.Buffs.PostUpdateButton = SmallFrame_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Buffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Buffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	if Layout.UseDebuffs then 
@@ -1202,8 +1075,8 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		debuffs.tooltipOffsetY = Layout.DebuffTooltipOffsetY
 			
 		self.Debuffs = debuffs
-		self.Debuffs.PostCreateButton = SmallFrame_PostCreateAuraButton -- post creation styling
-		self.Debuffs.PostUpdateButton = SmallFrame_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	-- Texts
@@ -1366,6 +1239,7 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 
 	-- Assign our own global custom colors
 	self.colors = Colors
+	self.layout = Layout
 
 	-- Scaffolds
 	-----------------------------------------------------------
@@ -1716,6 +1590,8 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 
 	-- Assign our own global custom colors
 	self.colors = Colors
+	self.layout = Layout
+
 
 	-- Scaffolds
 	-----------------------------------------------------------
@@ -1985,6 +1861,10 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		unitStatus:SetJustifyV(Layout.UnitStatusJustifyV)
 		unitStatus:SetFontObject(Layout.UnitStatusFont)
 		unitStatus:SetTextColor(unpack(Layout.UnitStatusColor))
+		unitStatus.oomMsg = Layout.UseUnitStatusMessageOOM
+		unitStatus.offlineMsg = Layout.UseUnitStatusMessageDC
+		unitStatus.deadMsg = Layout.UseUnitStatusMessageDead
+		unitStatus.afkMsg = Layout.UseUnitStatusMessageAFK
 		if Layout.UnitStatusSize then 
 			unitStatus:SetSize(unpack(Layout.UnitStatusSize))
 		end 
@@ -2482,8 +2362,8 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
 
 		self.Auras = auras
-		self.Auras.PostCreateButton = Player_PostCreateAuraButton -- post creation styling
-		self.Auras.PostUpdateButton = Player_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	if Layout.UseBuffs then 
@@ -2512,8 +2392,8 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		--test:SetAllPoints()
 
 		self.Buffs = buffs
-		self.Buffs.PostCreateButton = Player_PostCreateAuraButton -- post creation styling
-		self.Buffs.PostUpdateButton = Player_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Buffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Buffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	if Layout.UseDebuffs then 
@@ -2542,8 +2422,8 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		--test:SetAllPoints()
 
 		self.Debuffs = debuffs
-		self.Debuffs.PostCreateButton = Player_PostCreateAuraButton -- post creation styling
-		self.Debuffs.PostUpdateButton = Player_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 
@@ -2661,6 +2541,7 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 
 	-- Assign our own global custom colors
 	self.colors = Colors
+	self.layout = Layout
 
 
 	-- Scaffolds
@@ -3453,8 +3334,8 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
 			
 		self.Auras = auras
-		self.Auras.PostCreateButton = Target_PostCreateAuraButton -- post creation styling
-		self.Auras.PostUpdateButton = Target_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	-- Buffs
@@ -3480,8 +3361,8 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		buffs.tooltipOffsetY = Layout.BuffTooltipOffsetY
 			
 		self.Buffs = buffs
-		self.Buffs.PostCreateButton = Target_PostCreateAuraButton -- post creation styling
-		self.Buffs.PostUpdateButton = Target_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Buffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Buffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	-- Debuffs
@@ -3507,8 +3388,8 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		debuffs.tooltipOffsetY = Layout.DebuffTooltipOffsetY
 			
 		self.Debuffs = debuffs
-		self.Debuffs.PostCreateButton = Target_PostCreateAuraButton -- post creation styling
-		self.Debuffs.PostUpdateButton = Target_PostUpdateAuraButton -- post updates when something changes (even timers)
+		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 	-- Unit Name
