@@ -33,6 +33,7 @@
 	<Script file="plugins\unit_portrait.lua"/>
 	<Script file="plugins\unit_power.lua"/>
 	<Script file="plugins\unit_range.lua"/>
+	<Script file="plugins\unit_raiddebuff.lua"/>
 	<Script file="plugins\unit_raidrole.lua"/>
 	<Script file="plugins\unit_raidtarget.lua"/>
 	<Script file="plugins\unit_spec.lua"/>
