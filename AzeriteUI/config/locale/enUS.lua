@@ -92,6 +92,7 @@ L["Click to enable the Pet Action Bar."] = true
 L["Click to disable the Pet Action Bar."] = true
 L["UnitFrames"] = true
 L["Party Frames: %s"] = true
+L["Raid Frames: %s"] = true
 L["PvP Frames: %s"] = true
 L["HUD"] = true
 L["Alerts: %s"] = true
