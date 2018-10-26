@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Added optional short duration nameplate auras cast by the player. 
-- Added optional raid frames. 
+- Added RaidDebuff element to show a prioritized boss/harmful/custom debuff on group frames.
+
+## [1.0.74] 2018-10-26
+- Release Candidate.
+
+### Added
+- Added raid frames. 
+- Added a new unit status element for mainly meant for our raid frames, showing if the player is currently out of mana, disconnected, dead or away from keyboard.
+
+### Changed
+- Changed how aura borders are colored: 
+	- Buffs on friendly targets remain uncolored / gray. 
+	- Debuffs on friendly targets are now colored according to spell school.
+	- Buffs on hostile targets are now colored green. 
+	- Debuffs on hostile targets are now colored red.
+
+### Fixed 
+- Arena/PvP frames should no longer only show your own character.
+- Fixed an issue that would leave the minimap black until zooming in or out after zoning or reloading into an indoors area. 
 
 ## [1.0.73] 2018-10-23
 ### Fixed
