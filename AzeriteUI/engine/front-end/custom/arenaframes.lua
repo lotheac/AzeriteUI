@@ -48,6 +48,7 @@ Module.OnInit = function(self)
 	]=])
 	if self.db.enableArenaFrames then 
 		RegisterAttributeDriver(self.frame, "state-vis", "[@arena1,exists]show;hide")
+		--RegisterAttributeDriver(self.frame, "state-vis", "[@player,exists]show;hide")
 	else 
 		RegisterAttributeDriver(self.frame, "state-vis", "hide")
 	end 
