@@ -92,13 +92,19 @@ filters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 
 	elseif InCombatLockdown() then 
 
-		if (unitCaster and unitIsPlayer[unitCaster]) then 
+		-- Iterate filtered auras first
+		if auraFlags then 
+
+			-- Auras set by the filter to be shown on the player
+			if unitIsPlayer[unit] and (bit_band(auraFlags, filterFlags.OnPlayer) ~= 0) then 
+				return true  
+			end
+
+			-- Short player auras
 			if ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180))) then
-				if auraFlags then 
-					if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-						return true  
-					end
-				end 
+				if (unitCaster and unitIsPlayer[unitCaster]) and (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+					return true  
+				end
 			end
 		end
 
@@ -178,11 +184,6 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 					end
 				end
 			end
-
-			--if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
-			--	return true
-			--end 
-
 		end  
 	end
 
