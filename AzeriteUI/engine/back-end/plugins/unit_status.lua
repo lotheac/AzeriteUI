@@ -47,16 +47,14 @@ local Update = function(self, event, unit)
 		end 
 	end
 
+	element.status = msg
+
 	if msg then
 		element:SetText(msg)
-		if (not element:IsShown()) then
-			element:Show()
-		end 
+		element:Show()
 	else
 		element:SetText("")
-		if element:IsShown() then 
-			element:Hide()
-		end 
+		element:Hide()
 	end
 			
 	if element.PostUpdate then
@@ -111,5 +109,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("UnitStatus", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("UnitStatus", Enable, Disable, Proxy, 3)
 end 
