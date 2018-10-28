@@ -19,14 +19,18 @@ local Update = function(self, event, unit)
 
 	local groupRole = UnitGroupRolesAssigned(self.unit)
 	if (groupRole == "TANK" or groupRole == "HEALER" or groupRole == "DAMAGER") then
+		local hasRoleTexture
 		for role, objectName in pairs(roleToObject) do 
 			local object = element[objectName]
 			if object then 
 				object:SetShown(role == groupRole)
+				hasRoleTexture = true
 			end 
 		end 
-		if element.Show then 
+		if (element.Show and hasRoleTexture) then 
 			element:Show()
+		elseif element.Hide then  
+			element:Hide()
 		end 
 	else
 		for role, objectName in pairs(roleToObject) do 
@@ -100,5 +104,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 9)
+	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 10)
 end 
