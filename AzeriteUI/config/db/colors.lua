@@ -85,7 +85,7 @@ Colors.xp = prepare(116/255, 23/255, 229/255) -- xp bar
 Colors.xpValue = prepare(145/255, 77/255, 229/255) -- xp bar text
 Colors.rested = prepare(163/255, 23/255, 229/255) -- xp bar while being rested
 Colors.restedValue = prepare(203/255, 77/255, 229/255) -- xp bar text while being rested
-Colors.restedBonus = prepare(3/4* 93/255, 3/4* 23/255, 3/4* 179/255) -- rested bonus bar
+Colors.restedBonus = prepare(69/255, 17/255, 134/255) -- rested bonus bar
 Colors.artifact = prepare(229/255, 204/255, 127/255) -- artifact or azerite power bar
 
 -- Unit Class Coloring
@@ -130,7 +130,7 @@ Colors.power.RAGE = prepare(215/255, 7/255, 7/255) -- Druids, Warriors
 Colors.power.RAGE_CRYSTAL = prepare(125/255, 168/255, 195/255) -- Druids, Warriors
 Colors.power.FOCUS = prepare(125/255, 168/255, 195/255) -- Hunters and Hunter Pets
 Colors.power.ENERGY = prepare(254/255, 245/255, 145/255) -- Rogues, Druids, Monks
-Colors.power.ENERGY_CRYSTAL = prepare(0/255, 167/255 *1.25, 141 *1.25/255) -- Rogues, Druids, Monks
+Colors.power.ENERGY_CRYSTAL = prepare(0/255, 208/255, 176/255) -- Rogues, Druids, Monks
 Colors.power.COMBO_POINTS = prepare(255/255, 0/255, 30/255) -- Rogues, Druids, Vehicles
 Colors.power.RUNES = prepare(100/255, 155/255, 225/255) -- Death Knight 
 Colors.power.RUNIC_POWER = prepare(0/255, 236/255, 255/255) -- Death Knights
@@ -139,7 +139,7 @@ Colors.power.LUNAR_POWER = prepare(121/255, 152/255, 192/255) -- Balance Druid A
 Colors.power.HOLY_POWER = prepare(245/255, 254/255, 145/255) -- Retribution Paladins 
 Colors.power.MAELSTROM = prepare(0/255, 188/255, 255/255) -- Shamans
 Colors.power.INSANITY = prepare(102/255, 64/255, 204/255) -- Shadow Priests 
-Colors.power.CHI = prepare(181/255 *.7, 255/255, 234/255 *.7) -- Monk 
+Colors.power.CHI = prepare(126/255, 255/255, 163/255) -- Monk 
 Colors.power.ARCANE_CHARGES = prepare(121/255, 152/255, 192/255) -- Arcane Mage
 Colors.power.FURY = prepare(255/255, 0/255, 111/255) -- Vengeance Demon Hunter
 Colors.power.PAIN = prepare(190/255, 255/255, 0/255) -- Havoc Demon Hunter 
