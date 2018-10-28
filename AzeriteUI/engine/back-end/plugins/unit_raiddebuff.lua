@@ -20,9 +20,10 @@ local Update = function(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
+	element:Hide()
 			
 	if element.PostUpdate then
-		return element:PostUpdate(unit, msg)
+		return element:PostUpdate(unit)
 	end	
 end 
 
@@ -61,5 +62,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("RaidDebuff", Enable, Disable, Proxy, 1)
+	Lib:RegisterElement("RaidDebuff", Enable, Disable, Proxy, 2)
 end 
