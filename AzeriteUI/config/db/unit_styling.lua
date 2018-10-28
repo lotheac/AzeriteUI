@@ -1790,6 +1790,7 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		groupRole:SetPoint(unpack(Layout.GroupRolePlace))
 		groupRole:SetSize(unpack(Layout.GroupRoleSize))
 		self.GroupRole = groupRole
+		self.GroupRole.PostUpdate = Layout.GroupRolePostUpdate
 
 		if Layout.UseGroupRoleBackground then 
 			local groupRoleBg = groupRole:CreateTexture()
