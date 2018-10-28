@@ -36,7 +36,8 @@ local Core = {
 		ZoneText = true
 	},
 	DisableUIMenuPages = {
-		{ ID = 5, Name = "InterfaceOptionsActionBarsPanel" }
+		{ ID = 5, Name = "InterfaceOptionsActionBarsPanel" },
+		{ ID = 10, Name = "CompactUnitFrameProfiles" }
 	},
 	UseEasySwitch = true, 
 		EasySwitch = {
