@@ -1,4 +1,4 @@
-local LibChatBubble = CogWheel:Set("LibChatBubble", 7)
+local LibChatBubble = CogWheel:Set("LibChatBubble", 8)
 if (not LibChatBubble) then	
 	return
 end
@@ -76,10 +76,10 @@ local getBackdrop = function(scale)
 		edgeFile = [[Interface\Tooltips\CHATBUBBLE-BACKDROP]],  
 		edgeSize = 16 * scale,
 		insets = {
-			left = 2.5 * scale,
-			right = 2.5 * scale,
-			top = 2.5 * scale,
-			bottom = 2.5 * scale
+			left = 16 * scale,
+			right = 16 * scale,
+			top = 16 * scale,
+			bottom = 16 * scale
 		}
 	}
 end
@@ -160,7 +160,7 @@ local OnUpdate = function(self)
 				]]--
 
 				customBubbles[bubble]:SetBackdropColor(0, 0, 0, .5)
-				customBubbles[bubble]:SetBackdropBorderColor(0, 0, 0, .25)
+				customBubbles[bubble]:SetBackdropBorderColor(0, 0, 0, .5)
 				customBubbles[bubble]:Show() -- show the bubble again
 			end
 

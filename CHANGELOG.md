@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added optional short duration nameplate auras cast by the player. 
 - Added RaidDebuff element to show a prioritized boss/harmful/custom debuff on group frames.
 
+## [1.0.76] 2018-10-28
+- Release Candidate.
+
+### Fixed
+- Fixed chat bubble backdrop inset to not overlap the border.
+
 ## [1.0.75] 2018-10-28
 - Release Candidate.
 
