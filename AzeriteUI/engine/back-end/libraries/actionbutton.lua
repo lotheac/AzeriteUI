@@ -1,4 +1,4 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 34)
+local LibActionButton = CogWheel:Set("LibActionButton", 36)
 if (not LibActionButton) then	
 	return
 end
@@ -36,15 +36,39 @@ local string_match = string.match
 local table_insert = table.insert
 local table_remove = table.remove
 local table_sort = table.sort
+local tonumber = tonumber
 local tostring = tostring
 local type = type
+
+-- WoW API
+local CursorHasItem = _G.CursorHasItem
+local CursorHasSpell = _G.CursorHasSpell
+local FlyoutHasSpell = _G.FlyoutHasSpell
+local GetActionCharges = _G.GetActionCharges
+local GetActionCooldown = _G.GetActionCooldown
+local GetActionInfo = _G.GetActionInfo
+local GetActionLossOfControlCooldown = _G.GetActionLossOfControlCooldown
+local GetActionCount = _G.GetActionCount
+local GetActionTexture = _G.GetActionTexture
+local GetBindingKey = _G.GetBindingKey 
+local GetCursorInfo = _G.GetCursorInfo
+local GetMacroSpell = _G.GetMacroSpell
+local GetTime = _G.GetTime
+local HasAction = _G.HasAction
+local IsActionInRange = _G.IsActionInRange
+local IsAutoCastPetAction = _G.C_ActionBar.IsAutoCastPetAction
+local IsConsumableAction = _G.IsConsumableAction
+local IsEnabledAutoCastPetAction = _G.C_ActionBar.IsEnabledAutoCastPetAction
+local IsStackableAction = _G.IsStackableAction
+local IsUsableAction = _G.IsUsableAction
+local SetClampedTextureRotation = _G.SetClampedTextureRotation
+local UnitClass = _G.UnitClass
 
 -- Doing it this way to make the transition to library later on easier
 LibActionButton.embeds = LibActionButton.embeds or {} 
 LibActionButton.buttons = LibActionButton.buttons or {} 
 LibActionButton.allbuttons = LibActionButton.allbuttons or {} 
 LibActionButton.callbacks = LibActionButton.callbacks or {} 
-LibActionButton.elements = LibActionButton.elements or {} -- global buttontype registry
 LibActionButton.controllers = LibActionButton.controllers or {} -- controllers to return bindings to pet battles, vehicles, etc 
 LibActionButton.numButtons = LibActionButton.numButtons or 0 -- total number of spawned buttons 
 
@@ -52,7 +76,6 @@ LibActionButton.numButtons = LibActionButton.numButtons or 0 -- total number of 
 local AllButtons = LibActionButton.allbuttons
 local Buttons = LibActionButton.buttons
 local Callbacks = LibActionButton.callbacks
-local Templates = LibActionButton.elements
 local Controllers = LibActionButton.controllers
 
 -- Blizzard Textures
@@ -64,9 +87,11 @@ local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 local BUTTON_NAME_TEMPLATE_SIMPLE = "%sActionButton"
 local BUTTON_NAME_TEMPLATE_FULL = "%sActionButton%d"
 
+-- Time constants
+local DAY, HOUR, MINUTE = 86400, 3600, 60
+
 -- Utility Functions
 ----------------------------------------------------
-
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -80,31 +105,266 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
--- Button Template
+local nameHelper = function(self, id)
+	local name
+	if id then 
+		name = string_format(BUTTON_NAME_TEMPLATE_FULL, self:GetOwner():GetName(), id)
+	else 
+		name = string_format(BUTTON_NAME_TEMPLATE_SIMPLE, self:GetOwner():GetName())
+	end 
+	return name
+end
+
+local sortByID = function(a,b)
+	if (a) and (b) then 
+		if (a.id) and (b.id) then 
+			return (a.id < b.id)
+		else
+			return a.id and true or false 
+		end 
+	else 
+		return a and true or false
+	end 
+end 
+
+-- Aimed to be compact and displayed on buttons
+local formatCooldownTime = function(time)
+	if time > DAY then -- more than a day
+		time = time + DAY/2
+		return "%d%s", time/DAY - time/DAY%1, "d"
+	elseif time > HOUR then -- more than an hour
+		time = time + HOUR/2
+		return "%d%s", time/HOUR - time/HOUR%1, "h"
+	elseif time > MINUTE then -- more than a minute
+		time = time + MINUTE/2
+		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
+	elseif time > 10 then -- more than 10 seconds
+		return "%d", time - time%1
+	elseif time >= 1 then -- more than 5 seconds
+		return "|cffff8800%d|r", time - time%1
+	elseif time > 0 then
+		return "|cffff0000%d|r", time*10 - time*10%1
+	else
+		return ""
+	end	
+end
+
+
+-- Updates
 ----------------------------------------------------
+local OnUpdate = function(self, elapsed)
 
-local Button = LibActionButton:CreateFrame("CheckButton")
-local Button_MT = { __index = Button }
+	self.flashTime = (self.flashTime or 0) - elapsed
+	self.rangeTimer = (self.rangeTimer or -1) - elapsed
+	self.cooldownTimer = (self.cooldownTimer or 0) - elapsed
 
--- Grab some original methods for our own event handlers
-local IsEventRegistered = Button_MT.__index.IsEventRegistered
-local RegisterEvent = Button_MT.__index.RegisterEvent
-local RegisterUnitEvent = Button_MT.__index.RegisterUnitEvent
-local UnregisterEvent = Button_MT.__index.UnregisterEvent
-local UnregisterAllEvents = Button_MT.__index.UnregisterAllEvents
+	-- Cooldown count
+	if (self.cooldownTimer <= 0) then 
+		local Cooldown = self.Cooldown 
+		local CooldownCount = self.CooldownCount
+		if Cooldown.active then 
 
--- Don't expose this method directly.
--- It's accessible through GetScript("OnEvent") though. 
-local OnButtonEvent = function(button, event, ...)
-	if (button:IsVisible() and Callbacks[button] and Callbacks[button][event]) then 
-		local events = Callbacks[button][event]
-		for i = 1, #events do
-			events[i](button, event, ...)
+			local start, duration
+			if (Cooldown.currentCooldownType == COOLDOWN_TYPE_NORMAL) then 
+				local action = self.buttonAction
+				start, duration = GetActionCooldown(action)
+
+			elseif (Cooldown.currentCooldownType == COOLDOWN_TYPE_LOSS_OF_CONTROL) then
+				local action = self.buttonAction
+				start, duration = GetActionLossOfControlCooldown(action)
+
+			end 
+
+			if CooldownCount then 
+				if ((start > 0) and (duration > 1.5)) then
+					CooldownCount:SetFormattedText(formatCooldownTime(duration - GetTime() + start))
+					if (not CooldownCount:IsShown()) then 
+						CooldownCount:Show()
+					end
+				else 
+					if (CooldownCount:IsShown()) then 
+						CooldownCount:SetText("")
+						CooldownCount:Hide()
+					end
+				end  
+			end 
+		else
+			if (CooldownCount and CooldownCount:IsShown()) then 
+				CooldownCount:SetText("")
+				CooldownCount:Hide()
+			end
+		end 
+
+		self.cooldownTimer = .1
+	end 
+
+	-- Range
+	if (self.rangeTimer <= 0) then
+		local inRange = self:IsInRange()
+		local oldRange = self.outOfRange
+		self.outOfRange = (inRange == false)
+		if oldRange ~= self.outOfRange then
+			self:UpdateUsable()
 		end
+		self.rangeTimer = TOOLTIP_UPDATE_TIME
+	end 
+
+	-- Flashing
+	if (self.flashTime <= 0) then
+		if (self.flashing == 1) then
+			if self.Flash:IsShown() then
+				self.Flash:Hide()
+			else
+				self.Flash:Show()
+			end
+		end
+		self.flashTime = self.flashTime + ATTACK_BUTTON_FLASH_TIME
+	end 
+
+end 
+
+local Update = function(self, event, ...)
+	local arg1 = ...
+
+	if (event == "PLAYER_ENTERING_WORLD") then 
+		self:Update()
+		self:UpdateAutoCastMacro()
+
+	elseif (event == "PLAYER_REGEN_ENABLED") then 
+		if self.queuedForMacroUpdate then 
+			self:UpdateAutoCastMacro()
+			self.queuedForMacroUpdate = nil
+		end 
+
+	elseif (event == "UPDATE_SHAPESHIFT_FORM") or (event == "UPDATE_VEHICLE_ACTIONBAR") then 
+		self:Update()
+
+	elseif (event == "PLAYER_ENTER_COMBAT") or (event == "PLAYER_LEAVE_COMBAT") then
+		self:UpdateFlash()
+
+	elseif (event == "ACTIONBAR_SLOT_CHANGED") then
+		if ((arg1 == 0) or (arg1 == self.buttonAction)) then
+			self.SpellHighlight:Hide()
+			self:Update()
+			self:UpdateAutoCastMacro()
+		end
+
+	elseif (event == "ACTIONBAR_UPDATE_COOLDOWN") then
+		self:UpdateCooldown()
+	
+	elseif (event == "ACTIONBAR_UPDATE_USABLE") then
+		self:UpdateUsable()
+
+	elseif 	(event == "ACTIONBAR_UPDATE_STATE") or
+			((event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITED_VEHICLE") and (arg1 == "player")) or
+			((event == "COMPANION_UPDATE") and (arg1 == "MOUNT")) then
+		self:UpdateCheckedState()
+
+	elseif (event == "CURSOR_UPDATE") 
+		or (event == "ACTIONBAR_SHOWGRID") or (event == "PET_BAR_SHOWGRID") 
+		or (event == "ACTIONBAR_HIDEGRID") or (event == "PET_BAR_HIDEGRID") then 
+			self:UpdateGrid()
+
+	elseif (event == "PET_BAR_UPDATE") then 
+		self:UpdateAutoCast()
+
+	elseif (event == "LOSS_OF_CONTROL_ADDED") then
+		self:UpdateCooldown()
+
+	elseif (event == "LOSS_OF_CONTROL_UPDATE") then
+		self:UpdateCooldown()
+
+	elseif (event == "PLAYER_MOUNT_DISPLAY_CHANGED") then 
+		self:UpdateUsable()
+
+	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW") then
+		local spellID = self:GetSpellID()
+		if (spellID and (spellID == arg1)) then
+			self.SpellHighlight:Show()
+		else
+			local actionType, id = GetActionInfo(self.buttonAction)
+			if (actionType == "flyout") and FlyoutHasSpell(id, arg1) then
+				self.SpellHighlight:Show()
+			end
+		end
+
+	elseif (event == "SPELL_ACTIVATION_OVERLAY_GLOW_HIDE") then
+		local spellID = self:GetSpellID()
+		if (spellID and (spellID == arg1)) then
+			self.SpellHighlight:Hide()
+		else
+			local actionType, id = GetActionInfo(self.buttonAction)
+			if actionType == "flyout" and FlyoutHasSpell(id, arg1) then
+				self.SpellHighlight:Hide()
+			end
+		end
+
+	elseif (event == "SPELL_UPDATE_CHARGES") then
+		self:UpdateCount()
+
+	elseif (event == "SPELL_UPDATE_ICON") then
+		self:Update() -- really? how often is this called?
+
+	elseif (event == "TRADE_SKILL_SHOW") or (event == "TRADE_SKILL_CLOSE") or (event == "ARCHAEOLOGY_CLOSED") then
+		self:UpdateCheckedState()
+
+	elseif (event == "UPDATE_BINDINGS") then
+		self:UpdateBinding()
+
+	elseif (event == "UPDATE_SUMMONPETS_ACTION") then 
+		local actionType, id = GetActionInfo(self.buttonAction)
+		if (actionType == "summonpet") then
+			local texture = GetActionTexture(self.buttonAction)
+			if texture then
+				self.Icon:SetTexture(texture)
+			end
+		end
+
 	end 
 end
 
-Button.RegisterEvent = function(self, event, func)
+local UpdateTooltip = function(self)
+	local tooltip = self:GetTooltip()
+	tooltip:Hide()
+	tooltip:SetDefaultAnchor(self)
+	tooltip:SetMinimumWidth(280)
+	tooltip:SetAction(self.buttonAction)
+end 
+
+local OnCooldownDone = function(cooldown)
+	cooldown.active = nil
+	cooldown:SetScript("OnCooldownDone", nil)
+	cooldown:GetParent():UpdateCooldown()
+end
+
+local SetCooldown = function(cooldown, start, duration, enable, forceShowDrawEdge, modRate)
+	if (enable and (enable ~= 0) and (start > 0) and (duration > 0)) then
+		cooldown:SetDrawEdge(forceShowDrawEdge)
+		cooldown:SetCooldown(start, duration, modRate)
+		cooldown.active = true
+	else
+		cooldown.active = nil
+		cooldown:Clear()
+	end
+end
+
+
+-- ActionButton Template
+----------------------------------------------------
+local ActionButton = LibActionButton:CreateFrame("CheckButton")
+local ActionButton_MT = { __index = ActionButton }
+
+-- Grab some original methods for our own event handlers
+local IsEventRegistered = ActionButton_MT.__index.IsEventRegistered
+local RegisterEvent = ActionButton_MT.__index.RegisterEvent
+local RegisterUnitEvent = ActionButton_MT.__index.RegisterUnitEvent
+local UnregisterEvent = ActionButton_MT.__index.UnregisterEvent
+local UnregisterAllEvents = ActionButton_MT.__index.UnregisterAllEvents
+
+
+-- Event Handling
+----------------------------------------------------
+ActionButton.RegisterEvent = function(self, event, func)
 	if (not Callbacks[self]) then
 		Callbacks[self] = {}
 	end
@@ -128,7 +388,7 @@ Button.RegisterEvent = function(self, event, func)
 	end
 end
 
-Button.UnregisterEvent = function(self, event, func)
+ActionButton.UnregisterEvent = function(self, event, func)
 	if not Callbacks[self] or not Callbacks[self][event] then
 		return
 	end
@@ -145,7 +405,7 @@ Button.UnregisterEvent = function(self, event, func)
 	end
 end
 
-Button.UnregisterAllEvents = function(self)
+ActionButton.UnregisterAllEvents = function(self)
 	if not Callbacks[self] then 
 		return
 	end
@@ -157,30 +417,191 @@ Button.UnregisterAllEvents = function(self)
 	UnregisterAllEvents(self)
 end
 
-Button.GetSpellID = function(self)
-	return nil
-end
 
--- Proxy this to the library tooltip method
-Button.GetTooltip = function(self)
-	return LibActionButton:GetActionButtonTooltip()
-end
+-- Button Updates
+----------------------------------------------------
+ActionButton.Update = function(self)
+	if HasAction(self.buttonAction) then 
+		self.hasAction = true
+		self.Icon:SetTexture(GetActionTexture(self.buttonAction))
+		self:SetAlpha(1)
+	else
+		self.hasAction = false
+		self.Icon:SetTexture(nil) 
+	end 
 
--- This will cause multiple updates when library is updated. Hmm....
-hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
-	if AllButtons[self] then
-		self:UpdateFlyout()
-	end
-end)
+	self:UpdateBinding()
+	self:UpdateCount()
+	self:UpdateCooldown()
+	self:UpdateFlash()
+	self:UpdateUsable()
+	self:UpdateGrid()
+	self:UpdateSpellHighlight()
+	self:UpdateAutoCast()
+	self:UpdateFlyout()
 
-Button.HasFlyoutShown = function(self)
-	local buttonAction = self:GetAction()
-	if HasAction(buttonAction) then
-		return (GetActionInfo(buttonAction) == "flyout") and (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self)
+	if self.PostUpdate then 
+		self:PostUpdate()
 	end 
 end
 
-Button.UpdateFlyout = function(self)
+-- Called when the button action (and thus the texture) has changed
+ActionButton.UpdateAction = function(self)
+	self.buttonAction = self:GetAction()
+	local texture = GetActionTexture(self.buttonAction)
+	if texture then 
+		self.Icon:SetTexture(texture)
+	else
+		self.Icon:SetTexture(nil) 
+	end 
+	self:Update()
+end 
+
+ActionButton.UpdateAutoCast = function(self)
+	if (HasAction(self.buttonAction) and IsAutoCastPetAction(self.buttonAction)) then 
+		if IsEnabledAutoCastPetAction(self.buttonAction) then 
+			if (not self.SpellAutoCast.Ants.Anim:IsPlaying()) then
+				self.SpellAutoCast.Ants.Anim:Play()
+				self.SpellAutoCast.Glow.Anim:Play()
+			end
+			self.SpellAutoCast:SetAlpha(1)
+		else 
+			if (self.SpellAutoCast.Ants.Anim:IsPlaying()) then
+				self.SpellAutoCast.Ants.Anim:Pause()
+				self.SpellAutoCast.Glow.Anim:Pause()
+			end
+			self.SpellAutoCast:SetAlpha(.5)
+		end 
+		self.SpellAutoCast:Show()
+	else 
+		self.SpellAutoCast:Hide()
+	end 
+end
+
+ActionButton.UpdateAutoCastMacro = function(self)
+	if InCombatLockdown() then 
+		self.queuedForMacroUpdate = true
+		return 
+	end
+	local name = IsAutoCastPetAction(self.buttonAction) and GetSpellInfo(self:GetSpellID())
+	if name then 
+		self:SetAttribute("macrotext", "/petautocasttoggle "..name)
+	else 
+		self:SetAttribute("macrotext", nil)
+	end 
+end
+
+-- Called when the keybinds are loaded or changed
+ActionButton.UpdateBinding = function(self) 
+	local Keybind = self.Keybind
+	if Keybind then 
+		Keybind:SetText(self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton"))
+	end 
+end 
+
+ActionButton.UpdateCheckedState = function(self)
+	if IsCurrentAction(self.buttonAction) or IsAutoRepeatAction(self.buttonAction) then
+		self:SetChecked(true)
+	else
+		self:SetChecked(false)
+	end
+end
+
+ActionButton.UpdateCooldown = function(self)
+	local Cooldown = self.Cooldown
+	if Cooldown then
+		local locStart, locDuration = GetActionLossOfControlCooldown(self.buttonAction)
+		local start, duration, enable, modRate = GetActionCooldown(self.buttonAction)
+		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.buttonAction)
+
+		if ((locStart + locDuration) > (start + duration)) then
+
+			if Cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL then
+				Cooldown:SetEdgeTexture(EDGE_LOC_TEXTURE)
+				Cooldown:SetSwipeColor(0.17, 0, 0)
+				Cooldown:SetHideCountdownNumbers(true)
+				Cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
+			end
+			SetCooldown(Cooldown, locStart, locDuration, true, true, modRate)
+
+		else
+
+			if (Cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL) then
+				Cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+				Cooldown:SetSwipeColor(0, 0, 0)
+				Cooldown:SetHideCountdownNumbers(true)
+				Cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
+			end
+
+			if (locStart > 0) then
+				Cooldown:SetScript("OnCooldownDone", OnCooldownDone)
+			end
+
+			local ChargeCooldown = self.ChargeCooldown
+			if ChargeCooldown then 
+				if (charges and maxCharges and (charges > 0) and (charges < maxCharges)) then
+
+					-- Set the spellcharge cooldown
+					--cooldown:SetDrawBling(cooldown:GetEffectiveAlpha() > 0.5)
+					SetCooldown(ChargeCooldown, chargeStart, chargeDuration, true, true, chargeModRate)
+				
+					if ((not chargeStart) or (chargeStart == 0)) then
+						ChargeCooldown.active = nil
+						ChargeCooldown:Hide()
+					end
+					
+				else
+					ChargeCooldown.active = nil
+					ChargeCooldown:Hide()
+				end
+			end 
+
+			SetCooldown(Cooldown, start, duration, enable, false, modRate)
+		end
+	end 
+end
+
+ActionButton.UpdateCount = function(self) 
+	local Count = self.Count
+	if Count then 
+		local count
+		local action = self.buttonAction
+		if HasAction(action) then 
+			if IsConsumableAction(action) or IsStackableAction(action) then
+				local count = GetActionCount(action)
+				if (count > (self.maxDisplayCount or 9999)) then
+					count = "*"
+				end
+			else
+				local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(action)
+				if (charges and maxCharges and (maxCharges > 1) and (charges > 0)) then
+					count = charges
+				end
+			end
+	
+		end 
+		Count:SetText(count or "")
+	end 
+end 
+
+-- Updates the red flashing on attack skills 
+ActionButton.UpdateFlash = function(self)
+	local Flash = self.Flash
+	if Flash then 
+		local action = self.buttonAction
+		if HasAction(action) then 
+			if (IsAttackAction(action) and IsCurrentAction(action)) or IsAutoRepeatAction(action) then
+				self.flashing = 1
+				self.flashTime = 0
+			else
+				self.flashing = 0
+				self.Flash:Hide()
+			end
+		end 
+	end 
+end 
+
+ActionButton.UpdateFlyout = function(self)
 
 	if self.FlyoutBorder then 
 		self.FlyoutBorder:Hide()
@@ -225,6 +646,245 @@ Button.UpdateFlyout = function(self)
 		self.FlyoutArrow:Hide()	
 	end 
 end
+
+ActionButton.UpdateGrid = function(self)
+	if self.showGrid then 
+		return self:SetAlpha(1)
+	elseif (self:IsShown()) then 
+		if HasAction(self.buttonAction) then 
+			return self:SetAlpha(1)
+		elseif (CursorHasSpell() or CursorHasItem()) then 
+			return self:SetAlpha(1)
+		else 
+			local cursor = GetCursorInfo()
+			if cursor == "petaction" or cursor == "spell" or cursor == "macro" or cursor == "mount" or cursor == "item" or cursor == "battlepet" then 
+				return self:SetAlpha(1)
+			end 
+		end 
+	end 
+	self:SetAlpha(0)
+end
+
+ActionButton.UpdateSpellHighlight = function(self)
+	local spellId = self:GetSpellID()
+	if (spellId and IsSpellOverlayed(spellId)) then
+		self.SpellHighlight:Show()
+	else
+		self.SpellHighlight:Hide()
+	end
+end
+
+-- Called when the usable state of the button changes
+ActionButton.UpdateUsable = function(self) 
+	if UnitIsDeadOrGhost("player") then 
+		self.Icon:SetDesaturated(true)
+		self.Icon:SetVertexColor(.4, .4, .4)
+
+	elseif self.outOfRange then
+		self.Icon:SetDesaturated(false)
+		self.Icon:SetVertexColor(1, .15, .15)
+
+	else
+		local isUsable, notEnoughMana = IsUsableAction(self.buttonAction)
+		if isUsable then
+			self.Icon:SetDesaturated(false)
+			self.Icon:SetVertexColor(1, 1, 1)
+
+		elseif notEnoughMana then
+			self.Icon:SetDesaturated(false)
+			self.Icon:SetVertexColor(.35, .35, 1)
+
+		else
+			self.Icon:SetDesaturated(false)
+			self.Icon:SetVertexColor(.4, .4, .4)
+		end
+	end
+end 
+
+
+-- Getters
+----------------------------------------------------
+ActionButton.GetAction = function(self)
+	local actionpage = tonumber(self:GetAttribute("actionpage"))
+	local id = self:GetID()
+	return actionpage and (actionpage > 1) and ((actionpage - 1) * NUM_ACTIONBAR_BUTTONS + id) or id
+end
+
+ActionButton.GetActionTexture = function(self) 
+	return GetActionTexture(self.buttonAction)
+end
+
+ActionButton.GetCooldown = function(self) 
+	return GetActionCooldown(self.buttonAction) 
+end
+
+ActionButton.GetLossOfControlCooldown = function(self) 
+	return GetActionLossOfControlCooldown(self.buttonAction) 
+end
+
+ActionButton.GetPageID = function(self)
+	return self._pager:GetID()
+end 
+
+ActionButton.GetPager = function(self)
+	return self._pager
+end 
+
+ActionButton.GetSpellID = function(self)
+	local actionType, id, subType = GetActionInfo(self.buttonAction)
+	if (actionType == "spell") then
+		return id
+	elseif (actionType == "macro") then
+		return (GetMacroSpell(id))
+	end
+end
+
+ActionButton.GetTooltip = function(self)
+	return LibActionButton:GetActionButtonTooltip()
+end
+
+
+-- Isers
+----------------------------------------------------
+ActionButton.IsFlyoutShown = function(self)
+	local buttonAction = self:GetAction()
+	if HasAction(buttonAction) then
+		return (GetActionInfo(buttonAction) == "flyout") and (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self)
+	end 
+end
+
+ActionButton.IsInRange = function(self)
+	local unit = self:GetAttribute("unit")
+	if (unit == "player") then
+		unit = nil
+	end
+
+	local val = IsActionInRange(self.buttonAction, unit)
+	if (val == 1) then 
+		val = true 
+	elseif (val == 0) then 
+		val = false 
+	end
+
+	return val
+end
+
+
+-- Script Handlers
+----------------------------------------------------
+ActionButton.OnEnable = function(self)
+	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", Update)
+	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Update)
+	self:RegisterEvent("ACTIONBAR_UPDATE_STATE", Update)
+	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Update)
+	self:RegisterEvent("ACTIONBAR_HIDEGRID", Update)
+	self:RegisterEvent("ACTIONBAR_SHOWGRID", Update)
+	self:RegisterEvent("ARCHAEOLOGY_CLOSED", Update)
+	self:RegisterEvent("COMPANION_UPDATE", Update)
+	--self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
+	self:RegisterEvent("CURSOR_UPDATE", Update)
+	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Update)
+	self:RegisterEvent("LOSS_OF_CONTROL_UPDATE", Update)
+	self:RegisterEvent("PET_BAR_HIDEGRID", Update)
+	self:RegisterEvent("PET_BAR_SHOWGRID", Update)
+	self:RegisterEvent("PET_BAR_UPDATE", Update)
+	self:RegisterEvent("PLAYER_ENTER_COMBAT", Update)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", Update)
+	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Update)
+	self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", Update)
+	self:RegisterEvent("PLAYER_TARGET_CHANGED", Update)
+	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
+	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
+	self:RegisterEvent("SPELL_UPDATE_CHARGES", Update)
+	self:RegisterEvent("SPELL_UPDATE_ICON", Update)
+	self:RegisterEvent("TRADE_SKILL_CLOSE", Update)
+	self:RegisterEvent("TRADE_SKILL_SHOW", Update)
+	--self:RegisterEvent("SPELLS_CHANGED", Update)
+	self:RegisterEvent("UNIT_ENTERED_VEHICLE", Update)
+	self:RegisterEvent("UNIT_EXITED_VEHICLE", Update)
+	self:RegisterEvent("UPDATE_BINDINGS", Update)
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", Update)
+	self:RegisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
+	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
+
+end
+
+ActionButton.OnDisable = function(self)
+	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED", Update)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN", Update)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_STATE", Update)
+	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Update)
+	self:UnregisterEvent("ACTIONBAR_HIDEGRID", Update)
+	self:UnregisterEvent("ACTIONBAR_SHOWGRID", Update)
+	self:UnregisterEvent("ARCHAEOLOGY_CLOSED", Update)
+	self:UnregisterEvent("COMPANION_UPDATE", Update)
+	--self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
+	self:UnregisterEvent("CURSOR_UPDATE", Update)
+	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Update)
+	self:UnregisterEvent("LOSS_OF_CONTROL_UPDATE", Update)
+	self:UnregisterEvent("PET_BAR_HIDEGRID", Update)
+	self:UnregisterEvent("PET_BAR_SHOWGRID", Update)
+	self:UnregisterEvent("PET_BAR_UPDATE", Update)
+	self:UnregisterEvent("PLAYER_ENTER_COMBAT", Update)
+	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Update)
+	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Update)
+	self:UnregisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED", Update)
+	self:UnregisterEvent("PLAYER_TARGET_CHANGED", Update)
+	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
+	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
+	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Update)
+	self:UnregisterEvent("SPELL_UPDATE_ICON", Update)
+	self:UnregisterEvent("TRADE_SKILL_CLOSE", Update)
+	self:UnregisterEvent("TRADE_SKILL_SHOW", Update)
+	--self:UnregisterEvent("SPELLS_CHANGED", Update)
+	self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Update)
+	self:UnregisterEvent("UNIT_EXITED_VEHICLE", Update)
+	self:UnregisterEvent("UPDATE_BINDINGS", Update)
+	self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Update)
+	self:UnregisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
+	self:UnregisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
+end
+
+ActionButton.OnEvent = function(button, event, ...)
+	if (button:IsVisible() and Callbacks[button] and Callbacks[button][event]) then 
+		local events = Callbacks[button][event]
+		for i = 1, #events do
+			events[i](button, event, ...)
+		end
+	end 
+end
+
+ActionButton.OnEnter = function(self) 
+	self.isMouseOver = true
+	self.UpdateTooltip = UpdateTooltip
+
+	self:UpdateTooltip()
+
+	if self.PostEnter then 
+		self:PostEnter()
+	end 
+end
+
+ActionButton.OnLeave = function(self) 
+	self.isMouseOver = nil
+	self.UpdateTooltip = nil
+
+	local tooltip = self:GetTooltip()
+	tooltip:Hide()
+
+	if self.PostLeave then 
+		self:PostLeave()
+	end 
+end
+
+ActionButton.PreClick = function(self) 
+end
+
+ActionButton.PostClick = function(self) 
+end
+
 
 -- Library API
 ----------------------------------------------------
@@ -420,106 +1080,17 @@ LibActionButton.CreateFlyoutArrow = function(self, button)
 	button.FlyoutBorderShadow = button:CreateTexture()
 end 
 
-LibActionButton.GetGenericMeta = function(self)
-	return Button_MT
-end
-
--- register a widget/element
-LibActionButton.RegisterElement = function(self, buttonType, spawnFunc, enableFunc, disableFunc, updateFunc, version)
-	check(buttonType, 1, "string")
-	check(spawnFunc, 2, "function")
-	check(enableFunc, 3, "function")
-	check(disableFunc, 4, "function")
-	check(updateFunc, 5, "function")
-	check(version, 6, "number", "nil")
-
-	-- Does an old version of the element exist?
-	local old = Templates[buttonType]
-	local needUpdate
-	if old then
-		if old.version then 
-			if version then 
-				if version <= old.version then 
-					return 
-				end 
-				-- A more recent version is being registered
-				needUpdate = true 
-			else 
-				return 
-			end 
-		else 
-			if version then 
-				-- A more recent version is being registered
-				needUpdate = true 
-			else 
-				-- Two unversioned. just follow first come first served, 
-				-- to allow the standalone addon to trumph. 
-				return 
-			end 
-		end  
-		return 
-	end 
-
-	-- Create our new element 
-	local new = {
-		Spawn = spawnFunc,
-		Enable = enableFunc,
-		Disable = disableFunc,
-		Update = updateFunc,
-		version = version
-	}
-
-	-- Change the pointer to the new element
-	-- (doesn't change what table 'old' still points to)
-	Templates[buttonType] = new 
-
-	-- Postupdate existing buttons of this type with new events
-	if needUpdate then 
-
-		-- Iterate all buttons for it
-		for button,type in pairs(Buttons) do 
-			if (type == buttonType) then 
-
-				-- Run the old disable method, 
-				-- to get rid of old events and onupdate handlers.
-				if old.Disable then 
-					old.Disable(button)
-				end 
-
-				-- Run the new enable method
-				if new.Enable then 
-					new.Enable(button)
-				end 
-
-				-- Post update the button
-				button:Update()
-			end 
-		end 
-	end 
-end
 
 -- Public API
 ----------------------------------------------------
-
-local nameHelper = function(self, id)
-	local name
-	if id then 
-		name = string_format(BUTTON_NAME_TEMPLATE_FULL, self:GetOwner():GetName(), id)
-	else 
-		name = string_format(BUTTON_NAME_TEMPLATE_SIMPLE, self:GetOwner():GetName())
-	end 
-	return name
-end
-
 LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTemplate, ...)
 	check(parent, 1, "string", "table")
 	check(buttonType, 2, "string")
 	check(buttonTemplate, 3, "table", "nil")
 
-	local template = Templates[buttonType]
-	if (not template) then 
-		error(("Unknown button type: '%s'"):format(buttonType), 3)
-	end 
+	-- Doing it this way to only include the global arguments 
+	-- available in all button types as function arguments. 
+	local barID, buttonID = ...
 
 	-- Store the button and its type
 	if (not Buttons[self]) then 
@@ -538,8 +1109,203 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	-- Make up an unique name
 	local name = nameHelper(self, count + 1)
 
-	-- Retrieve the constructor method for this button type and spawn the button
-	local button = template.Spawn(self, parent, name, buttonTemplate, ...)
+	-- Create an additional visibility layer to handle manual toggling
+	local visibility = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
+	visibility:Hide() -- driver will show it later on
+	visibility:SetAttribute("_onattributechanged", [=[
+		if (name == "state-vis") then
+			if (value == "show") then 
+				self:Show(); 
+			elseif (value == "hide") then 
+				self:Hide(); 
+			end 
+		end
+	]=])
+
+	-- Add a page driver layer, basically a fake bar for the current button
+	local page = visibility:CreateFrame("Frame", nil, "SecureHandlerAttributeTemplate")
+	page.id = barID
+	page:SetID(barID) 
+	page:SetAttribute("_onattributechanged", [=[ 
+		if (name == "state-page") then 
+
+			if (value == "possess") or (value == "11") then
+				if HasVehicleActionBar() then
+					value = GetVehicleBarIndex(); 
+				elseif HasOverrideActionBar() then 
+					value = GetOverrideBarIndex(); 
+				elseif HasTempShapeshiftActionBar() then
+					value = GetTempShapeshiftBarIndex(); 
+				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then 
+					value = GetBonusBarIndex();
+				else
+					value = nil;
+				end
+				if (not value) then
+					value = 12; 
+				end
+			end
+
+			self:SetAttribute("state", value);
+
+			local button = self:GetFrameRef("Button"); 
+			local buttonPage = button:GetAttribute("actionpage"); 
+			local id = button:GetID(); 
+			local actionpage = tonumber(value); 
+			local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+
+			button:SetAttribute("actionpage", actionpage or 0); 
+			button:SetAttribute("action", slot); 
+			button:CallMethod("UpdateAction"); 
+		end 
+	]=])
+	
+	local button = setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT)
+
+	LibActionButton:CreateButtonLayers(button)
+	LibActionButton:CreateButtonOverlay(button)
+	LibActionButton:CreateButtonCooldowns(button)
+	LibActionButton:CreateButtonCount(button)
+	LibActionButton:CreateButtonKeybind(button)
+	LibActionButton:CreateButtonSpellHighlight(button)
+	LibActionButton:CreateButtonAutoCast(button)
+	LibActionButton:CreateFlyoutArrow(button)
+
+	button:SetFrameStrata("LOW")
+	button:RegisterForDrag("LeftButton", "RightButton")
+	button:RegisterForClicks("AnyUp")
+	button:SetID(buttonID)
+	button:SetAttribute("type", "action")
+	button:SetAttribute("flyoutDirection", "UP")
+	button:SetAttribute("checkselfcast", true)
+	button:SetAttribute("checkfocuscast", true)
+	button:SetAttribute("useparent-unit", true)
+	button:SetAttribute("useparent-actionpage", true)
+	button.id = buttonID
+	button.action = 0
+
+	button._owner = visibility
+	button._pager = page
+
+	button:SetScript("OnEnter", ActionButton.OnEnter)
+	button:SetScript("OnLeave", ActionButton.OnLeave)
+	button:SetScript("PreClick", ActionButton.PreClick)
+	button:SetScript("PostClick", ActionButton.PostClick)
+	button:SetScript("OnUpdate", OnUpdate)
+
+	-- A little magic to allow us to toggle autocasting of pet abilities
+	page:WrapScript(button, "PreClick", [[
+		if (button ~= "RightButton") then 
+			if (self:GetAttribute("type2")) then 
+				self:SetAttribute("type2", nil); 
+			end 
+			return 
+		end
+		local actionpage = self:GetAttribute("actionpage"); 
+		if (not actionpage) then
+			if (self:GetAttribute("type2")) then 
+				self:SetAttribute("type2", nil); 
+			end 
+			return
+		end
+		local id = self:GetID(); 
+		local action = (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+		local actionType, id, subType = GetActionInfo(action);
+		if (subType == "pet") and (id ~= 0) then 
+			self:SetAttribute("type2", "macro"); 
+		else 
+			if (self:GetAttribute("type2")) then 
+				self:SetAttribute("type2", nil); 
+			end 
+		end 
+	]]) 
+
+	page:SetFrameRef("Visibility", visibility)
+	page:SetFrameRef("Button", button)
+	visibility:SetFrameRef("Page", page)
+
+	button:SetAttribute("OnDragStart", [[
+		local actionpage = self:GetAttribute("actionpage"); 
+		if (not actionpage) then
+			return
+		end
+		local id = self:GetID(); 
+		local action = (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
+			return "action", action
+		end
+	]])
+
+	page:WrapScript(button, "OnDragStart", [[
+		return self:RunAttribute("OnDragStart")
+	]])
+
+	-- Wrap twice, because the post-script is not run when the pre-script causes a pickup (doh)
+	-- we also need some phony message, or it won't work =/
+	page:WrapScript(button, "OnDragStart", [[
+		return "message", "update"
+	]])
+
+	-- when a spell is dropped onto the buttons
+	page:WrapScript(button, "OnReceiveDrag", [[
+		local kind, value, subtype, extra = ...
+		if ((not kind) or (not value)) then 
+			return false 
+		end
+		local actionpage = self:GetAttribute("actionpage"); 
+		local id = self:GetID(); 
+		local action = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
+			return "action", action
+		end 
+	]])
+
+	local driver 
+	if (barID == 1) then 
+		driver = "[vehicleui][overridebar][possessbar][shapeshift]possess; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
+
+		local _, playerClass = UnitClass("player")
+		if (playerClass == "DRUID") then
+			driver = driver .. "; [bonusbar:1,nostealth] 7; [bonusbar:1,stealth] 7; [bonusbar:2] 8; [bonusbar:3] 9; [bonusbar:4] 10"
+
+		elseif (playerClass == "MONK") then
+			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8; [bonusbar:3] 9"
+
+		elseif (playerClass == "PRIEST") then
+			driver = driver .. "; [bonusbar:1] 7"
+
+		elseif (playerClass == "ROGUE") then
+			driver = driver .. "; [bonusbar:1] 7"
+
+		elseif (playerClass == "WARRIOR") then
+			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8" 
+		end
+		driver = driver .. "; [form] 1; 1"
+	else 
+		driver = tostring(barID)
+	end 
+
+	local visibilityDriver
+	if (barID == 1) then 
+		visibilityDriver = "[@player,exists][vehicleui][overridebar][possessbar][shapeshift]show;hide"
+	else 
+		visibilityDriver = "[overridebar][possessbar][shapeshift][vehicleui][@player,noexists]hide;show"
+	end 
+	
+	-- enable the visibility driver
+	RegisterAttributeDriver(visibility, "state-vis", visibilityDriver)
+	
+	-- reset the page before applying a new page driver
+	page:SetAttribute("state-page", "0") 
+
+	-- just in case we're not run by a header, default to state 0
+	button:SetAttribute("state", "0")
+
+	-- enable the page driver
+	RegisterAttributeDriver(page, "state-page", driver) 
+
+	-- initial action update
+	button:UpdateAction()
 
 	Buttons[self][button] = buttonType
 	AllButtons[button] = buttonType
@@ -562,32 +1328,20 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	end
 
 	-- Our own event handler
-	button:SetScript("OnEvent", OnButtonEvent)
+	button:SetScript("OnEvent", button.OnEvent)
 
 	-- Update all elements when shown
 	button:HookScript("OnShow", button.Update)
 	
 	-- Enable the newly created button
 	-- This is where events are registered and set up
-	template.Enable(button)
+	button:OnEnable()
 
 	-- Run a full initial update
 	button:Update()
 
 	return button
 end
-
-local sortByID = function(a,b)
-	if (a) and (b) then 
-		if (a.id) and (b.id) then 
-			return (a.id < b.id)
-		else
-			return a.id and true or false 
-		end 
-	else 
-		return a and true or false
-	end 
-end 
 
 -- Returns an iterator for all buttons registered to the module
 -- Buttons are returned as the first return value, and ordered by their IDs.
@@ -756,6 +1510,13 @@ LibActionButton.UpdateActionButtonBindings = function(self)
 		self:GetActionBarControllerVehicle()
 	end 
 end 
+
+-- This will cause multiple updates when library is updated. Hmm....
+hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
+	if AllButtons[self] then
+		self:UpdateFlyout()
+	end
+end)
 
 -- Module embedding
 local embedMethods = {
