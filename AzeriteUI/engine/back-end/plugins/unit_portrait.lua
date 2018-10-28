@@ -113,7 +113,7 @@ local Enable = function(self)
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
 
 		if (self.unit and string_find(self.unit, "^party")) then
-			self:RegisterEvent("PARTY_MEMBER_ENABLE", Path)
+			self:RegisterEvent("PARTY_MEMBER_ENABLE", Proxy)
 		end
 	
 		return true 
@@ -135,5 +135,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Portrait", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("Portrait", Enable, Disable, Proxy, 7)
 end 
