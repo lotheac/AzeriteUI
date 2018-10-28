@@ -1067,9 +1067,9 @@ Module.SpawnButtons = function(self)
 	
 	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
 		if hoverButtons1[self] then 
-			hoverFrame1.flyout = self:HasFlyoutShown()
+			hoverFrame1.flyout = self:IsFlyoutShown()
 		elseif hoverButtons2[self] then 
-			hoverFrame2.flyout = self:HasFlyoutShown()
+			hoverFrame2.flyout = self:IsFlyoutShown()
 		end 
 	end)
 
