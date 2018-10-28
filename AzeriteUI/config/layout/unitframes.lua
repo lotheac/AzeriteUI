@@ -2116,11 +2116,21 @@ local UnitFrameRaid = setmetatable({
 			GroupRoleTankTexture = GetMediaPath("grouprole-icons-tank"),
 			GroupRoleTankDrawLayer = { "ARTWORK", 1 },
 
-		UseGroupRoleDPS = true, 
+		UseGroupRoleDPS = false, 
 			GroupRoleDPSPlace = { "CENTER", 0, 0 }, 
 			GroupRoleDPSSize = { 24, 24 },
 			GroupRoleDPSTexture = GetMediaPath("grouprole-icons-dps"),
 			GroupRoleDPSDrawLayer = { "ARTWORK", 1 },
+
+		GroupRolePostUpdate = function(element, unit, groupRole)
+			if groupRole then 
+				if groupRole == "DAMAGER" then 
+					element.Bg:Hide()
+				else 
+					element.Bg:Show()
+				end 
+			end 
+		end, 
 
 	UseResurrectIndicator = true, -- Prio #3
 		ResurrectIndicatorPlace = { "CENTER", 0, -7 }, 
