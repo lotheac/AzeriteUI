@@ -3,8 +3,36 @@
 local _G = _G
 
 -- WoW API
+local UnitName = _G.UnitName
 
--- WoW Constants
+local utf8sub = function(str, i, dots)
+	if not str then return end
+	local bytes = str:len()
+	if bytes <= i then
+		return str
+	else
+		local len, pos = 0, 1
+		while pos <= bytes do
+			len = len + 1
+			local c = str:byte(pos)
+			if c > 0 and c <= 127 then
+				pos = pos + 1
+			elseif c >= 192 and c <= 223 then
+				pos = pos + 2
+			elseif c >= 224 and c <= 239 then
+				pos = pos + 3
+			elseif c >= 240 and c <= 247 then
+				pos = pos + 4
+			end
+			if len == i then break end
+		end
+		if len == i and pos <= bytes then
+			return str:sub(1, pos - 1)..(dots and "..." or "")
+		else
+			return str
+		end
+	end
+end
 
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
@@ -17,6 +45,9 @@ local Update = function(self, event, unit)
 	end
 
 	local name, realm = UnitName(unit)
+	if element.maxChars then 
+		name = utf8sub(name, element.maxChars, element.useDots)
+	end 
 
 	element:SetText(name)
 
