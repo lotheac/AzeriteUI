@@ -6,8 +6,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Added group leader tools
 - Added optional short duration nameplate auras cast by the player. 
 - Added RaidDebuff element to show a prioritized boss/harmful/custom debuff on group frames.
+
+## [1.0.75] 2018-10-28
+- Release Candidate.
+
+### Added
+- Added Clique support to all unit frames. 
+- Added group role icons to the raid frames. 
+- Added group leader, group assistant, master looter, main tank and main assist raid role icon(s) to raid frames. We're only showing a single icons for all of the listed, in the prioritized order listed. 
+
+### Changed
+- Squashed the actionbutton system into a single library, since all the functionality from the intended alternate versions were all baked into the same button type template anyway. 
+
+### Fixed
+- Worked around an issue with how party-, arena-, boss- and raid frames were stored that would trigger a blizzard bug preventing `/framestack` from functioning.
+- Fixed an issue where a wrongly registered event in parties could lead to the party portraits sometimes updating a bit delayed. 
 
 ## [1.0.74] 2018-10-26
 - Release Candidate.
