@@ -25,7 +25,6 @@ end
 
 Module.OnInit = function(self)
 	self.db = self:NewConfig("UnitFrameParty", defaults, "global")
-
 	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	self.frame:SetAttribute("_onattributechanged", [=[
 		if (name == "state-vis") then
@@ -50,8 +49,7 @@ Module.OnInit = function(self)
 	end 
 
 	for i = 1,4 do 
-		self.frame[i] = self:SpawnUnitFrame("party"..i, self.frame, Style)
-		--self.frame[i] = self:SpawnUnitFrame("player", self.frame, Style)
+		self.frame[tostring(i)] = self:SpawnUnitFrame("party"..i, self.frame, Style)
 	end 
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
