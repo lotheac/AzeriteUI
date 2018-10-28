@@ -55,6 +55,8 @@ local Update = function(self, event, unit)
 		end 
 	end
 
+	element.role = role 
+
 	local roleTexture = role and element.roleTextures[role]
 	if roleTexture then 
 		element:SetTexture(roleTexture)
@@ -109,5 +111,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 5)
 end 
