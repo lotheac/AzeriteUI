@@ -24,7 +24,6 @@
 	<Script file="plugins\unit_combat.lua"/>
 	<Script file="plugins\unit_crowdcontrol.lua"/>
 	<Script file="plugins\unit_extrapower.lua"/>
-	<Script file="plugins\unit_groupdebuff.lua"/>
 	<Script file="plugins\unit_grouprole.lua"/>
 	<Script file="plugins\unit_health.lua"/>
 	<Script file="plugins\unit_level.lua"/>
@@ -36,19 +35,12 @@
 	<Script file="plugins\unit_raiddebuff.lua"/>
 	<Script file="plugins\unit_raidrole.lua"/>
 	<Script file="plugins\unit_raidtarget.lua"/>
+	<Script file="plugins\unit_readycheck.lua"/>
+	<Script file="plugins\unit_resurrectindicator.lua"/>
 	<Script file="plugins\unit_spec.lua"/>
 	<Script file="plugins\unit_status.lua"/>
 	<Script file="plugins\unit_targeted.lua"/>
 	<Script file="plugins\unit_totem.lua"/>
 	<Script file="plugins\unit_threat.lua"/>
-
-	<!-- actionbutton types -->
-	<Script file="plugins\actionbutton_action.lua"/>
-	<Script file="plugins\actionbutton_custom.lua"/>
-	<Script file="plugins\actionbutton_item.lua"/>
-	<Script file="plugins\actionbutton_macro.lua"/>
-	<Script file="plugins\actionbutton_pet.lua"/>
-	<Script file="plugins\actionbutton_spell.lua"/>
-	<Script file="plugins\actionbutton_stance.lua"/>
 
 </Ui>
