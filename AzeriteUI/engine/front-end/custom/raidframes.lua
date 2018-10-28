@@ -42,6 +42,7 @@ Module.PreInit = function(self)
 end
 
 Module.OnInit = function(self)
+	local dev = true
 
 	self.db = self:NewConfig("UnitFrameRaid", defaults, "global")
 
@@ -146,18 +147,17 @@ Module.OnInit = function(self)
 
 	-- Hide it in raids of 6 or more players 
 	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
+	local visDriver = dev and "[@player,exists]show;hide" or "[@raid6,exists]show;hide"
 	if self.db.enableRaidFrames then 
-		RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]show;hide")
-		--RegisterAttributeDriver(self.frame, "state-vis", "[@player,exists]show;hide")
+		RegisterAttributeDriver(self.frame, "state-vis", visDriver)
 	else 
 		RegisterAttributeDriver(self.frame, "state-vis", "hide")
 	end 
 
 	for i = 1,40 do 
-		self.frame[i] = self:SpawnUnitFrame("raid"..i, self.frame, Style)
-		--self.frame[i] = self:SpawnUnitFrame("player", self.frame, Style)
-
-		self.frame:SetFrameRef("CurrentFrame", self.frame[i])
+		local frame = self:SpawnUnitFrame(dev and "player" or "raid"..i, self.frame, Style)
+		self.frame[tostring(i)] = frame
+		self.frame:SetFrameRef("CurrentFrame", frame)
 		self.frame:Execute([=[
 			local frame = self:GetFrameRef("CurrentFrame"); 
 			table.insert(Frames, frame); 
@@ -165,15 +165,15 @@ Module.OnInit = function(self)
 	end 
 
 	-- Register the layout driver
-	RegisterAttributeDriver(self.frame, "state-layout", "[@raid26,exists]epic;[@raid16,exists]mythic;normal")
-	--RegisterAttributeDriver(self.frame, "state-layout", "[@target,exists]epic;normal")
+	local layoutDriver = dev and "[@target,exists]epic;normal" or "[@raid26,exists]epic;[@raid16,exists]mythic;normal"
+	RegisterAttributeDriver(self.frame, "state-layout", layoutDriver)
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	for key,value in pairs(self.db) do 
 		proxy:SetAttribute(key,value)
 	end 
 	proxy:SetFrameRef("VisibilityFrame", self.frame)
-	proxy:SetAttribute("_onattributechanged", [=[
+	proxy:SetAttribute("_onattributechanged", ([=[
 		if name then 
 			name = string.lower(name); 
 		end 
@@ -182,14 +182,13 @@ Module.OnInit = function(self)
 			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
 			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
 			if value then 
-				RegisterAttributeDriver(visibilityFrame, "state-vis", "[@raid6,exists]show;hide")
-				--RegisterAttributeDriver(visibilityFrame, "state-vis", "[@player,exists]show;hide")
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "%s"); 
 			else 
-				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide")
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
 			end 
 		end 
 		
-	]=])
+	]=]):format(visDriver))
 
 	self.proxyUpdater = proxy
 
