@@ -6,6 +6,7 @@
 ## Version: 1.0-RC
 ## DefaultState: Enabled
 ## SavedVariables: AzeriteUI_DB
+## OptionalDeps: Clique
 ## X-Category: Interface Enhancements
 ## X-Curse-Project-ID: 298648
 ## X-Curse-Project-Name: AzeriteUI
