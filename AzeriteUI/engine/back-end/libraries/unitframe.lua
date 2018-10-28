@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 47)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 48)
 if (not LibUnitFrame) then	
 	return
 end
@@ -354,7 +354,14 @@ end
 -- spawn and style a new unitframe
 LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 
-	local frame = LibUnitFrame:CreateWidgetContainer("Button", nil, parent, "SecureUnitButtonTemplate", unit, styleFunc, ...)
+	local template
+	if _G.Clique then 
+		template = "SecureUnitButtonTemplate, SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate"
+	else 
+		template = "SecureUnitButtonTemplate"
+	end 
+
+	local frame = LibUnitFrame:CreateWidgetContainer("Button", nil, parent, template, unit, styleFunc, ...)
 	for method,func in pairs(UnitFrame) do 
 		frame[method] = func
 	end 
@@ -444,6 +451,25 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 
 	frame:SetAttribute("visibilityDriver", visDriver)
 	RegisterAttributeDriver(frame, "state-visibility", visDriver)
+
+	if _G.Clique then 
+		frame:SetAttribute("_onenter", [=[
+			local snippet = self:GetAttribute("clickcast_onenter"); 
+			if snippet then 
+				self:Run(snippet);  
+			end
+		]=])
+		frame:SetAttribute("_onleave", [=[
+			local snippet = self:GetAttribute("clickcast_onleave"); 
+			if snippet then 
+				self:Run(snippet); 
+			end
+		]=])
+		if (not _G.ClickCastFrames) then 
+			_G.ClickCastFrames = {}
+		end 
+		_G.ClickCastFrames[frame] = true
+	end 
 
 	frames[frame] = true 
 
