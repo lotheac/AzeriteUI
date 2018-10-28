@@ -3,46 +3,70 @@
 local _G = _G
 
 -- WoW API
-local UnitHasVehicleUI = _G.UnitHasVehicleUI
+local GetLootMethod = _G.GetLootMethod
 local GetPartyAssignment = _G.GetPartyAssignment
+local UnitHasVehicleUI = _G.UnitHasVehicleUI
+local UnitInParty = _G.UnitInParty
+local UnitInRaid = _G.UnitInRaid
+local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
+local UnitIsGroupLeader = _G.UnitIsGroupLeader
+local UnitIsUnit = _G.UnitIsUnit
 
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
 	end 
+
 	local element = self.RaidRole
-	if element.PreUpdate then 
+	if element.PreUpdate then
 		element:PreUpdate(unit)
 	end
 
-	local inVehicle = UnitHasVehicleUI(unit)
-	local isMainTank = GetPartyAssignment("MAINTANK", unit) and (not inVehicle)
-	local isMainAssist = GetPartyAssignment("MAINASSIST", unit) and (not inVehicle)
-
-	if element:IsObjectType("Texture") then 
-		if isMainTank then 
-			element:Show()
-			element:SetTexture([[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]])
-		elseif isMainAssist then 
-			element:Show()
-			element:SetTexture([[Interface\GROUPFRAME\UI-GROUP-MAINASSISTICON]])
+	local role
+	if (UnitInParty(unit) or UnitInRaid(unit)) then 
+		if (UnitIsGroupLeader(unit)) then 
+			role = "LEADER"
+		elseif (UnitIsGroupAssistant(unit)) then 
+			role = "ASSISTANT"
 		else 
-			element:Hide()
+			local method, pid, rid = GetLootMethod()
+			if (method == "master") then
+				local mlUnit
+				if (pid) then
+					if (pid == 0) then
+						mlUnit = "player"
+					else
+						mlUnit = "party"..pid
+					end
+				elseif (rid) then
+					mlUnit = "raid"..rid
+				end
+				if (UnitIsUnit(unit, mlUnit)) then
+					role = "MASTERLOOTER"
+				end
+			end
+			if (not role) and (UnitInRaid(unit) and (not UnitHasVehicleUI(unit))) then
+				if (GetPartyAssignment("MAINTANK", unit)) then
+					role = "MAINTANK"
+				elseif (GetPartyAssignment("MAINASSIST", unit)) then
+					role = "MAINASSIST"
+				end
+			end
 		end 
+	end
+
+	local roleTexture = role and element.roleTextures[role]
+	if roleTexture then 
+		element:SetTexture(roleTexture)
+		element:Show()
 	else 
-		local mainTank = element.MainTank
-		local mainAssist = element.MainAssist
-		if mainTank then 
-			mainTank:SetShown(isMainTank)
-		end 
-		if mainAssist then
-			mainAssist:SetShown(isMainAssist)
-		end 
-	end 
+		element:SetTexture(nil)
+		element:Hide()
+	end
 
 	if element.PostUpdate then 
-		return element:PostUpdate(unit, isMainTank, isMainAssist)
-	end
+		return element:PostUpdate(unit, role)
+	end 
 end 
 
 local Proxy = function(self, ...)
@@ -59,25 +83,31 @@ local Enable = function(self)
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 
-		if (self.unit == "player") then
-			self:RegisterEvent("PLAYER_ROLES_ASSIGNED", Proxy, true)
-		else
-			self:RegisterEvent("GROUP_ROSTER_UPDATE", Proxy, true)
-		end
+		element.roleTextures = element.roleTextures or {}
+		element.roleTextures.LEADER = element.roleTextures.LEADER or [[Interface\GroupFrame\UI-Group-LeaderIcon]]
+		element.roleTextures.ASSISTANT = element.roleTextures.ASSISTANT or [[Interface\GroupFrame\UI-Group-AssistantIcon]]
+		element.roleTextures.MASTERLOOTER = element.roleTextures.MASTERLOOTER or [[Interface\GroupFrame\UI-Group-MasterLooter]]
+		element.roleTextures.MAINTANK = element.roleTextures.MAINTANK or [[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]]
+		element.roleTextures.MAINASSIST = element.roleTextures.MAINASSIST or [[Interface\GROUPFRAME\UI-GROUP-MAINASSISTICON]]
 
-		return true 
+		self:RegisterEvent("PARTY_LEADER_CHANGED", Proxy, true)
+		self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED", Proxy, true)
+		self:RegisterEvent("GROUP_ROSTER_UPDATE", Proxy, true)
+
+		return true
 	end
 end 
 
 local Disable = function(self)
 	local element = self.RaidRole
 	if element then
-		self:UnregisterEvent("PLAYER_ROLES_ASSIGNED", Proxy)
+		self:UnregisterEvent("PARTY_LEADER_CHANGED", Proxy)
+		self:UnregisterEvent("PARTY_LOOT_METHOD_CHANGED", Proxy)
 		self:UnregisterEvent("GROUP_ROSTER_UPDATE", Proxy)
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 4)
 end 
