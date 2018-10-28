@@ -2028,7 +2028,6 @@ local UnitFrameRaid = setmetatable({
 
 	Size = Constant.RaidFrame, 
 	Place = { "TOPLEFT", "UICenter", "TOPLEFT", 64, -42 }, -- Position of the initial frame
-
 		GroupSizeNormal = 5,
 		GrowthXNormal = 0, -- Horizontal growth per new unit within a group
 		GrowthYNormal = -38 - 4, -- Vertical growth per new unit within a group
@@ -2048,41 +2047,177 @@ local UnitFrameRaid = setmetatable({
 		GroupAnchorEpic = "TOPLEFT", 
 
 	HealthSize = Constant.RaidBar, 
-	HealthBackdropSize = { 140 *.94, 90 *.94 },
-
-	UseHealthValue = false,
-
-	HealthColorTapped = false, -- color tap denied units 
-	HealthColorDisconnected = true, -- color disconnected units
-	HealthColorClass = true, -- color players by class
-	HealthColorPetAsPlayer = true, -- color your pet as you 
-	HealthColorReaction = true, -- color NPCs by their reaction standing with us
-	HealthColorHealth = true, -- color anything else in the default health color
+		HealthBackdropSize = { 140 *.94, 90 *.94 },
+		HealthColorTapped = false, -- color tap denied units 
+		HealthColorDisconnected = true, -- color disconnected units
+		HealthColorClass = true, -- color players by class
+		HealthColorPetAsPlayer = true, -- color your pet as you 
+		HealthColorReaction = true, -- color NPCs by their reaction standing with us
+		HealthColorHealth = true, -- color anything else in the default health color
+		UseHealthValue = false,
 	
 	AbsorbBarColor = { 1, 1, 1, .5 },
 
 	UseName = true, 
 		NamePlace = { "TOP", 0, 1 }, 
-		NameDrawLayer = { "OVERLAY", 1 },
+		NameDrawLayer = { "ARTWORK", 1 },
 		NameJustifyH = "CENTER",
 		NameJustifyV = "TOP",
 		NameFont = Fonts(11, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
+		NameMaxChars = 8, 
+		NameUseDots = false, 
 
-	UseUnitStatus = true, 
+	UseUnitStatus = true, -- Prio #4
 		UnitStatusPlace = { "CENTER", 0, -7 },
-		UnitStatusDrawLayer = { "OVERLAY", 1 },
+		UnitStatusDrawLayer = { "ARTWORK", 2 },
 		UnitStatusJustifyH = "CENTER",
 		UnitStatusJustifyV = "MIDDLE",
 		UnitStatusFont = Fonts(12, true),
 		UnitStatusColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		UseUnitStatusMessageOOM = L["oom"],
 		UnitStatusSize = nil, 
+		UnitStatusPostUpdate = function(element, unit) 
+			local self = element._owner
 
-	UseRaidDebuff = true, 
-		
+			local rc = self.ReadyCheck
+			local rd = self.RaidDebuff
+			local rz = self.ResurrectIndicator
 
+			if element:IsShown() then 
+				-- Hide if a higher priority element is visible
+				if (rd:IsShown() or rc.status or rz.status) then 
+					element:Hide()
+				end 
+			end 
+		end,
+
+	UseGroupRole = true, 
+		GroupRolePlace = { "RIGHT", 10, -8 }, 
+		GroupRoleSize = { 28, 28 }, 
+
+		UseGroupRoleBackground = true, 
+			GroupRoleBackgroundPlace = { "CENTER", 0, 0 }, 
+			GroupRoleBackgroundSize = { 54, 54 }, 
+			GroupRoleBackgroundDrawLayer = { "BACKGROUND", 1 }, 
+			GroupRoleBackgroundTexture = GetMediaPath("point_plate"),
+			GroupRoleBackgroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+
+		UseGroupRoleHealer = true, 
+			GroupRoleHealerPlace = { "CENTER", 0, 0 }, 
+			GroupRoleHealerSize = { 24, 24 },
+			GroupRoleHealerTexture = GetMediaPath("grouprole-icons-heal"),
+			GroupRoleHealerDrawLayer = { "ARTWORK", 1 },
+
+		UseGroupRoleTank = true, 
+			GroupRoleTankPlace = { "CENTER", 0, 0 }, 
+			GroupRoleTankSize = { 24, 24 },
+			GroupRoleTankTexture = GetMediaPath("grouprole-icons-tank"),
+			GroupRoleTankDrawLayer = { "ARTWORK", 1 },
+
+		UseGroupRoleDPS = true, 
+			GroupRoleDPSPlace = { "CENTER", 0, 0 }, 
+			GroupRoleDPSSize = { 24, 24 },
+			GroupRoleDPSTexture = GetMediaPath("grouprole-icons-dps"),
+			GroupRoleDPSDrawLayer = { "ARTWORK", 1 },
+
+	UseResurrectIndicator = true, -- Prio #3
+		ResurrectIndicatorPlace = { "CENTER", 0, -7 }, 
+		ResurrectIndicatorSize = { 32, 32 }, 
+		ResurrectIndicatorDrawLayer = { "OVERLAY", 1 },
+		ResurrectIndicatorPostUpdate = function(element, unit, incomingResurrect) 
+			local self = element._owner
+
+			local rc = self.ReadyCheck
+			local rd = self.RaidDebuff
+			local us = self.UnitStatus
+
+			if element:IsShown() then 
+				-- Hide if a higher priority element is visible
+				if (rd:IsShown() or rc.status) then 
+					return element:Hide()
+				end 
+				-- Hide lower priority element
+				us:Hide()
+			else
+				-- Show lower priority elements if no higher is visible
+				if (not rd:IsShown()) and (not rc.status) then 
+					if (us.status) then 
+						us:Show()
+					end 
+				end
+			end 
+		end,
+
+	UseReadyCheck = true, -- Prio #2
+		ReadyCheckPlace = { "CENTER", 0, -7 }, 
+		ReadyCheckSize = { 32, 32 }, 
+		ReadyCheckDrawLayer = { "OVERLAY", 7 },
+		ReadyCheckPostUpdate = function(element, unit, status) 
+			local self = element._owner
+
+			local rd = self.RaidDebuff
+			local rz = self.ResurrectIndicator
+			local us = self.UnitStatus
+
+			if element:IsShown() then 
+				-- Hide if a higher priority element is visible
+				if rd:IsShown() then 
+					return element:Hide()
+				end 
+				-- Hide all lower priority elements
+				rz:Hide()
+				us:Hide()
+			else 
+				-- Show lower priority elements if no higher is visible
+				if (not rd:IsShown()) then 
+					if (rz.status) then 
+						rz:Show()
+						us:Hide()
+					elseif (us.status) then 
+						rz:Hide()
+						us:Show()
+					end 
+				end 
+			end 
+		end,
+
+	UseRaidRole = true, 
+		RaidRolePoint = "RIGHT", RaidRoleAnchor = "Name", RaidRolePlace = { "LEFT", -1, 1 }, 
+		RaidRoleSize = { 16, 16 }, 
+		RaidRoleDrawLayer = { "ARTWORK", 3 },
+
+	UseRaidDebuff = true, -- Prio #1
+		RaidDebuffPostUpdate = function(element, unit)
+			local self = element._owner 
+
+			local rz = self.ResurrectIndicator
+			local rc = self.ReadyCheck
+			local us = self.UnitStatus
+
+			if element:IsShown() then 
+				-- Hide all lower priority elements
+				rc:Hide()
+				rz:Hide()
+				us:Hide()
+			else 
+				-- Display lower priority elements as needed 
+				if rc.status then 
+					rc:Show()
+					rz:Hide()
+					us:Hide()
+				elseif rz.status then 
+					rc:Hide()
+					rz:Show()
+					us:Hide()
+				elseif us.status then 
+					rc:Hide()
+					rz:Hide()
+					us:Show()
+				end 
+			end 
+		end, 
 
 }, { __index = Template_TinyFrame })
 

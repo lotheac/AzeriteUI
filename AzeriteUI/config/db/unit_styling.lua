@@ -1829,6 +1829,35 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		end 
 	end
 
+	-- Resurrection Indicator
+	-----------------------------------------------------------
+	if Layout.UseResurrectIndicator then 
+		local rezIndicator = overlay:CreateTexture()
+		rezIndicator:SetPoint(unpack(Layout.ResurrectIndicatorPlace))
+		rezIndicator:SetSize(unpack(Layout.ResurrectIndicatorSize))
+		rezIndicator:SetDrawLayer(unpack(Layout.ResurrectIndicatorDrawLayer))
+		self.ResurrectIndicator = rezIndicator
+		self.ResurrectIndicator.PostUpdate = Layout.ResurrectIndicatorPostUpdate
+	end
+
+	-- Ready Check
+	-----------------------------------------------------------
+	if Layout.UseReadyCheck then 
+		local readyCheck = overlay:CreateTexture()
+		readyCheck:SetPoint(unpack(Layout.ReadyCheckPlace))
+		readyCheck:SetSize(unpack(Layout.ReadyCheckSize))
+		readyCheck:SetDrawLayer(unpack(Layout.ReadyCheckDrawLayer))
+		self.ReadyCheck = readyCheck
+		self.ReadyCheck.PostUpdate = Layout.ReadyCheckPostUpdate
+	end 
+
+	-- Raid Debuff
+	-----------------------------------------------------------
+	if Layout.UseRaidDebuff then 
+		local raidDebuff = overlay:CreateFrame("Button")
+		self.RaidDebuff = raidDebuff
+	end 
+
 	-- Range
 	-----------------------------------------------------------
 	if Layout.UseRange then 
@@ -1846,6 +1875,8 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		name:SetJustifyV(Layout.NameJustifyV)
 		name:SetFontObject(Layout.NameFont)
 		name:SetTextColor(unpack(Layout.NameColor))
+		name.maxChars = Layout.NameMaxChars
+		name.useDots = Layout.NameUseDots
 		if Layout.NameSize then 
 			name:SetSize(unpack(Layout.NameSize))
 		end 
@@ -1869,6 +1900,7 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 			unitStatus:SetSize(unpack(Layout.UnitStatusSize))
 		end 
 		self.UnitStatus = unitStatus
+		self.UnitStatus.PostUpdate = Layout.UnitStatusPostUpdate
 	end 
 	
 	-- Health Value
@@ -1941,6 +1973,22 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	if Layout.UseHealthValue then 
 		self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
 	end
+
+	-- Raid Role
+	-----------------------------------------------------------
+	if Layout.UseRaidRole then 
+		local raidRole = overlay:CreateTexture()
+		if Layout.RaidRoleAnchor and Layout.RaidRolePoint then 
+			raidRole:SetPoint(Layout.RaidRolePoint, self[Layout.RaidRoleAnchor], unpack(Layout.RaidRolePlace))
+		else 
+			raidRole:SetPoint(unpack(Layout.RaidRolePlace))
+		end 
+		raidRole:SetSize(unpack(Layout.RaidRoleSize))
+		raidRole:SetDrawLayer(unpack(Layout.RaidRoleDrawLayer))
+		self.RaidRole = raidRole
+	end 
+
+
 end
 
 -----------------------------------------------------------
