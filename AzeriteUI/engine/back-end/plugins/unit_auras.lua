@@ -310,11 +310,13 @@ local CreateAuraButton = function(element)
 	-- * Note that we only provide out of combat aura cancelling, 
 	-- any other functionality including tooltips should be added by the modules. 
 	-- * Also note that we apply these AFTER the post creation callbacks!
-	button:SetScript("OnEnter", Aura_OnEnter)
-	button:SetScript("OnLeave", Aura_OnLeave)
-	button:SetScript("OnClick", Aura_OnClick)
-	button:SetScript("PreClick", Aura_PreClick)
-	button:SetScript("PostClick", Aura_PostClick)
+	if (not element.disableMouse) then 
+		button:SetScript("OnEnter", Aura_OnEnter)
+		button:SetScript("OnLeave", Aura_OnLeave)
+		button:SetScript("OnClick", Aura_OnClick)
+		button:SetScript("PreClick", Aura_PreClick)
+		button:SetScript("PostClick", Aura_PostClick)
+	end 
 
 	return button
 end 
@@ -788,5 +790,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 30)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 31)
 end 
