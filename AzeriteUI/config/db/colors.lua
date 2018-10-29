@@ -57,7 +57,8 @@ end
 Colors.health = prepare(245/255, 0/255, 45/255)
 Colors.cast = prepare(229/255, 204/255, 127/255)
 Colors.disconnected = prepare(120/255, 120/255, 120/255)
-Colors.tapped = prepare(161/255, 141/255, 120/255)
+Colors.tapped = prepare(121/255, 101/255, 96/255)
+--Colors.tapped = prepare(161/255, 141/255, 120/255)
 Colors.dead = prepare(121/255, 101/255, 96/255)
 --Colors.dead = prepare(73/255, 25/255, 9/255)
 
@@ -123,14 +124,28 @@ Colors.faction.Neutral = prepare(249/255, 158/255, 35/255)
 
 -- power
 Colors.power = {}
+
+local Fast = prepare(0/255, 208/255, 176/255) 
+local Slow = prepare(116/255, 156/255, 255/255)
+local Angry = prepare(156/255, 116/255, 255/255)
+
+-- Crystal Power Colors
+Colors.power.ENERGY_CRYSTAL = Slow -- Fast -- Rogues, Druids, Monks
+Colors.power.FURY_CRYSTAL = Angry -- Havoc Demon Hunter 
+Colors.power.FOCUS_CRYSTAL = Fast -- Hunters and Hunter Pets
+Colors.power.LUNAR_POWER_CRYSTAL = Slow -- Balance Druid Astral Power 
+Colors.power.PAIN_CRYSTAL = Angry -- Vengeance Demon Hunter 
+Colors.power.RAGE_CRYSTAL = Angry -- Druids, Warriors
+Colors.power.RUNIC_POWER_CRYSTAL = Slow -- Death Knights
+
+-- Orb Power Colors
+Colors.power.MANA_ORB = prepare(135/255, 125/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
+
+-- Standard Power Colors
 Colors.power.MANA = prepare(80/255, 116/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
-Colors.power.MANA_ORB = prepare(115/255, 125/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
---Colors.power.RAGE = prepare(255/255, 22/255, 0/255) -- Druids, Warriors
 Colors.power.RAGE = prepare(215/255, 7/255, 7/255) -- Druids, Warriors
-Colors.power.RAGE_CRYSTAL = prepare(125/255, 168/255, 195/255) -- Druids, Warriors
 Colors.power.FOCUS = prepare(125/255, 168/255, 195/255) -- Hunters and Hunter Pets
 Colors.power.ENERGY = prepare(254/255, 245/255, 145/255) -- Rogues, Druids, Monks
-Colors.power.ENERGY_CRYSTAL = prepare(0/255, 208/255, 176/255) -- Rogues, Druids, Monks
 Colors.power.COMBO_POINTS = prepare(255/255, 0/255, 30/255) -- Rogues, Druids, Vehicles
 Colors.power.RUNES = prepare(100/255, 155/255, 225/255) -- Death Knight 
 Colors.power.RUNIC_POWER = prepare(0/255, 236/255, 255/255) -- Death Knights
@@ -142,7 +157,7 @@ Colors.power.INSANITY = prepare(102/255, 64/255, 204/255) -- Shadow Priests
 Colors.power.CHI = prepare(126/255, 255/255, 163/255) -- Monk 
 Colors.power.ARCANE_CHARGES = prepare(121/255, 152/255, 192/255) -- Arcane Mage
 Colors.power.FURY = prepare(255/255, 0/255, 111/255) -- Vengeance Demon Hunter
-Colors.power.PAIN = prepare(190/255, 255/255, 0/255) -- Havoc Demon Hunter 
+Colors.power.PAIN = prepare(190 *.75/255, 255 *.75/255, 0/255) 
 
 -- alt power
 Colors.power.ALTERNATE = prepare(70/255, 255/255, 131/255)
@@ -180,7 +195,8 @@ Colors.reaction = {}
 Colors.reaction[1] = prepare(205/255, 46/255, 36/255) -- hated
 Colors.reaction[2] = prepare(205/255, 46/255, 36/255) -- hostile
 Colors.reaction[3] = prepare(192/255, 68/255, 0/255) -- unfriendly
-Colors.reaction[4] = prepare(249/255, 158/255, 35/255) -- neutral 
+Colors.reaction[4] = prepare(249/255, 188/255, 65/255) -- neutral 
+--Colors.reaction[4] = prepare(249/255, 158/255, 35/255) -- neutral 
 Colors.reaction[5] = prepare(64/255, 131/255, 38/255) -- friendly
 Colors.reaction[6] = prepare(64/255, 131/255, 69/255) -- honored
 Colors.reaction[7] = prepare(64/255, 131/255, 104/255) -- revered
