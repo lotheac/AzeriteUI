@@ -23,6 +23,94 @@ local SetCVar = _G.SetCVar
 
 local Colors, Functions, Layout
 
+-----------------------------------------------------------
+-- Callbacks
+-----------------------------------------------------------
+local PostCreateAuraButton = function(element, button)
+	local Layout = element._owner.layout
+
+	button.Icon:SetTexCoord(unpack(Layout.AuraIconTexCoord))
+	button.Icon:SetSize(unpack(Layout.AuraIconSize))
+	button.Icon:ClearAllPoints()
+	button.Icon:SetPoint(unpack(Layout.AuraIconPlace))
+
+	button.Count:SetFontObject(Layout.AuraCountFont)
+	button.Count:SetJustifyH("CENTER")
+	button.Count:SetJustifyV("MIDDLE")
+	button.Count:ClearAllPoints()
+	button.Count:SetPoint(unpack(Layout.AuraCountPlace))
+	if Layout.AuraCountColor then 
+		button.Count:SetTextColor(unpack(Layout.AuraCountColor))
+	end 
+
+	button.Time:SetFontObject(Layout.AuraTimeFont)
+	button.Time:ClearAllPoints()
+	button.Time:SetPoint(unpack(Layout.AuraTimePlace))
+
+	local layer, level = button.Icon:GetDrawLayer()
+
+	button.Darken = button.Darken or button:CreateTexture()
+	button.Darken:SetDrawLayer(layer, level + 1)
+	button.Darken:SetSize(button.Icon:GetSize())
+	button.Darken:SetPoint("CENTER", 0, 0)
+	button.Darken:SetColorTexture(0, 0, 0, .25)
+
+	button.Overlay:SetFrameLevel(button:GetFrameLevel() + 10)
+	button.Overlay:ClearAllPoints()
+	button.Overlay:SetPoint("CENTER", 0, 0)
+	button.Overlay:SetSize(button.Icon:GetSize())
+
+	button.Border = button.Border or button.Overlay:CreateFrame("Frame", nil, button.Overlay)
+	button.Border:SetFrameLevel(button.Overlay:GetFrameLevel() - 5)
+	button.Border:ClearAllPoints()
+	button.Border:SetPoint(unpack(Layout.AuraBorderFramePlace))
+	button.Border:SetSize(unpack(Layout.AuraBorderFrameSize))
+	button.Border:SetBackdrop(Layout.AuraBorderBackdrop)
+	button.Border:SetBackdropColor(unpack(Layout.AuraBorderBackdropColor))
+	button.Border:SetBackdropBorderColor(unpack(Layout.AuraBorderBackdropBorderColor))
+end
+
+local PostUpdateAuraButton = function(element, button)
+	local Layout = element._owner.layout
+	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
+		local color = Layout.AuraBorderBackdropBorderColor
+		if color then 
+			button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+		end 
+		return 
+	end 
+	if UnitIsFriend("player", button.unit) then 
+		if button.isBuff then 
+			local color = Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		else
+			local color = Colors.debuff[button.debuffType or "none"] or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		end
+	else 
+		if button.isStealable then 
+			local color = Colors.power.ARCANE_CHARGES or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		elseif button.isBuff then 
+			local color = Colors.quest.green or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		else
+			local color = Colors.debuff.none or Layout.AuraBorderBackdropBorderColor
+			if color then 
+				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+			end 
+		end
+	end 
+end
+
 -- Library Updates
 -- *will be called by the library at certain times
 -----------------------------------------------------------------
@@ -74,6 +162,7 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 
 	plate:SetSize(unpack(Layout.Size))
 	plate.colors = Colors 
+	plate.layout = Layout
 
 	-- Health bar
 	if Layout.UseHealth then 
@@ -190,6 +279,40 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		hooksecurefunc(plate, "SetScale", function(plate,scale) raidTarget:SetScale(scale) end)
 
 		plate.RaidTarget = raidTarget
+	end 
+
+	if Layout.UseAuras then 
+		local auras = plate:CreateFrame("Frame")
+		auras:Place(unpack(Layout.AuraFramePlace))
+		auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
+		auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
+		auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
+		auras.growthX = Layout.AuraGrowthX -- auras grow to the left
+		auras.growthY = Layout.AuraGrowthY -- rows grow downwards (we just have a single row, though)
+		auras.maxVisible = Layout.AuraMax -- when set will limit the number of buttons regardless of space available
+		auras.maxBuffs = Layout.AuraMaxBuffs -- maximum number of visible buffs
+		auras.maxDebuffs = Layout.AuraMaxDebuffs -- maximum number of visible debuffs
+		auras.debuffsFirst = Layout.AuraDebuffsFirst -- show debuffs before buffs
+		auras.showCooldownSpiral = Layout.ShowAuraCooldownSpirals -- don't show the spiral as a timer
+		auras.showCooldownTime = Layout.ShowAuraCooldownTime -- show timer numbers
+		auras.auraFilter = Layout.AuraFilter -- general aura filter, only used if the below aren't here
+		auras.buffFilter = Layout.AuraBuffFilter -- buff specific filter passed to blizzard API calls
+		auras.debuffFilter = Layout.AuraDebuffFilter -- debuff specific filter passed to blizzard API calls
+		auras.AuraFilter = Layout.AuraFilterFunc -- general aura filter function, called when the below aren't there
+		auras.BuffFilter = Layout.BuffFilterFunc -- buff specific filter function
+		auras.DebuffFilter = Layout.DebuffFilterFunc -- debuff specific filter function
+		auras.tooltipDefaultPosition = Layout.AuraTooltipDefaultPosition
+		auras.tooltipPoint = Layout.AuraTooltipPoint
+		auras.tooltipAnchor = Layout.AuraTooltipAnchor
+		auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
+		auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
+		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
+		auras.disableMouse = Layout.AuraDisableMouse
+			
+		plate.Auras = auras
+		plate.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		plate.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
 
 end
