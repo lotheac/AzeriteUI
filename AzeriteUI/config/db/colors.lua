@@ -130,7 +130,7 @@ local Slow = prepare(116/255, 156/255, 255/255)
 local Angry = prepare(156/255, 116/255, 255/255)
 
 -- Crystal Power Colors
-Colors.power.ENERGY_CRYSTAL = Slow -- Fast -- Rogues, Druids, Monks
+Colors.power.ENERGY_CRYSTAL = Fast -- Rogues, Druids, Monks
 Colors.power.FURY_CRYSTAL = Angry -- Havoc Demon Hunter 
 Colors.power.FOCUS_CRYSTAL = Fast -- Hunters and Hunter Pets
 Colors.power.LUNAR_POWER_CRYSTAL = Slow -- Balance Druid Astral Power 
