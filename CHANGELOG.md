@@ -6,9 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Added group leader tools
-- Added optional short duration nameplate auras cast by the player. 
-- Added RaidDebuff element to show a prioritized boss/harmful/custom debuff on group frames.
+- Added group leader tools to run ready checks, role checks, place world markers and more. 
+- Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
+
+## [1.0.77] 2018-10-29
+- Release Candidate.
+
+### Added
+- Added auras cast by the player to the nameplates. Options coming later. 
+
+### Fixed
+- Fixed an issue with the target aura filter that would sometimes hide auras that should've been displayed according to the filter. Affliction Warlock's Corruption spell when talented with "Absolute Corruption" is an example of this. 
 
 ## [1.0.76] 2018-10-28
 - Release Candidate.
