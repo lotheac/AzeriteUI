@@ -229,8 +229,8 @@ local NamePlates = {
 		-- which the target nameplate will be kept away from. 
 		-- Used to avoid the target plate being overlapped 
 		-- by the target frame or actionbars and keep it in view.
-		nameplateLargeTopInset = .05, -- default .1
-		nameplateOtherTopInset = .05, -- default .08
+		nameplateLargeTopInset = .08, -- default .1
+		nameplateOtherTopInset = .08, -- default .08
 		nameplateLargeBottomInset = .02, -- default .15
 		nameplateOtherBottomInset = .02, -- default .1
 		
