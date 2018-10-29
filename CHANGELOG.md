@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added group leader tools to run ready checks, role checks, place world markers and more. 
 - Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
 
+## [1.0.78] 2018-10-29
+- Release Candidate.
+
+### Changed
+- Slightly adjusted the target nameplate inset from the top of the screen to make sure there's room for its 6 auras.  
+- Changed power crystal colors to indicate the power's behavior rather than its exact type, as we feel many types basically are the same things under different names. So like all the various combo point systems, we found order in this chaos as well! We now separate all primary resources into fast, slow and angry powers! Fast resources are green, start at max, are used fast and generated fast. Slow is the color blue, starts at zero, is generated slowly through abilities and used fairly fast on other abilities. Angry is like slow, only purple and more fun. This system does not affect mana, which always will be displayed as a blue orb. 
+
 ## [1.0.77] 2018-10-29
 - Release Candidate.
 
