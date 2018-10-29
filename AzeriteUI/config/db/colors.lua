@@ -144,27 +144,29 @@ Colors.power.RUNIC_POWER_CRYSTAL = Slow -- Death Knights
 Colors.power.MANA_ORB = prepare(135/255, 125/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
 
 -- Standard Power Colors
-Colors.power.MANA = prepare(80/255, 116/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
-Colors.power.RAGE = prepare(215/255, 7/255, 7/255) -- Druids, Warriors
-Colors.power.FOCUS = prepare(125/255, 168/255, 195/255) -- Hunters and Hunter Pets
 Colors.power.ENERGY = prepare(254/255, 245/255, 145/255) -- Rogues, Druids, Monks
-Colors.power.COMBO_POINTS = prepare(255/255, 0/255, 30/255) -- Rogues, Druids, Vehicles
-Colors.power.RUNES = prepare(100/255, 155/255, 225/255) -- Death Knight 
-Colors.power.RUNIC_POWER = prepare(0/255, 236/255, 255/255) -- Death Knights
-Colors.power.SOUL_SHARDS = prepare(148/255, 130/255, 201/255) -- Warlock 
-Colors.power.LUNAR_POWER = prepare(121/255, 152/255, 192/255) -- Balance Druid Astral Power 
-Colors.power.HOLY_POWER = prepare(245/255, 254/255, 145/255) -- Retribution Paladins 
-Colors.power.MAELSTROM = prepare(0/255, 188/255, 255/255) -- Elemental Shamans
-Colors.power.INSANITY = prepare(102/255, 64/255, 204/255) -- Shadow Priests 
-Colors.power.CHI = prepare(126/255, 255/255, 163/255) -- Monk 
-Colors.power.ARCANE_CHARGES = prepare(121/255, 152/255, 192/255) -- Arcane Mage
 Colors.power.FURY = prepare(255/255, 0/255, 111/255) -- Vengeance Demon Hunter
+Colors.power.FOCUS = prepare(125/255, 168/255, 195/255) -- Hunters and Hunter Pets
+Colors.power.INSANITY = prepare(102/255, 64/255, 204/255) -- Shadow Priests 
+Colors.power.LUNAR_POWER = prepare(121/255, 152/255, 192/255) -- Balance Druid Astral Power 
+Colors.power.MAELSTROM = prepare(0/255, 188/255, 255/255) -- Elemental Shamans
+Colors.power.MANA = prepare(80/255, 116/255, 255/255) -- Druid, Mage, Monk, Paladin, Priest, Shaman, Warlock
 Colors.power.PAIN = prepare(190 *.75/255, 255 *.75/255, 0/255) 
+Colors.power.RAGE = prepare(215/255, 7/255, 7/255) -- Druids, Warriors
+Colors.power.RUNIC_POWER = prepare(0/255, 236/255, 255/255) -- Death Knights
 
--- alt power
+-- Secondary Resource Colors
+Colors.power.ARCANE_CHARGES = prepare(121/255, 152/255, 192/255) -- Arcane Mage
+Colors.power.CHI = prepare(126/255, 255/255, 163/255) -- Monk 
+Colors.power.COMBO_POINTS = prepare(255/255, 0/255, 30/255) -- Rogues, Druids, Vehicles
+Colors.power.HOLY_POWER = prepare(245/255, 254/255, 145/255) -- Retribution Paladins 
+Colors.power.RUNES = prepare(100/255, 155/255, 225/255) -- Death Knight 
+Colors.power.SOUL_SHARDS = prepare(148/255, 130/255, 201/255) -- Warlock 
+
+-- Alternate Power
 Colors.power.ALTERNATE = prepare(70/255, 255/255, 131/255)
 
--- vehicle powers
+-- Vehicle Powers
 Colors.power.AMMOSLOT = prepare(204/255, 153/255, 0/255)
 Colors.power.FUEL = prepare(0/255, 140/255, 127/255)
 Colors.power.STAGGER = {}
