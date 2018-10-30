@@ -1,3 +1,12 @@
+--[[--
+
+In this file we should add class specific spells that does
+either damage, heals, produce a shield, or possibly taunts.
+
+Do NOT put crowd control here, as that has its own file!
+
+--]]--
+
 local ADDON = ...
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 
@@ -88,6 +97,8 @@ if (playerClass == "DEMONHUNTER") then
 	auraList[207709] = ByPlayer -- Blade Turning
 	auraList[207690] = ByPlayer -- Bloodlet
 	auraList[212800] = ByPlayer -- Blur
+	auraList[163073] = ByPlayer -- Demon Soul (Vengeance)
+	auraList[208195] = ByPlayer -- Demon Soul (Havoc) NEEDS CHECK!
 	auraList[203819] = ByPlayer -- Demon Spikes
 	auraList[227330] = ByPlayer -- Gluttony
 	auraList[218256] = ByPlayer -- Empower Wards
@@ -169,6 +180,7 @@ if (playerClass == "HUNTER") then
 	auraList[186289] = ByPlayer -- Aspect of the Eagle
 	auraList[186265] = ByPlayer -- Aspect of the Turtle
 	auraList[193530] = ByPlayer -- Aspect of the Wild
+	auraList[217200] = ByPlayer -- Barbed Shot (8.0.1, previously Dire Frenzy)
 	auraList[ 19574] = ByPlayer -- Bestial Wrath
 	auraList[117526] = ByPlayer -- Binding Shot (stun)
 	auraList[117405] = ByPlayer -- Binding Shot (tether)
@@ -177,7 +189,7 @@ if (playerClass == "HUNTER") then
 	auraList[  5116] = ByPlayer -- Concussive Shot
 	auraList[ 13812] = ByPlayer -- Explosive Trap -- NEEDS CHECK
 	auraList[  5384] = ByPlayer -- Feign Death
-	auraList[  3355] = ByPlayer -- Freezing Trap -- NEEDS CHECK
+	auraList[  3355] = ByPlayer -- Freezing Trap
 	auraList[194594] = ByPlayer -- Lock and Load
 	auraList[ 34477] = ByPlayer -- Misdirection
 	auraList[201081] = ByPlayer -- Mok'Nathal Tactics
@@ -185,10 +197,11 @@ if (playerClass == "HUNTER") then
 	auraList[118922] = ByPlayer -- Posthaste
 	auraList[200108] = ByPlayer -- Ranger's Net
 	auraList[118253] = ByPlayer -- Serpent Sting
+	auraList[259491] = ByPlayer -- Serpent Sting (8.0.1 version) 
 	auraList[135299] = ByPlayer -- Tar Trap
 	auraList[193526] = ByPlayer -- Trueshot
 	auraList[187131] = ByPlayer -- Vulnerable
-	auraList[195645] = ByPlayer -- Wing Clip
+	auraList[269747] = ByPlayer -- Wildfire Bomb (8.0.1)
 
 	-- Talents
 end
