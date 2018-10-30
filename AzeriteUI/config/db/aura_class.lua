@@ -102,9 +102,13 @@ if (playerClass == "DEMONHUNTER") then
 	auraList[203819] = ByPlayer -- Demon Spikes
 	auraList[227330] = ByPlayer -- Gluttony
 	auraList[218256] = ByPlayer -- Empower Wards
+	auraList[207744] = ByPlayer -- Fiery Brand
+	auraList[247456] = ByPlayer -- Frailty
 	auraList[162264] = ByPlayer -- Metamorphosis
 	auraList[207810] = ByPlayer -- Nether Bond
 	auraList[196555] = ByPlayer -- Netherwalk
+	auraList[204598] = ByPlayer -- Sigil of Flame 
+	auraList[203981] = ByPlayer -- Soul Fragments
 
 	-- Talents
 	auraList[206491] = OnEnemy -- Nemesis (missing caster)
