@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added group leader tools to run ready checks, role checks, place world markers and more. 
 - Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
 
+## [1.0.80] 2018-10-30
+- Release Candidate.
+
+### Added
+- Added several Demon Hunter auras to the filters, including Soul Fragments! 
+
+### Changed
+- Slightly adjusted the player aura filter to accomodate some auras that didn't fall in line with our current system. 
+
 ## [1.0.79] 2018-10-30
 - Release Candidate.
 
