@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added group leader tools to run ready checks, role checks, place world markers and more. 
 - Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
 
+## [1.0.79] 2018-10-30
+- Release Candidate.
+
+### Added
+- Added Hunter's Barbed Shot, Harpoon, Serpent Sting and Wildfire Bomb to the aure filter. 
+- Added Demon Hunter's Demon Soul buff to the aura filter.   
+
 ## [1.0.78] 2018-10-29
 - Release Candidate.
 
