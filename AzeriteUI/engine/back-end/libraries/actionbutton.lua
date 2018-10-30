@@ -1,25 +1,25 @@
-local LibActionButton = CogWheel:Set("LibActionButton", 36)
-if (not LibActionButton) then	
+local LibSecureButton = CogWheel:Set("LibSecureButton", 37)
+if (not LibSecureButton) then	
 	return
 end
 
 local LibEvent = CogWheel("LibEvent")
-assert(LibEvent, "LibActionButton requires LibEvent to be loaded.")
+assert(LibEvent, "LibSecureButton requires LibEvent to be loaded.")
 
 local LibFrame = CogWheel("LibFrame")
-assert(LibFrame, "LibActionButton requires LibFrame to be loaded.")
+assert(LibFrame, "LibSecureButton requires LibFrame to be loaded.")
 
 local LibSound = CogWheel("LibSound")
-assert(LibSound, "LibActionButton requires LibSound to be loaded.")
+assert(LibSound, "LibSecureButton requires LibSound to be loaded.")
 
 local LibTooltip = CogWheel("LibTooltip")
 assert(LibTooltip, "LibChatWindow requires LibTooltip to be loaded.")
 
 -- Embed event functionality into this
-LibEvent:Embed(LibActionButton)
-LibFrame:Embed(LibActionButton)
-LibSound:Embed(LibActionButton)
-LibTooltip:Embed(LibActionButton)
+LibEvent:Embed(LibSecureButton)
+LibFrame:Embed(LibSecureButton)
+LibSound:Embed(LibSecureButton)
+LibTooltip:Embed(LibSecureButton)
 
 -- Lua API
 local _G = _G
@@ -65,18 +65,18 @@ local SetClampedTextureRotation = _G.SetClampedTextureRotation
 local UnitClass = _G.UnitClass
 
 -- Doing it this way to make the transition to library later on easier
-LibActionButton.embeds = LibActionButton.embeds or {} 
-LibActionButton.buttons = LibActionButton.buttons or {} 
-LibActionButton.allbuttons = LibActionButton.allbuttons or {} 
-LibActionButton.callbacks = LibActionButton.callbacks or {} 
-LibActionButton.controllers = LibActionButton.controllers or {} -- controllers to return bindings to pet battles, vehicles, etc 
-LibActionButton.numButtons = LibActionButton.numButtons or 0 -- total number of spawned buttons 
+LibSecureButton.embeds = LibSecureButton.embeds or {} 
+LibSecureButton.buttons = LibSecureButton.buttons or {} 
+LibSecureButton.allbuttons = LibSecureButton.allbuttons or {} 
+LibSecureButton.callbacks = LibSecureButton.callbacks or {} 
+LibSecureButton.controllers = LibSecureButton.controllers or {} -- controllers to return bindings to pet battles, vehicles, etc 
+LibSecureButton.numButtons = LibSecureButton.numButtons or 0 -- total number of spawned buttons 
 
 -- Shortcuts
-local AllButtons = LibActionButton.allbuttons
-local Buttons = LibActionButton.buttons
-local Callbacks = LibActionButton.callbacks
-local Controllers = LibActionButton.controllers
+local AllButtons = LibSecureButton.allbuttons
+local Buttons = LibSecureButton.buttons
+local Callbacks = LibSecureButton.callbacks
+local Controllers = LibSecureButton.controllers
 
 -- Blizzard Textures
 local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
@@ -351,7 +351,7 @@ end
 
 -- ActionButton Template
 ----------------------------------------------------
-local ActionButton = LibActionButton:CreateFrame("CheckButton")
+local ActionButton = LibSecureButton:CreateFrame("CheckButton")
 local ActionButton_MT = { __index = ActionButton }
 
 -- Grab some original methods for our own event handlers
@@ -740,7 +740,7 @@ ActionButton.GetSpellID = function(self)
 end
 
 ActionButton.GetTooltip = function(self)
-	return LibActionButton:GetActionButtonTooltip()
+	return LibSecureButton:GetActionButtonTooltip()
 end
 
 
@@ -888,7 +888,7 @@ end
 
 -- Library API
 ----------------------------------------------------
-LibActionButton.CreateButtonLayers = function(self, button)
+LibSecureButton.CreateButtonLayers = function(self, button)
 
 	local icon = button:CreateTexture()
 	icon:SetDrawLayer("BACKGROUND", 2)
@@ -920,14 +920,14 @@ LibActionButton.CreateButtonLayers = function(self, button)
 	button:GetPushedTexture():SetDrawLayer("ARTWORK") -- must be updated after pushed texture has been set
 end
 
-LibActionButton.CreateButtonOverlay = function(self, button)
+LibSecureButton.CreateButtonOverlay = function(self, button)
 	local overlay = button:CreateFrame("Frame", nil, button)
 	overlay:SetAllPoints()
 	overlay:SetFrameLevel(button:GetFrameLevel() + 15)
 	button.Overlay = overlay
 end 
 
-LibActionButton.CreateButtonKeybind = function(self, button)
+LibSecureButton.CreateButtonKeybind = function(self, button)
 	local keybind = (button.Overlay or button):CreateFontString()
 	keybind:SetDrawLayer("OVERLAY", 2)
 	keybind:SetPoint("TOPRIGHT", -2, -1)
@@ -940,7 +940,7 @@ LibActionButton.CreateButtonKeybind = function(self, button)
 	button.Keybind = keybind
 end 
 
-LibActionButton.CreateButtonCount = function(self, button)
+LibSecureButton.CreateButtonCount = function(self, button)
 	local count = (button.Overlay or button):CreateFontString()
 	count:SetDrawLayer("OVERLAY", 1)
 	count:SetPoint("BOTTOMRIGHT", -2, 1)
@@ -953,7 +953,7 @@ LibActionButton.CreateButtonCount = function(self, button)
 	button.Count = count
 end 
 
-LibActionButton.CreateButtonSpellHighlight = function(self, button)
+LibSecureButton.CreateButtonSpellHighlight = function(self, button)
 	local spellHighlight = button:CreateFrame("Frame")
 	spellHighlight:Hide()
 	spellHighlight:SetFrameLevel(button:GetFrameLevel() + 10)
@@ -967,7 +967,7 @@ LibActionButton.CreateButtonSpellHighlight = function(self, button)
 	button.SpellHighlight.Texture = texture
 end
 
-LibActionButton.CreateButtonAutoCast = function(self, button)
+LibSecureButton.CreateButtonAutoCast = function(self, button)
 	local autoCast = button:CreateFrame("Frame")
 	autoCast:Hide()
 	autoCast:SetFrameLevel(button:GetFrameLevel() + 10)
@@ -1024,7 +1024,7 @@ LibActionButton.CreateButtonAutoCast = function(self, button)
 	button.SpellAutoCast.Glow = glow
 end
 
-LibActionButton.CreateButtonCooldowns = function(self, button)
+LibSecureButton.CreateButtonCooldowns = function(self, button)
 	local cooldown = button:CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
 	cooldown:Hide()
 	cooldown:SetAllPoints()
@@ -1065,7 +1065,7 @@ LibActionButton.CreateButtonCooldowns = function(self, button)
 	button.ChargeCooldown = chargeCooldown
 end
 
-LibActionButton.CreateFlyoutArrow = function(self, button)
+LibSecureButton.CreateFlyoutArrow = function(self, button)
 	local flyoutArrow = (button.Overlay or button):CreateTexture()
 	flyoutArrow:Hide()
 	flyoutArrow:SetSize(23,11)
@@ -1083,7 +1083,7 @@ end
 
 -- Public API
 ----------------------------------------------------
-LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTemplate, ...)
+LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTemplate, ...)
 	check(parent, 1, "string", "table")
 	check(buttonType, 2, "string")
 	check(buttonTemplate, 3, "table", "nil")
@@ -1098,7 +1098,7 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	end 
 
 	-- Increase the button count
-	LibActionButton.numButtons = LibActionButton.numButtons + 1
+	LibSecureButton.numButtons = LibSecureButton.numButtons + 1
 
 	-- Count this addon's buttons 
 	local count = 0 
@@ -1162,14 +1162,14 @@ LibActionButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	
 	local button = setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT)
 
-	LibActionButton:CreateButtonLayers(button)
-	LibActionButton:CreateButtonOverlay(button)
-	LibActionButton:CreateButtonCooldowns(button)
-	LibActionButton:CreateButtonCount(button)
-	LibActionButton:CreateButtonKeybind(button)
-	LibActionButton:CreateButtonSpellHighlight(button)
-	LibActionButton:CreateButtonAutoCast(button)
-	LibActionButton:CreateFlyoutArrow(button)
+	LibSecureButton:CreateButtonLayers(button)
+	LibSecureButton:CreateButtonOverlay(button)
+	LibSecureButton:CreateButtonCooldowns(button)
+	LibSecureButton:CreateButtonCount(button)
+	LibSecureButton:CreateButtonKeybind(button)
+	LibSecureButton:CreateButtonSpellHighlight(button)
+	LibSecureButton:CreateButtonAutoCast(button)
+	LibSecureButton:CreateFlyoutArrow(button)
 
 	button:SetFrameStrata("LOW")
 	button:RegisterForDrag("LeftButton", "RightButton")
@@ -1345,7 +1345,7 @@ end
 
 -- Returns an iterator for all buttons registered to the module
 -- Buttons are returned as the first return value, and ordered by their IDs.
-LibActionButton.GetAllActionButtonsOrdered = function(self)
+LibSecureButton.GetAllActionButtonsOrdered = function(self)
 	local buttons = Buttons[self]
 	if (not buttons) then 
 		return function() return nil end
@@ -1366,7 +1366,7 @@ end
 
 -- Returns an iterator for all buttons of the given type registered to the module.
 -- Buttons are returned as the first return value, and ordered by their IDs.
-LibActionButton.GetAllActionButtonsByType = function(self, buttonType)
+LibSecureButton.GetAllActionButtonsByType = function(self, buttonType)
 	local buttons = Buttons[self]
 	if (not buttons) then 
 		return function() return nil end
@@ -1387,11 +1387,11 @@ LibActionButton.GetAllActionButtonsByType = function(self, buttonType)
 	end 
 end 
 
-LibActionButton.GetActionButtonTooltip = function(self)
-	return LibActionButton:GetTooltip("CG_ActionButtonTooltip") or LibActionButton:CreateTooltip("CG_ActionButtonTooltip")
+LibSecureButton.GetActionButtonTooltip = function(self)
+	return LibSecureButton:GetTooltip("CG_ActionButtonTooltip") or LibSecureButton:CreateTooltip("CG_ActionButtonTooltip")
 end
 
-LibActionButton.GetActionBarControllerPetBattle = function(self)
+LibSecureButton.GetActionBarControllerPetBattle = function(self)
 	if ((not Controllers[self]) or (not Controllers[self].petBattle)) then 
 
 		-- Get the generic button name without the ID added
@@ -1442,11 +1442,11 @@ LibActionButton.GetActionBarControllerPetBattle = function(self)
 	return Controllers[self].petBattle
 end
 
-LibActionButton.GetActionBarControllerVehicle = function(self)
+LibSecureButton.GetActionBarControllerVehicle = function(self)
 end
 
 -- Modules should call this at UPDATE_BINDINGS and the first PLAYER_ENTERING_WORLD
-LibActionButton.UpdateActionButtonBindings = function(self)
+LibSecureButton.UpdateActionButtonBindings = function(self)
 
 	-- "BONUSACTIONBUTTON%d" -- pet bar
 	-- "SHAPESHIFTBUTTON%d" -- stance bar
@@ -1529,7 +1529,7 @@ local embedMethods = {
 	UpdateActionButtonBindings = true,
 }
 
-LibActionButton.Embed = function(self, target)
+LibSecureButton.Embed = function(self, target)
 	for method in pairs(embedMethods) do
 		target[method] = self[method]
 	end
@@ -1538,6 +1538,6 @@ LibActionButton.Embed = function(self, target)
 end
 
 -- Upgrade existing embeds, if any
-for target in pairs(LibActionButton.embeds) do
-	LibActionButton:Embed(target)
+for target in pairs(LibSecureButton.embeds) do
+	LibSecureButton:Embed(target)
 end
