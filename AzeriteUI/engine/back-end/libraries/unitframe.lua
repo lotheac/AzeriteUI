@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 48)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 49)
 if (not LibUnitFrame) then	
 	return
 end
@@ -47,7 +47,6 @@ LibUnitFrame.frames = LibUnitFrame.frames or  {} -- global unitframe registry
 LibUnitFrame.scriptHandlers = LibUnitFrame.scriptHandlers or {} -- tracked library script handlers
 LibUnitFrame.scriptFrame = LibUnitFrame.scriptFrame -- library script frame, will be created on demand later on
 
-
 -- Speed shortcuts
 local frames = LibUnitFrame.frames
 local elements = LibUnitFrame.elements
@@ -60,6 +59,8 @@ local frameElementsEnabled = LibUnitFrame.frameElementsEnabled
 local scriptHandlers = LibUnitFrame.scriptHandlers
 local scriptFrame = LibUnitFrame.scriptFrame
 
+-- Color Table
+--------------------------------------------------------------------------
 -- RGB to Hex Color Code
 local hex = function(r, g, b)
 	return ("|cff%02x%02x%02x"):format(math_floor(r*255), math_floor(g*255), math_floor(b*255))
@@ -97,9 +98,7 @@ local prepareGroup = function(group)
 	return tbl
 end 
 
-
 -- Default Color Table
---------------------------------------------------------------------------
 local Colors = {
 	artifact = prepare( 229/255, 204/255, 127/255 ),
 	class = prepareGroup(RAID_CLASS_COLORS),
@@ -147,7 +146,6 @@ for powerType, powerColor in pairs(PowerBarColor) do
 	end 
 end 
 
-
 -- Add support for custom class colors
 local customClassColors = function()
 	if CUSTOM_CLASS_COLORS then
@@ -172,7 +170,8 @@ if (not customClassColors()) then
 	LibUnitFrame:RegisterEvent("ADDON_LOADED", "CustomClassColors")
 end
 
-
+-- Secure Snippets
+--------------------------------------------------------------------------
 local secureSnippets = {
 	vehicleSwitcher = [=[
 		if (name == "state-vehicleswitch") then 
@@ -229,7 +228,6 @@ local secureSnippets = {
 
 -- Utility Functions
 --------------------------------------------------------------------------
-
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -243,14 +241,10 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
-
-
 -- Library Updates
 --------------------------------------------------------------------------
-
 -- global update limit, no elements can go above this
 local THROTTLE = 1/30 
-
 local OnUpdate = function(self, elapsed)
 
 	-- Throttle the updates, to increase the performance. 
@@ -276,7 +270,6 @@ local OnUpdate = function(self, elapsed)
 
 	self.elapsed = 0
 end
-
 
 -- Unitframe Template
 --------------------------------------------------------------------------
