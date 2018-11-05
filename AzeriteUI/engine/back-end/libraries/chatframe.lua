@@ -73,7 +73,6 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
-
 -- module post create/post handle updates
 local postUpdateWindowProxy = function(self, frame, isTemporary, ...)
 	local postCreateWindow = isTemporary and self.PostCreateTemporaryChatWindow or self.PostCreateChatWindow
@@ -85,8 +84,6 @@ local postUpdateWindowProxy = function(self, frame, isTemporary, ...)
 		end 
 	end 
 end 
-
-
 
 LibChatWindow.GetAllChatWindows = function(self)
 	return ipairs(CHAT_FRAMES)
