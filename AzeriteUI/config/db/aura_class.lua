@@ -246,6 +246,9 @@ if (playerClass == "MAGE") then
 	auraList[   130] = ByPlayer -- Slow Fall
 
 	-- Talents
+
+	-- Azerite Traits 
+	
 end
 
 ------------------------------------------------------------------------
