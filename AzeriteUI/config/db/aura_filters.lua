@@ -97,7 +97,7 @@ filters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 			if unitIsPlayer[unit] and (bit_band(auraFlags, filterFlags.OnPlayer) ~= 0) then 
 				return true  
 			end
-			if (unitCaster and unitIsPlayer[unitCaster]) and (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
+			if (unitCaster and isOwnedByPlayer) and (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
 				return true  
 			end
 		end
@@ -140,7 +140,7 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 			-- Show filtered auras on hostiles
 			if auraFlags then 
 				if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-					return unitIsPlayer[unitCaster] 
+					return isOwnedByPlayer 
 				elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 
 					return (CURRENT_ROLE == "TANK")
 				else
@@ -171,7 +171,7 @@ filters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 				if (bit_band(auraFlags, filterFlags.OnFriend) ~= 0) then 
 					return true
 				elseif (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-					return unitIsPlayer[unitCaster] 
+					return isOwnedByPlayer 
 				end
 			end 
 
@@ -190,7 +190,7 @@ filters.nameplate = function(element, isBuff, unit, isOwnedByPlayer, name, icon,
 	local auraFlags = auraList[spellID]
 	if auraFlags then 
 		if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-			return unitIsPlayer[unitCaster] 
+			return isOwnedByPlayer 
 		elseif (bit_band(auraFlags, filterFlags.PlayerIsTank) ~= 0) then 
 			return (CURRENT_ROLE == "TANK")
 		end 
@@ -218,7 +218,7 @@ filters.boss = function(element, isBuff, unit, isOwnedByPlayer, name, icon, coun
 	local auraFlags = auraList[spellID]
 	if auraFlags then
 		if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-			return unitIsPlayer[unitCaster] 
+			return isOwnedByPlayer 
 		else 
 			return (bit_band(auraFlags, filterFlags.OnEnemy) ~= 0)
 		end 
@@ -231,7 +231,7 @@ filters.arena = function(element, isBuff, unit, isOwnedByPlayer, name, icon, cou
 	local auraFlags = auraList[spellID]
 	if auraFlags then
 		if (bit_band(auraFlags, filterFlags.ByPlayer) ~= 0) then 
-			return unitIsPlayer[unitCaster] 
+			return isOwnedByPlayer 
 		else 
 			return (bit_band(auraFlags, filterFlags.OnEnemy) ~= 0)
 		end 
