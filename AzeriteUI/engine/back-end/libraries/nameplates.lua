@@ -124,12 +124,29 @@ local FRAMELEVEL_CURRENT, FRAMELEVEL_MIN, FRAMELEVEL_MAX, FRAMELEVEL_STEP = 21, 
 local FRAMELEVEL_TRIVAL_CURRENT, FRAMELEVEL_TRIVIAL_MIN, FRAMELEVEL_TRIVIAL_MAX, FRAMELEVEL_TRIVIAL_STEP = 1, 1, 20, 2
 
 -- Opacity Settings
-alphaLevels[0] = 0 						-- Not visible. Not configurable by modules. 
-alphaLevels[1] = alphaLevels[1] or 1 	-- For the current target, if any
-alphaLevels[2] = alphaLevels[2] or .7 	-- For players when not having a target, also for World Bosses when not targeted
-alphaLevels[3] = alphaLevels[3] or .35 	-- For non-targeted players when having a target
-alphaLevels[4] = alphaLevels[4] or .25 	-- For non-targeted trivial mobs
-alphaLevels[5] = alphaLevels[5] or .15 	-- For non-targeted NPCs 
+alphaLevels.InCombat = alphaLevels.InCombat or {}
+alphaLevels.InCombat[0] = 0 								-- Not visible. Not configurable by modules. 
+alphaLevels.InCombat[1] = alphaLevels.InCombat[1] or 1 		-- For the current target, if any
+alphaLevels.InCombat[2] = alphaLevels.InCombat[2] or .85 	-- For players when not having a target, also for World Bosses when not targeted
+alphaLevels.InCombat[3] = alphaLevels.InCombat[3] or .7 	-- For non-targeted players when having a target
+alphaLevels.InCombat[4] = alphaLevels.InCombat[4] or .35 	-- For non-targeted trivial mobs
+alphaLevels.InCombat[5] = alphaLevels.InCombat[5] or .25 	-- For non-targeted NPCs 
+
+alphaLevels.NoCombat = alphaLevels.NoCombat or {}
+alphaLevels.NoCombat[0] = 0 								-- Not visible. Not configurable by modules. 
+alphaLevels.NoCombat[1] = alphaLevels.NoCombat[1] or 1 		-- For the current target, if any
+alphaLevels.NoCombat[2] = alphaLevels.NoCombat[2] or .7 	-- For players when not having a target, also for World Bosses when not targeted
+alphaLevels.NoCombat[3] = alphaLevels.NoCombat[3] or .35 	-- For non-targeted players when having a target
+alphaLevels.NoCombat[4] = alphaLevels.NoCombat[4] or .25 	-- For non-targeted trivial mobs
+alphaLevels.NoCombat[5] = alphaLevels.NoCombat[5] or .15 	-- For non-targeted NPCs 
+
+-- Flag tracking combat state
+local IN_COMBAT = false
+
+-- Remove remnants from older library version
+for id in ipairs(alphaLevels) do 
+	alphaLevels[id] = nil
+end 
 
 -- Update and fading frequencies
 local THROTTLE = 1/30 -- global update limit, no elements can go above this
@@ -296,7 +313,7 @@ NamePlate.UpdateAlpha = function(self)
 			end	
 		end
 	end
-	self.targetAlpha = alphaLevels[alphaLevel]
+	self.targetAlpha = alphaLevels[IN_COMBAT and "InCombat" or "NoCombat"][alphaLevel]
 	if (self.PostUpdateAlpha) then 
 		self:PostUpdateAlpha(unit, self.targetAlpha, alphaLevel)
 	end 
@@ -821,7 +838,21 @@ LibNamePlate.OnEvent = function(self, event, ...)
 		self:UpdateAllScales()
 		self.frame:SetScript("OnUpdate", function(_, ...) self:OnUpdate(...) end)
 
+	elseif (event == "PLAYER_REGEN_DISABLED") then 
+		IN_COMBAT = true
+		for baseFrame, plate in pairs(allPlates) do
+			if plate then
+				plate:UpdateAlpha()
+			end
+		end
+
 	elseif (event == "PLAYER_REGEN_ENABLED") then 
+		IN_COMBAT = false 
+		for baseFrame, plate in pairs(allPlates) do
+			if plate then
+				plate:UpdateAlpha()
+			end
+		end
 		if hasQueuedSettingsUpdate then 
 			self:UpdateNamePlateOptions()
 		end 
@@ -954,6 +985,8 @@ LibNamePlate.Enable = function(self)
 
 	-- Updates
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
 
 	-- Scale Changes
