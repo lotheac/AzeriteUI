@@ -76,7 +76,10 @@ local Enable = function(self)
 		if (self.unit == "player") then
 			self:RegisterEvent("PLAYER_ROLES_ASSIGNED", Proxy, true)
 		else
-			self:RegisterEvent("GROUP_ROSTER_UPDATE", Proxy, true)
+			-- Avoid duplicate events, library fires this for all elements on raid/party
+			if (not self.unit:match("party%d?$")) and (not self.unit:match("raid%d?$")) then 
+				self:RegisterEvent("GROUP_ROSTER_UPDATE", Proxy, true)
+			end 
 		end
 
 		return true 
@@ -104,5 +107,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 10)
+	Lib:RegisterElement("GroupRole", Enable, Disable, Proxy, 12)
 end 
