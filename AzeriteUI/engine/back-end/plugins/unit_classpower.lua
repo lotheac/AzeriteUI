@@ -93,7 +93,7 @@ local Proxy, ForceUpdate, Update
 local Generic = setmetatable({
 	EnablePower = function(self)
 		local element = self.ClassPower
-		element.maxDisplayed = MAX_COMBO_POINTS
+		--element.maxDisplayed = MAX_COMBO_POINTS
 
 		for i = 1, #element do 
 			element[i]:SetMinMaxValues(0,1)
@@ -636,35 +636,35 @@ ClassPower.Stagger = setmetatable({
 
 		-- Blizzard code has nil checks for UnitStagger return
 		local min = UnitStagger("player") or 0
-		local max = UnitHealthMax("player")
+		local max = UnitHealthMax("player") or 1
+		local numPoints
 
 		local perc = min / max
-		local color
 		if (perc >= STAGGER_RED_TRANSITION) then
-			min = 3
+			numPoints = 3
 		elseif (perc > STAGGER_YELLOW_TRANSITION) then
-			min = 2
+			numPoints = 2
 		elseif (perc > 0) then
-			min = 1
+			numPoints = 1
 		else 
-			min = 0
+			numPoints = 0
 		end
 
 		local maxDisplayed = element.maxDisplayed or element.max or max
 
 		for i = 1, maxDisplayed do 
-			if (not element[i]:IsShown()) then 
+			if not element[i]:IsShown() then 
 				element[i]:Show()
 			end 
-			element[i]:SetValue(min >= i and 1 or 0)
+			element[i]:SetValue(numPoints >= i and 1 or 0)
 		end 
 
-		for i = maxDisplayed+1, #element do 
+		for i = maxDisplayed + 1, #element do 
 			element[i]:SetValue(0)
 			if element[i]:IsShown() then 
 				element[i]:Hide()
 			end 
-		end 
+		end 		
 
 		return min, max, powerType
 	end,
@@ -918,5 +918,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 17)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 19)
 end 
