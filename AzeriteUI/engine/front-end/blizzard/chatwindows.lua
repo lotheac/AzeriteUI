@@ -313,7 +313,6 @@ Module.PostCreateChatWindow = function(self, frame)
 	-- Update the scale of this window
 	self:UpdateChatWindowScale(frame)
 
-
 	-- Tabs
 	------------------------------
 	-- strip away textures
