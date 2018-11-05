@@ -711,17 +711,17 @@ Module.CreateMenuTable = function(self)
 								{
 									title = L["%d Buttons"]:format(7), type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["%d Buttons"]:format(10),	type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["%d Buttons"]:format(12), type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 3 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								}
 							}
 						},
@@ -733,19 +733,19 @@ Module.CreateMenuTable = function(self)
 									title = L["MouseOver"], 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["MouseOver + Combat"], 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["Always Visible"], 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 3 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								}
 							}
 						}
@@ -765,19 +765,19 @@ Module.CreateMenuTable = function(self)
 						{
 							title = L["Button Count"], isSlave = true, hasWindow = true, 
 							slaveDB = "ActionBars", slaveKey = "enableComplimentary",
-							proxyModule = "ActionBarMain", 
+							proxyModule = "ActionBarMain",
 							buttons = {
 								{
 									title = L["%d Buttons"]:format(6), 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "buttonsComplimentary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["%d Buttons"]:format(12), 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "buttonsComplimentary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								}
 							}
 						},
@@ -789,25 +789,25 @@ Module.CreateMenuTable = function(self)
 									title = L["MouseOver"], 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["MouseOver + Combat"], 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								},
 								{
 									title = L["Always Visible"], 
 									type = "SET_VALUE", 
 									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 3 }, 
-									proxyModule = "ActionBarMain", 
+									proxyModule = "ActionBarMain"
 								}
 							}
 						}
 					}
 				}
-			}, 
+			}
 		})
 	end
 
@@ -826,7 +826,7 @@ Module.CreateMenuTable = function(self)
 			disabledTitle = L["Party Frames: %s"]:format(L["Disabled"]),
 			type = "TOGGLE_VALUE", 
 			configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
-			proxyModule = "UnitFrameParty", 
+			proxyModule = "UnitFrameParty"
 		})
 	end
 
@@ -837,7 +837,7 @@ Module.CreateMenuTable = function(self)
 			disabledTitle = L["Raid Frames: %s"]:format(L["Disabled"]),
 			type = "TOGGLE_VALUE", 
 			configDB = "UnitFrameRaid", configKey = "enableRaidFrames", 
-			proxyModule = "UnitFrameRaid", 
+			proxyModule = "UnitFrameRaid"
 		})
 	end
 
@@ -848,13 +848,12 @@ Module.CreateMenuTable = function(self)
 			disabledTitle = L["PvP Frames: %s"]:format(L["Disabled"]),
 			type = "TOGGLE_VALUE", 
 			configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
-			proxyModule = "UnitFrameArena", 
+			proxyModule = "UnitFrameArena"
 		})
 	end
 	table_insert(MenuTable, UnitFrameMenu)
 		
 
-	--[[--
 	-- Nameplates
 	local NamePlates = Core:GetModule("NamePlates")
 	if NamePlates and not (NamePlates:IsIncompatible() or NamePlates:DependencyFailed()) then 
@@ -862,12 +861,16 @@ Module.CreateMenuTable = function(self)
 			title = L["NamePlates"], type = nil, hasWindow = true, 
 			buttons = {
 				-- Disable player auras
-
-				
+				{
+					enabledTitle = L["Auras: %s"]:format(L["Enabled"]),
+					disabledTitle = L["Auras: %s"]:format(L["Disabled"]),
+					type = "TOGGLE_VALUE", 
+					configDB = "NamePlates", configKey = "enableAuras", 
+					proxyModule = "NamePlates"
+				}		
 			}
 		})
 	end 
-	--]]--
 
 	-- HUD elements
 	table_insert(MenuTable,	{
@@ -879,7 +882,7 @@ Module.CreateMenuTable = function(self)
 				disabledTitle = L["TalkingHead: %s"]:format(L["Disabled"]),
 				type = "TOGGLE_VALUE", 
 				configDB = "FloaterHUD", configKey = "enableTalkingHead", 
-				proxyModule = "FloaterHUD", 
+				proxyModule = "FloaterHUD"
 			},
 
 			-- Alerts 
@@ -888,8 +891,8 @@ Module.CreateMenuTable = function(self)
 				disabledTitle = L["Alerts: %s"]:format(L["Disabled"]),
 				type = "TOGGLE_VALUE", 
 				configDB = "FloaterHUD", configKey = "enableAlerts", 
-				proxyModule = "FloaterHUD", 
-			},
+				proxyModule = "FloaterHUD"
+			}
 
 			
 		}

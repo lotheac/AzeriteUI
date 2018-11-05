@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB")
+local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB", "LibMenu", "LibFrame")
 Module:SetIncompatible("Kui_Nameplates")
 Module:SetIncompatible("SimplePlates")
 Module:SetIncompatible("TidyPlates")
@@ -21,7 +21,12 @@ local InCombatLockdown = _G.InCombatLockdown
 local IsInInstance = _G.IsInInstance 
 local SetCVar = _G.SetCVar
 
+local Plates = {} -- local cache of the nameplates, for easy access to some methods
 local Colors, Functions, Layout
+
+local defaults = {
+	enableAuras = false
+}
 
 -----------------------------------------------------------
 -- Callbacks
@@ -153,13 +158,13 @@ Module.PostUpdateNamePlateOptions = function(self, isInInstace)
 	C_NamePlate.SetNamePlateEnemySize(unpack(Layout.Size))
 
 	NamePlateDriverFrame.UpdateNamePlateOptions = function() end
-
 end
 
 -- Called after a nameplate is created.
 -- This is where we create our own custom elements.
 Module.PostCreateNamePlate = function(self, plate, baseFrame)
-
+	local db = self.db
+	
 	plate:SetSize(unpack(Layout.Size))
 	plate.colors = Colors 
 	plate.layout = Layout
@@ -279,6 +284,7 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		hooksecurefunc(plate, "SetScale", function(plate,scale) raidTarget:SetScale(scale) end)
 
 		plate.RaidTarget = raidTarget
+		plate.RaidTarget.PostUpdate = Layout.PostUpdateRaidTarget
 	end 
 
 	if Layout.UseAuras then 
@@ -313,8 +319,28 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		plate.Auras = auras
 		plate.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
 		plate.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+		plate.Auras.PostUpdate = Layout.PostUpdateAura
+
+		if (not db.enableAuras) then 
+			plate:DisableElement("Auras")
+		end 
 	end 
 
+	-- The library does this too, but isn't exposing it to us.
+	Plates[plate] = baseFrame
+end
+
+Module.PostUpdateSettings = function(self)
+	local db = self.db
+	for plate, baseFrame in pairs(Plates) do 
+		if db.enableAuras then 
+			plate:EnableElement("Auras")
+			plate.Auras:ForceUpdate()
+		else 
+			plate:DisableElement("Auras")
+			plate.RaidTarget:ForceUpdate()
+		end 
+	end
 end
 
 Module.PreInit = function(self)
@@ -322,6 +348,31 @@ Module.PreInit = function(self)
 	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
 	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [NamePlates]")
+end
+
+Module.OnInit = function(self)
+	self.db = self:NewConfig("NamePlates", defaults, "global")
+
+	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	proxy.PostUpdateSettings = function() self:PostUpdateSettings() end
+	for key,value in pairs(self.db) do 
+		proxy:SetAttribute(key,value)
+	end 
+	proxy:SetAttribute("_onattributechanged", [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enableauras") then 
+			self:SetAttribute("enableAuras", value); 
+			self:CallMethod("PostUpdateSettings"); 
+		end 
+	]=])
+
+	self.proxyUpdater = proxy
+end 
+
+Module.GetSecureUpdater = function(self)
+	return self.proxyUpdater
 end
 
 Module.OnEnable = function(self)
