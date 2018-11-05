@@ -409,7 +409,7 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 		end
 
 		-- Figure out if the debuff is owned by us, not just cast by us
-		local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
+		local isOwnedByPlayer = (unitCaster and (unitCaster == "player" or unitCaster == "pet" or (UnitHasVehicleUI("player") and unitCaster == "vehicle")))
 
 		-- Run the custom filter method, if it exists
 		local auraPriority
@@ -514,7 +514,7 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 		end
 
 		-- Figure out if the debuff is owned by us, not just cast by us
-		local isOwnedByPlayer = (unitCaster and ((UnitHasVehicleUI("player") and unitCaster == "vehicle") or unitCaster == "player" or unitCaster == "pet"))
+		local isOwnedByPlayer = (unitCaster and (unitCaster == "player" or unitCaster == "pet" or (UnitHasVehicleUI("player") and unitCaster == "vehicle")))
 
 		-- Run the custom filter method, if it exists
 		local auraPriority
