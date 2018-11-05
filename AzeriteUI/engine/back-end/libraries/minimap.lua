@@ -1,5 +1,5 @@
-local Version = 27 -- This library's version 
-local MapVersion = 27 -- Minimap library version the minimap created by this is compatible with
+local Version = 28 -- This library's version 
+local MapVersion = 28 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -432,8 +432,8 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 	Private.MapVisibility = Private.MapVisibility or Private.MapParent:CreateFrame("Frame")
 	Private.MapVisibility:SetFrameStrata("LOW")
 	Private.MapVisibility:SetFrameLevel(0)
-	Private.MapVisibility:SetScript("OnHide", function() LibMinimap:Fire("CG_MINIMAP_VISIBILITY_CHANGED", false) end)
-	Private.MapVisibility:SetScript("OnShow", function() LibMinimap:Fire("CG_MINIMAP_VISIBILITY_CHANGED", true) end)
+	Private.MapVisibility:SetScript("OnHide", function() LibMinimap:SendMessage("CG_MINIMAP_VISIBILITY_CHANGED", false) end)
+	Private.MapVisibility:SetScript("OnShow", function() LibMinimap:SendMessage("CG_MINIMAP_VISIBILITY_CHANGED", true) end)
 
 	-- Holder frame deciding the position and size of the minimap. 
 	Private.MapHolder = Private.MapHolder or Private.MapVisibility:CreateFrame("Frame")
