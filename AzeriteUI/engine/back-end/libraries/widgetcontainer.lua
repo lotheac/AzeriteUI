@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 9)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 10)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -349,6 +349,15 @@ WidgetFrame.DisableElement = function(self, element)
 			end
 		end
 	end
+end
+
+WidgetFrame.IsElementEnabled = function(self, element)
+	local enabled = frameElementsEnabled[self] and frameElementsEnabled[self][element]
+	if enabled then 
+		return true 
+	else 
+		return false 
+	end 
 end
 
 WidgetFrame.EnableFrequentUpdates = function(self, element, frequency)
