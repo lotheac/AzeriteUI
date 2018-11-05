@@ -317,12 +317,11 @@ end
 
 UnitFrame.OverrideAllElements = function(self, event, ...)
 	local unit = self.unit
-	if (not UnitExists(unit)) and (not ShowBossFrameWhenUninteractable(unit)) then 
+	if (not unit) or (not (UnitExists(unit) or ShowBossFrameWhenUninteractable(unit))) then 
 		return 
 	end
 	return self:UpdateAllElements(event, ...)
 end
-
 
 -- Library API
 --------------------------------------------------------------------------
