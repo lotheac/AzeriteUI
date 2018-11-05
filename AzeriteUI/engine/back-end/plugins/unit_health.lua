@@ -173,6 +173,10 @@ local Update = function(self, event, unit)
 	element:SetValue(min, forced)
 	element:UpdateColor(unit, min, max, disconnected, dead, tapped)
 	element:UpdateValue(unit, min, max, disconnected, dead, tapped)
+
+	if (not element:IsShown()) then 
+		element:Show()
+	end
 			
 	if element.PostUpdate then
 		return element:PostUpdate(unit, min, max, disconnected, dead, tapped)
