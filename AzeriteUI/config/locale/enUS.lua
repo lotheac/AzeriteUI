@@ -1,17 +1,16 @@
 local ADDON = ...
 local L = CogWheel("LibLocale"):NewLocale(ADDON, "enUS", true)
-
+local isMac = IsMacClient()
 
 -- General Stuff
 --------------------------------------------
 L["Enable"] = true 
 L["Disable"] = true 
+L["Enabled"] = "|cff00aa00Enabled|r"
+L["Disabled"] = "|cffff0000Disabled|r"
 L["<Left-Click>"] = true
 L["<Middle-Click>"] = true
 L["<Right-Click>"] = true
-L["CTRL+C"] = true
-L["oom"] = true -- out of mana
-
 
 -- Clock & Time Settings
 --------------------------------------------
@@ -27,7 +26,6 @@ L["Now using game server time."] = true
 L["Now using standard (12-hour) time."] = true
 L["Now using military (24-hour) time."] = true
 
-
 -- Network & Performance Information
 --------------------------------------------
 L["Network Stats"] = true
@@ -35,7 +33,6 @@ L["World latency:"] = true
 L["This is the latency of the world server, and affects casting, crafting, interaction with other players and NPCs. This is the value that decides how delayed your combat actions are."] = true 
 L["Home latency:"] = true
 L["This is the latency of the home server, which affects things like chat, guild chat, the auction house and some other non-combat related things."] = true
-
 
 -- XP, Honor & Artifact Bars
 --------------------------------------------
@@ -97,24 +94,23 @@ L["PvP Frames: %s"] = true
 L["HUD"] = true
 L["Alerts: %s"] = true
 L["TalkingHead: %s"] = true
-L["Enabled"] = "|cff00aa00Enabled|r"
-L["Disabled"] = "|cffff0000Disabled|r"
+L["NamePlates"] = true
+L["Auras: %s"] = true
 
 -- Various Button Tooltips
 --------------------------------------------
 L["%s to leave the vehicle."] = true
 L["%s to dismount."] = true
 
--- Minimap Compass Abbreviations
+-- Abbreviations
 --------------------------------------------
-L["N"] = true -- abbreviation for "North"
-L["E"] = true -- abbreviation for "East"
-L["S"] = true -- abbreviation for "South"
-L["W"] = true -- abbreviation for "West"
+L["oom"] = true -- out of mana
+L["N"] = true -- compass North
+L["E"] = true -- compass East
+L["S"] = true -- compass South
+L["W"] = true -- compass West
 
-
--- Keybind Abbreviations
---------------------------------------------
+-- Keybinds (visible on the actionbuttons)
 L["Alt"] = "A"
 L["Ctrl"] = "C"
 L["Shift"] = "S"
