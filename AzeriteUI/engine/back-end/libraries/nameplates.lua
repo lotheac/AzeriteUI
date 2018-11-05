@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 20)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 23)
 if (not LibNamePlate) then	
 	return
 end
@@ -73,6 +73,7 @@ LibNamePlate.frequentUpdates = LibNamePlate.frequentUpdates or {} -- global elem
 LibNamePlate.frequentUpdateFrames = LibNamePlate.frequentUpdateFrames or {} -- global frame frequent update registry
 LibNamePlate.frameElements = LibNamePlate.frameElements or {} -- per unitframe element registry
 LibNamePlate.frameElementsEnabled = LibNamePlate.frameElementsEnabled or {} -- per unitframe element enabled registry
+LibNamePlate.frameElementsDisabled = LibNamePlate.frameElementsDisabled or {} -- per unitframe element manually disabled registry
 LibNamePlate.scriptHandlers = LibNamePlate.scriptHandlers or {} -- tracked library script handlers
 LibNamePlate.scriptFrame = LibNamePlate.scriptFrame -- library script frame, will be created on demand later on
 
@@ -110,6 +111,7 @@ local frequentUpdates = LibNamePlate.frequentUpdates
 local frequentUpdateFrames = LibNamePlate.frequentUpdateFrames
 local frameElements = LibNamePlate.frameElements
 local frameElementsEnabled = LibNamePlate.frameElementsEnabled
+local frameElementsDisabled = LibNamePlate.frameElementsDisabled
 local scriptHandlers = LibNamePlate.scriptHandlers
 local scriptFrame = LibNamePlate.scriptFrame
 
@@ -368,6 +370,7 @@ NamePlate.OnShow = function(self)
 	-- setup player classbars
 	-- setup raid targets
 
+	--[[
 	if self.Health then 
 		self.Health:Show()
 	end
@@ -379,8 +382,7 @@ NamePlate.OnShow = function(self)
 	if self.Cast then 
 		self.Cast:Hide()
 	end 
-	--[[
-	]]
+	]]--
 
 	self:SetAlpha(0) -- set the actual alpha to 0
 	self.currentAlpha = 0 -- update stored alpha value
@@ -393,7 +395,9 @@ NamePlate.OnShow = function(self)
 	self:UpdateFrameLevel() 
 
 	for element in pairs(elements) do
-		self:EnableElement(element, unit)
+		if (not (frameElementsDisabled[self] and frameElementsDisabled[self][element])) then 
+			self:EnableElement(element)
+		end 
 	end
 	self:UpdateAllElements()
 
@@ -406,7 +410,7 @@ NamePlate.OnHide = function(self)
 	visiblePlates[self] = false -- this will trigger the fadeout and hiding
 
 	for element in pairs(elements) do
-		self:DisableElement(element, unit)
+		self:DisableElement(element, true)
 	end
 end
 
@@ -576,6 +580,11 @@ NamePlate.EnableElement = function(self, element)
 		return 
 	end 
 
+	-- removed manually disabled entry
+	if (frameElementsDisabled[self] and frameElementsDisabled[self][element]) then 
+		frameElementsDisabled[self][element] = nil
+	end 
+
 	-- upvalues ftw
 	local frameElements = frameElements[self]
 	local frameElementsEnabled = frameElementsEnabled[self]
@@ -600,25 +609,36 @@ NamePlate.EnableElement = function(self, element)
 	end
 end
 
-NamePlate.DisableElement = function(self, element)
+NamePlate.DisableElement = function(self, element, softDisable)
+	if (not frameElementsDisabled[self]) then 
+		frameElementsDisabled[self] = {}
+	end 
+
+	-- mark this as manually disabled
+	if (not softDisable) then 
+		frameElementsDisabled[self][element] = true
+	end
+
 	-- silently fail if the element hasn't been enabled for the frame
 	if ((not frameElementsEnabled[self]) or (not frameElementsEnabled[self][element])) then
 		return
 	end
-	
+
+	-- run the disable script
 	elements[element].Disable(self, self.unit)
 
+	-- remove the element from the enabled registries
 	for i = #frameElements[self], 1, -1 do
 		if (frameElements[self][i] == element) then
 			table_remove(frameElements[self], i)
-			--frameElements[self][i] = nil
 		end
 	end
-	
+
+	-- remove the enabled status
 	frameElementsEnabled[self][element] = nil
 	
+	-- remove the element's frequent update entry
 	if (frequentUpdates[self] and frequentUpdates[self][element]) then
-		-- remove the element's frequent update entry
 		frequentUpdates[self][element].elapsed = nil
 		frequentUpdates[self][element].hz = nil
 		frequentUpdates[self][element] = nil
@@ -645,6 +665,15 @@ NamePlate.DisableElement = function(self, element)
 			end
 		end
 	end
+end
+
+NamePlate.IsElementEnabled = function(self, element)
+	local enabled = frameElementsEnabled[self] and frameElementsEnabled[self][element]
+	if enabled then 
+		return true 
+	else 
+		return false 
+	end 
 end
 
 NamePlate.EnableFrequentUpdates = function(self, element, frequency)
@@ -768,7 +797,6 @@ local hasSetBlizzardSettings, hasQueuedSettingsUpdate
 LibNamePlate.UpdateNamePlateOptions = function(self)
 	if InCombatLockdown() then 
 		hasQueuedSettingsUpdate = true 
-		self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 		return 
 	end 
 	hasQueuedSettingsUpdate = nil
@@ -825,6 +853,7 @@ LibNamePlate.OnEvent = function(self, event, ...)
 		self:UpdateNamePlateOptions()
 	
 	elseif (event == "PLAYER_ENTERING_WORLD") then
+		IN_COMBAT = InCombatLockdown() and true or false
 		self:ForAllEmbeds("PreUpdateNamePlateOptions")
 
 		if (not hasSetBlizzardSettings) then
