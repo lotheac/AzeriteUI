@@ -649,7 +649,7 @@ local Update = function(self, event, unit)
 		EvaluateVisibilities(Auras, visible)
 
 		if Auras.PostUpdate then 
-			Auras:PostUpdate(unit)
+			Auras:PostUpdate(unit, visible)
 		end 
 	end 
 
@@ -659,11 +659,13 @@ local Update = function(self, event, unit)
 			Buffs:PreUpdate(unit)
 		end
 
-		EvaluateVisibilities(Buffs, 
-		IterateBuffs(Buffs, unit, Buffs.buffFilter or Buffs.auraFilter or Buffs.filter, Buffs.BuffFilter or Buffs.AuraFilter))
+		
+		local visible = IterateBuffs(Buffs, unit, Buffs.buffFilter or Buffs.auraFilter or Buffs.filter, Buffs.BuffFilter or Buffs.AuraFilter)
+
+		EvaluateVisibilities(Buffs, visible)
 
 		if Buffs.PostUpdate then 
-			Buffs:PostUpdate(unit)
+			Buffs:PostUpdate(unit, visible)
 		end 
 	end 
 
@@ -673,11 +675,12 @@ local Update = function(self, event, unit)
 			Debuffs:PreUpdate(unit)
 		end
 
-		EvaluateVisibilities(Debuffs, 
-		IterateDebuffs(Debuffs, unit, Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter, Debuffs.DebuffFilter or Debuffs.AuraFilter))
+		local visible = IterateDebuffs(Debuffs, unit, Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter, Debuffs.DebuffFilter or Debuffs.AuraFilter)
+
+		EvaluateVisibilities(Debuffs, visible)
 
 		if Debuffs.PostUpdate then 
-			Debuffs:PostUpdate(unit)
+			Debuffs:PostUpdate(unit, visible)
 		end 
 	end 
 
