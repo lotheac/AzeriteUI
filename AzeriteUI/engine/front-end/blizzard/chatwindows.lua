@@ -330,6 +330,11 @@ Module.PostCreateChatWindow = function(self, frame)
 	local tabText = self:GetChatWindowTabText(frame) 
 	tabText:Hide()
 
+	local tabIcon = self:GetChatWindowTabIcon(frame)
+	if tabIcon then 
+		tabIcon:Hide()
+	end
+
 	-- Hook all tab sizes to slightly smaller than ChatFrame1's chat
 	hooksecurefunc(tabText, "Show", function() 
 		-- Make it 2px smaller (before scaling), 
@@ -352,8 +357,18 @@ Module.PostCreateChatWindow = function(self, frame)
 	end)
 
 	-- Toggle tab text visibility on hover
-	tab:HookScript("OnEnter", function() tabText:Show() end)
-	tab:HookScript("OnLeave", function() tabText:Hide() end)
+	tab:HookScript("OnEnter", function() 
+		tabText:Show() 
+		if tabIcon and frame.isTemporary then 
+			tabIcon:Show()
+		end
+	end)
+	tab:HookScript("OnLeave", function() 
+		tabText:Hide() 
+		if tabIcon and frame.isTemporary then 
+			tabIcon:Hide()
+		end
+	end)
 	tab:HookScript("OnClick", function() 
 		-- We need to hide both tabs and button frames here, 
 		-- but it must depend on visible editBoxes. 
