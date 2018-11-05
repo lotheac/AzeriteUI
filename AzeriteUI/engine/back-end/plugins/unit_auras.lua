@@ -754,6 +754,7 @@ local Disable = function(self)
 	
 		if Auras then
 			Auras.unit = nil
+			Auras:Hide()
 			if Cache[Auras] then 
 				table_wipe(Cache[Auras])
 			end
@@ -761,6 +762,7 @@ local Disable = function(self)
 	
 		if Buffs then
 			Buffs.unit = nil
+			Buffs:Hide()
 			if Cache[Buffs] then 
 				table_wipe(Cache[Buffs])
 			end
@@ -768,6 +770,7 @@ local Disable = function(self)
 	
 		if Debuffs then
 			Debuffs.unit = nil
+			Debuffs:Hide()
 			if Cache[Debuffs] then 
 				table_wipe(Cache[Debuffs])
 			end
@@ -793,5 +796,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 31)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 33)
 end 
