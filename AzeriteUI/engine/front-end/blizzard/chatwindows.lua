@@ -288,6 +288,10 @@ end
 Module.PostCreateTemporaryChatWindow = function(self, frame, ...)
 	local chatType, chatTarget, sourceChatFrame, selectWindow = ...
 
+	-- Some temporary frames have weird fonts (like the pet battle log)
+	frame:SetFontObject(ChatFrame1:GetFontObject())
+
+	-- Run the normal post creation method
 	self:PostCreateChatWindow(frame)
 end 
 
