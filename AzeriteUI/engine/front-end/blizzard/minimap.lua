@@ -804,7 +804,10 @@ Module.SetUpMinimap = function(self)
 		clockFrame:SetScript("OnEnter", Time_OnEnter)
 		clockFrame:SetScript("OnLeave", Time_OnLeave)
 		clockFrame:SetScript("OnClick", Time_OnClick)
+
+		-- Register all buttons separately, as "AnyUp" doesn't include the middle button!
 		clockFrame:RegisterForClicks("RightButtonUp", "LeftButtonUp", "MiddleButtonUp")
+		
 		clockFrame.clock = clock
 		clockFrame._owner = Handler
 
