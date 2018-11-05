@@ -1,4 +1,4 @@
-local LibChatWindow, version = CogWheel:Set("LibChatWindow", 21)
+local LibChatWindow, version = CogWheel:Set("LibChatWindow", 23)
 if (not LibChatWindow) then	
 	return
 end
@@ -380,6 +380,10 @@ LibChatWindow.GetChatWindowTabText = function(self, frame)
 	return _G[frame:GetName().."TabText"]
 end 
 
+LibChatWindow.GetChatWindowTabIcon = function(self, frame)
+	return _G[frame:GetName().."TabConversationIcon"]
+end 
+
 LibChatWindow.GetSelectedChatFrame = function(self)
 	return _G.SELECTED_CHAT_FRAME
 end 
@@ -491,6 +495,7 @@ local embedMethods = {
 	GetChatWindowScrollBar = true, 
 	GetChatWindowScrollBarThumbTexture = true, 
 	GetChatWindowTab = true, 
+	GetChatWindowTabIcon = true, 
 	GetChatWindowTabText = true, 
 	GetChatWindowVoiceDeafenButton = true, 
 	GetChatWindowVoiceMuteButton = true, 
