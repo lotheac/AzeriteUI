@@ -287,6 +287,14 @@ UIWidgets["BuffTimer"] = function(self)
 	PlayerBuffTimerManager:UnregisterAllEvents()
 end
 
+UIWidgets["CaptureBar"] = function(self)
+	
+	UIWidgetTemplateCaptureBar:SetParent(UIHider)
+	UIWidgetTemplateCaptureBar:SetScript("OnEvent", nil)
+	UIWidgetTemplateCaptureBar:UnregisterAllEvents()
+end
+UIWidgetDependency["CaptureBar"] = "Blizzard_UIWidgets"
+
 UIWidgets["CastBars"] = function(self)
 	local CastingBarFrame = _G.CastingBarFrame
 	local PetCastingBarFrame = _G.PetCastingBarFrame
