@@ -210,12 +210,41 @@ local NamePlates = {
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
 
+		PostUpdateAura = function(element, unit, visible)
+			local self = element._owner
+			local raidTarget = self.RaidTarget
+			if raidTarget then 
+				raidTarget:ClearAllPoints()
+				if visible then
+					if visible > 3 then 
+						raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace_AuraRows))
+					elseif visible > 0 then
+						raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace_AuraRow))
+					else 
+						raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace))
+					end  
+				else
+					raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace))
+				end
+			end 
+		end,
 
 	UseRaidTarget = true, 
-		RaidTargetPlace = { "TOP", 0, 10 + 64 },
+		RaidTargetPlace = { "TOP", 0, 44 }, -- no auras
+		RaidTargetPlace_AuraRow = { "TOP", 0, 80 }, -- auras, 1 row
+		RaidTargetPlace_AuraRows = { "TOP", 0, 112 }, -- auras, 2 rows
 		RaidTargetSize = { 64, 64 },
 		RaidTargetTexture = GetMediaPath("raid_target_icons"),
 		RaidTargetDrawLayer = { "ARTWORK", 0 },
+		PostUpdateRaidTarget = function(element, unit)
+			local self = element._owner
+			if self:IsElementEnabled("Auras") then 
+				self.Auras:ForceUpdate()
+			else 
+				element:ClearAllPoints()
+				element:SetPoint(unpack(self.layout.RaidTargetPlace))
+			end 
+		end,
 
 	-- CVars adjusted at startup
 	SetConsoleVars = {
