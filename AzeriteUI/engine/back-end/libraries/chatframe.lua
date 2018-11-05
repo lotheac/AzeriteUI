@@ -438,7 +438,12 @@ LibChatWindow.Enable = function(self)
 
 	-- proxy temporary windows creation through our event system
 	-- @return currentFrame, chatType, chatTarget, sourceChatFrame, selectWindow 
-	self:SetSecureHook("FCF_OpenTemporaryWindow", function(...) self:Fire("CG_OPEN_TEMPORARY_CHAT_WINDOW", FCF_GetCurrentChatFrame(), ...) end, "CG_OPEN_TEMPORARY_CHAT_WINDOW")
+	self:SetSecureHook("FCF_OpenTemporaryWindow", function(...) 
+		local frame = FCF_GetCurrentChatFrame()
+		if frame then 
+			self:SendMessage("CG_OPEN_TEMPORARY_CHAT_WINDOW", frame, ...) 
+		end 
+	end, "CG_OPEN_TEMPORARY_CHAT_WINDOW")
 
 	-- initial positioning
 	self:UpdateChatWindowPositions(true)
