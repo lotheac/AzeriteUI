@@ -3302,28 +3302,47 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 
 	-- Unit Classification (boss, elite, rare)
 	if Layout.UseClassificationIndicator then 
-		self.Classification = {}
 
-		local boss = overlay:CreateTexture()
-		boss:SetPoint(unpack(Layout.ClassificationIndicatorBossPlace))
-		boss:SetSize(unpack(Layout.ClassificationIndicatorBossSize))
+		local classification = overlay:CreateFrame("Frame")
+		classification:SetPoint(unpack(Layout.ClassificationPlace))
+		classification:SetSize(unpack(Layout.ClassificationSize))
+		self.Classification = classification
+
+		local boss = classification:CreateTexture()
+		boss:SetPoint("CENTER", 0, 0)
+		boss:SetSize(unpack(Layout.ClassificationSize))
 		boss:SetTexture(Layout.ClassificationIndicatorBossTexture)
-		boss:SetVertexColor(unpack(Layout.ClassificationIndicatorBossColor))
+		boss:SetVertexColor(unpack(Layout.ClassificationColor))
 		self.Classification.Boss = boss
 
-		local elite = overlay:CreateTexture()
-		elite:SetPoint(unpack(Layout.ClassificationIndicatorElitePlace))
-		elite:SetSize(unpack(Layout.ClassificationIndicatorEliteSize))
+		local elite = classification:CreateTexture()
+		elite:SetPoint("CENTER", 0, 0)
+		elite:SetSize(unpack(Layout.ClassificationSize))
 		elite:SetTexture(Layout.ClassificationIndicatorEliteTexture)
-		elite:SetVertexColor(unpack(Layout.ClassificationIndicatorEliteColor))
+		elite:SetVertexColor(unpack(Layout.ClassificationColor))
 		self.Classification.Elite = elite
 
-		local rare = overlay:CreateTexture()
-		rare:SetPoint(unpack(Layout.ClassificationIndicatorRarePlace))
-		rare:SetSize(unpack(Layout.ClassificationIndicatorRareSize))
+		local rare = classification:CreateTexture()
+		rare:SetPoint("CENTER", 0, 0)
+		rare:SetSize(unpack(Layout.ClassificationSize))
 		rare:SetTexture(Layout.ClassificationIndicatorRareTexture)
-		rare:SetVertexColor(unpack(Layout.ClassificationIndicatorRareColor))
+		rare:SetVertexColor(unpack(Layout.ClassificationColor))
 		self.Classification.Rare = rare
+
+		local alliance = classification:CreateTexture()
+		alliance:SetPoint("CENTER", 0, 0)
+		alliance:SetSize(unpack(Layout.ClassificationSize))
+		alliance:SetTexture(Layout.ClassificationIndicatorAllianceTexture)
+		alliance:SetVertexColor(unpack(Layout.ClassificationColor))
+		self.Classification.Alliance = alliance
+
+		local horde = classification:CreateTexture()
+		horde:SetPoint("CENTER", 0, 0)
+		horde:SetSize(unpack(Layout.ClassificationSize))
+		horde:SetTexture(Layout.ClassificationIndicatorHordeTexture)
+		horde:SetVertexColor(unpack(Layout.ClassificationColor))
+		self.Classification.Horde = horde
+
 	end
 
 	-- Targeting
