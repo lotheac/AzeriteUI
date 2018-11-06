@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 10)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 12)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -44,6 +44,7 @@ LibWidgetContainer.frequentUpdates = LibWidgetContainer.frequentUpdates or {} --
 LibWidgetContainer.frequentUpdateFrames = LibWidgetContainer.frequentUpdateFrames or {} -- global frame frequent update registry
 LibWidgetContainer.frameElements = LibWidgetContainer.frameElements or {} -- per unitframe element registry
 LibWidgetContainer.frameElementsEnabled = LibWidgetContainer.frameElementsEnabled or {} -- per unitframe element enabled registry
+LibWidgetContainer.frameElementsDisabled = LibWidgetContainer.frameElementsDisabled or {} -- per unitframe element manually disabled registry
 LibWidgetContainer.scriptHandlers = LibWidgetContainer.scriptHandlers or {} -- tracked library script handlers
 LibWidgetContainer.scriptFrame = LibWidgetContainer.scriptFrame -- library script frame, will be created on demand later on
 
@@ -56,6 +57,7 @@ local frequentUpdates = LibWidgetContainer.frequentUpdates
 local frequentUpdateFrames = LibWidgetContainer.frequentUpdateFrames
 local frameElements = LibWidgetContainer.frameElements
 local frameElementsEnabled = LibWidgetContainer.frameElementsEnabled
+local frameElementsDisabled = LibWidgetContainer.frameElementsDisabled
 local scriptHandlers = LibWidgetContainer.scriptHandlers
 local scriptFrame = LibWidgetContainer.scriptFrame
 
@@ -280,6 +282,11 @@ WidgetFrame.EnableElement = function(self, element)
 		return 
 	end 
 
+	-- removed manually disabled entry
+	if (frameElementsDisabled[self] and frameElementsDisabled[self][element]) then 
+		frameElementsDisabled[self][element] = nil
+	end 
+	
 	-- upvalues ftw
 	local frameElements = frameElements[self]
 	local frameElementsEnabled = frameElementsEnabled[self]
@@ -304,14 +311,25 @@ WidgetFrame.EnableElement = function(self, element)
 	end
 end
 
-WidgetFrame.DisableElement = function(self, element)
+WidgetFrame.DisableElement = function(self, element, softDisable)
+	if (not frameElementsDisabled[self]) then 
+		frameElementsDisabled[self] = {}
+	end 
+
+	-- mark this as manually disabled
+	if (not softDisable) then 
+		frameElementsDisabled[self][element] = true
+	end
+	
 	-- silently fail if the element hasn't been enabled for the frame
 	if ((not frameElementsEnabled[self]) or (not frameElementsEnabled[self][element])) then
 		return
 	end
 	
+	-- run the disable script
 	elements[element].Disable(self, self.unit)
 
+	-- remove the element from the enabled registries
 	for i = #frameElements[self], 1, -1 do
 		if (frameElements[self][i] == element) then
 			table_remove(frameElements[self], i)
@@ -319,8 +337,10 @@ WidgetFrame.DisableElement = function(self, element)
 		end
 	end
 	
+	-- remove the enabled status
 	frameElementsEnabled[self][element] = nil
 	
+	-- remove the element's frequent update entry
 	if (frequentUpdates[self] and frequentUpdates[self][element]) then
 		-- remove the element's frequent update entry
 		frequentUpdates[self][element].elapsed = nil
@@ -428,7 +448,10 @@ LibWidgetContainer.CreateWidgetContainer = function(self, frameType, frameName, 
 	end
 	
 	for element in pairs(elements) do
-		frame:EnableElement(element, frame.unit)
+		-- Don't enable elements that's been manually disabled in styleFunc
+		if (not (frameElementsDisabled[frame] and frameElementsDisabled[frame][element])) then 
+			frame:EnableElement(element, frame.unit)
+		end
 	end
 
 	frame:SetScript("OnEvent", WidgetFrame.OnEvent)
