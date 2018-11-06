@@ -2694,8 +2694,6 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 				hooksecurefunc(self.Cast.Shield, "Hide", function() self.Cast.Bg:Show() end)
 			end 
 		end 
-
-	
 	end 
 
 	-- Class Power
@@ -3278,7 +3276,7 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		-- Badge backdrop
 		if Layout.UseLevelBadge then 
 			local levelBadge = overlay:CreateTexture()
-			levelBadge:SetPoint("CENTER", level, "CENTER", 0, 0)
+			levelBadge:SetPoint("CENTER", level, "CENTER", 0, 1)
 			levelBadge:SetSize(unpack(Layout.LevelBadgeSize))
 			levelBadge:SetDrawLayer(unpack(Layout.LevelBadgeDrawLayer))
 			levelBadge:SetTexture(Layout.LevelBadgeTexture)
