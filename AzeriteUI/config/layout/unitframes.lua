@@ -1364,11 +1364,11 @@ local UnitFrameTarget = {
 			return true
 		end,
 
-		LevelPlace = { "CENTER", 439/2 + 79, 93/2 -62 }, 
+		LevelPlace = { "CENTER", 298, -15 }, 
 		LevelDrawLayer = { "BORDER", 1 },
 		LevelJustifyH = "CENTER",
 		LevelJustifyV = "MIDDLE", 
-		LevelFont = Fonts(12, true),
+		LevelFont = Fonts(13, true),
 		LevelHideCapped = true, 
 		LevelHideFloored = true, 
 		LevelColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3] },
