@@ -1339,7 +1339,6 @@ local UnitFrameTarget = {
 		ClassificationPlace = { "BOTTOMRIGHT", 72, -43 },
 		ClassificationSize = { 84, 84 },
 		ClassificationColor = { 1, 1, 1 },
-		--ClassificationColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		ClassificationIndicatorAllianceTexture = GetMediaPath("icon_badges_alliance"),
 		ClassificationIndicatorHordeTexture = GetMediaPath("icon_badges_horde"),
 		ClassificationIndicatorBossTexture = GetMediaPath("icon_badges_boss"),
