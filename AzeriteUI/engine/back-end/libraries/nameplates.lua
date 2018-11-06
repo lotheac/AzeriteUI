@@ -367,23 +367,6 @@ NamePlate.OnShow = function(self)
 		return
 	end
 
-	-- setup player classbars
-	-- setup raid targets
-
-	--[[
-	if self.Health then 
-		self.Health:Show()
-	end
-
-	if self.Auras then 
-		self.Auras:Hide()
-	end 
-
-	if self.Cast then 
-		self.Cast:Hide()
-	end 
-	]]--
-
 	self:SetAlpha(0) -- set the actual alpha to 0
 	self.currentAlpha = 0 -- update stored alpha value
 	self:Show() -- make the fully transparent frame visible
