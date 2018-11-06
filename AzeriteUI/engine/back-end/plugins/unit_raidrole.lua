@@ -23,7 +23,10 @@ local Update = function(self, event, unit)
 	end
 
 	local role
-	if (UnitInParty(unit) or UnitInRaid(unit)) then 
+	local index = GetRaidTargetIndex(unit)
+	if index then 
+		role = "RAIDTARGET"
+	elseif (UnitInParty(unit) or UnitInRaid(unit)) then 
 		if (UnitIsGroupLeader(unit)) then 
 			role = "LEADER"
 		elseif (UnitIsGroupAssistant(unit)) then 
@@ -60,6 +63,11 @@ local Update = function(self, event, unit)
 	local roleTexture = role and element.roleTextures[role]
 	if roleTexture then 
 		element:SetTexture(roleTexture)
+		if (role == "RAIDTARGET") then 
+			SetRaidTargetIconTexture(element, index)
+		else 
+			element:SetTexCoord(0, 1, 0, 1)
+		end 
 		element:Show()
 	else 
 		element:SetTexture(nil)
@@ -91,9 +99,11 @@ local Enable = function(self)
 		element.roleTextures.MASTERLOOTER = element.roleTextures.MASTERLOOTER or [[Interface\GroupFrame\UI-Group-MasterLooter]]
 		element.roleTextures.MAINTANK = element.roleTextures.MAINTANK or [[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]]
 		element.roleTextures.MAINASSIST = element.roleTextures.MAINASSIST or [[Interface\GROUPFRAME\UI-GROUP-MAINASSISTICON]]
+		element.roleTextures.RAIDTARGET = element.roleTextures.RAIDTARGET or [[Interface\TargetingFrame\UI-RaidTargetingIcons]]
 
 		self:RegisterEvent("PARTY_LEADER_CHANGED", Proxy, true)
 		self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED", Proxy, true)
+		self:RegisterEvent("RAID_TARGET_UPDATE", Proxy, true)
 
 		-- Avoid duplicate events, library fires this for all elements on raid/party
 		if (not self.unit:match("party%d?$")) and (not self.unit:match("raid%d?$")) then 
@@ -111,10 +121,11 @@ local Disable = function(self)
 		self:UnregisterEvent("PARTY_LEADER_CHANGED", Proxy)
 		self:UnregisterEvent("PARTY_LOOT_METHOD_CHANGED", Proxy)
 		self:UnregisterEvent("GROUP_ROSTER_UPDATE", Proxy)
+		self:UnregisterEvent("RAID_TARGET_UPDATE", Proxy)
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 7)
 end 
