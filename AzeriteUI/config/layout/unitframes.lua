@@ -2170,6 +2170,7 @@ local UnitFrameRaid = setmetatable({
 		RaidRolePoint = "RIGHT", RaidRoleAnchor = "Name", RaidRolePlace = { "LEFT", -1, 1 }, 
 		RaidRoleSize = { 16, 16 }, 
 		RaidRoleDrawLayer = { "ARTWORK", 3 },
+		RaidRoleRaidTargetTexture = GetMediaPath("raid_target_icons_small"),
 
 	UseRaidDebuff = true, -- Prio #1
 		RaidDebuffPostUpdate = function(element, unit)
