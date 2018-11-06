@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added group leader tools to run ready checks, role checks, place world markers and more. 
 - Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
 
+## [1.0.81] 2018-11-06
+- Release Candiate.
+
+### Added 
+- Added option to disable nameplate auras. 
+- Added Horde and Alliance faction icons for PvP enabled units to the target unit frame.
+
+### Changed
+- Increased most library default alpha values for non-targeted nameplates while engaged in combat. Out of combat alpha remains the same. 
+- Nameplate raid target icons now position themselves relative to how many if any auras currently are visible on the nameplate it belongs to. 
+- Updated the chat window front-end to style the fonts and tabs of temporary windows to match the main chat window. 
+- The player HUD castbar will now disable itself if the Blizzard setting to show the personal resource display is enabled.  
+
+### Fixed
+- Fixed some issues in the nameplate back-end that would cause elements to not be rendered correctly or at the right nameplate when nameplate visibility were toggled using keybinds. 
+- Fixed some issues in the chatwindow back-end that would cause events to style temporary chat windows not to fire.
+- Fixed a bug in the classpower plugin that would set nearly all power types except Runes to always show 5 points, which resulted in power types with a lesser maximum like Stagger to show several empty and poorly positioned backdrops.   
+
+### Removed
+- Removed a lot of redundant and unused textures. 
+
 ## [1.0.80] 2018-10-30
 - Release Candidate.
 
