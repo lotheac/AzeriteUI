@@ -1976,7 +1976,6 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	end
 
 	-- Raid Role
-	-----------------------------------------------------------
 	if Layout.UseRaidRole then 
 		local raidRole = overlay:CreateTexture()
 		if Layout.RaidRoleAnchor and Layout.RaidRolePoint then 
@@ -1986,8 +1985,22 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		end 
 		raidRole:SetSize(unpack(Layout.RaidRoleSize))
 		raidRole:SetDrawLayer(unpack(Layout.RaidRoleDrawLayer))
+		raidRole.roleTextures = { RAIDTARGET = Layout.RaidRoleRaidTargetTexture }
 		self.RaidRole = raidRole
 	end 
+
+	-- Raid Target
+	if Layout.UseRaidTarget then 
+		local raidTarget = overlay:CreateTexture()
+		raidTarget:SetPoint(unpack(Layout.RaidTargetPlace))
+		raidTarget:SetSize(unpack(Layout.RaidTargetSize))
+		raidTarget:SetDrawLayer(unpack(Layout.RaidTargetDrawLayer))
+		raidTarget:SetTexture(Layout.RaidTargetTexture)
+		
+		self.RaidTarget = raidTarget
+		self.RaidTarget.PostUpdate = Layout.PostUpdateRaidTarget
+	end 
+
 
 
 end
