@@ -1336,22 +1336,14 @@ local UnitFrameTarget = {
 		TargetIndicatorPetByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 	UseClassificationIndicator = true, 
-		ClassificationIndicatorBossPlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
-		ClassificationIndicatorBossSize = { 84,84 },
+		ClassificationPlace = { "BOTTOMRIGHT", 72, -43 },
+		ClassificationSize = { 84, 84 },
+		ClassificationColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+		ClassificationIndicatorAllianceTexture = GetMediaPath("icon_badges_alliance"),
+		ClassificationIndicatorHordeTexture = GetMediaPath("icon_badges_horde"),
 		ClassificationIndicatorBossTexture = GetMediaPath("icon_badges_boss"),
-		ClassificationIndicatorBossColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-
-		ClassificationIndicatorElitePlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
-		ClassificationIndicatorEliteSize = { 84,84 },
 		ClassificationIndicatorEliteTexture = GetMediaPath("icon_classification_elite"),
-		ClassificationIndicatorEliteColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-
-		ClassificationIndicatorRarePlace = { "BOTTOMRIGHT", 30 + 84/2, -1 - 84/2 },
-		ClassificationIndicatorRareSize = { 84,84 },
 		ClassificationIndicatorRareTexture = GetMediaPath("icon_classification_rare"),
-		ClassificationIndicatorRareColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-
-	UseFactionIndicator = true, 
 
 	UseLevel = true, 
 		LevelVisibilityFilter = function(element, unit) 
