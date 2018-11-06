@@ -777,6 +777,8 @@ local Disable = function(self)
 	local element = self.Cast
 	if element then
 		element:SetScript("OnUpdate", nil)
+		element:Hide()
+
 		self:UnregisterEvent("UNIT_SPELLCAST_START", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_FAILED", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
@@ -793,5 +795,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 13)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 14)
 end 
