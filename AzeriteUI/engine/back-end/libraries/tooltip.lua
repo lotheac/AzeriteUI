@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 40)
+local LibTooltip = CogWheel:Set("LibTooltip", 41)
 if (not LibTooltip) then	
 	return
 end
@@ -674,7 +674,11 @@ Tooltip.GetUnitHealthColor = function(self, unit)
 				r, g, b = unpack(self.colors.dead)
 			elseif (UnitIsPlayer(unit)) then
 				local _, class = UnitClass(unit)
-				r, g, b = unpack(self.colors.class[class])
+				if class then 
+					r, g, b = unpack(self.colors.class[class])
+				else 
+					r, g, b = unpack(self.colors.disconnected)
+				end 
 			elseif (UnitReaction(unit, "player")) then
 				r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
 			else
@@ -690,7 +694,11 @@ Tooltip.GetUnitHealthColor = function(self, unit)
 			r, g, b = unpack(self.colors.dead)
 		elseif (UnitIsPlayer(unit)) then
 			local _, class = UnitClass(unit)
-			r, g, b = unpack(self.colors.class[class])
+			if class then 
+				r, g, b = unpack(self.colors.class[class])
+			else 
+				r, g, b = unpack(self.colors.disconnected)
+			end 
 		elseif (UnitReaction(unit, "player")) then
 			r, g, b = unpack(self.colors.reaction[UnitReaction(unit, "player")])
 		else
