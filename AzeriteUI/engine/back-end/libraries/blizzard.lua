@@ -288,10 +288,9 @@ UIWidgets["BuffTimer"] = function(self)
 end
 
 UIWidgets["CaptureBar"] = function(self)
-	
-	UIWidgetTemplateCaptureBar:SetParent(UIHider)
-	UIWidgetTemplateCaptureBar:SetScript("OnEvent", nil)
-	UIWidgetTemplateCaptureBar:UnregisterAllEvents()
+	UIWidgetBelowMinimapContainerFrame:SetParent(UIHider)
+	UIWidgetBelowMinimapContainerFrame:SetScript("OnEvent", nil)
+	UIWidgetBelowMinimapContainerFrame:UnregisterAllEvents()
 end
 UIWidgetDependency["CaptureBar"] = "Blizzard_UIWidgets"
 
