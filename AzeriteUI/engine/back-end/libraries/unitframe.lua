@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 49)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 50)
 if (not LibUnitFrame) then	
 	return
 end
@@ -172,6 +172,8 @@ end
 
 -- Secure Snippets
 --------------------------------------------------------------------------
+-- Not currently used. 
+--[[--
 local secureSnippets = {
 	vehicleSwitcher = [=[
 		if (name == "state-vehicleswitch") then 
@@ -225,6 +227,7 @@ local secureSnippets = {
 		end
 	]=]
 }
+--]]--
 
 -- Utility Functions
 --------------------------------------------------------------------------
@@ -316,6 +319,20 @@ UnitFrame.OverrideAllElements = function(self, event, ...)
 	return self:UpdateAllElements(event, ...)
 end
 
+local UpdatePet = function(self, event, unit)
+	local petUnit
+	if (unit == "target") then
+		return
+	elseif (unit == "player") then
+		petUnit = "pet"
+	else
+		petUnit = unit.."pet"
+	end
+	if (not self:OnAttributeChanged("unit", UnitHasVehicleUI(unit) and petUnit or unit)) then
+		return self:UpdateAllElements(event, "Forced", self.unit)
+	end
+end
+
 -- Library API
 --------------------------------------------------------------------------
 -- Return or create the library default tooltip
@@ -358,7 +375,6 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame[method] = func
 	end 
 
-	--frame.id = tonumber(string_match(unit, "^.-(%d+)")) -- handled by widget container based on unit
 	frame.requireUnit = true
 	frame.colors = frame.colors or Colors
 
@@ -373,7 +389,20 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame:RegisterForClicks("AnyUp")
 	end 
 
-	if (unit == "target") then
+	local vehicleDriver, visDriver
+	if (unit == "player") then 
+		-- Should work in all cases where the unitframe is replaced. It should always be the "pet" unit.
+		vehicleDriver = "[vehicleui]pet;player"
+
+		-- Might seem stupid, but I want the player frame to disappear along with the actionbars 
+		-- when we've blown the flight master's whistle and are getting picked up.
+		visDriver = "[@player,exists][vehicleui][possessbar][overridebar][mounted]show;hide"
+
+	elseif (unit == "pet") then 
+		vehicleDriver = "[vehicleui]player;pet"
+		visDriver = "[@pet,exists][vehicleui]show;hide"
+
+	elseif (unit == "target") then
 		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit == "focus") then
@@ -386,7 +415,6 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame.unitGroup = "boss"
 		frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_TARGETABLE_CHANGED", UnitFrame.OverrideAllElements, true)
-		--frame:EnableFrameFrequent(.5, "unit")
 
 	elseif (unit:match("arena%d?$")) then
 		frame.unitGroup = "arena"
@@ -395,32 +423,20 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 	elseif (unit:match("party%d?$")) then 
 		frame.unitGroup = "party"
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
+		frame:RegisterEvent("UNIT_PET", UpdatePet)
+
+		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
 
 	elseif (unit:match("raid%d?$")) then 
 		frame.unitGroup = "raid"
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
+		frame:RegisterEvent("UNIT_PET", UpdatePet)
+
+		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
 
 	elseif (unit:match("%w+target")) then
 		frame:EnableFrameFrequent(.5, "unit")
 	end
-
-	local vehicleDriver, visDriver
-	if (unit == "player") then 
-		-- Should work in all cases where the unitframe is replaced. It should always be the "pet" unit.
-		vehicleDriver = "[vehicleui]pet;player"
-
-		-- Might seem stupid, but I want the player frame to disappear along with the actionbars 
-		-- when we've blown the flight master's whistle and are getting picked up.
-		visDriver = "[@player,exists][vehicleui][possessbar][overridebar][mounted]show;hide"
-		--visDriver = "show"
-
-	elseif (unit == "pet") then 
-		vehicleDriver = "[vehicleui]player;pet"
-		visDriver = "[@pet,exists][vehicleui]show;hide"
-
-	elseif (unit:match("party%d?$")) or (unit:match("raid%d?$")) then 
-		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
-	end 
 
 	if (not visDriver) then
 		visDriver = string_format("[@%s,exists]show;hide", unit)

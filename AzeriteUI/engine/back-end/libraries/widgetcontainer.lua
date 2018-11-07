@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 12)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 13)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -167,6 +167,7 @@ WidgetFrame.OnAttributeChanged = function(self, attribute, value)
 
 			-- The above updates frame.unit
 			UpdateAllElements(self, "Forced", self.unit)
+			return true
 		end 
 	end
 end
@@ -456,7 +457,7 @@ LibWidgetContainer.CreateWidgetContainer = function(self, frameType, frameName, 
 
 	frame:SetScript("OnEvent", WidgetFrame.OnEvent)
 	frame:SetScript("OnAttributeChanged", WidgetFrame.OnAttributeChanged)
-	frame:HookScript("OnShow", UpdateAllElements) 
+	frame:HookScript("OnShow", function(self) UpdateAllElements(self, "Forced", self.unit) end) 
 
 	-- Not sure all needs this one
 	-- But player, pet and all other units that exist before targeted do, 
