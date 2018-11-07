@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added group leader tools to run ready checks, role checks, place world markers and more. 
 - Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
 
+## [1.0.82] 2018-11-07
+- Release Candiate.
+
+### Fixed
+- The raid frames should no longer disappear on reloads for groups with 16 to 25 members.
+
 ## [1.0.81] 2018-11-06
 - Release Candiate.
 
