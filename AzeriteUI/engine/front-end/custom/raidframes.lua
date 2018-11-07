@@ -63,7 +63,7 @@ Module.OnInit = function(self)
 			end 
 		elseif (name == "state-layout") then
 			local groupLayout = self:GetAttribute("groupLayout"); 
-			if (groupLayout ~= value) then 
+			if (groupLayout ~= value) or true then 
 
 				local colSize; 
 				local growthX;
@@ -95,9 +95,9 @@ Module.OnInit = function(self)
 					groupAnchor = "%s";
 				end
 
-				-- This should never happen
+				-- This should never happen: it does!
 				if not colSize then 
-					return
+					return 
 				end 
 
 				-- Iterate the frames
@@ -165,7 +165,7 @@ Module.OnInit = function(self)
 	end 
 
 	-- Register the layout driver
-	local layoutDriver = dev and "[@target,exists]epic;normal" or "[@raid26,exists]epic;[@raid16,exists]mythic;normal"
+	local layoutDriver = dev and "[@target,exists]epic;normal" or "[@raid26,exists]epic;normal"
 	RegisterAttributeDriver(self.frame, "state-layout", layoutDriver)
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
@@ -177,7 +177,7 @@ Module.OnInit = function(self)
 		if name then 
 			name = string.lower(name); 
 		end 
-		if (name == "change-enablepartyframes") then 
+		if (name == "change-enableraidframes") then 
 			self:SetAttribute("enableRaidFrames", value); 
 			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
 			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
