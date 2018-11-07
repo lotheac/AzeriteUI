@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added group leader tools to run ready checks, role checks, place world markers and more. 
 - Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
 
+## [1.0.83] 2018-11-07
+- Release Candiate.
+
+### Fixed
+- Fixed a bug in the unitframe back-end that would cause raid frames with a two digit id to not get the needed events registered to properly update when members changed around. Only the first nine members of the raid would be properly updated. It litterally failed to count to ten. 
+
+### Removed
+- Disabled the Blizzard capture bars. 
+
 ## [1.0.82] 2018-11-07
 - Release Candiate.
 
