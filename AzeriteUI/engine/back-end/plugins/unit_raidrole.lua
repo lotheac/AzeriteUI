@@ -106,7 +106,7 @@ local Enable = function(self)
 		self:RegisterEvent("RAID_TARGET_UPDATE", Proxy, true)
 
 		-- Avoid duplicate events, library fires this for all elements on raid/party
-		if (not self.unit:match("party%d?$")) and (not self.unit:match("raid%d?$")) then 
+		if (not self.unit:match("^party(%d+)")) and (not self.unit:match("^raid(%d+)")) then 
 			self:RegisterEvent("GROUP_ROSTER_UPDATE", Proxy, true)
 		end 
 
@@ -127,5 +127,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 7)
+	Lib:RegisterElement("RaidRole", Enable, Disable, Proxy, 8)
 end 

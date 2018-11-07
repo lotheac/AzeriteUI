@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 50)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 51)
 if (not LibUnitFrame) then	
 	return
 end
@@ -287,6 +287,10 @@ UnitFrame.GetTooltip = function(self)
 end 
 
 UnitFrame.OnEnter = function(self)
+	if ((not self.unit) or (not UnitExists(self.unit))) then 
+		return 
+	end 
+
 	self.isMouseOver = true
 
 	local tooltip = self:GetTooltip()
@@ -411,23 +415,23 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 	elseif (unit == "mouseover") then
 		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT", UnitFrame.OverrideAllElements, true)
 
-	elseif (unit:match("boss%d?$")) then
+	elseif (unit:match("^boss(%d+)")) then
 		frame.unitGroup = "boss"
 		frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_TARGETABLE_CHANGED", UnitFrame.OverrideAllElements, true)
 
-	elseif (unit:match("arena%d?$")) then
+	elseif (unit:match("^arena(%d+)")) then
 		frame.unitGroup = "arena"
 		frame:RegisterEvent("ARENA_OPPONENT_UPDATE", UnitFrame.OverrideAllElements, true)
 
-	elseif (unit:match("party%d?$")) then 
+	elseif (unit:match("^party(%d+)")) then 
 		frame.unitGroup = "party"
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_PET", UpdatePet)
 
 		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
 
-	elseif (unit:match("raid%d?$")) then 
+	elseif (unit:match("^raid(%d+)")) then 
 		frame.unitGroup = "raid"
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_PET", UpdatePet)
