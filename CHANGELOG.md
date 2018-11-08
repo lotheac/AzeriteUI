@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Adjusted castbar- and small unitframe backdrops to have a less intrusive and more fitting drop shade.
 - Adjusted the color balance of the elite NPC classification badge to be slightly brighter, to be more in line with the rest of the UI coloring.
+- Slightly adjusted vertex coloring and bumped the size of the group finder eye. 
 
 ## [1.0.83-RC] 2018-11-07
 ### Fixed

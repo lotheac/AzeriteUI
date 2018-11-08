@@ -158,9 +158,9 @@ local Minimap = {
 
 	UseGroupFinderEye = true, 
 		GroupFinderEyePlace = { "CENTER", math.cos(45*math.pi/180) * (213/2 + 10), math.sin(45*math.pi/180) * (213/2 + 10) }, 
-		GroupFinderEyeSize = { 56, 56 }, 
+		GroupFinderEyeSize = { 64, 64 }, 
 		GroupFinderEyeTexture = GetMediaPath("group-finder-eye-green"),
-		GroupFinderEyeColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+		GroupFinderEyeColor = { .90, .95, 1 }, 
 		GroupFinderQueueStatusPlace = { "BOTTOMRIGHT", QueueStatusMinimapButton, "TOPLEFT", 0, 0 },
 }
 
