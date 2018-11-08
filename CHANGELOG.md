@@ -5,28 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Added
-- Added group leader tools to run ready checks, role checks, place world markers and more. 
-- Added RaidDebuff element to show a prioritized boss aura/dispellable debuff/more on group frames.
+### Changed
+- Adjusted castbar- and small unitframe backdrops to have a less intrusive and more fitting drop shade.
+- Adjusted the color balance of the elite NPC classification badge to be slightly brighter, to be more in line with the rest of the UI coloring.
 
-## [1.0.83] 2018-11-07
-- Release Candiate.
-
+## [1.0.83-RC] 2018-11-07
 ### Fixed
 - Fixed a bug in the unitframe back-end that would cause raid frames with a two digit id to not get the needed events registered to properly update when members changed around. Only the first nine members of the raid would be properly updated. It litterally failed to count to ten. 
 
 ### Removed
 - Disabled the Blizzard capture bars. 
 
-## [1.0.82] 2018-11-07
-- Release Candiate.
-
+## [1.0.82-RC] 2018-11-07
 ### Fixed
 - The raid frames should no longer disappear on reloads for groups with 16 to 25 members.
 
-## [1.0.81] 2018-11-06
-- Release Candiate.
-
+## [1.0.81-RC] 2018-11-06
 ### Added 
 - Added option to disable nameplate auras. 
 - Added Horde and Alliance faction icons for PvP enabled units to the target unit frame.
@@ -45,47 +39,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed a lot of redundant and unused textures. 
 
-## [1.0.80] 2018-10-30
-- Release Candidate.
-
+## [1.0.80-RC] 2018-10-30
 ### Added
 - Added several Demon Hunter auras to the filters, including Soul Fragments! 
 
 ### Changed
 - Slightly adjusted the player aura filter to accomodate some auras that didn't fall in line with our current system. 
 
-## [1.0.79] 2018-10-30
-- Release Candidate.
-
+## [1.0.79-RC] 2018-10-30
 ### Added
 - Added Hunter's Barbed Shot, Harpoon, Serpent Sting and Wildfire Bomb to the aure filter. 
 - Added Demon Hunter's Demon Soul buff to the aura filter.   
 
-## [1.0.78] 2018-10-29
-- Release Candidate.
-
+## [1.0.78-RC] 2018-10-29
 ### Changed
 - Slightly adjusted the target nameplate inset from the top of the screen to make sure there's room for its 6 auras.  
 - Changed power crystal colors to indicate the power's behavior rather than its exact type, as we feel many types basically are the same things under different names. So like all the various combo point systems, we found order in this chaos as well! We now separate all primary resources into fast, slow and angry powers! Fast resources are green, start at max, are used fast and generated fast. Slow is the color blue, starts at zero, is generated slowly through abilities and used fairly fast on other abilities. Angry is like slow, only purple and more fun. This system does not affect mana, which always will be displayed as a blue orb. 
 
-## [1.0.77] 2018-10-29
-- Release Candidate.
-
+## [1.0.77-RC] 2018-10-29
 ### Added
 - Added auras cast by the player to the nameplates. Options coming later. 
 
 ### Fixed
 - Fixed an issue with the target aura filter that would sometimes hide auras that should've been displayed according to the filter. Affliction Warlock's Corruption spell when talented with "Absolute Corruption" is an example of this. 
 
-## [1.0.76] 2018-10-28
-- Release Candidate.
-
+## [1.0.76-RC] 2018-10-28
 ### Fixed
 - Fixed chat bubble backdrop inset to not overlap the border.
 
-## [1.0.75] 2018-10-28
-- Release Candidate.
-
+## [1.0.75-RC] 2018-10-28
 ### Added
 - Added Clique support to all unit frames. 
 - Added group role icons to the raid frames. 
@@ -98,9 +80,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Worked around an issue with how party-, arena-, boss- and raid frames were stored that would trigger a blizzard bug preventing `/framestack` from functioning.
 - Fixed an issue where a wrongly registered event in parties could lead to the party portraits sometimes updating a bit delayed. 
 
-## [1.0.74] 2018-10-26
-- Release Candidate.
-
+## [1.0.74-RC] 2018-10-26
 ### Added
 - Added raid frames. 
 - Added a new unit status element for mainly meant for our raid frames, showing if the player is currently out of mana, disconnected, dead or away from keyboard.
@@ -116,11 +96,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Arena/PvP frames should no longer only show your own character.
 - Fixed an issue that would leave the minimap black until zooming in or out after zoning or reloading into an indoors area. 
 
-## [1.0.73] 2018-10-23
+## [1.0.73-Beta] 2018-10-23
 ### Fixed
 - Fixed an issue for Warlocks that would only show 1/10th of their actual soul shards, leading to the impression that shards were always empty.
 
-## [1.0.72] 2018-10-21
+## [1.0.72-Beta] 2018-10-21
 ### Changed
 - Changed the player- and target unitframe aura filters to work differently in and out of combat. Made the filters in combat stricter to remove some of the excessive spam we've been seeing lately, but also allowed the display of most long duration auras or non duration auras like toys and mounts out of combat. 
 
@@ -128,7 +108,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The mana orb for druids should no longer be empty when instantly resurrecting in an instance without a ghost period between the death and the resurrection. 
 - Fixed an issue where the player- and target frame aura highlighting sometimes would remain visible on fresh auras that shouldn't have them.
 
-## [1.0.71] 2018-10-19
+## [1.0.71-Beta] 2018-10-19
 ### Added
 - Added the option to disable the talking head frame.
 - Added the option to disable alerts. Alerts are the rectengular messages telling you about loot, currencies and similar appearing at the top of your screen.
@@ -141,7 +121,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed how the arena- and party frame visibility drivers are registered at startup, to deal with the issue where frames set to be hidden wouldn't be hidden until the option was toggle on and back off again. 
 
-## [1.0.70] 2018-10-18
+## [1.0.70-Beta] 2018-10-18
 ### Added
 - Added the option to disable the party frames.
 - Added the option to disable the arena frames.
@@ -156,7 +136,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - The issue where some classes like Warriors suddenly appeared to have ten times more total rage have been resolved. 
 
-## [1.0.69] 2018-10-15
+## [1.0.69-Beta] 2018-10-15
 ### Added
 - Added a player mana value text to the power crystal when mana is available, below maximum and not the currently active power type.
 
@@ -166,7 +146,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed the position of the unit name on the target of target unit frame.
 
-## [1.0.68] 2018-10-12
+## [1.0.68-Beta] 2018-10-12
 ### Added
 - Added unit name to the target of target unit frame. 
 
@@ -187,12 +167,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The actionbutton backdrop grids should now also become visible when the cursor holds spells, macros, companions, mounts and items that can be placed on the actionbars. 
 - Updated the cast- and health bar post updates for small unit frames with the same code used in the target frame, to avoid the "blank bar" issue that would sometimes happen after a spellcast. 
 
-## [1.0.67] 2018-09-29
+## [1.0.67-Beta] 2018-09-29
 ### Fixed
 - The game menu will no longer disappear when using the addon ConsolePort.
 - Health/Castbar value/name visibility update for various target frame types. 
 
-## [1.0.66] 2018-09-28
+## [1.0.66-Beta] 2018-09-28
 ### Added
 - Added pet autocast textures to the action buttons. 
 - Added pet autocast toggling when right-clicking action buttons containing autocastable pet spells. 
@@ -200,7 +180,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Changed the spell activation highlight textures to something less Blizz. 
 
-## [1.0.65] 2018-09-25
+## [1.0.65-Beta] 2018-09-25
 ### Added
 - Added raid target icons to the nameplates!
 
@@ -210,12 +190,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed 
 - Removed a lot of unused and redundant code from the nameplate library, as it's been using the same plugin system as the unitframes for some time, and no longer needs its own post updates for the various nameplate elements. 
 
-## [1.0.64] 2018-09-22
+## [1.0.64-Beta] 2018-09-22
 ### Fixed
 - Fixed a nil error introduced in the previous statusbar library update. 
 - Fixed a wrong method usage in the nameplate castbar post update.
 
-## [1.0.63] 2018-09-22
+## [1.0.63-Beta] 2018-09-22
 ### Changed
 - New classification badge for bosses! They should now stand out more from elites and rares. 
 - Actionbutton performance upgrades.
@@ -232,7 +212,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Further removed any global alpha handling during cinematics, as our interface master frame is parented to UIParent now, and visibility handled by WoW.
 - Spell charges on the extra action button should no longer be covered by the button border. 
 
-## [1.0.62] 2018-09-18
+## [1.0.62-Beta] 2018-09-18
 ### Added
 - Added bufftimers of the type that compliments that player's altpower bar in some quests like the horse riding on the Norwington Estate in Tiragarde Sound. These timers have been integrated into the same system as the instance countdown timers and breath- and fatigue timers. Why complicate a system that works?
 
@@ -249,7 +229,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed the blizzard bufftimer bars from the interface, as we have our own now. 
 
-## [1.0.61] 2018-09-16
+## [1.0.61-Beta] 2018-09-16
 ### Added
 - Added focus unit frame.
 - Added cast name to arena-, boss-, pet, target of target and the new focus unit frame. 
@@ -262,18 +242,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed aura widget alignment, as this was miscalculating the available row size in the widget, causing the last aura to unintentionally be placed on a new row. 
 
-## [1.0.60] 2018-09-15
+## [1.0.60-Beta] 2018-09-15
 ### Fixed
 - Changed how actionbuttons update their content to allow new spells appearing while in a vehicle.
 
-## [1.0.59] 2018-09-09
+## [1.0.59-Beta] 2018-09-09
 ### Added
 - Added basic chat bubble styling.
 
 ### Changed
 - Made the aura time display format more accurate and dynamic.
 
-## [1.0.58] 2018-09-09
+## [1.0.58-Beta] 2018-09-09
 ### Changed
 - Unitframe health elements now instantly updates on target changes for target, focus and mouseover units. 
 - Unitframe health element smoothing time reduced from .5 to .2 seconds, for a more responsive raiding expererience.
@@ -284,11 +264,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated how the actionbutton library retrieves spellID from macros to properly work for 8.0.1. This was affecting spell highlighting. 
 - Updated how the unitframe cast element handles post updates, to avoid the issue with missing health numbers on the target frame after a missing post update.
 
-## [1.0.57] 2018-09-06
+## [1.0.57-Beta] 2018-09-06
 ### Changed
 - Folder restructuring. Aiming at a better logical split between back-end, front-end and configurations.
 
-## [1.0.56] 2018-09-05
+## [1.0.56-Beta] 2018-09-05
 ### Changed
 - Target frame boss power crystals now face the same direction as the target frame does. 
 - Target frame boss power crystals are now hidden when the boss is dead. 
@@ -299,27 +279,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed a visual issue where the castbars seemingly would "yoyo" back and forth when switching from a normal cast to a channel or vice versa. New casts and channelings aren't smoothed anymore, they are forced, thus assuring they're accurate.
 
-## [1.0.55] 2018-09-04
+## [1.0.55-Beta] 2018-09-04
 ### Fixed
 - Fixed a tooltip display issue with the reputation bar that would list you at one standing rank higher than you were. This was only a tooltip issue, and did not affect the bar display or the values. 
 - Fixed a bug in the boss power crystal value's update method when the boss had zero power. 
 - Fixed size alignment of boss threat texture in instances. 
 - Fixed size and alignment of boss cast bars.
 
-## [1.0.54] 2018-09-03
+## [1.0.54-Beta] 2018-09-03
 ### Changed
 - Reduced the time threshold for which unit auras get their remaining duration shown from 10 to 3 minutes. 
 
 ### Fixed
 - Fixed the nil issue with the artifact power bar.  
 
-## [1.0.53] 2018-09-03
+## [1.0.53-Beta] 2018-09-03
 ### Added
 - Added reputation tracking to the minimap bars. The current display priority is Experience Points > Reputation > Artifact Power, and the two first of whatever is available will be displayed. Option to manually choose what to display will come later. 
 - Boss level enemies now have a power crystal displayed instead of a level skull! Their boss status is still indicated through the red boss badge, so there should be no confusion of their status. 
 - Boss level enemy power bar should also show alternate power. Untested. 
 
-## [1.0.52] 2018-09-01
+## [1.0.52-Beta] 2018-09-01
 ### Added
 - Added our new PayPal link [www.paypal.me/azerite](https://www.paypal.me/azerite) to the README! 
 
@@ -335,7 +315,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The chatframe input box should no longer be hidden when viewing other chat tabs than the primary one when using "classic" chat mode. 
 - Blizzard mouseover tooltips with objects that aren't units but still have health now get their health bars colored green, and not just whatever was left over from the previous unit with a unit colored health bar shown. 
 
-## [1.0.51] 2018-08-29
+## [1.0.51-Beta] 2018-08-29
 ### Added
 - Added 200 auras from Battle for Azeroth dungeons to the aura whitelists for player and target unitframes.
 - Added 252 Well Fed! auras to the aura filter. 
@@ -348,12 +328,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed the issue causing Blizzard mouseover tooltip statusbars to have their color flicker back and forth from the unit color and green. 
 
-## [1.0.50] 2018-08-29
+## [1.0.50-Beta] 2018-08-29
 ### Added
 - The vehicle exit button on the minimap can now also dismount the player if the player currently is mounted.
 - The vehicle exit button on the minimap can now also request a stop at the next flight point when using a taxi.
 
-## [1.0.49] 2018-08-28
+## [1.0.49-Beta] 2018-08-28
 ### Added
 - Added a set of crowd control auras to the aura filter lists. For the time being they'll be shown on the player and target frame, but more advanced filtering will be added later. 
 
@@ -364,7 +344,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Rewrote the pet- and player frame vehicle switching mechanics to work better with the various override bars and similar. The Legion lay line race now works.  
 
-## [1.0.48] 2018-08-28
+## [1.0.48-Beta] 2018-08-28
 ### Added
 - Added better coloring to the name and health bar of Blizzard's mouseover unit tooltips, and did some general clutter cleanup.
 - Added a little red glow around the player frame combat indicator. It doesn't pulse, but it's more visible than just the icon.
@@ -379,7 +359,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a double underscore typo related to the new aura filtering that could cause excessive amounts of bugs.
 - Actionbuttons now once again displays a slot texture when spells are dragged to and from the buttons.
 
-## [1.0.47] 2018-08-27
+## [1.0.47-Beta] 2018-08-27
 ### Added
 - Added the first iteration of a much better aura filtering system. Far more to come!
 - Added basic backdrop styling and slight statusbar re-alignment to the blizzard tooltips. No other changes done.
@@ -398,12 +378,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed the logon message from the user interface, as it easily becomes spam with both guild message, spec message and multiple other addons adding startup messages. 
 
-## [1.0.46] 2018-08-22
+## [1.0.46-Beta] 2018-08-22
 ### Fixed
 - Rewrote how the two minimap spinbars for artifact power and experience are toggled and displayed to avoid the wrong bar being shown or updated.
 - Solved a problem with how events were removed from the various libraries that sometimes could cause unpredictable bugs. 
 
-## [1.0.45] 2018-08-22
+## [1.0.45-Beta] 2018-08-22
 ### Added
 - AlertFrames are back!
 
@@ -418,7 +398,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Unit frame aura stack counts are no longer hidden behind the aura borders.
 - Action buttons now react to selfcast- and focus modifiers.
 
-## [1.0.44] 2018-08-18
+## [1.0.44-Beta] 2018-08-18
 ### Changed
 - Action buttons are new desaturated and toned down when the player is dead.
 - Moved the talking head frame farther up the screen, away from the unit frames and actionbars. 
@@ -427,7 +407,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed the issue causing a bug when trying to show the value on the player's alternate power bar.
 - Durability and vehicle seat indicator should once again be positioned in a more fitting place. 
 
-## [1.0.43] 2018-08-17
+## [1.0.43-Beta] 2018-08-17
 ### Added
 - Added a custom player alternate power bar, close to where the player castbar is. 
 
@@ -446,7 +426,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed the blizzard alternate player power bar as we have our own custom one now. 
 
-## [1.0.42] 2018-08-16
+## [1.0.42-Beta] 2018-08-16
 ### Added 
 - Added cast name and cast duration value to the target unit frame. 
 
@@ -455,17 +435,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Target frame castbar once more grows towards the left side. 
 - When you've hit maximum level or disabled XP, the Artifact Power tooltip should no longer get a new set of lines added to it every time you mouse over the Artifact Power bar. It should now reset properly. 
 
-## [1.0.41] 2018-08-15
+## [1.0.41-Beta] 2018-08-15
 ### Fixed
 - The target health bar should no longer be flipped the wrong way.
 - The target unit classification icon has been moved back to where it belongs. 
 - The target absorb bar now shows up again, and its value text is in the right place too.
 
-## [1.0.40] 2018-08-15
+## [1.0.40-Beta] 2018-08-15
 ### Added
 - A Group Finder Eye is now available on the minimap when queued using the group finder.
 
-## [1.0.39] 2018-08-15
+## [1.0.39-Beta] 2018-08-15
 ### Changed
 - Parented the Blizzard ObjectivesTracker to our own master frame, to prevent it from covering the Blizzard Micro Menu.
 - Continued the work on code restructuring towards the new single file layout system. 
@@ -478,29 +458,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed the missing minimap zone- and latency texts. 
 - Fixed a lingering "ExtraPower" bug after the code restructuring.
 
-## [1.0.38] 2018-08-14
+## [1.0.38-Beta] 2018-08-14
 ### Changed
 - Moved Blizzard ObjectivesTracker modifications to its own file. Remember to restart game for the file to be discovered!
 
 ### Fixed
 - Fixed more bugs related to the Blizzard ObjectivesTracker.
 
-## [1.0.37] 2018-08-14
+## [1.0.37-Beta] 2018-08-14
 ### Fixed
 - Fixed bugs related to the Blizzard ObjectivesTracker.
 
-## [1.0.36] 2018-08-14
+## [1.0.36-Beta] 2018-08-14
 ### Fixed
 - User interface works for non-mana classes again now. Sorry! 
 
-## [1.0.35] 2018-08-13
+## [1.0.35-Beta] 2018-08-13
 ### Added
 - Added back the Blizzard ObjectivesTracker. Finished or not, you'll be needing it now! 
 
 ### Changed
 - Let's call it a beta. 
 
-## [1.0.34] 2018-08-12
+## [1.0.34-Beta] 2018-08-12
 ### Added
 - Added a minor welcome message to point new users towards the cogwheel settings button.
 
@@ -512,7 +492,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - The minimap zone text should now properly update when moving through outdoor zones. 
 
-## [1.0.33] 2018-08-11
+## [1.0.33-Beta] 2018-08-11
 ### Added
 - Added an options menu available from right-clicking the cogwheel found in the bottom right corner of the screen. Current options are all related to visibility, button counts and fading settings of the actionbuttons, but more will come! The menu is fully usable even during combat, as it's written mainly using the restricted environment and not regular lua. So you don't have to wait until you're dead to make that bar with your life saving ability visible. 
 
@@ -524,15 +504,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in the module library that would prevent it from ever returning existing modules. 
 - Fixed a bug in the chat command library that would prevent chat commands from receiving a proper argument list. Lucky for us we're not using any chat commands so far, so technically it was a non issue. 
 
-## [1.0.32] 2018-08-09
+## [1.0.32-Beta] 2018-08-09
 ### Changed
 - Workaround for Auctionator's dumb coding style and `EnumerateFrames()` usage.
 
-## [1.0.31] 2018-08-08
+## [1.0.31-Beta] 2018-08-08
 ### Fixed
 - Having more than 3 friendly auras on the target unit frame should no longer produce a nil bug.
 
-## [1.0.30] 2018-08-07
+## [1.0.30-Beta] 2018-08-07
 ### Changed
 - Player and target unit frame aura icons have had their border slightly slimmed down, and their icons slightly fattened up. 
 - Personal Resource Display (personal nameplate) is now always fully opaque when shown, it does not follow the opacity rules applied to the rest of the nameplates. 
@@ -540,7 +520,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed 
 - Fixed an issue where auras wouldn't probably be hidden when their timer ran out. 
 
-## [1.0.29] 2018-08-06
+## [1.0.29-Beta] 2018-08-06
 ### Changed
 - Added a slightly fuzzier edge to the XP- and ArtifactPower ring bars to smoothe them out a bit, as the pixelation from Blizzard's cropping and rotation was a bit much. 
 
@@ -550,7 +530,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed the rested bonus XP bar. Will be adding a new indicator soon. 
 
-## [1.0.28] 2018-08-03
+## [1.0.28-Beta] 2018-08-03
 ### Added
 - Added health percentage on the target unit frame for bosses.
 - Added item tooltips for actionbuttons containing items and not actions or spells.
@@ -558,7 +538,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - The small boss only unit frames now display a health number when at full health, but a percentage value only once the fight has begun and their health started dropping. Gotta see when they hit those magic percentages linked to their abilities! 
 
-## [1.0.27] 2018-08-02
+## [1.0.27-Beta] 2018-08-02
 ### Changed
 - Threat coloring is now only visible in grouped instances.
 - Class resources are now only visible when the target can be attacked.
@@ -567,7 +547,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed an issue where sometimes after a major lagspike the minimap post update could attempt to resize it in combat and cause a taint. 
 
-## [1.0.26] 2018-08-01
+## [1.0.26-Beta] 2018-08-01
 ### Changed
 - Moved nameplates to the BACKGROUND strata, to avoid them overlapping the unitframes and other elements.
 - Minimap northtag is now hidden while the XP- and Artifact Power bars are visible.
@@ -582,7 +562,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed a redundant file that was re-applying the faulty taint fix that created taints instead of removing them. We got two bugs for the price of one, when we actually wanted none. Fixed. 
 
-## [1.0.25] 2018-08-01
+## [1.0.25-Beta] 2018-08-01
 ### Changed
 - Changed the Shaman class color to a non-Mana blue. 
 - Made the neutral reaction color more yellow.
@@ -591,11 +571,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Removed a taint fix related to chat frames and overlay glows that created taints instead of fixing them. 
 
-## [1.0.24] 2018-07-31
+## [1.0.24-Beta] 2018-07-31
 ### Fixed
 - Fixed a nil bug occurring when opening to some addon menus.
 
-## [1.0.23] 2018-07-31
+## [1.0.23-Beta] 2018-07-31
 ### Added
 - Added threat textures for player power crystal, player mana orb and target portrait frame. The display should be much more balanced and consistent now. 
 
@@ -607,7 +587,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Rewrote the health coloring plugin to accomodate for the rare cases where the class of a player isn't available.
 
-## [1.0.22] 2018-07-30
+## [1.0.22-Beta] 2018-07-30
 ### Added
 - Added threat textures for player- and target unit frame health bars. Power/Mana- and portrait coloring coming!
 
@@ -617,20 +597,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Added missing events to properly update spell activation overlay glows on the actionbuttons.
 
-## [1.0.21] 2018-07-29
+## [1.0.21-Beta] 2018-07-29
 ### Changed
 - Corrected changelog date for the previous entry, as it was in the actual future. 
 - Changed the size and alignment of the protected nameplate cast border to fit the health bar better.
 - Removed some more redundant statusbar library callbacks, as they could potentially cause endless loops and stack overflows.
 
-## [1.0.20] 2018-07-29
+## [1.0.20-Beta] 2018-07-29
 ### Added
 - Added red coloring and a spiked shield border to nameplate castbars when the cast is uninterruptable.
 
 ### Fixed
 - Fixed a bug preventing you from canceling your own buffs, even when out of combat.
 
-## [1.0.19] 2018-07-29
+## [1.0.19-Beta] 2018-07-29
 ### Added 
 - Added a custom vehicle exit button. A flight stop button is in the works!
 - Added a North tag to the minimap.
@@ -647,7 +627,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 - Removed the Blizzard vehicle exit and flight stop buttons.
 
-## [1.0.18] 2018-07-28
+## [1.0.18-Beta] 2018-07-28
 ### Added
 - Added styling to Blizzard popup windows.
 - Added styling to Blizzard mirror timers.
@@ -661,7 +641,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Modified the player cast bar to match the previously listed frames in size and style.
 - Increased XP- and ArtifactPower percentage text font sizes.
 
-## [1.0.17] 2018-07-25
+## [1.0.17-Beta] 2018-07-25
 ### Added
 - Added some button textures to the various chat frame buttons.
 - Added library to handle widget containers and element plugins. This is now used as a template for all unitframes. 
@@ -675,28 +655,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed 
 - Removed some redundant or outdated image files. 
 
-## [1.0.16] 2018-07-24
+## [1.0.16-Beta] 2018-07-24
 ### Changed
 - Actionbutton grids will now be hidden for empty buttons, unless you've currently got a spell or item on the cursor.
 - Now hiding the whole interface until 1.5 seconds after you've entered the world, to avoid seeing "flickering" from the textures and elements not created before this point.
 
-## [1.0.15] 2018-07-24
+## [1.0.15-Beta] 2018-07-24
 ### Changed
 - Actionbuttons will now remain visible when a spell flyout is open or when spells are currently dragged using the mouse cursor.
 - Actionbuttons that contain flyoutbars will now have a yellow arrow indicating that. 
 
-## [1.0.14] 2018-07-24
+## [1.0.14-Beta] 2018-07-24
 ### Fixed
 - Fixed an bug causing an error when you tried to drop a spell onto your actionbars.
 
-## [1.0.13] 2018-07-23
+## [1.0.13-Beta] 2018-07-23
 ### Changed
 - Shortened the delay after you leave the minimap xp toggle button until the xp/ap frame fades out, and made the actual fading a bit faster too. 
 
 ### Fixed
 - Added a fallback for finding the window size when logging in with non-fullscreen windowed mode. Will rework the entire system to work better with more window sizes and larger or ultra wide screens, but this hotfix will do for now. 
 
-## [1.0.12] 2018-07-23
+## [1.0.12-Beta] 2018-07-23
 ### Changed
 - Added a parent frame to the party frames handling hiding in raids, leaving the party frames own visibility drivers untouched.
 - Made a larger part of the player energy crystal / mana orb area right-clickable in addition to the player health bar.
@@ -705,11 +685,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed 
 - Fixed an issue that caused the Artifact Power bar to not properly be displayed on the first login. 
 
-## [1.0.11] 2018-07-23
+## [1.0.11-Beta] 2018-07-23
 ### Fixed
 - Fixed an issue that caused action buttons containing spell flyouts to become tainted and prevent casting. 
 
-## [1.0.10] 2018-07-23
+## [1.0.10-Beta] 2018-07-23
 ### Added
 - Added Player Pet unit frame.
 - Added Target of Target (ToT) unit frame.
@@ -718,31 +698,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Slightly increased the size of the floating player cast bar.
 
-## [1.0.9] 2018-07-23
+## [1.0.9-Beta] 2018-07-23
 ### Fixed
 - Another party- and bossframe visibility driver update. It's an alpha. 
 
-## [1.0.8] 2018-07-22
+## [1.0.8-Beta] 2018-07-22
 ### Fixed
 - Updated the party unitframe visibility drivers so that party frames should be shown while in groups of 2-5 players. 
 
-## [1.0.7] 2018-07-22
+## [1.0.7-Beta] 2018-07-22
 ### Added
 - Added the "Happy Feet" auras to the unitframe aura whitelist. 
 
 ### Changed
 - Reduced patch 8.0.1 build number requirement to 27101, since some clients still can log in using that build. 
 
-## [1.0.6] 2018-07-22
+## [1.0.6-Beta] 2018-07-22
 ### Fixed
 - The micro menu's toggle button's tooltip now properly disappears when you move the cursor away from the config button.
 - Fixed a localization typo preventing mouse wheel keybinds from being abbreviated like other long keybind names are.
 
-## [1.0.5] 2018-07-22
+## [1.0.5-Beta] 2018-07-22
 ### Fixed
 - Fixed a bad event registration in the unitframe library's aura element causing classpower to not properly toggle on target changes.
 
-## [1.0.4] 2018-07-22
+## [1.0.4-Beta] 2018-07-22
 ### Changed
 - Increased the size of the target unit frame's hit rectangle so that the target portrait also can be clicked to access right-click menus and similar.
 - Increased party unit frame size by roughly eight percent.
@@ -758,21 +738,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mana orb transitions should once more be smooth and properly updated. 
 - Fixed a bug in the tooltip libraries that could cause bugs in some locales while hovering over NPC unitframes. 
 
-## [1.0.3] 2018-07-21
+## [1.0.3-Beta] 2018-07-21
 ### Changed
 - Limited amounts of full ActionButton updates to address a severe performance issue experienced from the ActionBar module while using abilities.
 
-## [1.0.2] 2018-07-21
+## [1.0.2-Beta] 2018-07-21
 ### Added
 - Added boss unit frames with health, cast bars, and a few auras. 
 - Added arena enemy / battleground flag carrier unit frames with health, cast bars, and a few auras. 
 
-## [1.0.1] 2018-07-21
+## [1.0.1-Beta] 2018-07-21
 ### Fixed
 - Actionbutton cooldown counts should hopefully no longer be stuck at "0.0".
 - Actionbutton cooldowns should now update when you lose control of your character.
 - Actionbutton icon now properly changes when you pick up or put down spells on the bars.
 - XP bar description telling what level we'll gain next now actually shows the next level instead of the current. 
 
-## [1.0.0] 2018-07-20
+## [1.0.0-Beta] 2018-07-20
+- Public Beta. 
 - Initial commit.
