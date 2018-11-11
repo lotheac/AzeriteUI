@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 43)
+local LibFrame = CogWheel:Set("LibFrame", 44)
 if (not LibFrame) then	
 	return
 end
@@ -243,7 +243,14 @@ local frameWidgetPrototype = {
 		elseif (numArgs == 2) then
 			self:SetSize(...)
 		end
+	end, 
+
+	-- ConsolePort assumes this exists on a multiple of frames, 
+	-- so we're adding it and just opt out of various things by setting to to true.
+	IsForbidden = function(self) 
+		return true
 	end
+	
 }
 
 local framePrototype
