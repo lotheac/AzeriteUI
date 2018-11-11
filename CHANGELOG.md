@@ -5,12 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
 - Added a single slot aura system to the raid frames showing boss auras, dispellable debuffs and crowd control after a priority based system. 
 - Added custom PvP capture bars. 
 - Added "Explorer Mode", which is optional fading when the player is "safe", meaning not engaged in combat, having no target selected, no running debuffs and health above 90%, and some other variables taken into consideration as well.
 
 ## [Developer]
+- Nothing currently.
+
+## [1.0.84-RC] 2018-11-11
 ### Changed
+- All custom frames created by the back-end's frame library now pretends to be forbidden. This works around various issues when used together with various addons trying to parse all available frames of certain types, like ConsolePort. 
 - Adjusted castbar- and small unitframe backdrops to have a less intrusive and more fitting drop shade.
 - Adjusted the color balance of the elite NPC classification badge to be slightly brighter, to be more in line with the rest of the UI coloring.
 - Slightly adjusted vertex coloring and bumped the size of the group finder eye. 
