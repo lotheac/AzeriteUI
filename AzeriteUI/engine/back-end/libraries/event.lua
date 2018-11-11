@@ -1,4 +1,4 @@
-local LibEvent = CogWheel:Set("LibEvent", 3
+local LibEvent = CogWheel:Set("LibEvent", 4
 )
 if (not LibEvent) then 
 	return
@@ -24,7 +24,7 @@ assert(LibMessage, "LibEvent requires LibMessage to be loaded.")
 -- so there is no need to reregister the events.
 -- Should be noted that LibMessage also reuse the old event table, 
 -- so nothing is lost at all during a library upgrade.
-LibEvent.events = LibMessage:New(LibEvent, "RegisterEvent", "UnregisterEvent", "UnregisterAllEvents", "IsEventRegistered")
+LibEvent.events = LibMessage:New(LibEvent, "RegisterEvent", "RegisterUnitEvent", "UnregisterEvent", "UnregisterAllEvents", "IsEventRegistered")
 LibEvent.frame = LibEvent.frame or CreateFrame("Frame")
 LibEvent.embeds = LibEvent.embeds or {}
 
@@ -48,6 +48,10 @@ end
 -- Called for the first instance of an event registered to this library
 LibEvent.OnRegister = function(self, event, ...)
 	frame:RegisterEvent(event)
+end
+
+LibEvent.OnRegisterAlternate = function(self, event, ...)
+	frame:RegisterUnitEvent(event, ...)
 end
 
 -- Called when all instances of an event is unregistered from this library
@@ -74,6 +78,7 @@ local embedMethods = {
 	Fire = true,
 	IsEventRegistered = true, 
 	RegisterEvent = true,
+	RegisterUnitEvent = true,
 	UnregisterEvent = true,
 	UnregisterAllEvents = true
 }

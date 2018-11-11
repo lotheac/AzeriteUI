@@ -1,4 +1,4 @@
-local LibMessage = CogWheel:Set("LibMessage", 6)
+local LibMessage = CogWheel:Set("LibMessage", 8)
 if (not LibMessage) then	
 	return
 end
@@ -34,7 +34,13 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
-LibMessage.New = function(self, target, registerName, unregisterName, unregisterAllName, isRegisteredName)
+LibMessage.New = function(self, target, registerName, registerNameAlternate, unregisterName, unregisterAllName, isRegisteredName)
+	check(target, 1, "table")
+	check(registerName, 2, "string", "nil")
+	check(registerNameAlternate, 3, "string", "nil")
+	check(unregisterName, 4, "string", "nil")
+	check(unregisterAllName, 5, "string", "nil")
+	check(isRegisteredName, 6, "string", "nil")
 
 	-- Look for an existing event table, in case this is a library upgrade.
 	-- We don't want to remove any events registered prior to this. 
@@ -93,6 +99,38 @@ LibMessage.New = function(self, target, registerName, unregisterName, unregister
 		end
 
 	end
+
+	if registerNameAlternate then
+		target[registerNameAlternate] = function(self, message, func, ...)
+			check(message, 1, "string")
+			check(func, 2, "string", "function", "nil")
+			
+			if (not events[message]) then
+				events[message] = {}
+			end
+			if (not events[message][self]) then
+				events[message][self] = {}
+			end
+			
+			func = func or message
+
+			-- Avoid duplicate calls to the same function
+			for i = 1, #events[message][self] do
+				if (events[message][self][i] == func) then 
+					return 
+				end
+			end
+
+			local numEvents = #events[message][self]
+			events[message][self][numEvents + 1] = func
+
+			-- Fire the register callback if this is the first time this message is registered
+			if (target.OnRegister and (numEvents == 0)) then
+				return target:OnRegisterAlternate(message, func, ...)
+			end
+
+		end
+	end 
 
 	target[unregisterName or "UnregisterMessage"] = function(self, message, func, ...)
 		check(message, 1, "string")
@@ -177,6 +215,7 @@ LibMessage.New = function(self, target, registerName, unregisterName, unregister
 	return events
 end
 
+-- Only fires for the current module.
 LibMessage.Fire = function(self, message, ...)
 	check(message, 1, "string")
 
@@ -198,6 +237,7 @@ LibMessage.Fire = function(self, message, ...)
 	end
 end
 
+-- Fires for all modules and can be used for intermodule communication.
 LibMessage.SendMessage = function(self, message, ...)
 	check(message, 1, "string")
 
@@ -318,7 +358,6 @@ end
 
 -- Module embedding
 local embedMethods = {
-	--Fire = true,
 	SendMessage = true,
 	IsMessageRegistered = true,
 	RegisterMessage = true,
