@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added "Explorer Mode", which is optional fading when the player is "safe", meaning not engaged in combat, having no target selected, no running debuffs and health above 90%, and some other variables taken into consideration as well.
 
 ## [Developer]
-- Nothing currently.
+- Nothing here currently.
 
 ## [1.0.84-RC] 2018-11-11
 ### Changed
