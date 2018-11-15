@@ -96,6 +96,8 @@ L["Alerts: %s"] = true
 L["TalkingHead: %s"] = true
 L["NamePlates"] = true
 L["Auras: %s"] = true
+L["Explorer Mode"] = true
+L["Fading: %s"] = true
 
 -- Various Button Tooltips
 --------------------------------------------
