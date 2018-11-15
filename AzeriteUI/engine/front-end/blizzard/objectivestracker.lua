@@ -42,12 +42,12 @@ Module.PositionTracker = function(self)
 		return self:RegisterEvent("ADDON_LOADED", "OnEvent")
 	end 
 
-	local ObjectiveFrameHolder = self:CreateFrame("Frame", nil, "UICenter")
+	local ObjectiveFrameHolder = self.frame
 	ObjectiveFrameHolder:SetWidth(Layout.Width)
 	ObjectiveFrameHolder:SetHeight(22)
 	ObjectiveFrameHolder:Place(unpack(Layout.Place))
 	
-	ObjectiveTrackerFrame:SetParent(self:GetFrame("UICenter")) -- taint or ok?
+	ObjectiveTrackerFrame:SetParent(self.frame) -- taint or ok?
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOP", ObjectiveFrameHolder, "TOP")
 
@@ -143,6 +143,7 @@ Module.PreInit = function(self)
 end
 
 Module.OnInit = function(self)
+	self.frame = self:CreateFrame("Frame", nil, "UICenter")
 	self:PositionTracker()
 end 
 
