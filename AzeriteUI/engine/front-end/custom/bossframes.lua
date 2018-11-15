@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("UnitFrameBoss", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar")
+local Module = Core:NewModule("UnitFrameBoss", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibFrame")
 
 local Layout, UnitStyles
 

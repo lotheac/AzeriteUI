@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound")
+local Module = Core:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound", "LibFrame")
 
 local Layout, UnitStyles
 
@@ -56,7 +56,3 @@ Module.OnEvent = function(self, event, ...)
 		end
 	end
 end
-
-Module.GetFrame = function(self)
-	return self.frame
-end 

@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibSpinBar", "LibOrb", "LibTooltip")
+local Module = Core:NewModule("UnitFramePlayer", "LibDB", "LibEvent", "LibUnitFrame", "LibStatusBar", "LibSpinBar", "LibOrb", "LibTooltip", "LibFrame")
 
 -- WoW API 
 local UnitLevel = _G.UnitLevel
@@ -57,7 +57,3 @@ Module.OnEvent = function(self, event, ...)
 		self.frame:PostUpdateTextures(PlayerLevel)
 	end 
 end
-
-Module.GetFrame = function(self)
-	return self.frame
-end 

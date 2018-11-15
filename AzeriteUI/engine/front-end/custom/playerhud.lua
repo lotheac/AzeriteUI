@@ -59,7 +59,3 @@ Module.OnEnable = function(self)
 	self:RegisterEvent("CVAR_UPDATE", "OnEvent")
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
 end
-
-Module.GetFrame = function(self)
-	return self.frame
-end
