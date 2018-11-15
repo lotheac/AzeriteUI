@@ -881,50 +881,7 @@ Module.SpawnBars = function(self)
 	bars:EnableElement("XP")
 end 
 
-Module.ArrangeHardCodedButtons = function(self)
-
-	for id,button in ipairs(self.buttons) do 
-		local buttonID = button:GetID()
-		local barID = button:GetPager():GetID()
-
-		--button:SetSize(buttonSize,buttonSize)
-
-		if barID == BOTTOMLEFT_ACTIONBAR_PAGE then 
-			button:Place("BOTTOMLEFT", "UICenter", "BOTTOM", -rowWidth/2 + ((buttonID-1) * (buttonSize + buttonSpacing)), buttonSize + buttonSpacing*2 + 36 + barHeight*2 + barPadding*2) 
-		else 
-			button:Place("BOTTOMLEFT", "UICenter", "BOTTOM", -rowWidth/2 + ((buttonID-1) * (buttonSize + buttonSpacing)), 36 + barHeight*2 + barPadding*2) 
-		end 
-	end 
-
-
-end
-
-Module.SpawnHardCodedButtons = function(self)
-
-	local buttons = {} -- local button registry
-
-	for id = 1,12 do
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
-		button.showGrid = true
-		buttons[#buttons + 1] = button
-	end
-
-	for id = 1,12 do
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
-		button.showGrid = true
-		buttons[#buttons + 1] = button
-	end
-
-
-	-- store the button cache
-	self.buttons = buttons
-end
-
 Module.SpawnButtons = function(self)
-	if Layout.UseHardCodedLayout then 
-		return self:SpawnHardCodedButtons()
-	end 
-
 	local db = self.db
 
 	local buttonsPrimary = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 12 or 7
