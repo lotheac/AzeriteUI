@@ -24,4 +24,7 @@
 	<!-- grouptools -->
 	<Script file="custom\groupleadertools.lua"/>
 
+	<!-- plugins -->
+	<Script file="custom\explorer.lua"/>
+
 </Ui>
