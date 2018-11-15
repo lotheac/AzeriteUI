@@ -1,4 +1,4 @@
-local LibClientBuild = CogWheel:Set("LibClientBuild", 21)
+local LibClientBuild = CogWheel:Set("LibClientBuild", 22)
 if (not LibClientBuild) then
 	return
 end
@@ -17,8 +17,65 @@ clientBuild = tonumber(clientBuild)
 
 local clientIsAtLeast = {}
 local builds = {
+	["Classic"] = 6141, ["Vanilla"] = 6141,
+		["0.5.3"] 	= 3368, 
+		["0.5.5"] 	= 3494, 
+		["0.6"] 	= 3592, -- Rest state, Inns, Hearthstone, Guilds. Scarlet Monestary + Blackfathom Depths. 
+		["0.7"] 	= 3694, -- Level cap 45. PvP. Postal system. Mounts. Gnomeregan + Uldaman. 
+		["0.7.1"] 	= 3702, 
+		["0.7.2"] 	= 3702, 
+		["0.7.3"] 	= 3702, 
+		["0.7.5"] 	= 3702, 
+		["0.7.6"] 	= 3712, 
+		["0.8"] 	= 3734, 
+		["0.9"] 	= 3807, 
+		["0.9.1"] 	= 3810, 
+		["0.10"] 	= 3892, 
+		["0.10.1"] 	= 3892, 
+		["0.11"] 	= 3925, 
+		["0.12"] 	= 3988, 
+		["1.1.0"] 	= 4044, 
+		["1.1.1"] 	= 4062, 
+		["1.1.2"] 	= 4125, 
+		["1.2.0"] 	= 4149, -- Maraudon. Cloak & Helm hiding added to interface options. 
+		["1.2.1"] 	= 4150, 
+		["1.2.2"] 	= 4196, 
+		["1.2.3"] 	= 4211, 
+		["1.2.4"] 	= 4222, 
+		["1.3.0"] 	= 4284, -- Dire Maul. Dungeon Member caps. (Ony/Molten Core 40, BRS 15, DM 5, all others 5)
+		["1.3.1"] 	= 4297, 
+		["1.3.2"] 	= 4297, 
+		["1.4.0"] 	= 4341, -- PvP Honor System. 
+		["1.4.1"] 	= 4364, -- Minimum instance level requirements. 
+		["1.4.2"] 	= 4375, 
+		["1.5.0"] 	= 4442, -- Battlegrounds. 
+		["1.5.1"] 	= 4499, 
+		["1.6.0"] 	= 4500, -- Blackwing Lair. Darkmoon Faire. Battlemasters.  
+		["1.6.1"] 	= 4544, 
+		["1.7.0"] 	= 4671, -- Zul'Gurub. Arathi Basin. Stranglethorn Fishing Extravaganza. 
+		["1.7.1"] 	= 4695, -- Arathi Basin geometry change to prevent exploits.
+		["1.8.0"] 	= 4735, -- Dragons of Nightmare. Silithus revamped. 
+		["1.8.1"] 	= 4769, -- Arathi Basin geometry hack fixes.  
+		["1.8.2"] 	= 4784, 
+		["1.8.3"] 	= 4807, -- Blizzard Launcher.
+		["1.8.4"] 	= 4878, 
+		["1.9.0"] 	= 4937, -- Ahn'Qiraj.
+		["1.9.1"] 	= 4983, 
+		["1.9.2"] 	= 4996, 
+		["1.9.3"] 	= 5059, 
+		["1.9.4"] 	= 5086, 
+		["1.10.0"] 	= 5195, -- Weather FX.
+		["1.10.1"] 	= 5230, 
+		["1.10.2"] 	= 5302, 
+		["1.11.0"] 	= 5428, -- Naxxramas.
+		["1.11.1"] 	= 5462, 
+		["1.11.2"] 	= 5464, 
+		["1.12.0"] 	= 5595, 
+		["1.12.1"] 	= 5875, 
+		["1.12.2"] 	= 6005, 
+		["1.12.3"] 	= 6141, 
+
 	["The Burning Crusade"] = 8606, ["TBC"] = 8606, 
-		["2.0.0"] 	= 6080,
 		["2.0.1"] 	= 6180, 
 		["2.0.3"] 	= 6299, 
 		["2.0.4"] 	= 6314,
@@ -132,8 +189,9 @@ local builds = {
 		["7.3.2"] 	= 25549, -- 25326
 		["7.3.5"] 	= 25860, -- latest: 26972
 
-	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, -- live: 27980
-		["8.0.1"] 	= 27101  
+	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, -- live: 28153
+		["8.0.1"] 	= 27101, 
+		["8.1.0"] 	= 28440, 
 
 }
 
