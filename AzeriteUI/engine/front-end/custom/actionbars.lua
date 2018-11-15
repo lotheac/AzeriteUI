@@ -676,17 +676,21 @@ ActionButton.PostCreate = function(self, ...)
 
 end 
 
+ActionButton.PostUpdateCooldown = function(self, cooldown)
+	cooldown:SetSwipeColor(unpack(Layout.CooldownSwipeColor))
+end 
+
+ActionButton.PostUpdateChargeCooldown = function(self, cooldown)
+	cooldown:SetSwipeColor(unpack(Layout.ChargeCooldownSwipeColor))
+end
+
 -- Module API
 ----------------------------------------------------
 Module.ArrangeButtons = function(self)
-	if Layout.UseHardCodedLayout then 
-		return self:ArrangeHardCodedButtons()
-	else 
-		local Proxy = self:GetSecureUpdater()
-		if Proxy then
-			Proxy:Execute(Proxy:GetAttribute("arrangeButtons"))
-		end
-	end 
+	local Proxy = self:GetSecureUpdater()
+	if Proxy then
+		Proxy:Execute(Proxy:GetAttribute("arrangeButtons"))
+	end
 end
 
 Module.SpawnExitButton = function(self)

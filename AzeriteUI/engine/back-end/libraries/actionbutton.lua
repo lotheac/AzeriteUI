@@ -513,6 +513,7 @@ ActionButton.UpdateCooldown = function(self)
 		local locStart, locDuration = GetActionLossOfControlCooldown(self.buttonAction)
 		local start, duration, enable, modRate = GetActionCooldown(self.buttonAction)
 		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.buttonAction)
+		local hasChargeCooldown
 
 		if ((locStart + locDuration) > (start + duration)) then
 
@@ -539,25 +540,34 @@ ActionButton.UpdateCooldown = function(self)
 
 			local ChargeCooldown = self.ChargeCooldown
 			if ChargeCooldown then 
-				if (charges and maxCharges and (charges > 0) and (charges < maxCharges)) then
+				if (charges and maxCharges and (charges > 0) and (charges < maxCharges)) and not((not chargeStart) or (chargeStart == 0)) then
 
 					-- Set the spellcharge cooldown
 					--cooldown:SetDrawBling(cooldown:GetEffectiveAlpha() > 0.5)
 					SetCooldown(ChargeCooldown, chargeStart, chargeDuration, true, true, chargeModRate)
-				
-					if ((not chargeStart) or (chargeStart == 0)) then
-						ChargeCooldown.active = nil
-						ChargeCooldown:Hide()
-					end
-					
+					hasChargeCooldown = true 
 				else
 					ChargeCooldown.active = nil
 					ChargeCooldown:Hide()
 				end
 			end 
 
-			SetCooldown(Cooldown, start, duration, enable, false, modRate)
+			if hasChargeCooldown then 
+				SetCooldown(cooldown, 0, 0, false)
+			else 
+				SetCooldown(Cooldown, start, duration, enable, false, modRate)
+			end 
 		end
+
+		if hasChargeCooldown then 
+			if self.PostUpdateChargeCooldown then 
+				return self:PostUpdateChargeCooldown(ChargeCooldown)
+			end 
+		else 
+			if self.PostUpdateCooldown then 
+				return self:PostUpdateCooldown(Cooldown)
+			end 
+		end 
 	end 
 end
 
