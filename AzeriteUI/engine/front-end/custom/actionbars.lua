@@ -935,13 +935,13 @@ Module.SpawnButtons = function(self)
 
 	-- Mainbar, visible part
 	for id = 1,7 do
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
+		local button = self:SpawnActionButton("action", self.frame, ActionButton, 1, id) 
 		buttons[#buttons + 1] = button
 	end
 
 	-- Mainbar, hidden part
 	for id = 8,12 do 
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, 1, id) 
+		local button = self:SpawnActionButton("action", self.frame, ActionButton, 1, id) 
 		if (id > buttonsPrimary) then 
 			button:GetPager():Hide()
 		end 
@@ -1006,7 +1006,7 @@ Module.SpawnButtons = function(self)
 
 	-- "Bottomleft"
 	for id = 1,12 do 
-		local button = self:SpawnActionButton("action", "UICenter", ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
+		local button = self:SpawnActionButton("action", self.frame, ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
 		if (not db.enableComplimentary) or (id > buttonsComplimentary) then 
 			button:GetPager():Hide()
 		end 
@@ -1236,6 +1236,7 @@ end
 
 Module.OnInit = function(self)
 	self.db = self:NewConfig("ActionBars", defaults, "global")
+	self.frame = self:CreateFrame("Frame", nil, "UICenter")
 
 	-- Spawn the buttons
 	self:SpawnButtons()
