@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 37)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 39)
 if (not LibSecureButton) then	
 	return
 end
@@ -661,10 +661,12 @@ ActionButton.UpdateGrid = function(self)
 	if self.showGrid then 
 		return self:SetAlpha(1)
 	elseif (self:IsShown()) then 
-		if HasAction(self.buttonAction) then 
+		if HasAction(self.buttonAction) and (self:GetSpellID() ~= 0) then 
 			return self:SetAlpha(1)
 		elseif (CursorHasSpell() or CursorHasItem()) then 
-			return self:SetAlpha(1)
+			if (not UnitHasVehicleUI("player")) and (not HasOverrideActionBar()) and (not HasVehicleActionBar()) and (not HasTempShapeshiftActionBar()) then
+				return self:SetAlpha(1)
+			end  
 		else 
 			local cursor = GetCursorInfo()
 			if cursor == "petaction" or cursor == "spell" or cursor == "macro" or cursor == "mount" or cursor == "item" or cursor == "battlepet" then 
@@ -867,6 +869,10 @@ ActionButton.OnEvent = function(button, event, ...)
 end
 
 ActionButton.OnEnter = function(self) 
+	if (not HasAction(self.buttonAction)) or (self:GetSpellID() == 0) then 
+		return self:OnLeave()
+	end 
+
 	self.isMouseOver = true
 	self.UpdateTooltip = UpdateTooltip
 
