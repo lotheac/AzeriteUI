@@ -898,6 +898,24 @@ Module.CreateMenuTable = function(self)
 		}
 	})
 	
+	-- Explorer Mode
+	local ExplorerMode = Core:GetModule("ExplorerMode")
+	if ExplorerMode and not (ExplorerMode:IsIncompatible() or ExplorerMode:DependencyFailed()) then 
+		table_insert(MenuTable, {
+			title = L["Explorer Mode"], type = nil, hasWindow = true, 
+			buttons = {
+				-- Enable explorer mode
+				{
+					enabledTitle = L["Fading: %s"]:format(L["Enabled"]),
+					disabledTitle = L["Fading: %s"]:format(L["Disabled"]),
+					type = "TOGGLE_VALUE", 
+					configDB = "ExplorerMode", configKey = "enableExplorer", 
+					proxyModule = "ExplorerMode"
+				}		
+			}
+		})
+	end 
+	
 end
 
 Module.PreInit = function(self)
