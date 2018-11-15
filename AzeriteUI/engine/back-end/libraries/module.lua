@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 21)
+local LibModule = CogWheel:Set("LibModule", 23)
 if (not LibModule) then	
 	return
 end
@@ -49,13 +49,13 @@ LibModule.frame = LibModule.frame or CreateFrame("Frame")
 LibModule.initializedModules = LibModule.initializedModules or {}
 LibModule.modules = LibModule.modules or {}
 LibModule.moduleAddon = LibModule.moduleAddon or {}
-LibModule.moduleLoadPriority = LibModule.moduleLoadPriority or { HIGH = {}, NORMAL = {}, LOW = {} }
+LibModule.moduleLoadPriority = LibModule.moduleLoadPriority or { HIGH = {}, NORMAL = {}, LOW = {}, PLUGIN = {} }
 LibModule.moduleName = LibModule.moduleName or {}
 LibModule.parentModule = LibModule.parentModule or {}
 
 -- Library constants
-local PRIORITY_HASH = { HIGH = true, NORMAL = true, LOW = true } -- hashed priority table, for faster validity checks
-local PRIORITY_INDEX = { "HIGH", "NORMAL", "LOW" } -- indexed/ordered priority table
+local PRIORITY_HASH = { HIGH = true, NORMAL = true, LOW = true, PLUGIN = true } -- hashed priority table, for faster validity checks
+local PRIORITY_INDEX = { "HIGH", "NORMAL", "LOW", "PLUGIN" } -- indexed/ordered priority table
 local DEFAULT_MODULE_PRIORITY = "NORMAL" -- default load priority for new modules
 
 -- Speed shortcuts
@@ -421,7 +421,7 @@ LibModule.NewModule = function(self, name, ...)
 		return error(("Bad argument #%d to '%s': Illegal module name '%s', pick another!"):format(1, "NewModule", name))
 	end
 
-	local module = setmetatable({ modules = {}, moduleLoadPriority = { HIGH = {}, NORMAL = {}, LOW = {} }, libraries = {} }, module_mt)
+	local module = setmetatable({ modules = {}, moduleLoadPriority = { HIGH = {}, NORMAL = {}, LOW = {}, PLUGIN = {} }, libraries = {} }, module_mt)
 	LibModule:Embed(module) 
 
 	-- Figure out load priority and argument offset to embedded libraries
@@ -559,8 +559,6 @@ end
 local embedMethods = {
 	NewModule = true, 
 	GetModule = true,
-	--GetOwner = true,
-	--GetParent = true, 
 	IsInitialized = true, 
 	IsEnabled = true,
 	ForAll = true
@@ -580,6 +578,10 @@ for target in pairs(LibModule.embeds) do
 end
 
 -- Upgrade existing modules - if any - with our new metamethods
+-- *Note that we assume all modules will be at least at the state 
+-- this library was in the first time several addons using it was released.
+-- Meaning we simply will not take into account any addons people may or may not
+-- have greated using unofficial alpha versions of the library. 
 for name, module in pairs(modules) do
 	setmetatable(module, module_mt)
 end
