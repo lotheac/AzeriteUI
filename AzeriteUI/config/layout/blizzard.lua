@@ -61,7 +61,7 @@ local BlizzardTimers = {
 	BlankTexture = GetMediaPath("blank"), 
 
 	BarPlace = { "CENTER", 0, 0 },
-		BarSize = { 111, 14 }, 
+		BarSize = { 111, 12 }, 
 		BarTexture = GetMediaPath("cast_bar"), 
 		BarColor = { Colors.quest.red[1], Colors.quest.red[2], Colors.quest.red[3] }, 
 		BarSparkMap = {
