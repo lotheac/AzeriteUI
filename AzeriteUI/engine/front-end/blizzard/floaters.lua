@@ -310,6 +310,11 @@ Module.StyleExtraActionButton = function(self)
 	button.cooldown:SetBlingTexture(Layout.ExtraActionButtonCooldownBlingTexture, unpack(Layout.ExtraActionButtonCooldownBlingColor)) 
 	button.cooldown:SetDrawBling(Layout.ExtraActionButtonShowCooldownBling)
 
+	-- Attempting to fix the issue with too opaque swipe textures
+	button.cooldown:HookScript("OnShow", function() 
+		button.cooldown:SetSwipeColor(unpack(Layout.ExtraActionButtonCooldownSwipeColor))
+	end)
+
 	if Layout.ExtraActionButtonKillStyleTexture then 
 		button.style:SetTexture(nil)
 		hooksecurefunc(button.style, "SetTexture", DisableTexture)
@@ -414,6 +419,11 @@ Module.StyleZoneAbilityButton = function(self)
 	button.Cooldown:SetBlingTexture(Layout.ZoneAbilityButtonCooldownBlingTexture, unpack(Layout.ZoneAbilityButtonCooldownBlingColor)) 
 	button.Cooldown:SetDrawBling(Layout.ZoneAbilityButtonShowCooldownBling)
 
+	-- Attempting to fix the issue with too opaque swipe textures
+	button.Cooldown:HookScript("OnShow", function() 
+		button.Cooldown:SetSwipeColor(unpack(Layout.ZoneAbilityButtonCooldownSwipeColor))
+	end)
+	
 	-- Kill off the surrounding style texture
 	if Layout.ZoneAbilityButtonKillStyleTexture then 
 		button.Style:SetTexture(nil)
