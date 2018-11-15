@@ -10,10 +10,11 @@
 ## X-Category: Interface Enhancements
 ## X-Curse-Project-ID: 298648
 ## X-Curse-Project-Name: AzeriteUI
-## X-Donate: https://www.paypal.me/azerite
-## X-Website: https://www.patreon.com/AzeriteUI
+## X-BugReport: http://issues.azeriteui.com
 ## X-Discord: https://discord.gg/MUSfWXd
-## X-BugReport: https://bitbucket.org/bigcogs/azeriteui/issues
+## X-Twitter: https://twitter.com/azeriteui
+## X-Donate: https://www.paypal.me/azeriteui
+## X-Website: https://www.patreon.com/azeriteui
 ## X-License: All Rights Reserved
 
 engine\engine.xml
