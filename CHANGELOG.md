@@ -4,14 +4,16 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.0.85-RC] 2018-11-18
 ### Added
-- Added a single slot aura system to the raid frames showing boss auras, dispellable debuffs and crowd control after a priority based system. 
-- Added custom PvP capture bars. 
-- Added "Explorer Mode", which is optional fading when the player is "safe", meaning not engaged in combat, having no target selected, no running debuffs and health above 90%, and some other variables taken into consideration as well.
+- Added "Explorer Mode", which is optional fading when the player is "safe", meaning not engaged in combat, having no target selected, no running debuffs and health above 90%, not currently in a group, not currently in an arena, not currently facing any bosses, and some other variables taken into consideration as well. Explorer mode can be toggled from the config menu. 
 
-## [Developer]
-- Nothing here currently.
+### Changed
+- The action button backdrop should no longer fade in for empty vehicle action buttons, override buttons or temp shapeshift buttons. 
+
+### Fixed
+- Fixed an issue where action buttons sometimes when using overridebars in some quests would show empty buttons and empty tooltips, instead of fading these out as intended. 
+- Added updates to the cooldown spirals of all normal action buttons as well as the zone ability and extra action button when shown, to attempt to counter the issue where the swipe color would randomly reset to almost fully opaque. 
 
 ## [1.0.84-RC] 2018-11-11
 ### Changed
