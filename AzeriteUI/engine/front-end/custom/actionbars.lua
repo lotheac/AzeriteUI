@@ -1099,12 +1099,12 @@ Module.UpdateFadeAnchors = function(self)
 	self.frame:ClearAllPoints()
 
 	if db.enableComplimentary then 
-		self.frame:SetPoint("BOTTOMLEFT", self.buttons[1], "BOTTOMLEFT", 0, 0)
-		self.frame:SetPoint("TOPLEFT", self.hoverFrame2, "TOPLEFT", 0, 0)
+		self.frame:SetPoint("LEFT", self.buttons[1], "LEFT", 0, 0)
+		self.frame:SetPoint("TOPRIGHT", self.hoverFrame2, "TOPRIGHT", 0, 0)
 		self.frame:SetPoint("BOTTOMRIGHT", self.hoverFrame2, "BOTTOMRIGHT", 0, 0)
 	else 
-		self.frame:SetPoint("BOTTOMLEFT", self.buttons[1], "BOTTOMLEFT", 0, 0)
-		self.frame:SetPoint("TOPLEFT", self.hoverFrame1, "TOPLEFT", 0, 0)
+		self.frame:SetPoint("LEFT", self.buttons[1], "LEFT", 0, 0)
+		self.frame:SetPoint("TOPRIGHT", self.hoverFrame1, "TOPRIGHT", 0, 0)
 		self.frame:SetPoint("BOTTOMRIGHT", self.hoverFrame1, "BOTTOMRIGHT", 0, 0)
 	end 
 
