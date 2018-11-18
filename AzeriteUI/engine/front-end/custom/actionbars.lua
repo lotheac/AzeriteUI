@@ -1096,6 +1096,17 @@ Module.UpdateFadeAnchors = function(self)
 
 	self.hoverFrame1:ClearAllPoints()
 	self.hoverFrame2:ClearAllPoints()
+	self.frame:ClearAllPoints()
+
+	if db.enableComplimentary then 
+		self.frame:SetPoint("BOTTOMLEFT", self.buttons[1], "BOTTOMLEFT", 0, 0)
+		self.frame:SetPoint("TOPLEFT", self.hoverFrame2, "TOPLEFT", 0, 0)
+		self.frame:SetPoint("BOTTOMRIGHT", self.hoverFrame2, "BOTTOMRIGHT", 0, 0)
+	else 
+		self.frame:SetPoint("BOTTOMLEFT", self.buttons[1], "BOTTOMLEFT", 0, 0)
+		self.frame:SetPoint("TOPLEFT", self.hoverFrame1, "TOPLEFT", 0, 0)
+		self.frame:SetPoint("BOTTOMRIGHT", self.hoverFrame1, "BOTTOMRIGHT", 0, 0)
+	end 
 
 	-- 12 main buttons, complimentary tilted towards the left
 	if (db.buttonsPrimary == 3) then 
@@ -1109,7 +1120,7 @@ Module.UpdateFadeAnchors = function(self)
 		if (db.buttonsComplimentary == 2) then 
 			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[7], "TOPLEFT", 0, 0)
 			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
-
+	
 		-- 3x2
 		else 
 			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[4], "TOPLEFT", 0, 0)
