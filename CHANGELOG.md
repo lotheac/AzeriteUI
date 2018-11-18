@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.86-RC] 2018-11-18
+### Fixed
+- Fixed the action button area responding to mouseover events for the Explorer Mode, as it was slightly off.
+- Fixed the smoothness of the initial fade-out after logging in or reloading with Explorer Mode enabled. 
+
 ## [1.0.85-RC] 2018-11-18
 ### Added
 - Added "Explorer Mode", which is optional fading when the player is "safe", meaning not engaged in combat, having no target selected, no running debuffs and health above 90%, not currently in a group, not currently in an arena, not currently facing any bosses, and some other variables taken into consideration as well. Explorer mode can be toggled from the config menu. 
