@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 5)
+local LibFader = CogWheel:Set("LibFader", 6)
 if (not LibFader) then	
 	return
 end
@@ -318,7 +318,8 @@ LibFader.UpdateSecondary = function(self)
 	end 
 
 	-- Always keep this enabled when primary is "safe"
-	if (not self.frame:GetScript("OnUpdate")) then 
+	if (not self.frame:GetScript("OnUpdate")) then
+		self.elapsed = 0 
 		self.frame:SetScript("OnUpdate", OnUpdate)
 	end 
 end
