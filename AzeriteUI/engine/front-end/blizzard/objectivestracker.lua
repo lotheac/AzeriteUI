@@ -42,7 +42,7 @@ Module.PositionTracker = function(self)
 		return self:RegisterEvent("ADDON_LOADED", "OnEvent")
 	end 
 
-	local ObjectiveFrameHolder = self.frame
+	local ObjectiveFrameHolder = self:CreateFrame("Frame", nil, "UICenter")
 	ObjectiveFrameHolder:SetWidth(Layout.Width)
 	ObjectiveFrameHolder:SetHeight(22)
 	ObjectiveFrameHolder:Place(unpack(Layout.Place))
@@ -50,6 +50,11 @@ Module.PositionTracker = function(self)
 	ObjectiveTrackerFrame:SetParent(self.frame) -- taint or ok?
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOP", ObjectiveFrameHolder, "TOP")
+
+	-- Minihack to fix mouseover fading
+	self.frame:ClearAllPoints()
+	self.frame:SetAllPoints(ObjectiveTrackerFrame)
+	self.frame.holder = ObjectiveFrameHolder
 
 	local top = ObjectiveTrackerFrame:GetTop() or 0
 	local screenHeight = GetScreenHeight()
