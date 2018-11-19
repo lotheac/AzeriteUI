@@ -24,7 +24,10 @@ Module.PreInit = function(self)
 end
 
 Module.OnInit = function(self)
+	local dev = true
+
 	self.db = self:NewConfig("UnitFrameParty", defaults, "global")
+
 	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	self.frame:SetAttribute("_onattributechanged", [=[
 		if (name == "state-vis") then
@@ -42,14 +45,15 @@ Module.OnInit = function(self)
 
 	-- Hide it in raids of 6 or more players 
 	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
+	local visDriver = dev and "[@player,exists]show;hide" or "[@raid6,exists]hide;[group]show;hide"
 	if self.db.enablePartyFrames then 
-		RegisterAttributeDriver(self.frame, "state-vis", "[@raid6,exists]hide;[group]show;hide")
+		RegisterAttributeDriver(self.frame, "state-vis", visDriver)
 	else 
 		RegisterAttributeDriver(self.frame, "state-vis", "hide")
 	end 
 
 	for i = 1,4 do 
-		self.frame[tostring(i)] = self:SpawnUnitFrame("party"..i, self.frame, Style)
+		self.frame[tostring(i)] = self:SpawnUnitFrame(dev and "player" or "party"..i, self.frame, Style)
 	end 
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
@@ -57,7 +61,7 @@ Module.OnInit = function(self)
 		proxy:SetAttribute(key,value)
 	end 
 	proxy:SetFrameRef("VisibilityFrame", self.frame)
-	proxy:SetAttribute("_onattributechanged", [=[
+	proxy:SetAttribute("_onattributechanged", ([=[
 		if name then 
 			name = string.lower(name); 
 		end 
@@ -66,14 +70,12 @@ Module.OnInit = function(self)
 			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
 			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
 			if value then 
-				RegisterAttributeDriver(visibilityFrame, "state-vis", "[@raid6,exists]hide;[group]show;hide")
-				--RegisterAttributeDriver(visibilityFrame, "state-vis", "[@player,exists]show;hide")
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "%s"); 
 			else 
-				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide")
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
 			end 
 		end 
-		
-	]=])
+	]=]):format(visDriver))
 	self.proxyUpdater = proxy
 
 end 
