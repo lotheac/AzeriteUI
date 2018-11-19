@@ -145,7 +145,7 @@ Module.OnInit = function(self)
 		self:DisableBlizzard() 
 	end
 
-	-- Hide it in raids of 6 or more players 
+	-- Only show it in raids of 6 or more players 
 	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
 	local visDriver = dev and "[@player,exists]show;hide" or "[@raid6,exists]show;hide"
 	if self.db.enableRaidFrames then 
