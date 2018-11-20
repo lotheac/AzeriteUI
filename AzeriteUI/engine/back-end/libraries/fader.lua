@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 6)
+local LibFader = CogWheel:Set("LibFader", 7)
 if (not LibFader) then	
 	return
 end
@@ -157,6 +157,12 @@ end
 
 -- Register an object with a fade manager
 LibFader.RegisterObjectFade = function(self, object)
+	-- Don't re-register existing objects, 
+	-- as that will overwrite the default alpha value 
+	-- which in turn can lead to max alphas of zero. 
+	if Objects[object] then 
+		return 
+	end 
 	Objects[object] = object:GetAlpha()
 end
 
@@ -267,6 +273,10 @@ LibFader.CheckPower = function(self)
 	Data.lowPower = nil
 end 
 
+LibFader.ForceUpdate = function(self)
+	LibFader:UpdatePrimary("state-fade", (SecureCmdOptionParse(DRIVER)))
+end
+
 LibFader.UpdatePrimary = function(self, state)
 	if (not state) then 
 		state = self.frame:GetAttribute("state-fade")
@@ -295,7 +305,6 @@ LibFader.UpdatePrimary = function(self, state)
 				self:RegisterUnitEvent("UNIT_DISPLAYPOWER", "OnEvent", "player") 
 				self.hasEvents = true
 			end 
-
 			self:UpdateSecondary()
 		end 
 	end 
@@ -370,7 +379,7 @@ LibFader.OnUpdate_PreDelay = function(self, elapsed)
 	end)
 
 	-- Fire off a fake attribute change to initiate fade events
-	self:UpdatePrimary("state-fade", (SecureCmdOptionParse(DRIVER)))
+	self:ForceUpdate()
 
 end 
 
