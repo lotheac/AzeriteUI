@@ -906,10 +906,17 @@ Module.CreateMenuTable = function(self)
 			buttons = {
 				-- Enable explorer mode
 				{
-					enabledTitle = L["Fading: %s"]:format(L["Enabled"]),
-					disabledTitle = L["Fading: %s"]:format(L["Disabled"]),
+					enabledTitle = L["Player Fading: %s"]:format(L["Enabled"]),
+					disabledTitle = L["Player Fading: %s"]:format(L["Disabled"]),
 					type = "TOGGLE_VALUE", 
 					configDB = "ExplorerMode", configKey = "enableExplorer", 
+					proxyModule = "ExplorerMode"
+				},
+				{
+					enabledTitle = L["Tracker Fading: %s"]:format(L["Enabled"]),
+					disabledTitle = L["Tracker Fading: %s"]:format(L["Disabled"]),
+					type = "TOGGLE_VALUE", 
+					configDB = "ExplorerMode", configKey = "enableTrackerFading", 
 					proxyModule = "ExplorerMode"
 				}		
 			}
