@@ -13,7 +13,7 @@ local table_insert = table.insert
 local unpack = unpack
 
 local defaults = {
-	enableExplorer = false
+	enableExplorer = true,
 	enableTrackerFading = false, 
 }
 
