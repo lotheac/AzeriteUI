@@ -14,6 +14,7 @@ local unpack = unpack
 
 local defaults = {
 	enableExplorer = false
+	enableTrackerFading = false, 
 }
 
 Module.PostUpdateSettings = function(self)
@@ -22,11 +23,14 @@ Module.PostUpdateSettings = function(self)
 		self:AttachModuleFrame("ActionBarMain")
 		self:AttachModuleFrame("UnitFramePlayer")
 		self:AttachModuleFrame("UnitFramePet")
-		self:AttachModuleFrame("BlizzardObjectivesTracker")
 	else 
 		self:DetachModuleFrame("ActionBarMain")
 		self:DetachModuleFrame("UnitFramePlayer")
 		self:DetachModuleFrame("UnitFramePet")
+	end 
+	if db.enableTrackerFading then 
+		self:AttachModuleFrame("BlizzardObjectivesTracker")
+	else 
 		self:DetachModuleFrame("BlizzardObjectivesTracker")
 	end 
 end
@@ -63,13 +67,23 @@ Module.OnInit = function(self)
 		proxy:SetAttribute(key,value)
 	end 
 	proxy:SetAttribute("_onattributechanged", [=[
-		if name then 
-			name = string.lower(name); 
+		if (not name) then
+			return 
 		end 
+
+		-- Seems to be some inconsistencies in name returns, 
+		-- so we make it lower case to avoid issues. 
+		name = string.lower(name); 
+
+		-- Identify what attribute or setting was change
 		if (name == "change-enableexplorer") then 
 			self:SetAttribute("enableExplorer", value); 
-			self:CallMethod("PostUpdateSettings"); 
+		elseif (name == "change-enabletrackerfading") then 
+			self:SetAttribute("enableTrackerFading", value); 
 		end 
+
+		-- Run Lua callbacks
+		self:CallMethod("PostUpdateSettings"); 
 	]=])
 
 	self.proxyUpdater = proxy

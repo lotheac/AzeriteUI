@@ -97,7 +97,8 @@ L["TalkingHead: %s"] = true
 L["NamePlates"] = true
 L["Auras: %s"] = true
 L["Explorer Mode"] = true
-L["Fading: %s"] = true
+L["Player Fading: %s"] = true
+L["Tracker Fading: %s"] = true
 
 -- Various Button Tooltips
 --------------------------------------------
