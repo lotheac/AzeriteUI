@@ -102,15 +102,15 @@ local onButtonLeave = function(self)
 end
 
 local onRollPollClick = function(self) 
-	Module:PlaySoundKitID(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
 	if hasLeaderTools() then 
+		Module:PlaySoundKitID(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
 		InitiateRolePoll() 
 	end 
 end
 
 local onReadyCheckClick = function(self) 
-	Module:PlaySoundKitID(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
 	if hasLeaderTools() then 
+		Module:PlaySoundKitID(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX")
 		DoReadyCheck() 
 	end 
 end
@@ -311,6 +311,7 @@ Module.CreateTools = function(self)
 		end
 	]=])
 	RegisterAttributeDriver(self.visibility, "state-vis", "[group]show;hide")
+	--RegisterAttributeDriver(self.visibility, "state-vis", "show")
 
 	-- toggle button
 	local toggleButton = self.visibility:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate")
@@ -359,6 +360,14 @@ Module.CreateTools = function(self)
 	frame:SetFrameStrata("DIALOG")
 	frame:SetFrameLevel(10)
 	frame:Hide()
+
+	toggleButton:HookScript("OnClick", function()
+		if frame:IsShown() then 
+			Module:PlaySoundKitID(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON, "SFX") 
+		else 
+			Module:PlaySoundKitID(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF, "SFX")
+		end  
+	end)
 
 	if Layout.MenuWindow_CreateBorder then 
 		frame.Border = Layout.MenuWindow_CreateBorder(frame)
