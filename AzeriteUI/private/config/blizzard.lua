@@ -16,7 +16,22 @@ local BlizzardChatFrames = {
 	DefaultChatFramePlace = { "LEFT", 85, -60 },
 	DefaultChatFrameSize = { 499, 176 }, -- 519, 196
 	DefaultClampRectInsets = { -54, -54, -310, -330 },
-	UseButtonTextures = true
+
+	ChatFadeTime = 5, 
+	ChatVisibleTime = 15, 
+	ChatIndentedWordWrap = false, 
+
+	EditBoxHeight = 45, 
+	EditBoxOffsetH = 15, 
+	
+	UseButtonTextures = true,
+		ButtonFrameWidth = 48, ScrollBarWidth = 32, 
+		ButtonTextureSize = { 64, 64 }, 
+		ButtonTextureColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+		ButtonTextureNormal = GetMediaPath("point_block"),
+		ButtonTextureScrollToBottom = GetMediaPath("icon_chat_down"), 
+		ButtonTextureMinimizeButton = GetMediaPath("icon_chat_minus"),
+		ButtonTextureChatEmotes = GetMediaPath("config_button_emotes")
 }
 
 local BlizzardMicroMenu = {

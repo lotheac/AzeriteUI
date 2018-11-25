@@ -16,7 +16,6 @@ end
 
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
 local Colors, Fonts, Functions, Layout, L, MenuTable
-local GetMediaPath
 
 -- Registries
 Module.buttons = Module.buttons or {}
@@ -36,9 +35,6 @@ local Windows = Module.windows
 local _G = _G
 local math_min = math.min
 local table_insert = table.insert
-
--- Generic button styling
-local buttonWidth, buttonHeight, buttonSpacing, sizeMod = 300, 50, 10, .75
 
 -- Secure script snippets
 local secureSnippets = {
@@ -190,30 +186,6 @@ local secureSnippets = {
 	]=]
 }
 
-local createBorder = function(frame, sizeMod)
-	sizeMod = sizeMod or 1
-	local border = frame:CreateFrame("Frame")
-	border:SetFrameLevel(frame:GetFrameLevel()-1)
-	border:SetPoint("TOPLEFT", -23*sizeMod, 23*sizeMod)
-	border:SetPoint("BOTTOMRIGHT", 23*sizeMod, -23*sizeMod)
-	border:SetBackdrop({
-		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
-		edgeFile = GetMediaPath("tooltip_border"),
-		edgeSize = 32*sizeMod, 
-		tile = false, 
-		insets = { 
-			top = 23*sizeMod, 
-			bottom = 23*sizeMod, 
-			left = 23*sizeMod, 
-			right = 23*sizeMod 
-		}
-	})
-	border:SetBackdropBorderColor(1, 1, 1, 1)
-	border:SetBackdropColor(.05, .05, .05, .85)
-	return border
-end 
-
-
 -- Menu Template
 local Menu = {}
 local Menu_MT = { __index = Menu }
@@ -230,7 +202,6 @@ local Window_MT = { __index = Window }
 local Button = Module:CreateFrame("CheckButton", nil, "UICenter", "SecureHandlerClickTemplate")
 local Button_MT = { __index = Button }
 
-
 local MenuWindow_OnShow = function(self) 
 	local tooltip = Module:GetOptionsMenuTooltip()
 	local button = Module:GetToggleButton()
@@ -246,7 +217,6 @@ local MenuWindow_OnHide = function(self)
 		toggle:OnEnter()
 	end 
 end
-
 
 Toggle.OnEnter = function(self)
 	if (not self.leftButtonTooltip) and (not self.rightButtonTooltip) then 
@@ -277,12 +247,10 @@ Toggle.OnLeave = function(self)
 	tooltip:Hide() 
 end
 
-
-
 Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
 	local option = setmetatable(self:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate"), Button_MT)
-	option:SetSize(buttonWidth*sizeMod, buttonHeight*sizeMod)
-	option:SetPoint("BOTTOMRIGHT", -buttonSpacing, buttonSpacing + (buttonHeight*sizeMod + buttonSpacing)*(self.numButtons))
+	option:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod)
+	option:SetPoint("BOTTOMRIGHT", -Layout.MenuButtonSpacing, Layout.MenuButtonSpacing + (Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod + Layout.MenuButtonSpacing)*(self.numButtons))
 
 	option:HookScript("OnEnable", Button.OnEnable)
 	option:HookScript("OnDisable", Button.OnDisable)
@@ -315,27 +283,9 @@ Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
 
 	Module.optionCallbacks[option] = self
 
-	local msg = option:CreateFontString()
-	msg:SetPoint("CENTER", 0, 0)
-	msg:SetFontObject(Fonts(14, false))
-	msg:SetJustifyH("RIGHT")
-	msg:SetJustifyV("TOP")
-	msg:SetIndentedWordWrap(false)
-	msg:SetWordWrap(false)
-	msg:SetNonSpaceWrap(false)
-	msg:SetTextColor(0,0,0)
-	msg:SetShadowOffset(0, -.85)
-	msg:SetShadowColor(1,1,1,.5)
-	msg:SetText(text)
-	option.Msg = msg
-
-	local bg = option:CreateTexture()
-	bg:SetDrawLayer("ARTWORK")
-	bg:SetTexture(GetMediaPath("menu_button_disabled"))
-	bg:SetVertexColor(.9, .9, .9)
-	bg:SetSize(1024 *1/3 *sizeMod, 256 *1/3 *sizeMod)
-	bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
-	option.Bg = bg
+	if Layout.MenuButton_PostCreate then 
+		Layout.MenuButton_PostCreate(option, text, updateType, optionDB, optionName, ...)
+	end
 
 	self.numButtons = self.numButtons + 1
 	self.buttons[self.numButtons] = option
@@ -389,33 +339,21 @@ Window.UpdateSiblings = function(self)
 end
 
 Window.OnHide = function(self)
-	local button = self:GetParent()
-	local texture = button.Bg:GetTexture()
-	local normal = GetMediaPath("menu_button_disabled")
-	if (texture ~= normal) then 
-		button.Bg:SetTexture(normal)
-		button.Bg:SetVertexColor(.9, .9, .9)
-		button.Msg:SetPoint("CENTER", 0, 0)
+	if Layout.MenuWindow_OnHide then 
+		return Layout.MenuWindow_OnHide(self)
 	end 
 end
 
 Window.OnShow = function(self)
-	local button = self:GetParent()
-	local texture = button.Bg:GetTexture()
-	local pushed = GetMediaPath("menu_button_pushed")
-	if (texture ~= pushed) then 
-		button.Bg:SetTexture(pushed)
-		button.Bg:SetVertexColor(1,1,1)
-		button.Msg:SetPoint("CENTER", 0, -2)
+	if Layout.MenuWindow_OnShow then 
+		return Layout.MenuWindow_OnShow(self)
 	end 
 end
 
 Window.PostUpdateSize = function(self)
 	local numButtons = self.numButtons
-	self:SetSize(buttonWidth*sizeMod + buttonSpacing*2, buttonHeight*sizeMod*numButtons + buttonSpacing*(numButtons+1))
+	self:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod + Layout.MenuButtonSpacing*2, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod*numButtons + Layout.MenuButtonSpacing*(numButtons+1))
 end
-
-
 
 Button.OnEnable = function(self)
 	self:SetAlpha(1)
@@ -426,51 +364,17 @@ Button.OnDisable = function(self)
 end 
 
 Button.Update = function(self)
-	if (self.updateType == "GET_VALUE") then 
-	elseif (self.updateType == "SET_VALUE") then 
-		local db = Module:GetConfig(self.optionDB, defaults, "global")
-		local option = db[self.optionName]
-		if (option == self.optionArg1) then 
-			local texture = self.Bg:GetTexture()
-			local pushed = GetMediaPath("menu_button_pushed")
-			if (texture ~= pushed) then 
-				self.Bg:SetTexture(pushed)
-				self.Bg:SetVertexColor(1,1,1)
-				self.Msg:SetPoint("CENTER", 0, -2)
-			end 
-		else
-			local texture = self.Bg:GetTexture()
-			local normal = GetMediaPath("menu_button_disabled")
-			if (texture ~= normal) then 
-				self.Bg:SetTexture(normal)
-				self.Bg:SetVertexColor(.9, .9, .9)
-				self.Msg:SetPoint("CENTER", 0, 0)
-			end 
-		end 
+	if Layout.MenuButton_PostUpdate then 
+		if (self.updateType == "GET_VALUE") then 
+		elseif (self.updateType == "SET_VALUE") then 
+			local db = Module:GetConfig(self.optionDB, defaults, "global")
+			local option = db[self.optionName]
+			return Layout.MenuButton_PostUpdate(self, self.updateType, db, option, option == self.optionArg1)
 
-	elseif (self.updateType == "TOGGLE_VALUE") then 
-		local db = Module:GetConfig(self.optionDB, defaults, "global")
-		local option = db[self.optionName]
-		if option then 
-			self.Msg:SetText(self.enabledTitle or L["Disable"])
-
-			local texture = self.Bg:GetTexture()
-			local pushed = GetMediaPath("menu_button_pushed")
-			if (texture ~= pushed) then 
-				self.Bg:SetTexture(pushed)
-				self.Bg:SetVertexColor(1,1,1)
-				self.Msg:SetPoint("CENTER", 0, -2)
-			end 
-		else 
-			self.Msg:SetText(self.disabledTitle or L["Enable"])
-
-			local texture = self.Bg:GetTexture()
-			local normal = GetMediaPath("menu_button_disabled")
-			if (texture ~= normal) then 
-				self.Bg:SetTexture(normal)
-				self.Bg:SetVertexColor(.9, .9, .9)
-				self.Msg:SetPoint("CENTER", 0, 0)
-			end 
+		elseif (self.updateType == "TOGGLE_VALUE") then 
+			local db = Module:GetConfig(self.optionDB, defaults, "global")
+			local option = db[self.optionName]
+			return Layout.MenuButton_PostUpdate(self, self.updateType, db, option)
 		end 
 	end 
 end
@@ -487,10 +391,13 @@ end
 Button.CreateWindow = function(self, level)
 	local window = Module:CreateConfigWindowLevel(level, self)
 	--window:SetPoint("BOTTOM", Module:GetConfigWindow(), "BOTTOM", 0, 0) -- relative to parent button's window
-	window:SetPoint("BOTTOM", self, "BOTTOM", 0, -buttonSpacing) -- relative to parent button
-	window:SetPoint("RIGHT", self, "LEFT", -buttonSpacing*2, 0)
+	window:SetPoint("BOTTOM", self, "BOTTOM", 0, -Layout.MenuButtonSpacing) -- relative to parent button
+	window:SetPoint("RIGHT", self, "LEFT", -Layout.MenuButtonSpacing*2, 0)
 
-	window.Border = createBorder(window, sizeMod)
+	if Layout.MenuWindow_CreateBorder then 
+		window.Border = Layout.MenuWindow_CreateBorder(window)
+	end 
+
 	window.OnHide = Window.OnHide
 	window.OnShow = Window.OnShow
 
@@ -521,8 +428,6 @@ Button.SetAsSlave = function(self, slaveDB, slaveKey)
 	self:SetAttribute("isSlave", true)
 end
 
-
-
 Module.CreateConfigWindowLevel = function(self, level, parent)
 	local frameLevel = 10 + (level-1)*5
 	local window = setmetatable(self:CreateFrame("Frame", nil, parent or "UICenter", "SecureHandlerAttributeTemplate"), Window_MT)
@@ -550,8 +455,8 @@ Module.GetToggleButton = function(self)
 		local toggleButton = setmetatable(self:CreateFrame("CheckButton", nil, "UICenter", "SecureHandlerClickTemplate"), Toggle_MT)
 		toggleButton:SetFrameStrata("DIALOG")
 		toggleButton:SetFrameLevel(50)
-		toggleButton:SetSize(48,48)
-		toggleButton:Place("BOTTOMRIGHT", -4, 4)
+		toggleButton:SetSize(unpack(Layout.MenuToggleButtonSize))
+		toggleButton:Place(unpack(Layout.MenuToggleButtonPlace))
 		toggleButton:RegisterForClicks("AnyUp")
 		toggleButton:SetScript("OnEnter", Toggle.OnEnter)
 		toggleButton:SetScript("OnLeave", Toggle.OnLeave) 
@@ -570,10 +475,10 @@ Module.GetToggleButton = function(self)
 		]])
 
 		toggleButton.Icon = toggleButton:CreateTexture()
-		toggleButton.Icon:SetTexture(GetMediaPath("config_button"))
-		toggleButton.Icon:SetSize(96,96)
-		toggleButton.Icon:SetPoint("CENTER", 0, 0)
-		toggleButton.Icon:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
+		toggleButton.Icon:SetTexture(Layout.MenuToggleButtonIcon)
+		toggleButton.Icon:SetSize(unpack(Layout.MenuToggleButtonIconSize))
+		toggleButton.Icon:SetPoint(unpack(Layout.MenuToggleButtonIconPlace))
+		toggleButton.Icon:SetVertexColor(unpack(Layout.MenuToggleButtonIconColor))
 
 		self.ToggleButton = toggleButton
 	end 
@@ -586,12 +491,15 @@ Module.GetConfigWindow = function(self)
 		-- create main window 
 		local window = self:CreateConfigWindowLevel(1)
 		window:Place(unpack(Layout.MenuPlace))
-		window:SetSize(600, 600)
+		window:SetSize(unpack(Layout.MenuSize))
 		window:EnableMouse(true)
 		window:SetScript("OnShow", MenuWindow_OnShow)
 		window:SetScript("OnHide", MenuWindow_OnHide)
-		window.Border = createBorder(window, sizeMod)
-	
+
+		if Layout.MenuWindow_CreateBorder then 
+			window.Border = Layout.MenuWindow_CreateBorder(window)
+		end 
+
 		self.ConfigWindow = window
 
 	end 
@@ -932,8 +840,6 @@ Module.PreInit = function(self)
 	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Core]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-
-	GetMediaPath = Functions.GetMediaPath
 
 	self:CreateMenuTable()
 end

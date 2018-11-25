@@ -21,8 +21,8 @@
 	<Script file="custom\targetframe.lua"/>
 	<Script file="custom\totframe.lua"/>
 
-	<!-- grouptools -->
-	<Script file="custom\groupleadertools.lua"/>
+	<!-- group tools -->
+	<Script file="custom\grouptools.lua"/>
 
 	<!-- plugins -->
 	<Script file="custom\explorer.lua"/>

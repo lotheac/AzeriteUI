@@ -17,5 +17,5 @@
 ## X-Website: https://www.patreon.com/azeriteui
 ## X-License: All Rights Reserved
 
-engine\engine.xml
-config\config.xml
+public\public.xml
+private\private.xml

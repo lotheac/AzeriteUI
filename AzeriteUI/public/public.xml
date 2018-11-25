@@ -12,7 +12,4 @@
 	<Include file="front-end\blizzard.xml"/>
 	<Include file="front-end\custom.xml"/>
 
-	<!-- old menu -->
-	<Script file="menu-old.lua"/>
-
 </Ui>
