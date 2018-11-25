@@ -2,9 +2,10 @@
 
 This is a custom user interface for World of Warcraft: Battle For Azeroth, with a fresh new design and brand new custom codebase at its core. It's designed by Daniel Troko & coded by Lars "Goldpaw" Norberg. 
 
-The motivation of this user interface is immersion. This game has SO much information that if not handled carefully becomes cumbersome, therefore blocking the most important asset of the game, the world. The best interface is no interface at all, but in a game such as this that is not possible. But if we have to block away parts of the game world to see information about the game mechanics, then at least let’s make it dynamic, beautiful and in sync with the game's aesthetics. Let's make it Warcraft!  
+The motivation of this user interface is immersion, and a more simplified gaming experience then what the "norm" has turned into. This game has SO much information that if not handled carefully becomes cumbersome, therefore blocking the most important asset of the game, the world. The best interface is no interface at all, but in a game such as this that is not possible. But if we have to block away parts of the game world to see information about the game mechanics, then at least let’s make it dynamic, beautiful and in sync with the game's aesthetics. Let's make it Warcraft!  
 
-Be aware that the expected download location of this user interface is either [CurseForge](https://www.curseforge.com/wow/addons/azeriteui), the [Twitch App](https://app.twitch.tv/download), or [tagged releases](https://bitbucket.org/bigcogs/azeriteui/downloads/?tab=tags), and anything else should be considered developer versions or nightly builds and are unsupported when it comes to bugs or issues. 
+[![Minimalist questing/leveling UI for WoW BfA: Azerite UI](https://i.imgur.com/rkxv7f8.jpg)](http://www.youtube.com/watch?v=3i4_Ix963LY "Minimalist questing/leveling UI for WoW BfA: Azerite UI")
+  
 
 ## **How can I get more action buttons, and where are the pet- and stance bars?**  
 
@@ -18,18 +19,21 @@ If you're looking for a very high amount of actionbuttons and for some reason is
 
 You can't. This is as much UX as UI, meaning the interface is designed around a concept, this isn't meant to be a pretty skin over your current interface, it's instead a full user experience system where how you interact with the game is affected.
 
-## **I found a bug, where to report?**  
+## **Downloads & Bug Reports**
+* Download: [curse.azeriteui.com](http://curse.azeriteui.com)
+* Issues: [issues.azeriteui.com](http://issues.azeriteui.com)
 
-Bugs are reported over at [BitBucket](https://bitbucket.org/bigcogs/azeriteui/issues?status=new&status=open). You can also try hearing if the community over at our [Discord](https://discord.gg/MUSfWXd) has a solution, just keep in mind that it's not a helpdesk, the devs and mods are not there to answer your questions, and that in the end we're all just gaming enthusiasts. 
-
-## **Join the community**  
-
-* Twitter: [@AzeriteUI](https://twitter.com/azeriteui)
-* Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)
-* Discord: [discord.gg/MUSfWXd](https://discord.gg/MUSfWXd)
-* YouTube: [youtube.com/channel/UChE6I9HirNw5m14Vytah0cQ](https://www.youtube.com/channel/UChE6I9HirNw5m14Vytah0cQ)
-
-## **Pledge to our work!**  
-
+## **Pledge to our work:**  
 * Patreon: [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui)
 * PayPal: [www.paypal.me/AzeriteUI](https://www.paypal.me/azeriteui)
+
+## **Follow AzeriteUI:**  
+* Discord: [discord.gg/MUSfWXd](https://discord.gg/MUSfWXd)
+* Twitter: [@AzeriteUI](https://twitter.com/azeriteui)  
+* Instagram: [@AzeriteUI](https://instagram.com/azeriteui/)  
+* Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)  
+* YouTube: [UChE6I9HirNw5m14Vytah0cQ](https://www.youtube.com/channel/UChE6I9HirNw5m14Vytah0cQ) 
+
+## **Follow the team:**
+* Twitter Blakmane: [@troko512](https://twitter.com/troko512)
+* Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/GoldpawTheGreat)
