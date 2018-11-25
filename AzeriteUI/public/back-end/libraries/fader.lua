@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 7)
+local LibFader = CogWheel:Set("LibFader", 8)
 if (not LibFader) then	
 	return
 end
@@ -31,10 +31,16 @@ local type = type
 local CursorHasItem = _G.CursorHasItem
 local CursorHasSpell = _G.CursorHasSpell
 local GetCursorInfo = _G.GetCursorInfo
+local HasOverrideActionBar = _G.HasOverrideActionBar
+local HasVehicleActionBar = _G.HasVehicleActionBar
+local InCombatLockdown = _G.InCombatLockdown
+local IsInGroup = _G.IsInGroup
+local IsInInstance = _G.IsInInstance
 local MouseIsOver = _G.MouseIsOver
 local RegisterAttributeDriver = _G.RegisterAttributeDriver
 local SpellFlyout = _G.SpellFlyout
 local UnitDebuff = _G.UnitDebuff
+local UnitExists = _G.UnitExists
 local UnitHealth = _G.UnitHealth
 local UnitHealthMax = _G.UnitHealthMax
 local UnitPower = _G.UnitPower
@@ -50,21 +56,12 @@ LibFader.embeds = LibFader.embeds or {}
 LibFader.objects = LibFader.objects or {} -- all currently registered objects
 LibFader.defaultAlphas = LibFader.defaultAlphas or {} -- maximum opacity for registered objects
 LibFader.data = LibFader.data or {} -- various global data
-LibFader.frame = LibFader.frame or LibFader:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+LibFader.frame = LibFader.frame or LibFader:CreateFrame("Frame", nil, "UICenter")
 LibFader.frame._owner = LibFader
-LibFader.STATE = LibFader.STATE -- current public state of the managers
-LibFader.FORCED = LibFader.FORCED -- when true, all managers are forcefully shown
-LibFader.PRIMARY = LibFader.PRIMARY -- current macro driven primary state
-LibFader.SECONDARY = LibFader.SECONDARY -- current event dependant secondary state
 
 -- Speed!
 local Data = LibFader.data
 local Objects = LibFader.objects
-
--- Primary state driver. 
--- When this reports "peril", events are immediately stopped, 
--- and onupdate handlers stop running once the "peril" state is fully achieved. 
-local DRIVER = "[@target,exists][@focus,exists][@boss1,exists][@arena1,exists][@party1,exists][@raid1,exists][combat][possessbar][overridebar][vehicleui]peril;safe"
 
 -- TODO: Use the upcoming aura filter rewrite for this.
 -- TODO2: Add in non-peril debuffs from BfA, and possibly Legion.
@@ -135,8 +132,8 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
-local OnUpdate_PreDelay = function(self, elapsed) 
-	return self._owner:OnUpdate_PreDelay(elapsed) 
+local InitiateDelay = function(self, elapsed) 
+	return self._owner:InitiateDelay(elapsed) 
 end
 
 local OnUpdate = function(self, elapsed) 
@@ -273,96 +270,139 @@ LibFader.CheckPower = function(self)
 	Data.lowPower = nil
 end 
 
-LibFader.ForceUpdate = function(self)
-	LibFader:UpdatePrimary("state-fade", (SecureCmdOptionParse(DRIVER)))
-end
-
-LibFader.UpdatePrimary = function(self, state)
-	if (not state) then 
-		state = self.frame:GetAttribute("state-fade")
-	end
-	if (not state) then 
-		return 
-	end
-	if (self.PRIMARY ~= state) then 
-		self.PRIMARY = state 
-
-		if (state == "peril") then 
-			if self.hasEvents then 
-				self:UnregisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
-				self:UnregisterEvent("UNIT_AURA", "OnEvent")
-				self:UnregisterEvent("UNIT_HEALTH_FREQUENT", "OnEvent")
-				self:UnregisterEvent("UNIT_POWER_FREQUENT", "OnEvent")
-				self:UnregisterEvent("UNIT_DISPLAYPOWER", "OnEvent")
-				self.hasEvents = nil
-			end 
-		else
-			if (not self.hasEvents) then 
-				self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
-				self:RegisterUnitEvent("UNIT_AURA", "OnEvent", "player")
-				self:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "OnEvent", "player") 
-				self:RegisterUnitEvent("UNIT_POWER_FREQUENT", "OnEvent", "player") 
-				self:RegisterUnitEvent("UNIT_DISPLAYPOWER", "OnEvent", "player") 
-				self.hasEvents = true
-			end 
-			self:UpdateSecondary()
-		end 
-	end 
-end
-
-LibFader.UpdateSecondary = function(self)
-	if (self.PRIMARY == "peril") then 
+LibFader.CheckVehicle = function(self)
+	if UnitInVehicle("player") or HasVehicleActionBar() then 
+		Data.inVehicle = true
 		return 
 	end 
+	Data.inVehicle = nil
+end 
 
-	self:CheckHealth()
-	self:CheckPower()
-	self:CheckAuras()
-	self:CheckCursor()
-
-	if (Data.lowHealth or Data.lowPower or Data.badAura or Data.busyCursor) then 
-		self.SECONDARY = "peril"
-	else 
-		self.SECONDARY = "safe"
+LibFader.CheckOverride = function(self)
+	if HasOverrideActionBar() or HasTempShapeshiftActionBar() then 
+		Data.hasOverride = true
+		return 
 	end 
+	Data.hasOverride = nil
+end 
 
-	-- Always keep this enabled when primary is "safe"
-	if (not self.frame:GetScript("OnUpdate")) then
-		self.elapsed = 0 
-		self.frame:SetScript("OnUpdate", OnUpdate)
+LibFader.CheckPossess = function(self)
+	if IsPossessBarVisible() then 
+		Data.hasPossess = true
+		return 
 	end 
+	Data.hasPossess = nil
+end 
+
+LibFader.CheckTarget = function(self)
+	if UnitExists("target") then 
+		Data.hasTarget = true
+		return 
+	end 
+	Data.hasTarget = nil
+end 
+
+LibFader.CheckFocus	 = function(self)
+	if UnitExists("focus") then 
+		Data.hasFocus = true
+		return 
+	end 
+	Data.hasFocus = nil
+end 
+
+LibFader.CheckGroup = function(self)
+	if IsInGroup() then 
+		Data.inGroup = true
+		return 
+	end 
+	Data.inGroup = nil
+end
+
+LibFader.CheckCombat = function(self)
+	if InCombatLockdown() then 
+		Data.inCombat = true
+		return 
+	end 
+	Data.inCombat = nil
+end
+
+LibFader.CheckInstance = function(self)
+	if IsInInstance() then 
+		Data.inInstance = true
+		return 
+	end 
+	Data.inInstance = nil
 end
 
 LibFader.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
 
+		self:CheckInstance()
+		self:CheckCombat()
+		self:CheckGroup()
+		self:CheckTarget()
+		self:CheckFocus()
+		self:CheckVehicle()
+		self:CheckOverride()
+		self:CheckPossess()
+		self:CheckHealth()
+		self:CheckPower()
+		self:CheckAuras()
+		self:CheckCursor()
 		self:ForAll(SetToDefaultAlpha)
+
 		self.elapsed = 0
-		self.frame:SetScript("OnUpdate", OnUpdate_PreDelay)
+		self.frame:SetScript("OnUpdate", InitiateDelay)
 
-	elseif (event == "PLAYER_LEAVING_WORLD") then
-		self.frame:SetScript("OnUpdate", nil)
-		self.frame:SetScript("OnAttributeChanged", nil)
+	elseif (event == "PLAYER_REGEN_DISABLED") 
+		or (event == "PLAYER_REGEN_ENABLED") then 
+			self:CheckCombat()
 
-	elseif (event == "UNIT_POWER_FREQUENT" or event == "UNIT_DISPLAYPOWER") then
-		Data.lowPower = self:CheckPower()
+	elseif (event == "PLAYER_TARGET_CHANGED") then 
+		self:CheckTarget()
+
+	elseif (event == "PLAYER_FOCUS_CHANGED") then 
+		self:CheckFocus()
+
+	elseif (event == "GROUP_ROSTER_UPDATE") then 
+		self:CheckGroup()
+
+	elseif (event == "UPDATE_POSSESS_BAR") then 
+		self:CheckPossess()
+
+	elseif (event == "UPDATE_OVERRIDE_ACTIONBAR") then 
+		self:CheckOverride()
+
+	elseif (event == "UNIT_ENTERING_VEHICLE") 
+		or (event == "UNIT_ENTERED_VEHICLE") 
+		or (event == "UNIT_EXITING_VEHICLE") 
+		or (event == "UNIT_EXITED_VEHICLE") then 
+			self:CheckVehicle()
+
+	elseif (event == "UNIT_POWER_FREQUENT") 
+		or (event == "UNIT_DISPLAYPOWER") then
+			self:CheckPower()
 
 	elseif (event == "UNIT_HEALTH_FREQUENT") then 
-		Data.lowPower = self:CheckHealth()
+		self:CheckHealth()
 
 	elseif (event == "UNIT_AURA") then 
-		Data.badAura = self:CheckAuras()
+		self:CheckAuras()
+
+	elseif (event == "ZONE_CHANGED_NEW_AREA") then 
+		self:CheckInstance()
 	end 
-	self:UpdateSecondary()
 end
 
-LibFader.OnUpdate_PreDelay = function(self, elapsed)
+LibFader.InitiateDelay = function(self, elapsed)
 	self.elapsed = self.elapsed + elapsed
 
+	-- Enforce a delay at the start
 	if (self.elapsed < 15) then 
 		return 
 	end
 
+	self.elapsed = 0
 	self.totalElapsed = 0
 	self.totalElapsedIn = 0
 	self.totalElapsedOut = 0
@@ -371,16 +411,7 @@ LibFader.OnUpdate_PreDelay = function(self, elapsed)
 	self.currentPosition = 1
 	self.achievedState = "peril"
 
-	self.frame:SetScript("OnUpdate", nil)
-	self.frame:SetScript("OnAttributeChanged", function(_, name, value)
-		if (name == "state-fade") then  
-			return self:UpdatePrimary(value) 
-		end
-	end)
-
-	-- Fire off a fake attribute change to initiate fade events
-	self:ForceUpdate()
-
+	self.frame:SetScript("OnUpdate", OnUpdate)
 end 
 
 LibFader.OnUpdate = function(self, elapsed)
@@ -391,30 +422,35 @@ LibFader.OnUpdate = function(self, elapsed)
 		return 
 	end 
 
-	-- Shortcut the primary and secondary states
-	local primary = self.PRIMARY == "peril"
-	local secondary = self.SECONDARY == "peril"
-	local mouse = (not primary) and (not secondary) and self:CheckMouse()
-
-	local toPeril = primary or secondary or mouse
-	local progress = self.elapsed / (toPeril and self.totalDurationIn or self.totalDurationOut)
-
-	if (primary or secondary or mouse) then 
+	if Data.inCombat 
+	or Data.hasTarget 
+	or Data.hasFocus 
+	or Data.inGroup 
+	or Data.hasOverride 
+	or Data.hasPossess 
+	or Data.inVehicle 
+	or Data.inInstance
+	or Data.lowHealth 
+	or Data.lowPower 
+	or Data.busyCursor 
+	or Data.badAura 
+	or self:CheckMouse() then 
+		if (self.currentPosition == 1) and (self.achievedState == "peril") then 
+			self.elapsed = 0
+			return 
+		end 
+		local progress = self.elapsed / self.totalDurationIn
 		if ((self.currentPosition + progress) < 1) then 
 			self.currentPosition = self.currentPosition + progress
 			self.achievedState = nil
 			self:ForAll(SetToProgressAlpha, self.currentPosition)
-
 		else 
 			self.currentPosition = 1
 			self.achievedState = "peril"
 			self:ForAll(SetToDefaultAlpha)
-
-			if primary then 
-				self.frame:SetScript("OnUpdate", nil)
-			end 
 		end 
 	else 
+		local progress = self.elapsed / self.totalDurationOut
 		if ((self.currentPosition - progress) > 0) then 
 			self.currentPosition = self.currentPosition - progress
 			self.achievedState = nil
@@ -425,7 +461,6 @@ LibFader.OnUpdate = function(self, elapsed)
 			self:ForAll(SetToZeroAlpha)
 		end 
 	end 
-
 	self.elapsed = 0
 end
 
@@ -457,10 +492,20 @@ for target in pairs(LibFader.embeds) do
 	LibFader:Embed(target)
 end
 
-LibFader.frame:SetScript("OnUpdate", nil)
-LibFader.frame:SetScript("OnAttributeChanged", nil)
-
+LibFader:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
 LibFader:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
-
-UnregisterAttributeDriver(LibFader.frame, "state-fade")
-RegisterAttributeDriver(LibFader.frame, "state-fade", DRIVER)
+LibFader:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent") 
+LibFader:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
+LibFader:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent") 
+LibFader:RegisterEvent("PLAYER_FOCUS_CHANGED", "OnEvent") 
+LibFader:RegisterEvent("GROUP_ROSTER_UPDATE", "OnEvent") 
+LibFader:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "OnEvent") 
+LibFader:RegisterEvent("UPDATE_POSSESS_BAR", "OnEvent") 
+LibFader:RegisterUnitEvent("UNIT_AURA", "OnEvent", "player")
+LibFader:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_POWER_FREQUENT", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_DISPLAYPOWER", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_ENTERING_VEHICLE", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "OnEvent", "player") 
