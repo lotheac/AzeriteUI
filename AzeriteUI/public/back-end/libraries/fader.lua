@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 8)
+local LibFader = CogWheel:Set("LibFader", 9)
 if (not LibFader) then	
 	return
 end
@@ -318,14 +318,6 @@ LibFader.CheckGroup = function(self)
 	Data.inGroup = nil
 end
 
-LibFader.CheckCombat = function(self)
-	if InCombatLockdown() then 
-		Data.inCombat = true
-		return 
-	end 
-	Data.inCombat = nil
-end
-
 LibFader.CheckInstance = function(self)
 	if IsInInstance() then 
 		Data.inInstance = true
@@ -337,8 +329,9 @@ end
 LibFader.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
 
+		Data.inCombat = InCombatLockdown()
+
 		self:CheckInstance()
-		self:CheckCombat()
 		self:CheckGroup()
 		self:CheckTarget()
 		self:CheckFocus()
@@ -349,14 +342,17 @@ LibFader.OnEvent = function(self, event, ...)
 		self:CheckPower()
 		self:CheckAuras()
 		self:CheckCursor()
+
 		self:ForAll(SetToDefaultAlpha)
 
 		self.elapsed = 0
 		self.frame:SetScript("OnUpdate", InitiateDelay)
 
-	elseif (event == "PLAYER_REGEN_DISABLED") 
-		or (event == "PLAYER_REGEN_ENABLED") then 
-			self:CheckCombat()
+	elseif (event == "PLAYER_REGEN_DISABLED") then 
+		Data.inCombat = true
+
+	elseif (event == "PLAYER_REGEN_ENABLED") then 
+		Data.inCombat = false
 
 	elseif (event == "PLAYER_TARGET_CHANGED") then 
 		self:CheckTarget()
