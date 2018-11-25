@@ -24,16 +24,36 @@ local SetActionBarToggles = _G.SetActionBarToggles
 
 local L, Layout, PREFIX
 
+local Minimap_ZoomInClick = function()
+	if MinimapZoomIn:IsEnabled() then 
+		MinimapZoomOut:Enable()
+		Minimap:SetZoom(Minimap:GetZoom() + 1)
+		if (Minimap:GetZoom() == (Minimap:GetZoomLevels() - 1)) then
+			MinimapZoomIn:Disable()
+		end
+	end 
+end
+
+local Minimap_ZoomOutClick = function()
+	if MinimapZoomOut:IsEnabled() then 
+		MinimapZoomIn:Enable()
+		Minimap:SetZoom(Minimap:GetZoom() - 1)
+		if (Minimap:GetZoom() == 0) then
+			MinimapZoomOut:Disable()
+		end
+	end 
+end
+
 local fixMinimap = function()
 	local currentZoom = Minimap:GetZoom()
 	local maxLevels = Minimap:GetZoomLevels()
 	if currentZoom and maxLevels then 
 		if maxLevels > currentZoom then 
-			MinimapZoomIn:Click()
-			MinimapZoomOut:Click()
+			Minimap_ZoomInClick()
+			Minimap_ZoomOutClick()
 		else
-			MinimapZoomOut:Click()
-			MinimapZoomIn:Click()
+			Minimap_ZoomOutClick()
+			Minimap_ZoomInClick()
 		end 
 	end 
 end
