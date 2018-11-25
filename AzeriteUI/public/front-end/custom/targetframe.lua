@@ -45,11 +45,9 @@ Module.OnEvent = function(self, event, ...)
 			else
 				self:PlaySoundKitID(SOUNDKIT.IG_CREATURE_NEUTRAL_SELECT, "SFX")
 			end
-
 			if (Layout and Layout.UseProgressiveFrames and self.frame.PostUpdateTextures) then 
 				self.frame:PostUpdateTextures()
 			end
-
 		else
 			-- Play a sound indicating we lost our target
 			self:PlaySoundKitID(SOUNDKIT.INTERFACE_SOUND_LOST_TARGET_UNIT, "SFX")
