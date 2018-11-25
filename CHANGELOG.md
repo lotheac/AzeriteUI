@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.87-Release] 2018-11-26
+### Added
+- Added basic group tools for raid leaders, raid assistants and parties including ready check, role poll, raid target icons, world marker flags and party/raid conversions. 
+
+### Changed
+- Added separate licenses for the engine and the project specific assets to clearify that this user interface is a copyright restricted overlay over an open source MIT licensed engine.
+- Changed file- and folder structures to better indicate the above. 
+- Changed fader library to be fully event driven, in an attempt to counter the issue with the macro driven states not fully responding during lag spikes. 
+
 ## [1.0.86-RC] 2018-11-18
 ### Fixed
 - Fixed the action button area responding to mouseover events for the Explorer Mode, as it was slightly off.
