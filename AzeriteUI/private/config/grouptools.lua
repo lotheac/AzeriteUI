@@ -15,14 +15,26 @@ local GetMediaPath = Functions.GetMediaPath
 ------------------------------------------------------------------
 local GroupTools = {
 
+	--[[
 	MenuPlace = { "TOPLEFT", "UICenter", "TOPLEFT", 41, -32 },
 	MenuSize = { 300*.75 +30, 410 }, 
-		MenuToggleButtonSize = { 48, 48 }, 
-		MenuToggleButtonPlace = { "TOPLEFT", "UICenter", "TOPLEFT", 4, -4 }, 
-		MenuToggleButtonIcon = GetMediaPath("config_button"), 
-		MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
-		MenuToggleButtonIconSize = { 96, 96 }, 
-		MenuToggleButtonIconColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+	MenuToggleButtonSize = { 48, 48 }, 
+	MenuToggleButtonPlace = { "TOPLEFT", "UICenter", "TOPLEFT", 4, -4 }, 
+	MenuToggleButtonIcon = GetMediaPath("config_button"), 
+	MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
+	MenuToggleButtonIconSize = { 96, 96 }, 
+	MenuToggleButtonIconColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+	]]--
+
+	MenuPlace = { "TOPLEFT", "UICenter", "TOPLEFT", 22, -42 },
+	MenuSize = { 300*.75 +30, 410 }, 
+
+	MenuToggleButtonSize = { 48, 48 }, 
+	MenuToggleButtonPlace = { "TOPLEFT", "UICenter", "TOPLEFT", -18, -40 }, 
+	MenuToggleButtonIcon = GetMediaPath("raidtoolsbutton"), 
+	MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
+	MenuToggleButtonIconSize = { 64*.75, 128*.75 }, 
+	MenuToggleButtonIconColor = { 1, 1, 1 }, 
 
 	UseMemberCount = true, 
 		MemberCountNumberPlace = { "TOP", 0, -20 }, 
@@ -113,20 +125,21 @@ local GroupTools = {
 	end, 
 
 	MenuWindow_CreateBorder = function(self)
+		local mod = 1
 		local border = self:CreateFrame("Frame")
 		border:SetFrameLevel(self:GetFrameLevel()-1)
-		border:SetPoint("TOPLEFT", -23*.75, 23*.75)
-		border:SetPoint("BOTTOMRIGHT", 23*.75, -23*.75)
+		border:SetPoint("TOPLEFT", -23*mod, 23*mod)
+		border:SetPoint("BOTTOMRIGHT", 23*mod, -23*mod)
 		border:SetBackdrop({
 			bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
 			edgeFile = GetMediaPath("tooltip_border"),
-			edgeSize = 32*.75, 
+			edgeSize = 32*mod, 
 			tile = false, 
 			insets = { 
-				top = 23*.75, 
-				bottom = 23*.75, 
-				left = 23*.75, 
-				right = 23*.75 
+				top = 23*mod, 
+				bottom = 23*mod, 
+				left = 23*mod, 
+				right = 23*mod 
 			}
 		})
 		border:SetBackdropBorderColor(1, 1, 1, 1)
