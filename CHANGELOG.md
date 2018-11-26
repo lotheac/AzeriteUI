@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.88-Release] 2018-11-26
+### Fixed
+- Whitelisted the missing additional spellID entry for the "Whispers of Power" debuff in Shrine of the Storm, to prevent killing more players. 
+
 ## [1.1.87-Release] 2018-11-26
 ### Added
 - Added basic group tools for raid leaders, raid assistants and parties including ready check, role poll, raid target icons, world marker flags and party/raid conversions. 
