@@ -192,8 +192,10 @@ auraList[268322] = PrioBoss -- Touch of the Drowned
 auraList[264166] = PrioBoss -- Undertow
 auraList[268309] = PrioBoss -- Unending Darkness
 auraList[276297] = PrioBoss -- Void Seed
+auraList[267034] = PrioBoss -- Whispers of Power
 auraList[267037] = PrioBoss -- Whispers of Power
 auraList[269399] = PrioBoss -- Yawning Gate
+
 
 -- Waycrest Manor
 auraList[268080] = PrioBoss -- Aura of Apathy
