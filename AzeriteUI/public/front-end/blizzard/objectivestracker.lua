@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardObjectivesTracker", "LibEvent", "LibFrame")
+local L, Layout
 
 -- Lua API
 local _G = _G
@@ -16,7 +17,6 @@ local hooksecurefunc = hooksecurefunc
 local GetScreenHeight = _G.GetScreenHeight
 
 local IN_COMBAT, IN_BOSS_FIGHT, IN_ARENA
-local Colors, Fonts, L, Layout
 
 Module.StyleTracker = function(self)
 	hooksecurefunc("ObjectiveTracker_Update", function()
@@ -141,8 +141,6 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardObjectivesTracker]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 end

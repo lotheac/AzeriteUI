@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent", "LibSecureHook", "LibFrame", "LibStatusBar")
+local Layout
 
 -- Lua API
 local _G = _G
@@ -23,8 +24,6 @@ local UnitPowerBarTimerInfo = _G.UnitPowerBarTimerInfo
 
 -- WoW Constants
 local ALT_POWER_TYPE_COUNTER = ALT_POWER_TYPE_COUNTER or 4
-
-local Colors, Layout
 
 -- Utility Functions
 -----------------------------------------------------------------
@@ -377,7 +376,6 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardTimers]")
 end 
 

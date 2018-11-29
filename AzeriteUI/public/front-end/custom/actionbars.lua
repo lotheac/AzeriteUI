@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer")
+local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer", "LibPlayerData")
 
 -- Lua API
 local _G = _G
@@ -281,8 +281,7 @@ local defaults = {
 	--showNames = false,
 }
 
-local Colors, Fonts, Functions, Layout, L
-local GetMediaPath, PlayerHasXP
+local Colors, Layout, L
 local IN_COMBAT
 
 local short = function(value)
@@ -354,7 +353,7 @@ end
 local Bars_UpdateTooltip = function(self)
 
 	local tooltip = self:GetTooltip()
-	local hasXP = PlayerHasXP()
+	local hasXP = Module.PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
 
 	local NC = "|r"
@@ -504,7 +503,7 @@ ActionButton.PostCreate = function(self, ...)
 	self:SetSize(unpack(Layout.ButtonSize))
 
 	-- Assign our own global custom colors
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 
 	-- Restyle the blizz layers
 	-----------------------------------------------------
@@ -745,141 +744,6 @@ Module.SpawnExitButton = function(self)
 
 	self.VehicleExitButton = button
 end
-
-Module.CreateBar = function(self, parent, width, height, padding, includeValue, includeBg, includeFg, includeGrid, includeBorder)
-	
-	local bar = parent:CreateStatusBar()
-	bar:SetSize(width - padding*2, height)
-	bar:SetFrameLevel(parent:GetFrameLevel() + 5)
-	bar:SetOrientation("RIGHT") -- set the bar to grow towards the right.
-	bar:SetSmoothingMode("bezier-fast-in-slow-out") -- set the smoothing mode.
-	bar:SetSmoothingFrequency(.5) -- set the duration of the smoothing.
-
-	if includeBg then 
-		local bg = parent:CreateTexture()
-		bg:SetDrawLayer("BACKGROUND", -2)
-		bg:SetAllPoints(bar)
-		bg:SetTexture(GetMediaPath("statusbar-backdrop"))
-		bg:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-		bar.Bg = bg
-
-		-- since this isn't parented 
-		bar:HookScript("OnHide", function() bg:Hide() end)
-		bar:HookScript("OnShow", function() bg:Show() end)
-	end
-
-	if includeFg then 
-		local fg = bar:CreateTexture()
-		fg:SetDrawLayer("BORDER", 3)
-		fg:SetAllPoints(bar)
-		fg:SetTexture(GetMediaPath("statusbar-normal-overlay")) 
-		bar.Fg = fg
-	end
-
-	if includeGrid then 
-		local gridSize = 12
-		for i = 1,gridSize do 
-
-			local gridWidth = ((i == 1) or (i == gridSize)) and (width/gridSize-padding) or width/gridSize 
-			local gridOffset = (i > 1) and ((i-2)*(width/gridSize) + (width/gridSize-padding)) or 0
-
-			local shade = bar:CreateTexture()
-			shade:SetDrawLayer("BORDER", 1)
-			shade:SetSize(gridWidth, height)
-			shade:SetPoint("LEFT", gridOffset, 0)
-			shade:SetTexture(GetMediaPath("shade-square")) -- statusbar-normal-overlay -- 
-			shade:SetVertexColor(0,0,0,.5)
-
-			local shade = bar:CreateTexture()
-			shade:SetDrawLayer("BORDER", 2)
-			shade:SetSize(gridWidth, height)
-			shade:SetPoint("LEFT", gridOffset, 0)
-			shade:SetTexture(GetMediaPath("statusbar-resource-overlay")) -- statusbar-normal-overlay -- shade-square
-			shade:SetVertexColor(0,0,0,.75)
-		end 
-	end 
-
-	if includeBorder then 
-		local sMod = .85
-		local border = bar:CreateFrame("Frame", nil, bar)
-		border:SetPoint("TOPLEFT", -23*sMod, 23*sMod)
-		border:SetPoint("BOTTOMRIGHT", 23*sMod, -23*sMod)
-		border:SetFrameLevel(parent:GetFrameLevel() + 10)
-		border:SetBackdrop({
-			edgeFile = GetMediaPath("border-tooltip"), -- 
-			edgeSize = 32*sMod
-		})
-		border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-		bar.Border = border
-	end 
-
-	if includeValue then 
-		local val = (includeBorder and bar.Border or bar):CreateFontString()
-		val:SetDrawLayer("OVERLAY", 1)
-		val:SetPoint("CENTER", 0, 0)
-		val:SetFontObject(GoldpawFont14_Outline)
-		val:SetJustifyH("CENTER")
-		val:SetJustifyV("MIDDLE")
-		val:SetShadowOffset(0, 0)
-		val:SetShadowColor(0, 0, 0, 1)
-		val:SetTextColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .85)
-		bar.Value = val
-	end 
-
-	return bar
-end 
-
-Module.SpawnBars = function(self)
-
-	local bars = self:CreateWidgetContainer("Frame")
-	bars:SetScript("OnEnter", Bars_OnEnter)
-	bars:SetScript("OnLeave", Bars_OnLeave)
-	bars.GetTooltip = Bars_GetTooltip
-	bars.colors = Colors
-
-	local xp = self:CreateBar(bars, rowWidth, 16, 7, true, true, true, true, true)
-	xp:SetStatusBarTexture(GetMediaPath("statusbar-resource")) -- statusbar-normal
-	xp:Place("BOTTOM", "UICenter", "BOTTOM", 0, 42)
-	xp.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
-	xp.colorRested = true -- color the rested bonus bar when showing xp
-	xp.colorPower = true -- color the bar according to its power type when showin artifact power or others 
-	xp.colorStanding = true -- color the bar according to your standing when tracking reputation
-	xp.colorValue = false -- color the value string same color as the bar
-	xp.backdropMultiplier = 1/3 -- color the backdrop a darker shade of the outer bar color
-	xp.Value.showPercent = true
-	xp.showEmpty = true
-
-	local rested = self:CreateBar(bars, rowWidth, 16, 7, false, false, false, false, false)
-	rested:SetFrameLevel(bars:GetFrameLevel() + 1)
-	rested:SetStatusBarTexture(GetMediaPath("statusbar-normal"))
-	rested:SetAllPoints(xp)
-	rested:SetAlpha(.5)
-	xp.Rested = rested
-
-	bars.XP = xp 
-
-
-	local ap = self:CreateBar(bars, rowWidth, 16, 7, true, true, true, true, true)
-	ap:SetStatusBarTexture(GetMediaPath("statusbar-resource")) -- statusbar-normal
-	ap:Place("BOTTOM", "UICenter", "BOTTOM", 0, 42 + barHeight + barPadding)
-	ap.colorXP = true -- color the outerRing when it's showing xp according to normal/rested state
-	ap.colorRested = true -- color the rested bonus bar when showing xp
-	ap.colorPower = true -- color the bar according to its power type when showin artifact power or others 
-	ap.colorStanding = true -- color the bar according to your standing when tracking reputation
-	ap.colorValue = false -- color the value string same color as the bar
-	ap.Value.showPercent = true
-	ap.showEmpty = true -- keep it visible
-
-	bars.ArtifactPower = ap 
-
-	bars:SetPoint("TOPLEFT", ap, "TOPLEFT", 0, 0)
-	bars:SetPoint("TOPRIGHT", ap, "TOPRIGHT", 0, 0)
-	bars:SetPoint("BOTTOMLEFT", xp, "BOTTOMLEFT", 0, 0)
-	bars:SetPoint("BOTTOMRIGHT", xp, "BOTTOMRIGHT", 0, 0)
-	
-	bars:EnableElement("ArtifactPower")
-	bars:EnableElement("XP")
-end 
 
 Module.SpawnButtons = function(self)
 	local db = self.db
@@ -1195,15 +1059,8 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [ActionBarMain]")
-
-	GetMediaPath = Functions.GetMediaPath
-	PlayerHasXP = Functions.PlayerHasXP
 end
 
 Module.OnInit = function(self)
@@ -1215,11 +1072,6 @@ Module.OnInit = function(self)
 
 	if Layout.UseExitButton then 
 		self:SpawnExitButton()
-	end
-
-	-- Spawn XP/AP bars
-	if Layout.UseStatusBars then 
-		self:SpawnBars()
 	end
 
 	-- Arrange buttons 

@@ -6,6 +6,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardTooltipStyling", "LibEvent", "LibDB", "LibTooltip")
+local Layout
+
 Module:SetIncompatible("TipTac")
 Module:SetIncompatible("TinyTip")
 Module:SetIncompatible("TinyTooltip")
@@ -31,18 +33,6 @@ local FACTION_HORDE_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Horde:16:16:-
 
 -- String storing current name data for the unit tooltips
 local NAME_STRING = {} 
-
-local Colors, Layout
-
-local colorize = function(str, ...)
-	local r, g, b = ...
-	if (type(r) == "table") then
-		r, g, b = unpack(r)
-	elseif (type(r) == "string") then
-		r, g, b = unpack(Colors[r])
-	end
-	return ("|cff%02X%02X%02X%s|r"):format(math_floor(r*255), math_floor(g*255), math_floor(b*255), str)
-end
 
 -- Bar post updates
 -- Show health values for tooltip health bars, and hide others.
@@ -95,6 +85,7 @@ local OnTooltipSetUnit = function(tooltip)
 	local name, realm = UnitName(unit)
 	local faction = UnitFactionGroup(unit)
 	local isdead = UnitIsDead(unit) or UnitIsGhost(unit)
+	local colors = tooltip.colors or Layout.Colors
 
 	local disconnected, pvp, ffa, pvpname, afk, dnd, class, classname
 	local classification, creaturetype, iswildpet, isbattlepet
@@ -129,23 +120,23 @@ local OnTooltipSetUnit = function(tooltip)
 
 	-- figure out name coloring based on collected data
 	if isdead then 
-		color = Colors.dead
+		color = colors.dead
 	elseif isplayer then
 		if disconnected then
-			color = Colors.disconnected
+			color = colors.disconnected
 		elseif class then
-			color = Colors.class[class]
+			color = colors.class[class]
 		else
-			color = Colors.normal
+			color = colors.normal
 		end
 	elseif reaction then
 		if istapped then
-			color = Colors.tapped
+			color = colors.tapped
 		else
-			color = Colors.reaction[reaction]
+			color = colors.reaction[reaction]
 		end
 	else
-		color = Colors.normal
+		color = colors.normal
 	end
 
 	-- this can sometimes happen when hovering over battlepets
@@ -158,7 +149,7 @@ local OnTooltipSetUnit = function(tooltip)
 	for i = 2, tooltip:NumLines() do
 		local line = _G[tooltip:GetName().."TextLeft"..i]
 		if line then
-			--line:SetTextColor(unpack(Colors.quest.gray)) -- for the time being this will just be confusing
+			--line:SetTextColor(unpack(colors.quest.gray)) -- for the time being this will just be confusing
 			local text = line:GetText()
 			if text then
 				if (text == PVP_ENABLED) then
@@ -212,13 +203,14 @@ local OnTooltipSetUnit = function(tooltip)
 	-- Need color codes for the text to always be correctly colored,
 	-- or blizzard will from time to time overwrite it with their own.
 	local title = _G[tooltip:GetName().."TextLeft1"]
-	title:SetText(colorize(table_concat(NAME_STRING, " "), color[1], color[2], color[3])) 
+	local r, g, b = color[1], color[2], color[3]
+	title:SetFormattedText("|cff%02X%02X%02X%s|r", math_floor(r*255), math_floor(g*255), math_floor(b*255), table_concat(NAME_STRING, " ")) 
 
 	-- Color the statusbar in the same color as the unit name.
 	local statusbar = _G[tooltip:GetName().."StatusBar"]
 	if (statusbar and statusbar:IsShown()) then
-		if (color == Colors.normal) then
-			color = Colors.quest.green
+		if (color == colors.normal) then
+			color = colors.quest.green
 		end 
 		statusbar:SetStatusBarColor(color[1], color[2], color[3], 1)
 		statusbar.color = color
@@ -252,7 +244,10 @@ local StatusBar_OnValueChanged = function(statusbar)
 
 	-- Add the green if no other color was detected. Like objects that aren't units, but still have health. 
 	if (not statusbar.color) or (not statusbar:GetParent().unit) then
-		statusbar.color = Colors.quest.green
+		local colors = statusbar:GetParent().colors or Layout.Colors
+		if colors then 
+			statusbar.color = colors.quest.green
+		end 
 	end
 
 	-- The color needs to be updated, or it will pop back to green
@@ -264,9 +259,12 @@ local StatusBar_OnShow = function(statusbar)
 	StatusBar_OnValueChanged(statusbar)
 end
 
+-- Do a color and texture reset upon hiding, to make sure it looks right when next shown. 
 local StatusBar_OnHide = function(statusbar)
-	-- Do a color and texture reset upon hiding, to make sure it looks right when next shown. 
-	statusbar.color = Colors.quest.green
+	local colors = statusbar:GetParent().colors or Layout.Colors
+	if colors then 
+		statusbar.color = colors.quest.green
+	end 
 	statusbar:GetStatusBarTexture():SetTexCoord(0, 1, 0, 1)
 	statusbar:SetStatusBarColor(unpack(statusbar.color))
 	Module:SetBlizzardTooltipBackdropOffsets(statusbar._owner, 10, 10, 10, 12)
@@ -274,7 +272,6 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [TooltipStyling]")
 end 
 

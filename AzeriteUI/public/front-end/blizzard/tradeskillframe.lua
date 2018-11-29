@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardInterfaceStyling", "LibEvent", "LibDB", "LibTooltip")
+local Layout, L
 
 -- Lua API
 local _G = _G
@@ -84,23 +85,6 @@ local defaults = {
 	[356] = {false, false}, -- Fishing
 	[794] = {false, false}, -- Archaeology
 }
-
-local Colors, Fonts, Functions, Layout, L
-
-local getDifficultyColorByLevel = function(level)
-	level = level - LEVEL
-	if (level > 4) then
-		return Colors.quest.red.colorCode
-	elseif (level > 2) then
-		return Colors.quest.orange.colorCode
-	elseif (level >= -2) then
-		return Colors.quest.yellow.colorCode
-	elseif (level >= -GetQuestGreenRange()) then
-		return Colors.quest.green.colorCode
-	else
-		return Colors.quest.gray.colorCode
-	end
-end
 
 Module.EnableScrollButton = function(self)
 	local TradeSkillFrame = _G.TradeSkillFrame
@@ -328,9 +312,6 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [ActionBarMain]")
 end

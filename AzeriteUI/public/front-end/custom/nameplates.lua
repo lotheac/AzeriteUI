@@ -6,6 +6,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB", "LibMenu", "LibFrame")
+local Layout
+
 Module:SetIncompatible("Kui_Nameplates")
 Module:SetIncompatible("SimplePlates")
 Module:SetIncompatible("TidyPlates")
@@ -22,7 +24,6 @@ local IsInInstance = _G.IsInInstance
 local SetCVar = _G.SetCVar
 
 local Plates = {} -- local cache of the nameplates, for easy access to some methods
-local Colors, Functions, Layout
 
 local defaults = {
 	enableAuras = false
@@ -76,6 +77,7 @@ local PostCreateAuraButton = function(element, button)
 end
 
 local PostUpdateAuraButton = function(element, button)
+	local colors = element._owner.colors
 	local Layout = element._owner.layout
 	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
 		local color = Layout.AuraBorderBackdropBorderColor
@@ -91,24 +93,24 @@ local PostUpdateAuraButton = function(element, button)
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		else
-			local color = Colors.debuff[button.debuffType or "none"] or Layout.AuraBorderBackdropBorderColor
+			local color = colors.debuff[button.debuffType or "none"] or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		end
 	else 
 		if button.isStealable then 
-			local color = Colors.power.ARCANE_CHARGES or Layout.AuraBorderBackdropBorderColor
+			local color = colors.power.ARCANE_CHARGES or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		elseif button.isBuff then 
-			local color = Colors.quest.green or Layout.AuraBorderBackdropBorderColor
+			local color = colors.quest.green or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		else
-			local color = Colors.debuff.none or Layout.AuraBorderBackdropBorderColor
+			local color = colors.debuff.none or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
@@ -166,7 +168,7 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 	local db = self.db
 	
 	plate:SetSize(unpack(Layout.Size))
-	plate.colors = Colors 
+	plate.colors = Layout.Colors or plate.colors
 	plate.layout = Layout
 
 	-- Health bar
@@ -345,8 +347,6 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [NamePlates]")
 end
 

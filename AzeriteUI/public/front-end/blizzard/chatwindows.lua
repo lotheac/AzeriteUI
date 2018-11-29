@@ -6,7 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
-local Colors, Functions, Layout
+local Layout
 
 -- Lua API
 local _G = _G
@@ -718,9 +718,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardChatFrames]")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 end
 
 Module.OnInit = function(self)
