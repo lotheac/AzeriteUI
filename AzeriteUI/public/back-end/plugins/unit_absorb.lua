@@ -114,7 +114,7 @@ local Update = function(self, event, unit)
 	end 
 
 	-- prevent tiny shields
-	if absorbDisplay < maxHealth * .15 then
+	if absorbDisplay < maxHealth * (element.absorbThreshold or .1) then
 		absorbDisplay = 0
 	end
 
