@@ -281,7 +281,7 @@ local defaults = {
 	--showNames = false,
 }
 
-local Colors, Layout, L
+local Layout, L
 local IN_COMBAT
 
 local short = function(value)
@@ -355,17 +355,18 @@ local Bars_UpdateTooltip = function(self)
 	local tooltip = self:GetTooltip()
 	local hasXP = Module.PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
+	local colors = Layout.Colors
 
 	local NC = "|r"
-	local rt, gt, bt = unpack(Colors.title)
-	local r, g, b = unpack(Colors.normal)
-	local rh, gh, bh = unpack(Colors.highlight)
-	local rgg, ggg, bgg = unpack(Colors.quest.gray)
-	local rg, gg, bg = unpack(Colors.quest.green)
-	local rr, gr, br = unpack(Colors.quest.red)
-	local green = Colors.quest.green.colorCode
-	local normal = Colors.normal.colorCode
-	local highlight = Colors.highlight.colorCode
+	local rt, gt, bt = unpack(colors.title)
+	local r, g, b = unpack(colors.normal)
+	local rh, gh, bh = unpack(colors.highlight)
+	local rgg, ggg, bgg = unpack(colors.quest.gray)
+	local rg, gg, bg = unpack(colors.quest.green)
+	local rr, gr, br = unpack(colors.quest.red)
+	local green = colors.quest.green.colorCode
+	local normal = colors.normal.colorCode
+	local highlight = colors.highlight.colorCode
 
 	local resting, restState, restedName, mult
 	local restedLeft, restedTimeLeft
@@ -693,6 +694,7 @@ Module.ArrangeButtons = function(self)
 end
 
 Module.SpawnExitButton = function(self)
+	local colors = Layout.Colors
 
 	local button = self:CreateFrame("Button", nil, "UICenter", "SecureActionButtonTemplate")
 	button:SetFrameStrata("MEDIUM")
@@ -715,13 +717,13 @@ Module.SpawnExitButton = function(self)
 
 		if UnitOnTaxi("player") then 
 			tooltip:AddLine(TAXI_CANCEL)
-			tooltip:AddLine(TAXI_CANCEL_DESCRIPTION, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+			tooltip:AddLine(TAXI_CANCEL_DESCRIPTION, colors.quest.green[1], colors.quest.green[2], colors.quest.green[3])
 		elseif IsMounted() then 
 			tooltip:AddLine(BINDING_NAME_DISMOUNT)
-			tooltip:AddLine(L["%s to dismount."]:format(L["<Left-Click>"]), Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+			tooltip:AddLine(L["%s to dismount."]:format(L["<Left-Click>"]), colors.quest.green[1], colors.quest.green[2], colors.quest.green[3])
 		else 
 			tooltip:AddLine(LEAVE_VEHICLE)
-			tooltip:AddLine(L["%s to leave the vehicle."]:format(L["<Left-Click>"]), Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+			tooltip:AddLine(L["%s to leave the vehicle."]:format(L["<Left-Click>"]), colors.quest.green[1], colors.quest.green[2], colors.quest.green[3])
 		end 
 
 		tooltip:Show()
