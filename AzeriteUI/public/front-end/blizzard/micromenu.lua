@@ -27,8 +27,7 @@ local GetNetStats = _G.GetNetStats
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
 local buttonWidth, buttonHeight, buttonSpacing, sizeMod = 300,50,10, .75
 
-local Colors, Fonts, Functions, L, Layout, CoreLayout
-local GetMediaPath
+local Colors, L, Layout, CoreLayout
 
 local getBindingKeyForAction = function(action, useNotBound, useParentheses)
 	local key = GetBindingKey(action)
@@ -367,7 +366,7 @@ Module.AddOptionsToMenuWindow = function(self)
 				else 
 					microButton.normal = microButton:CreateTexture()
 					microButton.normal:SetDrawLayer("ARTWORK")
-					microButton.normal:SetTexture(GetMediaPath("menu_button_normal"))
+					microButton.normal:SetTexture(GetMedia("menu_button_normal"))
 					microButton.normal:SetSize(1024 *1/3 *sizeMod, 256 *1/3 *sizeMod)
 					microButton.normal:SetPoint("CENTER")
 	
@@ -432,15 +431,9 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardMicroMenu]")
 	CoreLayout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Core]")
-
-	GetMediaPath = Functions.GetMediaPath
 end
 
 Module.OnInit = function(self)

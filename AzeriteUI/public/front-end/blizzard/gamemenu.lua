@@ -6,6 +6,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardGameMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
+local Layout, L
+
 Module:SetIncompatible("ConsolePort")
 
 -- Lua API
@@ -20,8 +22,6 @@ local IsMacClient = _G.IsMacClient
 
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
 local buttonWidth, buttonHeight, buttonSpacing, sizeMod = 300, 50, 10, 3/4
-local Colors, Fonts, Functions, Layout, L
-local GetMediaPath
 
 Module.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_REGEN_ENABLED") then 
@@ -237,35 +237,35 @@ Module.StyleButtons = function(self)
 					--test:SetColorTexture(.7,0,0,.5)
 					--test:SetAllPoints()
 
-					button.normal:SetTexture(GetMediaPath("menu_button_normal"))
+					button.normal:SetTexture(GetMedia("menu_button_normal"))
 					button.normal:SetSize(1024 *1/3*sizeMod, 256 *1/3*sizeMod)
 					button.normal:ClearAllPoints()
 					button.normal:SetPoint("CENTER")
 
-					button.highlight:SetTexture(GetMediaPath("menu_button_normal"))
+					button.highlight:SetTexture(GetMedia("menu_button_normal"))
 					button.highlight:SetSize(1024 *1/3*sizeMod, 256 *1/3*sizeMod)
 					button.highlight:ClearAllPoints()
 					button.highlight:SetPoint("CENTER")
 
-					button.pushed:SetTexture(GetMediaPath("menu_button_pushed"))
+					button.pushed:SetTexture(GetMedia("menu_button_pushed"))
 					button.pushed:SetSize(1024 *1/3*sizeMod, 256 *1/3*sizeMod)
 					button.pushed:ClearAllPoints()
 					button.pushed:SetPoint("CENTER")
 
 					button.text.normal:SetTextColor(0,0,0)
-					button.text.normal:SetFontObject(Fonts(14, false))
+					button.text.normal:SetFontObject(GetFont(14, false))
 					button.text.normal:SetAlpha(.5)
 					button.text.normal:SetShadowOffset(0, -.85)
 					button.text.normal:SetShadowColor(1,1,1,.5)
 
 					button.text.highlight:SetTextColor(0,0,0)
-					button.text.highlight:SetFontObject(Fonts(14, false))
+					button.text.highlight:SetFontObject(GetFont(14, false))
 					button.text.highlight:SetAlpha(.5)
 					button.text.highlight:SetShadowOffset(0, -.85)
 					button.text.highlight:SetShadowColor(1,1,1,.5)
 
 					button.text.pushed:SetTextColor(0,0,0)
-					button.text.pushed:SetFontObject(Fonts(14, false))
+					button.text.pushed:SetFontObject(GetFont(14, false))
 					button.text.pushed:SetAlpha(.5)
 					button.text.pushed:SetShadowOffset(0, -.85)
 					button.text.pushed:SetShadowColor(1,1,1,.5)
@@ -331,44 +331,12 @@ Module.StyleWindow = function(self, frame)
 			end
 		end
 	end
-
-	--[[
-	
-	-- Create our own custom border.
-	-- Using our new thick tooltip border, just scaled down slightly.
-	--local sizeMod2 = 1
-	local border = self:CreateFrame("Frame", nil, self.frame)
-	border:SetFrameLevel(100)
-	border:SetPoint("TOPLEFT", -23 *sizeMod, 23 *sizeMod)
-	border:SetPoint("BOTTOMRIGHT", 23 *sizeMod, -23 *sizeMod)
-	border:SetBackdrop({
-		bgFile = BLANK_TEXTURE,
-		edgeFile = GetMediaPath("tooltip_border"),
-		edgeSize = 32 *sizeMod, 
-		insets = { 
-			top = 23 *sizeMod, 
-			bottom = 23 *sizeMod, 
-			left = 23 *sizeMod, 
-			right = 23 *sizeMod 
-		}
-	})
-	border:SetBackdropBorderColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
-	border:SetBackdropColor(0, 0, 0, .85)
-
-	self.border = border
-	]]
 end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [ActionBarMain]")
-	
-	GetMediaPath = Functions.GetMediaPath
 end
 
 Module.OnInit = function(self)
