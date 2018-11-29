@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 9)
+local LibFader = CogWheel:Set("LibFader", 11)
 if (not LibFader) then	
 	return
 end
@@ -36,7 +36,6 @@ local HasVehicleActionBar = _G.HasVehicleActionBar
 local InCombatLockdown = _G.InCombatLockdown
 local IsInGroup = _G.IsInGroup
 local IsInInstance = _G.IsInInstance
-local MouseIsOver = _G.MouseIsOver
 local RegisterAttributeDriver = _G.RegisterAttributeDriver
 local SpellFlyout = _G.SpellFlyout
 local UnitDebuff = _G.UnitDebuff
@@ -194,9 +193,17 @@ LibFader.CheckMouse = function(self)
 		return true
 	end 
 	for object in pairs(Objects) do 
-		if (MouseIsOver(object) and object:IsVisible()) then 
-			Data.mouseOver = true 
-			return true
+		if object.GetExplorerHitRects then 
+			local top, bottom, left, right = object:GetExplorerHitRects()
+			if (object:IsMouseOver(top, bottom, left, right) and object:IsShown()) then 
+				Data.mouseOver = true 
+				return true
+			end 
+		else 
+			if (object:IsMouseOver() and object:IsShown()) then 
+				Data.mouseOver = true 
+				return true
+			end 
 		end 
 	end 
 	Data.mouseOver = nil
