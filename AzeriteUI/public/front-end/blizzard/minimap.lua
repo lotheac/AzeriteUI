@@ -4,7 +4,8 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip", "LibTime")
+local Module = Core:NewModule("Minimap", "LibEvent", "LibDB", "LibMinimap", "LibTooltip", "LibTime", "LibPlayerData")
+local Layout, L
 
 -- Don't grab buttons if these are active
 local MBB = Module:IsAddOnEnabled("MBB") 
@@ -61,9 +62,6 @@ local defaults = {
 	useServerTime = false, -- as opposed to your local computer time
 	stickyBars = false
 }
-
-local Colors, Fonts, Functions, L, Layout
-local GetMediaPath, PlayerHasRep, PlayerHasXP
 
 local degreesToRadians = function(degrees)
 	return degrees * (2*math_pi)/180
@@ -133,10 +131,11 @@ local Performance_UpdateTooltip = function(self)
 	local bandwidthIn, bandwidthOut, latencyHome, latencyWorld = GetNetStats()
 	local fps = GetFramerate()
 
-	local rt, gt, bt = unpack(Colors.title)
-	local r, g, b = unpack(Colors.normal)
-	local rh, gh, bh = unpack(Colors.highlight)
-	local rg, gg, bg = unpack(Colors.quest.green)
+	local colors = self._owner.colors 
+	local rt, gt, bt = unpack(colors.title)
+	local r, g, b = unpack(colors.normal)
+	local rh, gh, bh = unpack(colors.highlight)
+	local rg, gg, bg = unpack(colors.quest.green)
 
 	tooltip:SetDefaultAnchor(self)
 	tooltip:SetMaximumWidth(360)
@@ -165,20 +164,21 @@ local Toggle_UpdateTooltip = function(self)
 
 	local tooltip = Module:GetMinimapTooltip()
 
-	local hasXP = PlayerHasXP()
-	local hasRep = PlayerHasRep()
+	local hasXP = Module.PlayerHasXP()
+	local hasRep = Module.PlayerHasRep()
 	local hasAP = FindActiveAzeriteItem()
 
 	local NC = "|r"
-	local rt, gt, bt = unpack(Colors.title)
-	local r, g, b = unpack(Colors.normal)
-	local rh, gh, bh = unpack(Colors.highlight)
-	local rgg, ggg, bgg = unpack(Colors.quest.gray)
-	local rg, gg, bg = unpack(Colors.quest.green)
-	local rr, gr, br = unpack(Colors.quest.red)
-	local green = Colors.quest.green.colorCode
-	local normal = Colors.normal.colorCode
-	local highlight = Colors.highlight.colorCode
+	local colors = self._owner.colors 
+	local rt, gt, bt = unpack(colors.title)
+	local r, g, b = unpack(colors.normal)
+	local rh, gh, bh = unpack(colors.highlight)
+	local rgg, ggg, bgg = unpack(colors.quest.gray)
+	local rg, gg, bg = unpack(colors.quest.green)
+	local rr, gr, br = unpack(colors.quest.red)
+	local green = colors.quest.green.colorCode
+	local normal = colors.normal.colorCode
+	local highlight = colors.highlight.colorCode
 
 	local resting, restState, restedName, mult
 	local restedLeft, restedTimeLeft
@@ -445,11 +445,12 @@ end
 local Time_UpdateTooltip = function(self)
 	local tooltip = Module:GetMinimapTooltip()
 
-	local rt, gt, bt = unpack(Colors.title)
-	local r, g, b = unpack(Colors.normal)
-	local rh, gh, bh = unpack(Colors.highlight)
-	local rg, gg, bg = unpack(Colors.quest.green)
-	local green = Colors.quest.green.colorCode
+	local colors = self._owner.colors 
+	local rt, gt, bt = unpack(colors.title)
+	local r, g, b = unpack(colors.normal)
+	local rh, gh, bh = unpack(colors.highlight)
+	local rg, gg, bg = unpack(colors.quest.green)
+	local green = colors.quest.green.colorCode
 	local NC = "|r"
 
 	local useStandardTime = Module.db.useStandardTime
@@ -651,7 +652,7 @@ local Rep_OverrideValue = function(element, current, min, max, factionName, stan
 	end 
 	if element.colorValue then 
 		local color
-		local color = Colors[isFriend and "friendship" or "reaction"][standingID]
+		local color = self._owner.colors[isFriend and "friendship" or "reaction"][standingID]
 		value:SetTextColor(color[1], color[2], color[3])
 		if percent then 
 			percent:SetTextColor(color[1], color[2], color[3])
@@ -703,7 +704,7 @@ Module.SetUpMinimap = function(self)
 
 	-- Retrieve an unique element handler for our module
 	local Handler = self:GetMinimapHandler()
-	Handler.colors = Colors
+	Handler.colors = Layout.Colors
 	
 	-- Reposition minimap tooltip 
 	local tooltip = self:GetMinimapTooltip()
@@ -867,6 +868,7 @@ Module.SetUpMinimap = function(self)
 	-- Performance Information
 	if Layout.UsePerformance then 
 		local performanceFrame = Handler:CreateBorderFrame()
+		performanceFrame._owner = Handler
 		Handler.PerformanceFrame = performanceFrame
 	
 		local framerate = performanceFrame:CreateFontString()
@@ -946,6 +948,28 @@ Module.SetUpMinimap = function(self)
 		ringFrameBg:SetVertexColor(unpack(Layout.RingFrameBackdropColor))
 		ringFrame.Bg = ringFrameBg
 
+		-- Toggle button for ring frame
+		local toggle = Handler:CreateOverlayFrame()
+		toggle:SetFrameLevel(toggle:GetFrameLevel() + 10) -- need this above the ring frame and the rings
+		toggle:SetPoint("CENTER", Handler, "BOTTOM", 2, -6)
+		toggle:SetSize(unpack(Layout.ToggleSize))
+		toggle:EnableMouse(true)
+		toggle:SetScript("OnEnter", Toggle_OnEnter)
+		toggle:SetScript("OnLeave", Toggle_OnLeave)
+		toggle:SetScript("OnMouseUp", Toggle_OnMouseUp)
+		toggle._owner = Handler
+		ringFrame._owner = toggle
+		toggle.Frame = ringFrame
+
+		local toggleBackdrop = toggle:CreateTexture()
+		toggleBackdrop:SetDrawLayer("BACKGROUND")
+		toggleBackdrop:SetSize(unpack(Layout.ToggleBackdropSize))
+		toggleBackdrop:SetPoint("CENTER", 0, 0)
+		toggleBackdrop:SetTexture(Layout.ToggleBackdropTexture)
+		toggleBackdrop:SetVertexColor(unpack(Layout.ToggleBackdropColor))
+
+		Handler.Toggle = toggle
+		
 		-- outer ring
 		local ring1 = ringFrame:CreateSpinBar()
 		ring1:SetPoint(unpack(Layout.OuterRingPlace))
@@ -966,29 +990,35 @@ Module.SetUpMinimap = function(self)
 
 		-- outer ring value text
 		local ring1Value = ring1:CreateFontString()
-		ring1Value:SetPoint("TOP", ringFrameBg, "CENTER", 0, -2)
-		ring1Value:SetJustifyH("CENTER")
-		ring1Value:SetJustifyV("TOP")
-		ring1Value:SetFontObject(Fonts(15, true))
-		ring1Value:SetShadowOffset(0, 0)
-		ring1Value:SetShadowColor(0, 0, 0, 0)
-		ring1Value.showDeficit = true -- show what's missing 
+		ring1Value:SetPoint(unpack(Layout.OuterRingValuePlace))
+		ring1Value:SetJustifyH(Layout.OuterRingValueJustifyH)
+		ring1Value:SetJustifyV(Layout.OuterRingValueJustifyV)
+		ring1Value:SetFontObject(Layout.OuterRingValueFont)
+		ring1Value.showDeficit = Layout.OuterRingValueShowDeficit 
 		ring1.Value = ring1Value
 
 		-- outer ring value description text
 		local ring1ValueDescription = ring1:CreateFontString()
-		ring1ValueDescription:SetPoint("TOP", ring1Value, "BOTTOM", 0, -1)
-		ring1ValueDescription:SetWidth(100)
-		ring1ValueDescription:SetTextColor(Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3])
-		ring1ValueDescription:SetJustifyH("CENTER")
-		ring1ValueDescription:SetJustifyV("TOP")
-		ring1ValueDescription:SetFontObject(Fonts(12, true))
-		ring1ValueDescription:SetShadowOffset(0, 0)
-		ring1ValueDescription:SetShadowColor(0, 0, 0, 0)
+		ring1ValueDescription:SetPoint(unpack(Layout.OuterRingValueDescriptionPlace))
+		ring1ValueDescription:SetWidth(Layout.OuterRingValueDescriptionWidth)
+		ring1ValueDescription:SetTextColor(unpack(Layout.OuterRingValueDescriptionColor))
+		ring1ValueDescription:SetJustifyH(Layout.OuterRingValueDescriptionJustifyH)
+		ring1ValueDescription:SetJustifyV(Layout.OuterRingValueDescriptionJustifyV)
+		ring1ValueDescription:SetFontObject(Layout.OuterRingValueDescriptionFont)
 		ring1ValueDescription:SetIndentedWordWrap(false)
 		ring1ValueDescription:SetWordWrap(true)
 		ring1ValueDescription:SetNonSpaceWrap(false)
 		ring1.Value.Description = ring1ValueDescription
+
+		local outerPercent = toggle:CreateFontString()
+		outerPercent:SetDrawLayer("OVERLAY")
+		outerPercent:SetJustifyH("CENTER")
+		outerPercent:SetJustifyV("MIDDLE")
+		outerPercent:SetFontObject(Layout.OuterRingValuePercentFont)
+		outerPercent:SetShadowOffset(0, 0)
+		outerPercent:SetShadowColor(0, 0, 0, 0)
+		outerPercent:SetPoint("CENTER", 1, -1)
+		ring1.Value.Percent = outerPercent
 
 		-- inner ring 
 		local ring2 = ringFrame:CreateSpinBar()
@@ -1016,57 +1046,24 @@ Module.SetUpMinimap = function(self)
 		ring2Value:SetPoint("BOTTOM", ringFrameBg, "CENTER", 0, 2)
 		ring2Value:SetJustifyH("CENTER")
 		ring2Value:SetJustifyV("TOP")
-		ring2Value:SetFontObject(Fonts(15, true))
-		ring2Value:SetShadowOffset(0, 0)
-		ring2Value:SetShadowColor(0, 0, 0, 0)
-		ring2Value.showDeficit = true -- show what's missing 
+		ring2Value:SetFontObject(Layout.InnerRingValueFont)
+		ring2Value.showDeficit = true  
 		ring2.Value = ring2Value
-
-		-- Store the bars locally
-		Spinner[1] = ring1
-		Spinner[2] = ring2
-		
-		-- Toggle button for ring frame
-		local toggle = Handler:CreateOverlayFrame()
-		toggle:SetFrameLevel(toggle:GetFrameLevel() + 10) -- need this above the ring frame and the rings
-		toggle:SetPoint("CENTER", Handler, "BOTTOM", 2, -6)
-		toggle:SetSize(56,56)
-		toggle:EnableMouse(true)
-		toggle:SetScript("OnEnter", Toggle_OnEnter)
-		toggle:SetScript("OnLeave", Toggle_OnLeave)
-		toggle:SetScript("OnMouseUp", Toggle_OnMouseUp)
-		toggle._owner = Handler
-		ringFrame._owner = toggle
-		toggle.Frame = ringFrame
-
-		local toggleBackdrop = toggle:CreateTexture()
-		toggleBackdrop:SetDrawLayer("BACKGROUND")
-		toggleBackdrop:SetSize(100,100)
-		toggleBackdrop:SetPoint("CENTER", 0, 0)
-		toggleBackdrop:SetTexture(GetMediaPath("point_plate"))
-		toggleBackdrop:SetVertexColor(Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3])
 
 		local innerPercent = ringFrame:CreateFontString()
 		innerPercent:SetDrawLayer("OVERLAY")
 		innerPercent:SetJustifyH("CENTER")
 		innerPercent:SetJustifyV("MIDDLE")
-		innerPercent:SetFontObject(Fonts(15, true))
+		innerPercent:SetFontObject(Layout.InnerRingValuePercentFont)
 		innerPercent:SetShadowOffset(0, 0)
 		innerPercent:SetShadowColor(0, 0, 0, 0)
 		innerPercent:SetPoint("CENTER", ringFrameBg, "CENTER", 2, -64)
 		ring2.Value.Percent = innerPercent
 
-		local outerPercent = toggle:CreateFontString()
-		outerPercent:SetDrawLayer("OVERLAY")
-		outerPercent:SetJustifyH("CENTER")
-		outerPercent:SetJustifyV("MIDDLE")
-		outerPercent:SetFontObject(Fonts(16, true))
-		outerPercent:SetShadowOffset(0, 0)
-		outerPercent:SetShadowColor(0, 0, 0, 0)
-		outerPercent:SetPoint("CENTER", 1, -1)
-		ring1.Value.Percent = outerPercent
-
-		Handler.Toggle = toggle
+		-- Store the bars locally
+		Spinner[1] = ring1
+		Spinner[2] = ring2
+		
 	end 
 
 	if Layout.UseGroupFinderEye then 
@@ -1151,8 +1148,8 @@ Module.UpdateBars = function(self, event, ...)
 
 	-- Figure out what should be shown. 
 	-- Priority us currently xp > rep > ap
-	local hasRep = PlayerHasRep()
-	local hasXP = PlayerHasXP()
+	local hasRep = Module.PlayerHasRep()
+	local hasXP = Module.PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
 
 	-- Will include choices later on
@@ -1353,16 +1350,8 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Minimap]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-
-	GetMediaPath = Functions.GetMediaPath
-	PlayerHasRep = Functions.PlayerHasRep
-	PlayerHasXP = Functions.PlayerHasXP
 end 
 
 Module.OnInit = function(self)

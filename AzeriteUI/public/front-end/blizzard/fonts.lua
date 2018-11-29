@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardFonts", "LibEvent")
+local Layout
 
 -- Lua API
 local _G = _G
@@ -15,26 +16,19 @@ local GetLocale = _G.GetLocale
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local hooksecurefunc = _G.hooksecurefunc
 
-local Fonts
-
 Module.SetFontObjects = function(self)
-
 	-- Various chat constants
 	_G.CHAT_FONT_HEIGHTS = { 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32 }
 
 	-- Chat Font
 	-- This is the cont used by chat windows and inputboxes. 
 	-- When set early enough in the loading process, all windows inherit this.
-	_G.ChatFontNormal:SetFontObject(Fonts(15, true))
-	_G.ChatFontNormal:SetShadowOffset(0, 0)
-	_G.ChatFontNormal:SetShadowColor(0, 0, 0, 0)
+	_G.ChatFontNormal:SetFontObject(Layout.ChatFont)
 
 	-- Chat Bubble Font
 	-- This is what chat bubbles inherit from. 
 	-- We should use this in our custom bubbles too.
-	_G.ChatBubbleFont:SetFontObject(Fonts(10, true))
-	_G.ChatBubbleFont:SetShadowOffset(0, 0)
-	_G.ChatBubbleFont:SetShadowColor(0, 0, 0, 0)
+	_G.ChatBubbleFont:SetFontObject(Layout.ChatBubbleFont)
 end
 
 Module.SetCombatText = function(self)
@@ -95,7 +89,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardFonts]")
 end
 
 Module.OnInit = function(self)
