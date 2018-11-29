@@ -1,18 +1,17 @@
-local ADDON = ...
+local ADDON, Private = ...
+
+-- Private Addon Methods
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
 
 -- Retrieve addon databases
-local LibDB = CogWheel("LibDB")
-local Auras = LibDB:GetDatabase(ADDON..": Auras")
-local Colors = LibDB:GetDatabase(ADDON..": Colors")
-local Fonts = LibDB:GetDatabase(ADDON..": Fonts")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
--- Proxy function to get media from our local media folder
-local GetMediaPath = Functions.GetMediaPath
-	
 -- ActionBars
 local ActionBarMain = {
+	Colors = Colors,
 
 	-- Bar Layout
 	-------------------------------------------------------
@@ -22,7 +21,7 @@ local ActionBarMain = {
 	-------------------------------------------------------
 	-- Generic
 	ButtonSize = { 64, 64 },
-	MaskTexture = GetMediaPath("actionbutton_circular_mask"),
+	MaskTexture = GetMedia("actionbutton_circular_mask"),
 
 	-- Icon
 	IconSize = { 44, 44 },
@@ -46,7 +45,7 @@ local ActionBarMain = {
 	CooldownCountPlace = { "CENTER", 1, 0 },
 	CooldownCountJustifyH = "CENTER",
 	CooldownCountJustifyV = "MIDDLE",
-	CooldownCountFont = Fonts(16, true),
+	CooldownCountFont = GetFont(16, true),
 	CooldownCountShadowOffset = { 0, 0 },
 	CooldownCountShadowColor = { 0, 0, 0, 1 },
 	CooldownCountColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .85 },
@@ -54,8 +53,8 @@ local ActionBarMain = {
 	-- Cooldown 
 	CooldownSize = { 44, 44 },
 	CooldownPlace = { "CENTER", 0, 0 },
-	CooldownSwipeTexture = GetMediaPath("actionbutton_circular_mask"),
-	CooldownBlingTexture = GetMediaPath("blank"),
+	CooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+	CooldownBlingTexture = GetMedia("blank"),
 	CooldownSwipeColor = { 0, 0, 0, .75 },
 	CooldownBlingColor = { 0, 0, 0 , 0 },
 	ShowCooldownSwipe = true,
@@ -66,8 +65,8 @@ local ActionBarMain = {
 	ChargeCooldownPlace = { "CENTER", 0, 0 },
 	ChargeCooldownSwipeColor = { 0, 0, 0, .5 },
 	ChargeCooldownBlingColor = { 0, 0, 0, 0 },
-	ChargeCooldownSwipeTexture = GetMediaPath("actionbutton_circular_mask"),
-	ChargeCooldownBlingTexture = GetMediaPath("blank"),
+	ChargeCooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+	ChargeCooldownBlingTexture = GetMedia("blank"),
 	ShowChargeCooldownSwipe = true,
 	ShowChargeCooldownBling = false,
 
@@ -75,7 +74,7 @@ local ActionBarMain = {
 	CountPlace = { "BOTTOMRIGHT", -3, 3 },
 	CountJustifyH = "CENTER",
 	CountJustifyV = "BOTTOM",
-	CountFont = Fonts(18, true),
+	CountFont = GetFont(18, true),
 	CountShadowOffset = { 0, 0 },
 	CountShadowColor = { 0, 0, 0, 1 },
 	CountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
@@ -84,7 +83,7 @@ local ActionBarMain = {
 	KeybindPlace = { "TOPLEFT", 5, -5 },
 	KeybindJustifyH = "CENTER",
 	KeybindJustifyV = "BOTTOM",
-	KeybindFont = Fonts(15, true),
+	KeybindFont = GetFont(15, true),
 	KeybindShadowOffset = { 0, 0 },
 	KeybindShadowColor = { 0, 0, 0, 1 },
 	KeybindColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3], .75 },
@@ -93,30 +92,30 @@ local ActionBarMain = {
 	UseSpellHighlight = true, 
 		SpellHighlightPlace = { "CENTER", 0, 0 },
 		SpellHighlightSize = { 64/(122/256), 64/(122/256) },
-		SpellHighlightTexture = GetMediaPath("actionbutton-spellhighlight"),
+		SpellHighlightTexture = GetMedia("actionbutton-spellhighlight"),
 		SpellHighlightColor = { 255/255, 225/255, 125/255, .75 }, 
 
 	-- Spell AutoCast
 	UseSpellAutoCast = true, 
 		SpellAutoCastPlace = { "CENTER", 0, 0 },
 		SpellAutoCastSize = { 64/(122/256), 64/(122/256) },
-		SpellAutoCastAntsTexture = GetMediaPath("actionbutton-ants-small"),
+		SpellAutoCastAntsTexture = GetMedia("actionbutton-ants-small"),
 		SpellAutoCastAntsColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3] },
-		SpellAutoCastGlowTexture = GetMediaPath("actionbutton-ants-small-glow"),
+		SpellAutoCastGlowTexture = GetMedia("actionbutton-ants-small-glow"),
 		SpellAutoCastGlowColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3] },
 
 	-- Backdrop 
 	UseBackdropTexture = true, 
 		BackdropPlace = { "CENTER", 0, 0 },
 		BackdropSize = { 64/(122/256), 64/(122/256) },
-		BackdropTexture = GetMediaPath("actionbutton-backdrop"),
+		BackdropTexture = GetMedia("actionbutton-backdrop"),
 		BackdropDrawLayer = { "BACKGROUND", 1 },
 
 	-- Border 
 	UseBorderTexture = true, 
 		BorderPlace = { "CENTER", 0, 0 },
 		BorderSize = { 64/(122/256), 64/(122/256) },
-		BorderTexture = GetMediaPath("actionbutton-border"),
+		BorderTexture = GetMedia("actionbutton-border"),
 		BorderDrawLayer = { "BORDER", 1 },
 		BorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
 
@@ -124,7 +123,7 @@ local ActionBarMain = {
 	UseGlow = true, 
 		GlowPlace = { "CENTER", 0, 0 },
 		GlowSize = { 44/(122/256),44/(122/256) },
-		GlowTexture = GetMediaPath("actionbutton-glow-white"),
+		GlowTexture = GetMedia("actionbutton-glow-white"),
 		GlowDrawLayer = { "ARTWORK", 1 },
 		GlowBlendMode = "ADD",
 		GlowColor = { 1, 1, 1, .5 },
@@ -137,8 +136,8 @@ local ActionBarMain = {
 		ExitButtonSize = { 32, 32 },
 		ExitButtonTexturePlace = { "CENTER", 0, 0 }, 
 		ExitButtonTextureSize = { 80, 80 }, 
-		ExitButtonTexturePath = GetMediaPath("icon_exit_flight"),
+		ExitButtonTexturePath = GetMedia("icon_exit_flight"),
 
 }
 
-LibDB:NewDatabase(ADDON..": Layout [ActionBarMain]", ActionBarMain)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [ActionBarMain]", ActionBarMain)

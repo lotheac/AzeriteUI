@@ -1,18 +1,18 @@
-local ADDON = ...
+local ADDON, Private = ...
+
+-- Private Addon Methods
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
 
 -- Retrieve addon databases
-local LibDB = CogWheel("LibDB")
-local Auras = LibDB:GetDatabase(ADDON..": Auras")
-local Colors = LibDB:GetDatabase(ADDON..": Colors")
-local Fonts = LibDB:GetDatabase(ADDON..": Fonts")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
-
-local GetMediaPath = Functions.GetMediaPath
 
 -- Core
 local Core = {
-	
+	Colors = Colors,
+
 	FadeInUI = true, 
 		FadeInSpeed = .75,
 		FadeInDelay = 1.5,
@@ -53,7 +53,7 @@ local Core = {
 
 			MenuToggleButtonSize = { 48, 48 }, 
 			MenuToggleButtonPlace = { "BOTTOMRIGHT", -4, 4 }, 
-			MenuToggleButtonIcon = GetMediaPath("config_button"), 
+			MenuToggleButtonIcon = GetMedia("config_button"), 
 			MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
 			MenuToggleButtonIconSize = { 96, 96 }, 
 			MenuToggleButtonIconColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
@@ -65,7 +65,7 @@ local Core = {
 			MenuButton_PostCreate = function(self, text, updateType, optionDB, optionName, ...)
 				local msg = self:CreateFontString()
 				msg:SetPoint("CENTER", 0, 0)
-				msg:SetFontObject(Fonts(14, false))
+				msg:SetFontObject(GetFont(14, false))
 				msg:SetJustifyH("RIGHT")
 				msg:SetJustifyV("TOP")
 				msg:SetIndentedWordWrap(false)
@@ -79,7 +79,7 @@ local Core = {
 			
 				local bg = self:CreateTexture()
 				bg:SetDrawLayer("ARTWORK")
-				bg:SetTexture(GetMediaPath("menu_button_disabled"))
+				bg:SetTexture(GetMedia("menu_button_disabled"))
 				bg:SetVertexColor(.9, .9, .9)
 				bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
 				bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
@@ -91,7 +91,7 @@ local Core = {
 				elseif (updateType == "SET_VALUE") then 
 					if checked then 
 						local texture = self.Bg:GetTexture()
-						local pushed = GetMediaPath("menu_button_pushed")
+						local pushed = GetMedia("menu_button_pushed")
 						if (texture ~= pushed) then 
 							self.Bg:SetTexture(pushed)
 							self.Bg:SetVertexColor(1,1,1)
@@ -99,7 +99,7 @@ local Core = {
 						end 
 					else
 						local texture = self.Bg:GetTexture()
-						local normal = GetMediaPath("menu_button_disabled")
+						local normal = GetMedia("menu_button_disabled")
 						if (texture ~= normal) then 
 							self.Bg:SetTexture(normal)
 							self.Bg:SetVertexColor(.9, .9, .9)
@@ -112,7 +112,7 @@ local Core = {
 						self.Msg:SetText(self.enabledTitle or L["Disable"])
 			
 						local texture = self.Bg:GetTexture()
-						local pushed = GetMediaPath("menu_button_pushed")
+						local pushed = GetMedia("menu_button_pushed")
 						if (texture ~= pushed) then 
 							self.Bg:SetTexture(pushed)
 							self.Bg:SetVertexColor(1,1,1)
@@ -122,7 +122,7 @@ local Core = {
 						self.Msg:SetText(self.disabledTitle or L["Enable"])
 			
 						local texture = self.Bg:GetTexture()
-						local normal = GetMediaPath("menu_button_disabled")
+						local normal = GetMedia("menu_button_disabled")
 						if (texture ~= normal) then 
 							self.Bg:SetTexture(normal)
 							self.Bg:SetVertexColor(.9, .9, .9)
@@ -142,7 +142,7 @@ local Core = {
 				border:SetPoint("BOTTOMRIGHT", 23*.75, -23*.75)
 				border:SetBackdrop({
 					bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
-					edgeFile = GetMediaPath("tooltip_border"),
+					edgeFile = GetMedia("tooltip_border"),
 					edgeSize = 32*.75, 
 					tile = false, 
 					insets = { 
@@ -160,7 +160,7 @@ local Core = {
 			MenuWindow_OnHide = function(self)
 				local button = self:GetParent()
 				local texture = button.Bg:GetTexture()
-				local normal = GetMediaPath("menu_button_disabled")
+				local normal = GetMedia("menu_button_disabled")
 				if (texture ~= normal) then 
 					button.Bg:SetTexture(normal)
 					button.Bg:SetVertexColor(.9, .9, .9)
@@ -171,7 +171,7 @@ local Core = {
 			MenuWindow_OnShow = function(self)
 				local button = self:GetParent()
 				local texture = button.Bg:GetTexture()
-				local pushed = GetMediaPath("menu_button_pushed")
+				local pushed = GetMedia("menu_button_pushed")
 				if (texture ~= pushed) then 
 					button.Bg:SetTexture(pushed)
 					button.Bg:SetVertexColor(1,1,1)
@@ -181,4 +181,4 @@ local Core = {
 
 }
 
-LibDB:NewDatabase(ADDON..": Layout [Core]", Core)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [Core]", Core)

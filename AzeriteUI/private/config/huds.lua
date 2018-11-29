@@ -1,17 +1,16 @@
-local ADDON = ...
+local ADDON, Private = ...
+
+-- Private Addon Methods
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
 
 -- Retrieve addon databases
-local LibDB = CogWheel("LibDB")
-local Auras = LibDB:GetDatabase(ADDON..": Auras")
-local Colors = LibDB:GetDatabase(ADDON..": Colors")
-local Fonts = LibDB:GetDatabase(ADDON..": Fonts")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
--- Proxy function to get media from our local media folder
-local GetMediaPath = Functions.GetMediaPath
-
 local FloaterHUD = {
+	Colors = Colors,
 
 	StyleExtraActionButton = true, 
 		ExtraActionButtonFramePlace = { "CENTER", 210 + 27, -60 },
@@ -20,17 +19,17 @@ local FloaterHUD = {
 
 		ExtraActionButtonIconPlace = { "CENTER", 0, 0 },
 		ExtraActionButtonIconSize = { 44, 44 },
-		ExtraActionButtonIconMaskTexture = GetMediaPath("actionbutton_circular_mask"),  
+		ExtraActionButtonIconMaskTexture = GetMedia("actionbutton_circular_mask"),  
 
-		ExtraActionButtonCount = Fonts(18, true),
+		ExtraActionButtonCount = GetFont(18, true),
 		ExtraActionButtonCountPlace = { "BOTTOMRIGHT", -3, 3 },
 		ExtraActionButtonCountJustifyH = "CENTER",
 		ExtraActionButtonCountJustifyV = "BOTTOM",
 
 		ExtraActionButtonCooldownSize = { 44, 44 },
 		ExtraActionButtonCooldownPlace = { "CENTER", 0, 0 },
-		ExtraActionButtonCooldownSwipeTexture = GetMediaPath("actionbutton_circular_mask"),
-		ExtraActionButtonCooldownBlingTexture = GetMediaPath("blank"),
+		ExtraActionButtonCooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+		ExtraActionButtonCooldownBlingTexture = GetMedia("blank"),
 		ExtraActionButtonCooldownSwipeColor = { 0, 0, 0, .5 },
 		ExtraActionButtonCooldownBlingColor = { 0, 0, 0 , 0 },
 		ExtraActionButtonShowCooldownSwipe = true,
@@ -39,7 +38,7 @@ local FloaterHUD = {
 		ExtraActionButtonKeybindPlace = { "TOPLEFT", 5, -5 },
 		ExtraActionButtonKeybindJustifyH = "CENTER",
 		ExtraActionButtonKeybindJustifyV = "BOTTOM",
-		ExtraActionButtonKeybindFont = Fonts(15, true),
+		ExtraActionButtonKeybindFont = GetFont(15, true),
 		ExtraActionButtonKeybindShadowOffset = { 0, 0 },
 		ExtraActionButtonKeybindShadowColor = { 0, 0, 0, 1 },
 		ExtraActionButtonKeybindColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3], .75 },
@@ -47,7 +46,7 @@ local FloaterHUD = {
 		UseExtraActionButtonBorderTexture = true,
 			ExtraActionButtonBorderPlace = { "CENTER", 0, 0 },
 			ExtraActionButtonBorderSize = { 64/(122/256), 64/(122/256) },
-			ExtraActionButtonBorderTexture = GetMediaPath("actionbutton-border"),
+			ExtraActionButtonBorderTexture = GetMedia("actionbutton-border"),
 			ExtraActionButtonBorderDrawLayer = { "BORDER", 1 },
 			ExtraActionButtonBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
 
@@ -60,17 +59,17 @@ local FloaterHUD = {
 
 		ZoneAbilityButtonIconPlace = { "CENTER", 0, 0 },
 		ZoneAbilityButtonIconSize = { 44, 44 },
-		ZoneAbilityButtonIconMaskTexture = GetMediaPath("actionbutton_circular_mask"),  
+		ZoneAbilityButtonIconMaskTexture = GetMedia("actionbutton_circular_mask"),  
 
-		ZoneAbilityButtonCount = Fonts(18, true),
+		ZoneAbilityButtonCount = GetFont(18, true),
 		ZoneAbilityButtonCountPlace = { "BOTTOMRIGHT", -3, 3 },
 		ZoneAbilityButtonCountJustifyH = "CENTER",
 		ZoneAbilityButtonCountJustifyV = "BOTTOM",
 
 		ZoneAbilityButtonCooldownSize = { 44, 44 },
 		ZoneAbilityButtonCooldownPlace = { "CENTER", 0, 0 },
-		ZoneAbilityButtonCooldownSwipeTexture = GetMediaPath("actionbutton_circular_mask"),
-		ZoneAbilityButtonCooldownBlingTexture = GetMediaPath("blank"),
+		ZoneAbilityButtonCooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+		ZoneAbilityButtonCooldownBlingTexture = GetMedia("blank"),
 		ZoneAbilityButtonCooldownSwipeColor = { 0, 0, 0, .5 },
 		ZoneAbilityButtonCooldownBlingColor = { 0, 0, 0 , 0 },
 		ZoneAbilityButtonShowCooldownSwipe = true,
@@ -79,7 +78,7 @@ local FloaterHUD = {
 		UseZoneAbilityButtonBorderTexture = true,
 			ZoneAbilityButtonBorderPlace = { "CENTER", 0, 0 },
 			ZoneAbilityButtonBorderSize = { 64/(122/256), 64/(122/256) },
-			ZoneAbilityButtonBorderTexture = GetMediaPath("actionbutton-border"),
+			ZoneAbilityButtonBorderTexture = GetMedia("actionbutton-border"),
 			ZoneAbilityButtonBorderDrawLayer = { "BORDER", 1 },
 			ZoneAbilityButtonBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
 
@@ -106,4 +105,4 @@ local FloaterHUD = {
 		ErrorFrameStrata = "LOW", 
 }
 
-LibDB:NewDatabase(ADDON..": Layout [FloaterHUD]", FloaterHUD)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [FloaterHUD]", FloaterHUD)

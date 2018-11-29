@@ -1,11 +1,12 @@
-local ADDON = ...
+local ADDON, Private = ...
+
+-- Private Addon Methods
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
 
 -- Retrieve addon databases
-local LibDB = CogWheel("LibDB")
-local Auras = LibDB:GetDatabase(ADDON..": Auras")
-local Colors = LibDB:GetDatabase(ADDON..": Colors")
-local Fonts = LibDB:GetDatabase(ADDON..": Fonts")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -15,11 +16,10 @@ local _G = _G
 local UnitIsEnemy = _G.UnitIsEnemy
 local UnitIsPlayer = _G.UnitIsPlayer
 
--- Proxy function to get media from our local media folder
-local GetMediaPath = Functions.GetMediaPath
-
 -- NamePlates
 local NamePlates = {
+	Colors = Colors,
+
 	UseNamePlates = true, 
 		Size = { 80, 32 }, 
 	
@@ -27,7 +27,7 @@ local NamePlates = {
 		HealthPlace = { "TOP", 0, -2 },
 		HealthSize = { 84, 14 }, 
 		HealthOrientation = "LEFT", 
-		HealthTexture = GetMediaPath("nameplate_bar"),
+		HealthTexture = GetMedia("nameplate_bar"),
 		HealthTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
 		HealthSparkMap = {
 			top = {
@@ -59,7 +59,7 @@ local NamePlates = {
 	UseHealthBackdrop = true, 
 		HealthBackdropPlace = { "CENTER", 0, 0 },
 		HealthBackdropSize = { 84*256/(256-28), 14*64/(64-28) },
-		HealthBackdropTexture = GetMediaPath("nameplate_backdrop"),
+		HealthBackdropTexture = GetMedia("nameplate_backdrop"),
 		HealthBackdropDrawLayer = { "BACKGROUND", -2 },
 		HealthBackdropColor = { 1, 1, 1, 1 },
 
@@ -68,7 +68,7 @@ local NamePlates = {
 		CastSize = { 84, 14 }, 
 		CastOrientation = "LEFT", 
 		CastColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3], 1 },
-		CastTexture = GetMediaPath("nameplate_bar"),
+		CastTexture = GetMedia("nameplate_bar"),
 		CastTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
 		CastSparkMap = {
 			top = {
@@ -90,13 +90,13 @@ local NamePlates = {
 		UseCastBackdrop = true, 
 			CastBackdropPlace = { "CENTER", 0, 0 },
 			CastBackdropSize = { 84*256/(256-28), 14*64/(64-28) },
-			CastBackdropTexture = GetMediaPath("nameplate_backdrop"),
+			CastBackdropTexture = GetMedia("nameplate_backdrop"),
 			CastBackdropDrawLayer = { "BACKGROUND", 0 },
 			CastBackdropColor = { 1, 1, 1, 1 },
 
 		UseCastName = true, 
 			CastNamePlace = { "TOP", 0, -20 },
-			CastNameFont = Fonts(12, true),
+			CastNameFont = GetFont(12, true),
 			CastNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 			CastNameDrawLayer = { "OVERLAY", 1 }, 
 			CastNameJustifyH = "CENTER", 
@@ -105,7 +105,7 @@ local NamePlates = {
 		UseCastShield = true, 
 			CastShieldPlace = { "CENTER", 0, -1 }, 
 			CastShieldSize = { 124, 69 },
-			CastShieldTexture = GetMediaPath("cast_back_spiked"),
+			CastShieldTexture = GetMedia("cast_back_spiked"),
 			CastShieldDrawLayer = { "BACKGROUND", -5 },
 			CastShieldColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
@@ -117,10 +117,10 @@ local NamePlates = {
 					cast:SetSize(68, 9)
 					cast:ClearAllPoints()
 					cast:SetPoint("TOP", 0, -26)
-					cast:SetStatusBarTexture(GetMediaPath("cast_bar"))
+					cast:SetStatusBarTexture(GetMedia("cast_bar"))
 					cast:SetTexCoord(0, 1, 0, 1)
 					cast.Bg:SetSize(68, 9)
-					cast.Bg:SetTexture(GetMediaPath("cast_bar"))
+					cast.Bg:SetTexture(GetMedia("cast_bar"))
 					cast.Bg:SetVertexColor(.15, .15, .15, 1)
 
 					cast.currentStyle = "protected"
@@ -145,11 +145,11 @@ local NamePlates = {
 					cast:SetSize(84, 14)
 					cast:ClearAllPoints()
 					cast:SetPoint("TOP", 0, -22)
-					cast:SetStatusBarTexture(GetMediaPath("nameplate_bar"))
+					cast:SetStatusBarTexture(GetMedia("nameplate_bar"))
 					cast:SetTexCoord(14/256, 242/256, 14/64, 50/64)
 
 					cast.Bg:SetSize(84*256/228, 14*64/36)
-					cast.Bg:SetTexture(GetMediaPath("nameplate_backdrop"))
+					cast.Bg:SetTexture(GetMedia("nameplate_backdrop"))
 					cast.Bg:SetVertexColor(1, 1, 1, 1)
 
 					cast.currentStyle = nil 
@@ -163,7 +163,7 @@ local NamePlates = {
 	UseThreat = true, 
 		ThreatPlace = { "CENTER", 0, 0 },
 		ThreatSize = { 84*256/(256-28), 14*64/(64-28) },
-		ThreatTexture = GetMediaPath("nameplate_glow"),
+		ThreatTexture = GetMedia("nameplate_glow"),
 		TheatColor = { 1, 1, 1, 1 },
 		ThreatDrawLayer = { "BACKGROUND", -3 },
 		ThreatHideSolo = true, 
@@ -200,13 +200,13 @@ local NamePlates = {
 		AuraIconSize = { 30 - 6, 30 - 6 },
 		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
 		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
-		AuraCountFont = Fonts(12, true),
+		AuraCountFont = GetFont(12, true),
 		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
 		AuraTimePlace = { "TOPLEFT", -6, 6 },
-		AuraTimeFont = Fonts(11, true),
+		AuraTimeFont = GetFont(11, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
 		AuraBorderFrameSize = { 30 + 10, 30 + 10 },
-		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 12 },
+		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 12 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
 
@@ -234,7 +234,7 @@ local NamePlates = {
 		RaidTargetPlace_AuraRow = { "TOP", 0, 80 }, -- auras, 1 row
 		RaidTargetPlace_AuraRows = { "TOP", 0, 112 }, -- auras, 2 rows
 		RaidTargetSize = { 64, 64 },
-		RaidTargetTexture = GetMediaPath("raid_target_icons"),
+		RaidTargetTexture = GetMedia("raid_target_icons"),
 		RaidTargetDrawLayer = { "ARTWORK", 0 },
 		PostUpdateRaidTarget = function(element, unit)
 			local self = element._owner
@@ -297,4 +297,4 @@ local NamePlates = {
 
 }
 
-LibDB:NewDatabase(ADDON..": Layout [NamePlates]", NamePlates)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [NamePlates]", NamePlates)

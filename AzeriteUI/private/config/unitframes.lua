@@ -1,11 +1,12 @@
-local ADDON = ...
+local ADDON, Private = ...
+
+-- Private Addon Methods
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
 
 -- Retrieve addon databases
-local LibDB = CogWheel("LibDB")
-local Auras = LibDB:GetDatabase(ADDON..": Auras")
-local Colors = LibDB:GetDatabase(ADDON..": Colors")
-local Fonts = LibDB:GetDatabase(ADDON..": Fonts")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
@@ -20,8 +21,6 @@ local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
 local UnitIsUnit = _G.UnitIsUnit
 local UnitLevel = _G.UnitLevel
 
-local GetMediaPath = Functions.GetMediaPath
-
 local degreesToRadians = function(degrees)
 	return degrees/360 * 2*math.pi
 end 
@@ -33,18 +32,20 @@ end
 local Constant = {
 	SmallFrame = { 136, 47 },
 	SmallBar = { 112, 11 }, 
-	SmallBarTexture = GetMediaPath("cast_bar"),
+	SmallBarTexture = GetMedia("cast_bar"),
 	SmallAuraSize = 30, 
 
 	TinyFrame = { 130, 30 }, 
 	TinyBar = { 80, 14 }, 
-	TinyBarTexture = GetMediaPath("cast_bar"),
+	TinyBarTexture = GetMedia("cast_bar"),
 
 	RaidFrame = { 110 *.94, 30 *.94 }, 
 	RaidBar = { 80 *.94, 14  *.94}, 
 }
 
 local Template_SmallFrame = {
+	Colors = Colors,
+
 	Size = Constant.SmallFrame,
 	FrameLevel = 20, 
 	
@@ -78,7 +79,7 @@ local Template_SmallFrame = {
 		UseHealthBackdrop = true,
 			HealthBackdropPlace = { "CENTER", 1, -2 },
 			HealthBackdropSize = { 193,93 },
-			HealthBackdropTexture = GetMediaPath("cast_back"), 
+			HealthBackdropTexture = GetMedia("cast_back"), 
 			HealthBackdropDrawLayer = { "BACKGROUND", -1 },
 			HealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
@@ -87,7 +88,7 @@ local Template_SmallFrame = {
 			HealthValueDrawLayer = { "OVERLAY", 1 },
 			HealthValueJustifyH = "CENTER", 
 			HealthValueJustifyV = "MIDDLE", 
-			HealthValueFont = Fonts(14, true),
+			HealthValueFont = GetFont(14, true),
 			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
 			HealthShowPercent = true, 
 
@@ -116,6 +117,7 @@ local Template_SmallFrame = {
 		},
 		AbsorbBarTexture = Constant.SmallBarTexture,
 		AbsorbBarColor = { 1, 1, 1, .25 },
+		AbsorbThreshold = 10/100,
 
 	UseCastBar = true,
 		CastBarPlace = { "CENTER", 0, 0 },
@@ -149,7 +151,7 @@ local Template_SmallFrame = {
 		CastBarNameParent = "Health",
 		CastBarNamePlace = { "CENTER", 0, 1 },
 		CastBarNameSize = { Constant.SmallBar[1] - 20, Constant.SmallBar[2] }, 
-		CastBarNameFont = Fonts(12, true),
+		CastBarNameFont = GetFont(12, true),
 		CastBarNameColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
 		CastBarNameDrawLayer = { "OVERLAY", 1 }, 
 		CastBarNameJustifyH = "CENTER", 
@@ -200,13 +202,13 @@ local Template_SmallFrame_Auras = setmetatable({
 		AuraIconSize = { Constant.SmallAuraSize - 6, Constant.SmallAuraSize - 6 },
 		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
 		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
-		AuraCountFont = Fonts(12, true),
+		AuraCountFont = GetFont(12, true),
 		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
 		AuraTimePlace = { "TOPLEFT", -6, 6 }, -- { "CENTER", 0, 0 },
-		AuraTimeFont = Fonts(11, true),
+		AuraTimeFont = GetFont(11, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
 		AuraBorderFrameSize = { Constant.SmallAuraSize + 14, Constant.SmallAuraSize + 14 },
-		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 16 },
+		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 16 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
 
@@ -239,6 +241,8 @@ local Template_SmallFrameReversed_Auras = setmetatable({
 }, { __index = Template_SmallFrame_Auras })
 
 local Template_TinyFrame = {
+	Colors = Colors,
+
 	Size = Constant.TinyFrame,
 
 	HealthPlace = { "BOTTOM", 0, 0 }, 
@@ -268,7 +272,7 @@ local Template_TinyFrame = {
 		UseHealthBackdrop = true,
 			HealthBackdropPlace = { "CENTER", 1, -2 },
 			HealthBackdropSize = { 140,90 },
-			HealthBackdropTexture = GetMediaPath("cast_back"), 
+			HealthBackdropTexture = GetMedia("cast_back"), 
 			HealthBackdropDrawLayer = { "BACKGROUND", -1 },
 			HealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
@@ -277,7 +281,7 @@ local Template_TinyFrame = {
 			HealthValueDrawLayer = { "OVERLAY", 1 },
 			HealthValueJustifyH = "CENTER", 
 			HealthValueJustifyV = "MIDDLE", 
-			HealthValueFont = Fonts(13, true),
+			HealthValueFont = GetFont(13, true),
 			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
 			HealthShowPercent = true, 
 		
@@ -302,6 +306,7 @@ local Template_TinyFrame = {
 		},
 		AbsorbBarTexture = Constant.TinyBarTexture,
 		AbsorbBarColor = { 1, 1, 1, .25 },
+		AbsorbThreshold = 10/100,
 	
 	UseCastBar = true,
 		CastBarPlace = { "BOTTOM", 0, 0 },
@@ -336,8 +341,11 @@ local Template_TinyFrame = {
 ------------------------------------------------------------------
 -- Player
 local UnitFramePlayer = { 
+	Colors = Colors,
+
 	Place = { "BOTTOMLEFT", 167, 100 },
 	Size = { 439, 93 },
+	ExplorerHitRects = { 60, 0, -140, 0 },
 	
 	UseBorderBackdrop = false,
 		BorderFramePlace = nil,
@@ -380,7 +388,7 @@ local UnitFramePlayer = {
 		HealthValueDrawLayer = { "OVERLAY", 1 },
 		HealthValueJustifyH = "CENTER", 
 		HealthValueJustifyV = "MIDDLE", 
-		HealthValueFont = Fonts(18, true),
+		HealthValueFont = GetFont(18, true),
 		HealthValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
 	UseAbsorbBar = true,
@@ -397,11 +405,12 @@ local UnitFramePlayer = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+		AbsorbThreshold = 5/100,
 
 		UseAbsorbValue = true, 
 			AbsorbValuePlaceFunction = function(self) return "LEFT", self.Health.Value, "RIGHT", 13, 0 end, 
 			AbsorbValueDrawLayer = { "OVERLAY", 1 }, 
-			AbsorbValueFont = Fonts(18, true),
+			AbsorbValueFont = GetFont(18, true),
 			AbsorbValueJustifyH = "CENTER", 
 			AbsorbValueJustifyV = "MIDDLE",
 			AbsorbValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
@@ -411,7 +420,7 @@ local UnitFramePlayer = {
 		PowerPlace = { "BOTTOMLEFT", -101, 38 },
 		PowerSize = { 120, 140 },
 		PowerType = "StatusBar", 
-		PowerBarTexture = GetMediaPath("power_crystal_front"),
+		PowerBarTexture = GetMedia("power_crystal_front"),
 		PowerBarTexCoord = { 50/255, 206/255, 37/255, 219/255 },
 		PowerBarOrientation = "UP",
 		PowerBarSmoothingMode = "bezier-fast-in-slow-out",
@@ -422,7 +431,7 @@ local UnitFramePlayer = {
 		UsePowerBackground = true,
 			PowerBackgroundPlace = { "CENTER", 0, 0 },
 			PowerBackgroundSize = { 120/(206-50)*255, 140/(219-37)*255 },
-			PowerBackgroundTexture = GetMediaPath("power_crystal_back"),
+			PowerBackgroundTexture = GetMedia("power_crystal_back"),
 			PowerBackgroundDrawLayer = { "BACKGROUND", -2 },
 			PowerBackgroundColor = { 1, 1, 1, .95 },
 			PowerBarSparkMap = {
@@ -446,7 +455,7 @@ local UnitFramePlayer = {
 		UsePowerForeground = true,
 			PowerForegroundPlace = { "BOTTOM", 7, -51 }, 
 			PowerForegroundSize = { 198,98 }, 
-			PowerForegroundTexture = GetMediaPath("pw_crystal_case"), 
+			PowerForegroundTexture = GetMedia("pw_crystal_case"), 
 			PowerForegroundDrawLayer = { "ARTWORK", 1 },
 
 		UsePowerValue = true, 
@@ -454,7 +463,7 @@ local UnitFramePlayer = {
 			PowerValueDrawLayer = { "OVERLAY", 1 },
 			PowerValueJustifyH = "CENTER", 
 			PowerValueJustifyV = "MIDDLE", 
-			PowerValueFont = Fonts(18, true),
+			PowerValueFont = GetFont(18, true),
 			PowerValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .4 },
 
 	UseManaText = true,
@@ -463,7 +472,7 @@ local UnitFramePlayer = {
 		ManaTextDrawLayer = { "OVERLAY", 1 },
 		ManaTextJustifyH = "CENTER", 
 		ManaTextJustifyV = "MIDDLE", 
-		ManaTextFont = Fonts(14, true),
+		ManaTextFont = GetFont(14, true),
 		ManaTextColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .6 },
 		ManaTextOverride = function(element, unit, min, max)
 			if (min == 0) or (max == 0) or (min == max) then
@@ -495,7 +504,7 @@ local UnitFramePlayer = {
 	UseCombatIndicator = true, 
 		CombatIndicatorPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 - 80/2) },
 		CombatIndicatorSize = { 80,80 },
-		CombatIndicatorTexture = GetMediaPath("icon-combat"),
+		CombatIndicatorTexture = GetMedia("icon-combat"),
 		CombatIndicatorDrawLayer = {"OVERLAY", -2 },
 		CombatIndicatorColor = { Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75 }, 
 		UseCombatIndicatorGlow = false, 
@@ -514,21 +523,21 @@ local UnitFramePlayer = {
 		UsePowerThreat = true, 
 			ThreatPowerPlace = { "CENTER", 0, 0 }, 
 			ThreatPowerSize = { 120/157*256, 140/183*256 },
-			ThreatPowerTexture = GetMediaPath("power_crystal_glow"),
+			ThreatPowerTexture = GetMedia("power_crystal_glow"),
 			ThreatPowerDrawLayer = { "BACKGROUND", -2 },
 			ThreatPowerAlpha = .5,
 
 		UsePowerBgThreat = true, 
 			ThreatPowerBgPlace = { "BOTTOM", 7, -51 }, 
 			ThreatPowerBgSize = { 198,98 },
-			ThreatPowerBgTexture = GetMediaPath("pw_crystal_case_glow"),
+			ThreatPowerBgTexture = GetMedia("pw_crystal_case_glow"),
 			ThreatPowerBgDrawLayer = { "BACKGROUND", -3 },
 			ThreatPowerBgAlpha = .5,
 
 		UseManaThreat = true, 
 			ThreatManaPlace = { "CENTER", 0, 0 }, 
 			ThreatManaSize = { 188, 188 },
-			ThreatManaTexture = GetMediaPath("orb_case_glow"),
+			ThreatManaTexture = GetMedia("orb_case_glow"),
 			ThreatManaDrawLayer = { "BACKGROUND", -2 },
 			ThreatManaAlpha = .5,
 
@@ -537,20 +546,20 @@ local UnitFramePlayer = {
 		ManaExclusiveResource = "MANA", 
 		ManaPlace = { "BOTTOMLEFT", -97 +5, 22 + 5 }, 
 		ManaSize = { 103, 103 },
-		ManaOrbTextures = { GetMediaPath("pw_orb_bar4"), GetMediaPath("pw_orb_bar3"), GetMediaPath("pw_orb_bar3") },
+		ManaOrbTextures = { GetMedia("pw_orb_bar4"), GetMedia("pw_orb_bar3"), GetMedia("pw_orb_bar3") },
 		ManaColorSuffix = "_ORB", 
 
 		UseManaBackground = true, 
 			ManaBackgroundPlace = { "CENTER", 0, 0 }, 
 			ManaBackgroundSize = { 113, 113 }, 
-			ManaBackgroundTexture = GetMediaPath("pw_orb_bar3"),
+			ManaBackgroundTexture = GetMedia("pw_orb_bar3"),
 			ManaBackgroundDrawLayer = { "BACKGROUND", -2 }, 
 			ManaBackgroundColor = { 22/255, 26/255, 22/255, .82 },
 
 		UseManaShade = true, 
 			ManaShadePlace = { "CENTER", 0, 0 }, 
 			ManaShadeSize = { 127, 127 }, 
-			ManaShadeTexture = GetMediaPath("shade_circle"), 
+			ManaShadeTexture = GetMedia("shade_circle"), 
 			ManaShadeDrawLayer = { "BORDER", -1 }, 
 			ManaShadeColor = { 0, 0, 1, 1 }, 
 
@@ -564,7 +573,7 @@ local UnitFramePlayer = {
 			ManaValueDrawLayer = { "OVERLAY", 1 },
 			ManaValueJustifyH = "CENTER", 
 			ManaValueJustifyV = "MIDDLE", 
-			ManaValueFont = Fonts(18, true),
+			ManaValueFont = GetFont(18, true),
 			ManaValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .4 },
 
 	UseAuras = true,
@@ -599,13 +608,13 @@ local UnitFramePlayer = {
 		AuraIconSize = { 40 - 6, 40 - 6 },
 		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
 		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
-		AuraCountFont = Fonts(14, true),
+		AuraCountFont = GetFont(14, true),
 		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
 		AuraTimePlace = { "TOPLEFT", -6, 6 }, -- { "CENTER", 0, 0 },
-		AuraTimeFont = Fonts(14, true),
+		AuraTimeFont = GetFont(14, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
 		AuraBorderFrameSize = { 40 + 14, 40 + 14 },
-		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 16 },
+		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 16 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
 
@@ -614,7 +623,7 @@ local UnitFramePlayer = {
 		UseProgressiveManaForeground = true, 
 
 		SeasonedHealthSize = { 385, 40 },
-		SeasonedHealthTexture = GetMediaPath("hp_cap_bar"),
+		SeasonedHealthTexture = GetMedia("hp_cap_bar"),
 		SeasonedHealthSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -624,21 +633,21 @@ local UnitFramePlayer = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
-		SeasonedHealthBackdropTexture = GetMediaPath("hp_cap_case"),
+		SeasonedHealthBackdropTexture = GetMedia("hp_cap_case"),
 		SeasonedHealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		SeasonedHealthThreatTexture = GetMediaPath("hp_cap_case_glow"),
-		SeasonedPowerForegroundTexture = GetMediaPath("pw_crystal_case"),
+		SeasonedHealthThreatTexture = GetMedia("hp_cap_case_glow"),
+		SeasonedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		SeasonedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		SeasonedAbsorbSize = { 385, 40 },
-		SeasonedAbsorbTexture = GetMediaPath("hp_cap_bar"),
+		SeasonedAbsorbTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastSize = { 385, 40 },
-		SeasonedCastTexture = GetMediaPath("hp_cap_bar_highlight"),
-		SeasonedManaOrbTexture = GetMediaPath("orb_case_hi"),
+		SeasonedCastTexture = GetMedia("hp_cap_bar_highlight"),
+		SeasonedManaOrbTexture = GetMedia("orb_case_hi"),
 		SeasonedManaOrbColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		
 		HardenedLevel = 40,
 		HardenedHealthSize = { 385, 37 },
-		HardenedHealthTexture = GetMediaPath("hp_lowmid_bar"),
+		HardenedHealthTexture = GetMedia("hp_lowmid_bar"),
 		HardenedHealthSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -648,20 +657,20 @@ local UnitFramePlayer = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
-		HardenedHealthBackdropTexture = GetMediaPath("hp_mid_case"),
+		HardenedHealthBackdropTexture = GetMedia("hp_mid_case"),
 		HardenedHealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		HardenedHealthThreatTexture = GetMediaPath("hp_mid_case_glow"),
-		HardenedPowerForegroundTexture = GetMediaPath("pw_crystal_case"),
+		HardenedHealthThreatTexture = GetMedia("hp_mid_case_glow"),
+		HardenedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		HardenedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		HardenedAbsorbSize = { 385, 37 },
-		HardenedAbsorbTexture = GetMediaPath("hp_lowmid_bar"),
+		HardenedAbsorbTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastSize = { 385, 37 },
-		HardenedCastTexture = GetMediaPath("hp_lowmid_bar"),
-		HardenedManaOrbTexture = GetMediaPath("orb_case_hi"),
+		HardenedCastTexture = GetMedia("hp_lowmid_bar"),
+		HardenedManaOrbTexture = GetMedia("orb_case_hi"),
 		HardenedManaOrbColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 		NoviceHealthSize = { 385, 37 },
-		NoviceHealthTexture = GetMediaPath("hp_lowmid_bar"),
+		NoviceHealthTexture = GetMedia("hp_lowmid_bar"),
 		NoviceHealthSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -671,22 +680,23 @@ local UnitFramePlayer = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
-		NoviceHealthBackdropTexture = GetMediaPath("hp_low_case"),
+		NoviceHealthBackdropTexture = GetMedia("hp_low_case"),
 		NoviceHealthBackdropColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
-		NoviceHealthThreatTexture = GetMediaPath("hp_low_case_glow"),
-		NovicePowerForegroundTexture = GetMediaPath("pw_crystal_case_low"),
+		NoviceHealthThreatTexture = GetMedia("hp_low_case_glow"),
+		NovicePowerForegroundTexture = GetMedia("pw_crystal_case_low"),
 		NovicePowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		NoviceAbsorbSize = { 385, 37 },
-		NoviceAbsorbTexture = GetMediaPath("hp_lowmid_bar"),
+		NoviceAbsorbTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastSize = { 385, 37 },
-		NoviceCastTexture = GetMediaPath("hp_lowmid_bar"),
-		NoviceManaOrbTexture = GetMediaPath("orb_case_low"),
+		NoviceCastTexture = GetMedia("hp_lowmid_bar"),
+		NoviceManaOrbTexture = GetMedia("orb_case_low"),
 		NoviceManaOrbColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 
 }
 
 -- PlayerHUD (combo points and castbar)
 local UnitFramePlayerHUD = {
+	Colors = Colors,
 
 	Size = { 103, 103 }, 
 	Place = { "BOTTOMLEFT", 75, 127 },
@@ -716,13 +726,13 @@ local UnitFramePlayerHUD = {
 		UseCastBarBackground = true, 
 			CastBarBackgroundPlace = { "CENTER", 1, -1 }, 
 			CastBarBackgroundSize = { 193,93 },
-			CastBarBackgroundTexture = GetMediaPath("cast_back"), 
+			CastBarBackgroundTexture = GetMedia("cast_back"), 
 			CastBarBackgroundDrawLayer = { "BACKGROUND", 1 },
 			CastBarBackgroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 			
 		UseCastBarValue = true, 
 			CastBarValuePlace = { "CENTER", 0, 0 },
-			CastBarValueFont = Fonts(14, true),
+			CastBarValueFont = GetFont(14, true),
 			CastBarValueDrawLayer = { "OVERLAY", 1 },
 			CastBarValueJustifyH = "CENTER",
 			CastBarValueJustifyV = "MIDDLE",
@@ -730,7 +740,7 @@ local UnitFramePlayerHUD = {
 
 		UseCastBarName = true, 
 			CastBarNamePlace = { "TOP", 0, -(12 + 14) },
-			CastBarNameFont = Fonts(15, true),
+			CastBarNameFont = GetFont(15, true),
 			CastBarNameDrawLayer = { "OVERLAY", 1 },
 			CastBarNameJustifyH = "CENTER",
 			CastBarNameJustifyV = "MIDDLE",
@@ -739,7 +749,7 @@ local UnitFramePlayerHUD = {
 		UseCastBarShield = true, 
 			CastBarShieldPlace = { "CENTER", 1, -2 }, 
 			CastBarShieldSize = { 193, 93 },
-			CastBarShieldTexture = GetMediaPath("cast_back_spiked"), 
+			CastBarShieldTexture = GetMedia("cast_back_spiked"), 
 			CastBarShieldDrawLayer = { "BACKGROUND", 1 }, 
 			CastBarShieldColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 			CastShieldHideBgWhenShielded = true, 
@@ -765,7 +775,7 @@ local UnitFramePlayerHUD = {
 			point.slotTexture:SetVertexColor(130/255 *.3, 133/255 *.3, 130/255 *.3, 2/3)
 
 			point:SetOrientation("UP") -- set the bars to grow from bottom to top.
-			point:SetSparkTexture(GetMediaPath("blank")) -- this will be too tricky to rotate and map
+			point:SetSparkTexture(GetMedia("blank")) -- this will be too tricky to rotate and map
 		end,
 
 		ClassPowerPostUpdate = function(element, unit, min, max, newMax, powerType)
@@ -820,176 +830,176 @@ local UnitFramePlayerHUD = {
 		
 					point1:SetPoint("CENTER", -203*posMod,-137)
 					point1:SetSize(13,13)
-					point1:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point1:SetStatusBarTexture(GetMedia("point_crystal"))
 					point1:GetStatusBarTexture():SetRotation(degreesToRadians(6*posMod))
-					point1.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point1.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point1.slotTexture:SetRotation(degreesToRadians(6*posMod))
 					point1.case:SetPoint("CENTER", 0, 0)
 					point1.case:SetSize(58,58)
 					point1.case:SetRotation(degreesToRadians(6*posMod))
-					point1.case:SetTexture(GetMediaPath("point_plate"))
+					point1.case:SetTexture(GetMedia("point_plate"))
 		
 					point2:SetPoint("CENTER", -221*posMod,-111)
 					point2:SetSize(13,13)
-					point2:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point2:SetStatusBarTexture(GetMedia("point_crystal"))
 					point2:GetStatusBarTexture():SetRotation(degreesToRadians(5*posMod))
-					point2.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point2.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point2.slotTexture:SetRotation(degreesToRadians(5*posMod))
 					point2.case:SetPoint("CENTER", 0, 0)
 					point2.case:SetSize(60,60)
 					point2.case:SetRotation(degreesToRadians(5*posMod))
-					point2.case:SetTexture(GetMediaPath("point_plate"))
+					point2.case:SetTexture(GetMedia("point_plate"))
 		
 					point3:SetPoint("CENTER", -231*posMod,-79)
 					point3:SetSize(13,13)
-					point3:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point3:SetStatusBarTexture(GetMedia("point_crystal"))
 					point3:GetStatusBarTexture():SetRotation(degreesToRadians(4*posMod))
-					point3.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point3.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point3.slotTexture:SetRotation(degreesToRadians(4*posMod))
 					point3.case:SetPoint("CENTER", 0,0)
 					point3.case:SetSize(60,60)
 					point3.case:SetRotation(degreesToRadians(4*posMod))
-					point3.case:SetTexture(GetMediaPath("point_plate"))
+					point3.case:SetTexture(GetMedia("point_plate"))
 				
 					point4:SetPoint("CENTER", -225*posMod,-44)
 					point4:SetSize(13,13)
-					point4:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point4:SetStatusBarTexture(GetMedia("point_crystal"))
 					point4:GetStatusBarTexture():SetRotation(degreesToRadians(3*posMod))
-					point4.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point4.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point4.slotTexture:SetRotation(degreesToRadians(3*posMod))
 					point4.case:SetPoint("CENTER", 0, 0)
 					point4.case:SetSize(60,60)
 					point4.case:SetRotation(0)
-					point4.case:SetTexture(GetMediaPath("point_plate"))
+					point4.case:SetTexture(GetMedia("point_plate"))
 				
 					point5:SetPoint("CENTER", -203*posMod,-11)
 					point5:SetSize(14,21)
-					point5:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point5:SetStatusBarTexture(GetMedia("point_crystal"))
 					point5:GetStatusBarTexture():SetRotation(degreesToRadians(1*posMod))
-					point5.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point5.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point5.slotTexture:SetRotation(degreesToRadians(1*posMod))
 					point5.case:SetRotation(degreesToRadians(1*posMod))
 					point5.case:SetPoint("CENTER",0,0)
 					point5.case:SetSize(82,96)
 					point5.case:SetRotation(degreesToRadians(1*posMod))
-					point5.case:SetTexture(GetMediaPath("point_diamond"))
+					point5.case:SetTexture(GetMedia("point_diamond"))
 		
 				elseif (style == "Chi") then
 					local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 		
 					point1:SetPoint("CENTER", -203*posMod,-137)
 					point1:SetSize(13,13)
-					point1:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point1:SetStatusBarTexture(GetMedia("point_crystal"))
 					point1:GetStatusBarTexture():SetRotation(degreesToRadians(6*posMod))
-					point1.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point1.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point1.slotTexture:SetRotation(degreesToRadians(6*posMod))
 					point1.case:SetPoint("CENTER", 0, 0)
 					point1.case:SetSize(58,58)
 					point1.case:SetRotation(degreesToRadians(6*posMod))
-					point1.case:SetTexture(GetMediaPath("point_plate"))
+					point1.case:SetTexture(GetMedia("point_plate"))
 		
 					point2:SetPoint("CENTER", -223*posMod,-109)
 					point2:SetSize(13,13)
-					point2:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point2:SetStatusBarTexture(GetMedia("point_crystal"))
 					point2:GetStatusBarTexture():SetRotation(degreesToRadians(5*posMod))
-					point2.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point2.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point2.slotTexture:SetRotation(degreesToRadians(5*posMod))
 					point2.case:SetPoint("CENTER", 0, 0)
 					point2.case:SetSize(60,60)
 					point2.case:SetRotation(degreesToRadians(5*posMod))
-					point2.case:SetTexture(GetMediaPath("point_plate"))
+					point2.case:SetTexture(GetMedia("point_plate"))
 		
 					point3:SetPoint("CENTER", -234*posMod,-73)
 					point3:SetSize(39,40)
-					point3:SetStatusBarTexture(GetMediaPath("point_hearth"))
+					point3:SetStatusBarTexture(GetMedia("point_hearth"))
 					point3:GetStatusBarTexture():SetRotation(0)
-					point3.slotTexture:SetTexture(GetMediaPath("point_hearth"))
+					point3.slotTexture:SetTexture(GetMedia("point_hearth"))
 					point3.slotTexture:SetRotation(0)
 					point3.case:SetPoint("CENTER", 0,0)
 					point3.case:SetSize(80,80)
 					point3.case:SetRotation(0)
-					point3.case:SetTexture(GetMediaPath("point_plate"))
+					point3.case:SetTexture(GetMedia("point_plate"))
 				
 					point4:SetPoint("CENTER", -221*posMod,-36)
 					point4:SetSize(13,13)
-					point4:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point4:SetStatusBarTexture(GetMedia("point_crystal"))
 					point4:GetStatusBarTexture():SetRotation(0)
-					point4.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point4.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point4.slotTexture:SetRotation(0)
 					point4.case:SetPoint("CENTER", 0, 0)
 					point4.case:SetSize(60,60)
 					point4.case:SetRotation(0)
-					point4.case:SetTexture(GetMediaPath("point_plate"))
+					point4.case:SetTexture(GetMedia("point_plate"))
 				
 					point5:SetPoint("CENTER", -203*posMod,-9)
 					point5:SetSize(13,13)
-					point5:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point5:SetStatusBarTexture(GetMedia("point_crystal"))
 					point5:GetStatusBarTexture():SetRotation(0)
-					point5.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point5.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point5.slotTexture:SetRotation(0)
 					point5.case:SetPoint("CENTER",0, 0)
 					point5.case:SetSize(60,60)
 					point5.case:SetRotation(0)
-					point5.case:SetTexture(GetMediaPath("point_plate"))
+					point5.case:SetTexture(GetMedia("point_plate"))
 		
 				elseif (style == "SoulShards") then 
 					local point1, point2, point3, point4, point5 = element[1], element[2], element[3], element[4], element[5]
 		
 					point1:SetPoint("CENTER", -203*posMod,-137)
 					point1:SetSize(12,12)
-					point1:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point1:SetStatusBarTexture(GetMedia("point_crystal"))
 					point1:GetStatusBarTexture():SetRotation(degreesToRadians(6*posMod))
-					point1.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point1.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point1.slotTexture:SetRotation(degreesToRadians(6*posMod))
 					point1.case:SetPoint("CENTER", 0, 0)
 					point1.case:SetSize(54,54)
 					point1.case:SetRotation(degreesToRadians(6*posMod))
-					point1.case:SetTexture(GetMediaPath("point_plate"))
+					point1.case:SetTexture(GetMedia("point_plate"))
 		
 					point2:SetPoint("CENTER", -221*posMod,-111)
 					point2:SetSize(13,13)
-					point2:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point2:SetStatusBarTexture(GetMedia("point_crystal"))
 					point2:GetStatusBarTexture():SetRotation(degreesToRadians(5*posMod))
-					point2.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point2.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point2.slotTexture:SetRotation(degreesToRadians(5*posMod))
 					point2.case:SetPoint("CENTER", 0, 0)
 					point2.case:SetSize(60,60)
 					point2.case:SetRotation(degreesToRadians(5*posMod))
-					point2.case:SetTexture(GetMediaPath("point_plate"))
+					point2.case:SetTexture(GetMedia("point_plate"))
 		
 					point3:SetPoint("CENTER", -235*posMod,-80)
 					point3:SetSize(11,15)
-					point3:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point3:SetStatusBarTexture(GetMedia("point_crystal"))
 					point3:GetStatusBarTexture():SetRotation(degreesToRadians(3*posMod))
-					point3.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point3.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point3.slotTexture:SetRotation(degreesToRadians(3*posMod))
 					point3.case:SetPoint("CENTER",0,0)
 					point3.case:SetSize(65,60)
 					point3.case:SetRotation(degreesToRadians(3*posMod))
-					point3.case:SetTexture(GetMediaPath("point_diamond"))
+					point3.case:SetTexture(GetMedia("point_diamond"))
 				
 					point4:SetPoint("CENTER", -227*posMod,-44)
 					point4:SetSize(12,18)
-					point4:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point4:SetStatusBarTexture(GetMedia("point_crystal"))
 					point4:GetStatusBarTexture():SetRotation(degreesToRadians(3*posMod))
-					point4.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point4.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point4.slotTexture:SetRotation(degreesToRadians(3*posMod))
 					point4.case:SetPoint("CENTER",0,0)
 					point4.case:SetSize(78,79)
 					point4.case:SetRotation(degreesToRadians(3*posMod))
-					point4.case:SetTexture(GetMediaPath("point_diamond"))
+					point4.case:SetTexture(GetMedia("point_diamond"))
 				
 					point5:SetPoint("CENTER", -203*posMod,-11)
 					point5:SetSize(14,21)
-					point5:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point5:SetStatusBarTexture(GetMedia("point_crystal"))
 					point5:GetStatusBarTexture():SetRotation(degreesToRadians(1*posMod))
-					point5.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point5.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point5.slotTexture:SetRotation(degreesToRadians(1*posMod))
 					point5.case:SetRotation(degreesToRadians(1*posMod))
 					point5.case:SetPoint("CENTER",0,0)
 					point5.case:SetSize(82,96)
 					point5.case:SetRotation(degreesToRadians(1*posMod))
-					point5.case:SetTexture(GetMediaPath("point_diamond"))
+					point5.case:SetTexture(GetMedia("point_diamond"))
 		
 		
 					-- 1.414213562
@@ -998,36 +1008,36 @@ local UnitFramePlayerHUD = {
 		
 					point1:SetPoint("CENTER", -223*posMod,-109)
 					point1:SetSize(13,13)
-					point1:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point1:SetStatusBarTexture(GetMedia("point_crystal"))
 					point1:GetStatusBarTexture():SetRotation(degreesToRadians(5*posMod))
-					point1.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point1.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point1.slotTexture:SetRotation(degreesToRadians(5*posMod))
 					point1.case:SetPoint("CENTER", 0, 0)
 					point1.case:SetSize(60,60)
 					point1.case:SetRotation(degreesToRadians(5*posMod))
-					point1.case:SetTexture(GetMediaPath("point_plate"))
+					point1.case:SetTexture(GetMedia("point_plate"))
 		
 					point2:SetPoint("CENTER", -234*posMod,-73)
 					point2:SetSize(39,40)
-					point2:SetStatusBarTexture(GetMediaPath("point_hearth"))
+					point2:SetStatusBarTexture(GetMedia("point_hearth"))
 					point2:GetStatusBarTexture():SetRotation(0)
-					point2.slotTexture:SetTexture(GetMediaPath("point_hearth"))
+					point2.slotTexture:SetTexture(GetMedia("point_hearth"))
 					point2.slotTexture:SetRotation(0)
 					point2.case:SetPoint("CENTER", 0,0)
 					point2.case:SetSize(80,80)
 					point2.case:SetRotation(0)
-					point2.case:SetTexture(GetMediaPath("point_plate"))
+					point2.case:SetTexture(GetMedia("point_plate"))
 				
 					point3:SetPoint("CENTER", -221*posMod,-36)
 					point3:SetSize(13,13)
-					point3:SetStatusBarTexture(GetMediaPath("point_crystal"))
+					point3:SetStatusBarTexture(GetMedia("point_crystal"))
 					point3:GetStatusBarTexture():SetRotation(0)
-					point3.slotTexture:SetTexture(GetMediaPath("point_crystal"))
+					point3.slotTexture:SetTexture(GetMedia("point_crystal"))
 					point3.slotTexture:SetRotation(0)
 					point3.case:SetPoint("CENTER", 0, 0)
 					point3.case:SetSize(60,60)
 					point3.case:SetRotation(0)
-					point3.case:SetTexture(GetMediaPath("point_plate"))
+					point3.case:SetTexture(GetMedia("point_plate"))
 		
 		
 				elseif (style == "Runes") then 
@@ -1035,69 +1045,69 @@ local UnitFramePlayerHUD = {
 		
 					point1:SetPoint("CENTER", -203*posMod,-131)
 					point1:SetSize(28,28)
-					point1:SetStatusBarTexture(GetMediaPath("point_rune2"))
+					point1:SetStatusBarTexture(GetMedia("point_rune2"))
 					point1:GetStatusBarTexture():SetRotation(0)
-					point1.slotTexture:SetTexture(GetMediaPath("point_rune2"))
+					point1.slotTexture:SetTexture(GetMedia("point_rune2"))
 					point1.slotTexture:SetRotation(0)
 					point1.case:SetPoint("CENTER", 0, 0)
 					point1.case:SetSize(58,58)
 					point1.case:SetRotation(0)
-					point1.case:SetTexture(GetMediaPath("point_dk_block"))
+					point1.case:SetTexture(GetMedia("point_dk_block"))
 		
 					point2:SetPoint("CENTER", -227*posMod,-107)
 					point2:SetSize(28,28)
-					point2:SetStatusBarTexture(GetMediaPath("point_rune4"))
+					point2:SetStatusBarTexture(GetMedia("point_rune4"))
 					point2:GetStatusBarTexture():SetRotation(0)
-					point2.slotTexture:SetTexture(GetMediaPath("point_rune4"))
+					point2.slotTexture:SetTexture(GetMedia("point_rune4"))
 					point2.slotTexture:SetRotation(0)
 					point2.case:SetPoint("CENTER", 0, 0)
 					point2.case:SetSize(68,68)
 					point2.case:SetRotation(0)
-					point2.case:SetTexture(GetMediaPath("point_dk_block"))
+					point2.case:SetTexture(GetMedia("point_dk_block"))
 		
 					point3:SetPoint("CENTER", -253*posMod,-83)
 					point3:SetSize(30,30)
-					point3:SetStatusBarTexture(GetMediaPath("point_rune1"))
+					point3:SetStatusBarTexture(GetMedia("point_rune1"))
 					point3:GetStatusBarTexture():SetRotation(0)
-					point3.slotTexture:SetTexture(GetMediaPath("point_rune1"))
+					point3.slotTexture:SetTexture(GetMedia("point_rune1"))
 					point3.slotTexture:SetRotation(0)
 					point3.case:SetPoint("CENTER", 0,0)
 					point3.case:SetSize(74,74)
 					point3.case:SetRotation(0)
-					point3.case:SetTexture(GetMediaPath("point_dk_block"))
+					point3.case:SetTexture(GetMedia("point_dk_block"))
 				
 					point4:SetPoint("CENTER", -220*posMod,-64)
 					point4:SetSize(28,28)
-					point4:SetStatusBarTexture(GetMediaPath("point_rune3"))
+					point4:SetStatusBarTexture(GetMedia("point_rune3"))
 					point4:GetStatusBarTexture():SetRotation(0)
-					point4.slotTexture:SetTexture(GetMediaPath("point_rune3"))
+					point4.slotTexture:SetTexture(GetMedia("point_rune3"))
 					point4.slotTexture:SetRotation(0)
 					point4.case:SetPoint("CENTER", 0, 0)
 					point4.case:SetSize(68,68)
 					point4.case:SetRotation(0)
-					point4.case:SetTexture(GetMediaPath("point_dk_block"))
+					point4.case:SetTexture(GetMedia("point_dk_block"))
 		
 					point5:SetPoint("CENTER", -246*posMod,-38)
 					point5:SetSize(32,32)
-					point5:SetStatusBarTexture(GetMediaPath("point_rune2"))
+					point5:SetStatusBarTexture(GetMedia("point_rune2"))
 					point5:GetStatusBarTexture():SetRotation(0)
-					point5.slotTexture:SetTexture(GetMediaPath("point_rune2"))
+					point5.slotTexture:SetTexture(GetMedia("point_rune2"))
 					point5.slotTexture:SetRotation(0)
 					point5.case:SetPoint("CENTER", 0, 0)
 					point5.case:SetSize(78,78)
 					point5.case:SetRotation(0)
-					point5.case:SetTexture(GetMediaPath("point_dk_block"))
+					point5.case:SetTexture(GetMedia("point_dk_block"))
 		
 					point6:SetPoint("CENTER", -214*posMod,-10)
 					point6:SetSize(40,40)
-					point6:SetStatusBarTexture(GetMediaPath("point_rune1"))
+					point6:SetStatusBarTexture(GetMedia("point_rune1"))
 					point6:GetStatusBarTexture():SetRotation(0)
-					point6.slotTexture:SetTexture(GetMediaPath("point_rune1"))
+					point6.slotTexture:SetTexture(GetMedia("point_rune1"))
 					point6.slotTexture:SetRotation(0)
 					point6.case:SetPoint("CENTER", 0, 0)
 					point6.case:SetSize(98,98)
 					point6.case:SetRotation(0)
-					point6.case:SetTexture(GetMediaPath("point_dk_block"))
+					point6.case:SetTexture(GetMedia("point_dk_block"))
 		
 				end 
 		
@@ -1130,13 +1140,13 @@ local UnitFramePlayerHUD = {
 		UsePlayerAltPowerBarBackground = true, 
 			PlayerAltPowerBarBackgroundPlace = { "CENTER", 1, -2 }, 
 			PlayerAltPowerBarBackgroundSize = { 193,93 },
-			PlayerAltPowerBarBackgroundTexture = GetMediaPath("cast_back"), 
+			PlayerAltPowerBarBackgroundTexture = GetMedia("cast_back"), 
 			PlayerAltPowerBarBackgroundDrawLayer = { "BACKGROUND", 1 },
 			PlayerAltPowerBarBackgroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 			
 		UsePlayerAltPowerBarValue = true, 
 			PlayerAltPowerBarValuePlace = { "CENTER", 0, 0 },
-			PlayerAltPowerBarValueFont = Fonts(14, true),
+			PlayerAltPowerBarValueFont = GetFont(14, true),
 			PlayerAltPowerBarValueDrawLayer = { "OVERLAY", 1 },
 			PlayerAltPowerBarValueJustifyH = "CENTER",
 			PlayerAltPowerBarValueJustifyV = "MIDDLE",
@@ -1144,7 +1154,7 @@ local UnitFramePlayerHUD = {
 
 		UsePlayerAltPowerBarName = true, 
 			PlayerAltPowerBarNamePlace = { "TOP", 0, -(12 + 14) },
-			PlayerAltPowerBarNameFont = Fonts(15, true),
+			PlayerAltPowerBarNameFont = GetFont(15, true),
 			PlayerAltPowerBarNameDrawLayer = { "OVERLAY", 1 },
 			PlayerAltPowerBarNameJustifyH = "CENTER",
 			PlayerAltPowerBarNameJustifyV = "MIDDLE",
@@ -1154,6 +1164,8 @@ local UnitFramePlayerHUD = {
 
 -- Target
 local UnitFrameTarget = { 
+	Colors = Colors,
+
 	Place = { "TOPRIGHT", -153, -79 },
 	Size = { 439, 93 },
 	HitRectInsets = { 0, -80, -30, 0 }, 
@@ -1196,7 +1208,7 @@ local UnitFrameTarget = {
 		HealthValueDrawLayer = { "OVERLAY", 1 },
 		HealthValueJustifyH = "CENTER", 
 		HealthValueJustifyV = "MIDDLE", 
-		HealthValueFont = Fonts(18, true),
+		HealthValueFont = GetFont(18, true),
 		HealthValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 		
 	UseHealthPercent = true, 
@@ -1204,7 +1216,7 @@ local UnitFrameTarget = {
 		HealthPercentDrawLayer = { "OVERLAY", 1 },
 		HealthPercentJustifyH = "CENTER",
 		HealthPercentJustifyV = "MIDDLE",
-		HealthPercentFont = Fonts(18, true),
+		HealthPercentFont = GetFont(18, true),
 		HealthPercentColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
 	UseAbsorbBar = true,
@@ -1222,11 +1234,12 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+		AbsorbThreshold = 5/100,
 
 		UseAbsorbValue = true, 
 			AbsorbValuePlaceFunction = function(self) return "RIGHT", self.Health.Value, "LEFT", -13, 0 end, 
 			AbsorbValueDrawLayer = { "OVERLAY", 1 }, 
-			AbsorbValueFont = Fonts(18, true),
+			AbsorbValueFont = GetFont(18, true),
 			AbsorbValueJustifyH = "CENTER", 
 			AbsorbValueJustifyV = "MIDDLE",
 			AbsorbValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
@@ -1253,8 +1266,8 @@ local UnitFrameTarget = {
 		PowerPlace ={ "CENTER", 439/2 + 79 +2, 93/2 -62 + 4 +6 }, 
 		PowerSize = { 68, 68 },
 		PowerType = "StatusBar", 
-		PowerBarSparkTexture = GetMediaPath("blank"),
-		PowerBarTexture = GetMediaPath("power_crystal_small_front"),
+		PowerBarSparkTexture = GetMedia("blank"),
+		PowerBarTexture = GetMedia("power_crystal_small_front"),
 		PowerBarTexCoord = { 1, 0, 0, 1 },
 		PowerBarOrientation = "UP",
 		PowerBarSetFlippedHorizontally = true, 
@@ -1269,7 +1282,7 @@ local UnitFrameTarget = {
 		UsePowerBackground = true,
 			PowerBackgroundPlace = { "CENTER", 0, 0 },
 			PowerBackgroundSize = { 68, 68 },
-			PowerBackgroundTexture = GetMediaPath("power_crystal_small_back"),
+			PowerBackgroundTexture = GetMedia("power_crystal_small_back"),
 			PowerBackgroundTexCoord = { 1, 0, 0, 1 },
 			PowerBackgroundDrawLayer = { "BACKGROUND", -2 },
 			PowerBackgroundColor = { 1, 1, 1, .85 },
@@ -1287,7 +1300,7 @@ local UnitFrameTarget = {
 			PowerValueDrawLayer = { "OVERLAY", 1 },
 			PowerValueJustifyH = "CENTER", 
 			PowerValueJustifyV = "MIDDLE", 
-			PowerValueFont = Fonts(13, true),
+			PowerValueFont = GetFont(13, true),
 			PowerValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
 	UsePortrait = true, 
@@ -1304,14 +1317,14 @@ local UnitFrameTarget = {
 		UsePortraitBackground = true, 
 			PortraitBackgroundPlace = { "TOPRIGHT", 116, 55 },
 			PortraitBackgroundSize = { 173, 173 },
-			PortraitBackgroundTexture = GetMediaPath("party_portrait_back"), 
+			PortraitBackgroundTexture = GetMedia("party_portrait_back"), 
 			PortraitBackgroundDrawLayer = { "BACKGROUND", 0 }, 
 			PortraitBackgroundColor = { .5, .5, .5 }, 
 
 		UsePortraitShade = true, 
 			PortraitShadePlace = { "TOPRIGHT", 83, 21 },
 			PortraitShadeSize = { 107, 107 }, 
-			PortraitShadeTexture = GetMediaPath("shade_circle"),
+			PortraitShadeTexture = GetMedia("shade_circle"),
 			PortraitShadeDrawLayer = { "BACKGROUND", -1 },
 
 		UsePortraitForeground = true, 
@@ -1322,28 +1335,28 @@ local UnitFrameTarget = {
 	UseTargetIndicator = true, 
 		TargetIndicatorYouByFriendPlace = { "TOPRIGHT", -10 + 96/2, 12 + 48/2 },
 		TargetIndicatorYouByFriendSize = { 96, 48 },
-		TargetIndicatorYouByFriendTexture = GetMediaPath("icon_target_green"),
+		TargetIndicatorYouByFriendTexture = GetMedia("icon_target_green"),
 		TargetIndicatorYouByFriendColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 		TargetIndicatorYouByEnemyPlace = { "TOPRIGHT", -10 + 96/2, 12 + 48/2 },
 		TargetIndicatorYouByEnemySize = { 96, 48 },
-		TargetIndicatorYouByEnemyTexture = GetMediaPath("icon_target_red"),
+		TargetIndicatorYouByEnemyTexture = GetMedia("icon_target_red"),
 		TargetIndicatorYouByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 		TargetIndicatorPetByEnemyPlace = { "TOPRIGHT", -10 + 96/2, 12 + 48/2 },
 		TargetIndicatorPetByEnemySize = { 96, 48 },
-		TargetIndicatorPetByEnemyTexture = GetMediaPath("icon_target_blue"),
+		TargetIndicatorPetByEnemyTexture = GetMedia("icon_target_blue"),
 		TargetIndicatorPetByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 	UseClassificationIndicator = true, 
 		ClassificationPlace = { "BOTTOMRIGHT", 72, -43 },
 		ClassificationSize = { 84, 84 },
 		ClassificationColor = { 1, 1, 1 },
-		ClassificationIndicatorAllianceTexture = GetMediaPath("icon_badges_alliance"),
-		ClassificationIndicatorHordeTexture = GetMediaPath("icon_badges_horde"),
-		ClassificationIndicatorBossTexture = GetMediaPath("icon_badges_boss"),
-		ClassificationIndicatorEliteTexture = GetMediaPath("icon_classification_elite"),
-		ClassificationIndicatorRareTexture = GetMediaPath("icon_classification_rare"),
+		ClassificationIndicatorAllianceTexture = GetMedia("icon_badges_alliance"),
+		ClassificationIndicatorHordeTexture = GetMedia("icon_badges_horde"),
+		ClassificationIndicatorBossTexture = GetMedia("icon_badges_boss"),
+		ClassificationIndicatorEliteTexture = GetMedia("icon_classification_elite"),
+		ClassificationIndicatorRareTexture = GetMedia("icon_classification_rare"),
 
 	UseLevel = true, 
 		LevelVisibilityFilter = function(element, unit) 
@@ -1368,7 +1381,7 @@ local UnitFrameTarget = {
 		LevelDrawLayer = { "BORDER", 1 },
 		LevelJustifyH = "CENTER",
 		LevelJustifyV = "MIDDLE", 
-		LevelFont = Fonts(13, true),
+		LevelFont = GetFont(13, true),
 		LevelHideCapped = true, 
 		LevelHideFloored = true, 
 		LevelColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3] },
@@ -1376,19 +1389,19 @@ local UnitFrameTarget = {
 
 		UseLevelBadge = true, 
 			LevelBadgeSize = { 86, 86 }, 
-			LevelBadgeTexture = GetMediaPath("point_plate"),
+			LevelBadgeTexture = GetMedia("point_plate"),
 			LevelBadgeDrawLayer = { "BACKGROUND", 1 },
 			LevelBadgeColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 
 		UseLevelSkull = true, 
 			LevelSkullSize = { 64, 64 }, 
-			LevelSkullTexture = GetMediaPath("icon_skull"),
+			LevelSkullTexture = GetMedia("icon_skull"),
 			LevelSkullDrawLayer = { "BORDER", 2 }, 
 			LevelSkullColor = { 1, 1, 1, 1 }, 
 
 		UseLevelDeadSkull = true, 
 			LevelDeadSkullSize = { 64, 64 }, 
-			LevelDeadSkullTexture = GetMediaPath("icon_skull_dead"),
+			LevelDeadSkullTexture = GetMedia("icon_skull_dead"),
 			LevelDeadSkullDrawLayer = { "BORDER", 2 }, 
 			LevelDeadSkullColor = { 1, 1, 1, 1 }, 
 
@@ -1415,7 +1428,7 @@ local UnitFrameTarget = {
 			CastBarNameParent = "Health",
 			CastBarNamePlace = { "RIGHT", -27, 4 },
 			CastBarNameSize = { 250, 40 }, 
-			CastBarNameFont = Fonts(18, true),
+			CastBarNameFont = GetFont(18, true),
 			CastBarNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 			CastBarNameDrawLayer = { "OVERLAY", 1 }, 
 			CastBarNameJustifyH = "RIGHT", 
@@ -1427,7 +1440,7 @@ local UnitFrameTarget = {
 			CastBarValueDrawLayer = { "OVERLAY", 1 },
 			CastBarValueJustifyH = "CENTER",
 			CastBarValueJustifyV = "MIDDLE",
-			CastBarValueFont = Fonts(18, true),
+			CastBarValueFont = GetFont(18, true),
 			CastBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 		
 	UseThreat = true,
@@ -1442,7 +1455,7 @@ local UnitFrameTarget = {
 		UsePortraitThreat = true, 
 			ThreatPortraitPlace = { "CENTER", 0, 0 }, 
 			ThreatPortraitSize = { 187, 187 },
-			ThreatPortraitTexture = GetMediaPath("portrait_frame_glow"),
+			ThreatPortraitTexture = GetMedia("portrait_frame_glow"),
 			ThreatPortraitDrawLayer = { "BACKGROUND", -2 },
 			ThreatPortraitAlpha = .5,
 
@@ -1476,20 +1489,20 @@ local UnitFrameTarget = {
 		AuraIconSize = { 40 - 6, 40 - 6 },
 		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
 		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
-		AuraCountFont = Fonts(14, true),
+		AuraCountFont = GetFont(14, true),
 		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
 		AuraTimePlace = { "TOPLEFT", -6, 6 }, -- { "CENTER", 0, 0 },
-		AuraTimeFont = Fonts(14, true),
+		AuraTimeFont = GetFont(14, true),
 		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
 		AuraBorderFrameSize = { 40 + 14, 40 + 14 },
-		AuraBorderBackdrop = { edgeFile = GetMediaPath("aura_border"), edgeSize = 16 },
+		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 16 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 }, 
 
 	UseName = true, 
 		NamePlace = { "TOPRIGHT", -40, 18 },
 		NameSize = { 250, 18 },
-		NameFont = Fonts(18, true),
+		NameFont = GetFont(18, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameDrawLayer = { "OVERLAY", 1 }, 
 		NameJustifyH = "RIGHT", 
@@ -1507,7 +1520,7 @@ local UnitFrameTarget = {
 
 		BossHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		BossHealthSize = { 533, 40 },
-		BossHealthTexture = GetMediaPath("hp_boss_bar"),
+		BossHealthTexture = GetMedia("hp_boss_bar"),
 		BossHealthSparkMap = {
 			top = {
 				{ keyPercent =    0/1024, offset = -24/64 }, 
@@ -1530,16 +1543,16 @@ local UnitFrameTarget = {
 		BossHealthBackdropSize = { 694, 190 }, 
 		BossHealthThreatPlace = { "CENTER", -.5, 1 }, 
 		BossHealthThreatSize = { 694, 190 }, 
-		BossHealthBackdropTexture = GetMediaPath("hp_boss_case"),
+		BossHealthBackdropTexture = GetMedia("hp_boss_case"),
 		BossHealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		BossHealthThreatTexture = GetMediaPath("hp_boss_case_glow"),
-		BossPowerForegroundTexture = GetMediaPath("pw_crystal_case"),
+		BossHealthThreatTexture = GetMedia("hp_boss_case_glow"),
+		BossPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		BossPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		BossAbsorbSize = { 533, 40 },
-		BossAbsorbTexture = GetMediaPath("hp_boss_bar"),
+		BossAbsorbTexture = GetMedia("hp_boss_bar"),
 		BossCastPlace = { "TOPRIGHT", -27, -27 }, 
 		BossCastSize = { 533, 40 },
-		BossCastTexture = GetMediaPath("hp_boss_bar"),
+		BossCastTexture = GetMedia("hp_boss_bar"),
 		BossCastSparkMap = {
 			top = {
 				{ keyPercent =    0/1024, offset = -24/64 }, 
@@ -1556,12 +1569,12 @@ local UnitFrameTarget = {
 				{ keyPercent = 1024/1024, offset = -52/64 }
 			}
 		},
-		BossPortraitForegroundTexture = GetMediaPath("portrait_frame_hi"),
+		BossPortraitForegroundTexture = GetMedia("portrait_frame_hi"),
 		BossPortraitForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
 		SeasonedHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		SeasonedHealthSize = { 385, 40 },
-		SeasonedHealthTexture = GetMediaPath("hp_cap_bar"),
+		SeasonedHealthTexture = GetMedia("hp_cap_bar"),
 		SeasonedHealthSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -1575,18 +1588,18 @@ local UnitFrameTarget = {
 		SeasonedHealthPercentVisible = false, 
 		SeasonedHealthBackdropPlace = { "CENTER", -1, .5 }, 
 		SeasonedHealthBackdropSize = { 716, 188 },
-		SeasonedHealthBackdropTexture = GetMediaPath("hp_cap_case"),
+		SeasonedHealthBackdropTexture = GetMedia("hp_cap_case"),
 		SeasonedHealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		SeasonedHealthThreatPlace = { "CENTER", -1, .5  +1 }, 
 		SeasonedHealthThreatSize = { 716, 188 }, 
-		SeasonedHealthThreatTexture = GetMediaPath("hp_cap_case_glow"),
-		SeasonedPowerForegroundTexture = GetMediaPath("pw_crystal_case"),
+		SeasonedHealthThreatTexture = GetMedia("hp_cap_case_glow"),
+		SeasonedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		SeasonedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		SeasonedAbsorbSize = { 385, 40 },
-		SeasonedAbsorbTexture = GetMediaPath("hp_cap_bar"),
+		SeasonedAbsorbTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastPlace = { "TOPRIGHT", -27, -27 }, 
 		SeasonedCastSize = { 385, 40 },
-		SeasonedCastTexture = GetMediaPath("hp_cap_bar"),
+		SeasonedCastTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -1596,13 +1609,13 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
-		SeasonedPortraitForegroundTexture = GetMediaPath("portrait_frame_hi"),
+		SeasonedPortraitForegroundTexture = GetMedia("portrait_frame_hi"),
 		SeasonedPortraitForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 		
 		HardenedLevel = 40,
 		HardenedHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		HardenedHealthSize = { 385, 37 },
-		HardenedHealthTexture = GetMediaPath("hp_lowmid_bar"),
+		HardenedHealthTexture = GetMedia("hp_lowmid_bar"),
 		HardenedHealthSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -1616,18 +1629,18 @@ local UnitFrameTarget = {
 		HardenedHealthPercentVisible = false, 
 		HardenedHealthBackdropPlace = { "CENTER", -1, -.5 }, 
 		HardenedHealthBackdropSize = { 716, 188 }, 
-		HardenedHealthBackdropTexture = GetMediaPath("hp_mid_case"),
+		HardenedHealthBackdropTexture = GetMedia("hp_mid_case"),
 		HardenedHealthBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		HardenedHealthThreatPlace = { "CENTER", -1, -.5 +1 }, 
 		HardenedHealthThreatSize = { 716, 188 }, 
-		HardenedHealthThreatTexture = GetMediaPath("hp_mid_case_glow"),
-		HardenedPowerForegroundTexture = GetMediaPath("pw_crystal_case"),
+		HardenedHealthThreatTexture = GetMedia("hp_mid_case_glow"),
+		HardenedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		HardenedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		HardenedAbsorbSize = { 385, 37 },
-		HardenedAbsorbTexture = GetMediaPath("hp_lowmid_bar"),
+		HardenedAbsorbTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastPlace = { "TOPRIGHT", -27, -27 }, 
 		HardenedCastSize = { 385, 37 },
-		HardenedCastTexture = GetMediaPath("hp_lowmid_bar"),
+		HardenedCastTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -1637,12 +1650,12 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
-		HardenedPortraitForegroundTexture = GetMediaPath("portrait_frame_hi"),
+		HardenedPortraitForegroundTexture = GetMedia("portrait_frame_hi"),
 		HardenedPortraitForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
 		NoviceHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		NoviceHealthSize = { 385, 37 },
-		NoviceHealthTexture = GetMediaPath("hp_lowmid_bar"),
+		NoviceHealthTexture = GetMedia("hp_lowmid_bar"),
 		NoviceHealthSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -1656,18 +1669,18 @@ local UnitFrameTarget = {
 		NoviceHealthPercentVisible = false, 
 		NoviceHealthBackdropPlace = { "CENTER", -1, -.5 }, 
 		NoviceHealthBackdropSize = { 716, 188 }, 
-		NoviceHealthBackdropTexture = GetMediaPath("hp_low_case"),
+		NoviceHealthBackdropTexture = GetMedia("hp_low_case"),
 		NoviceHealthBackdropColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		NoviceHealthThreatPlace = { "CENTER", -1, -.5 +1 }, 
 		NoviceHealthThreatSize = { 716, 188 }, 
-		NoviceHealthThreatTexture = GetMediaPath("hp_low_case_glow"),
-		NovicePowerForegroundTexture = GetMediaPath("pw_crystal_case_low"),
+		NoviceHealthThreatTexture = GetMedia("hp_low_case_glow"),
+		NovicePowerForegroundTexture = GetMedia("pw_crystal_case_low"),
 		NovicePowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		NoviceAbsorbSize = { 385, 37 },
-		NoviceAbsorbTexture = GetMediaPath("hp_lowmid_bar"),
+		NoviceAbsorbTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastPlace = { "TOPRIGHT", -27, -27 }, 
 		NoviceCastSize = { 385, 37 },
-		NoviceCastTexture = GetMediaPath("hp_lowmid_bar"),
+		NoviceCastTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -1677,12 +1690,12 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
-		NovicePortraitForegroundTexture = GetMediaPath("portrait_frame_lo"),
+		NovicePortraitForegroundTexture = GetMedia("portrait_frame_lo"),
 		NovicePortraitForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] }, 
 
 		CritterHealthPlace = { "TOPRIGHT", -24, -24 }, 
 		CritterHealthSize = { 40, 36 },
-		CritterHealthTexture = GetMediaPath("hp_critter_bar"),
+		CritterHealthTexture = GetMedia("hp_critter_bar"),
 		CritterHealthSparkMap = {
 			top = {
 				{ keyPercent =  0/64, offset = -30/64 }, 
@@ -1702,18 +1715,18 @@ local UnitFrameTarget = {
 		CritterHealthPercentVisible = false, 
 		CritterHealthBackdropPlace = { "CENTER", 0, 1 }, 
 		CritterHealthBackdropSize = { 98,96 }, 
-		CritterHealthBackdropTexture = GetMediaPath("hp_critter_case"),
+		CritterHealthBackdropTexture = GetMedia("hp_critter_case"),
 		CritterHealthBackdropColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		CritterHealthThreatPlace = { "CENTER", 0, 1 +1 }, 
 		CritterHealthThreatSize = { 98,96 }, 
-		CritterHealthThreatTexture = GetMediaPath("hp_critter_case_glow"),
-		CritterPowerForegroundTexture = GetMediaPath("pw_crystal_case_low"),
+		CritterHealthThreatTexture = GetMedia("hp_critter_case_glow"),
+		CritterPowerForegroundTexture = GetMedia("pw_crystal_case_low"),
 		CritterPowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		CritterAbsorbSize = { 40, 36 },
-		CritterAbsorbTexture = GetMediaPath("hp_critter_bar"),
+		CritterAbsorbTexture = GetMedia("hp_critter_bar"),
 		CritterCastPlace = { "TOPRIGHT", -24, -24 },
 		CritterCastSize = { 40, 36 },
-		CritterCastTexture = GetMediaPath("hp_critter_bar"),
+		CritterCastTexture = GetMedia("hp_critter_bar"),
 		CritterCastSparkMap = {
 			top = {
 				{ keyPercent =  0/64, offset = -30/64 }, 
@@ -1729,7 +1742,7 @@ local UnitFrameTarget = {
 				{ keyPercent = 64/64, offset = -27/64 }
 			}
 		},
-		CritterPortraitForegroundTexture = GetMediaPath("portrait_frame_lo"),
+		CritterPortraitForegroundTexture = GetMedia("portrait_frame_lo"),
 		CritterPortraitForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] }, 
 
 
@@ -1805,7 +1818,7 @@ local UnitFrameToT = setmetatable({
 		NameDrawLayer = { "OVERLAY", 1 },
 		NameJustifyH = "RIGHT",
 		NameJustifyV = "TOP",
-		NameFont = Fonts(14, true),
+		NameFont = GetFont(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
@@ -1843,7 +1856,7 @@ local UnitFrameFocus = setmetatable({
 		NameDrawLayer = { "OVERLAY", 1 },
 		NameJustifyH = "LEFT",
 		NameJustifyV = "TOP",
-		NameFont = Fonts(14, true),
+		NameFont = GetFont(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
@@ -1875,7 +1888,7 @@ local UnitFrameBoss = setmetatable({
 		NameDrawLayer = { "OVERLAY", 1 },
 		NameJustifyH = "CENTER",
 		NameJustifyV = "TOP",
-		NameFont = Fonts(14, true),
+		NameFont = GetFont(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
@@ -1902,7 +1915,7 @@ local UnitFrameArena = setmetatable({
 		NameDrawLayer = { "OVERLAY", 1 },
 		NameJustifyH = "CENTER",
 		NameJustifyV = "TOP",
-		NameFont = Fonts(14, true),
+		NameFont = GetFont(14, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
@@ -1941,25 +1954,25 @@ local UnitFrameParty = setmetatable({
 			GroupRoleBackgroundPlace = { "CENTER", 0, 0 }, 
 			GroupRoleBackgroundSize = { 77, 77 }, 
 			GroupRoleBackgroundDrawLayer = { "BACKGROUND", 1 }, 
-			GroupRoleBackgroundTexture = GetMediaPath("point_plate"),
+			GroupRoleBackgroundTexture = GetMedia("point_plate"),
 			GroupRoleBackgroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
 		UseGroupRoleHealer = true, 
 			GroupRoleHealerPlace = { "CENTER", 0, 0 }, 
 			GroupRoleHealerSize = { 34, 34 },
-			GroupRoleHealerTexture = GetMediaPath("grouprole-icons-heal"),
+			GroupRoleHealerTexture = GetMedia("grouprole-icons-heal"),
 			GroupRoleHealerDrawLayer = { "ARTWORK", 1 },
 
 		UseGroupRoleTank = true, 
 			GroupRoleTankPlace = { "CENTER", 0, 0 }, 
 			GroupRoleTankSize = { 34, 34 },
-			GroupRoleTankTexture = GetMediaPath("grouprole-icons-tank"),
+			GroupRoleTankTexture = GetMedia("grouprole-icons-tank"),
 			GroupRoleTankDrawLayer = { "ARTWORK", 1 },
 
 		UseGroupRoleDPS = true, 
 			GroupRoleDPSPlace = { "CENTER", 0, 0 }, 
 			GroupRoleDPSSize = { 34, 34 },
-			GroupRoleDPSTexture = GetMediaPath("grouprole-icons-dps"),
+			GroupRoleDPSTexture = GetMedia("grouprole-icons-dps"),
 			GroupRoleDPSDrawLayer = { "ARTWORK", 1 },
 
 
@@ -1977,20 +1990,20 @@ local UnitFrameParty = setmetatable({
 		UsePortraitBackground = true, 
 			PortraitBackgroundPlace = { "BOTTOM", 0, -6 }, 
 			PortraitBackgroundSize = { 130, 130 },
-			PortraitBackgroundTexture = GetMediaPath("party_portrait_back"), 
+			PortraitBackgroundTexture = GetMedia("party_portrait_back"), 
 			PortraitBackgroundDrawLayer = { "BACKGROUND", 0 }, 
 			PortraitBackgroundColor = { .5, .5, .5 }, 
 
 		UsePortraitShade = true, 
 			PortraitShadePlace = { "BOTTOM", 0, 16 },
 			PortraitShadeSize = { 86, 86 }, 
-			PortraitShadeTexture = GetMediaPath("shade_circle"),
+			PortraitShadeTexture = GetMedia("shade_circle"),
 			PortraitShadeDrawLayer = { "BACKGROUND", -1 },
 
 		UsePortraitForeground = true, 
 			PortraitForegroundPlace = { "BOTTOM", 0, -38 },
 			PortraitForegroundSize = { 194, 194 },
-			PortraitForegroundTexture = GetMediaPath("party_portrait_border"), 
+			PortraitForegroundTexture = GetMedia("party_portrait_border"), 
 			PortraitForegroundDrawLayer = { "BACKGROUND", 0 },
 			PortraitForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
@@ -2029,14 +2042,15 @@ local UnitFrameRaid = setmetatable({
 		HealthColorHealth = true, -- color anything else in the default health color
 		UseHealthValue = false,
 	
-	AbsorbBarColor = { 1, 1, 1, .5 },
+	AbsorbSize = Constant.RaidBar,
+		AbsorbBarColor = { 1, 1, 1, .5 },
 
 	UseName = true, 
 		NamePlace = { "TOP", 0, 1 }, 
 		NameDrawLayer = { "ARTWORK", 1 },
 		NameJustifyH = "CENTER",
 		NameJustifyV = "TOP",
-		NameFont = Fonts(11, true),
+		NameFont = GetFont(11, true),
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 		NameMaxChars = 8, 
@@ -2047,7 +2061,7 @@ local UnitFrameRaid = setmetatable({
 		UnitStatusDrawLayer = { "ARTWORK", 2 },
 		UnitStatusJustifyH = "CENTER",
 		UnitStatusJustifyV = "MIDDLE",
-		UnitStatusFont = Fonts(12, true),
+		UnitStatusFont = GetFont(12, true),
 		UnitStatusColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		UseUnitStatusMessageOOM = L["oom"],
 		UnitStatusSize = nil, 
@@ -2074,25 +2088,25 @@ local UnitFrameRaid = setmetatable({
 			GroupRoleBackgroundPlace = { "CENTER", 0, 0 }, 
 			GroupRoleBackgroundSize = { 54, 54 }, 
 			GroupRoleBackgroundDrawLayer = { "BACKGROUND", 1 }, 
-			GroupRoleBackgroundTexture = GetMediaPath("point_plate"),
+			GroupRoleBackgroundTexture = GetMedia("point_plate"),
 			GroupRoleBackgroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
 		UseGroupRoleHealer = true, 
 			GroupRoleHealerPlace = { "CENTER", 0, 0 }, 
 			GroupRoleHealerSize = { 24, 24 },
-			GroupRoleHealerTexture = GetMediaPath("grouprole-icons-heal"),
+			GroupRoleHealerTexture = GetMedia("grouprole-icons-heal"),
 			GroupRoleHealerDrawLayer = { "ARTWORK", 1 },
 
 		UseGroupRoleTank = true, 
 			GroupRoleTankPlace = { "CENTER", 0, 0 }, 
 			GroupRoleTankSize = { 24, 24 },
-			GroupRoleTankTexture = GetMediaPath("grouprole-icons-tank"),
+			GroupRoleTankTexture = GetMedia("grouprole-icons-tank"),
 			GroupRoleTankDrawLayer = { "ARTWORK", 1 },
 
 		UseGroupRoleDPS = false, 
 			GroupRoleDPSPlace = { "CENTER", 0, 0 }, 
 			GroupRoleDPSSize = { 24, 24 },
-			GroupRoleDPSTexture = GetMediaPath("grouprole-icons-dps"),
+			GroupRoleDPSTexture = GetMedia("grouprole-icons-dps"),
 			GroupRoleDPSDrawLayer = { "ARTWORK", 1 },
 
 		GroupRolePostUpdate = function(element, unit, groupRole)
@@ -2170,7 +2184,7 @@ local UnitFrameRaid = setmetatable({
 		RaidRolePoint = "RIGHT", RaidRoleAnchor = "Name", RaidRolePlace = { "LEFT", -1, 1 }, 
 		RaidRoleSize = { 16, 16 }, 
 		RaidRoleDrawLayer = { "ARTWORK", 3 },
-		RaidRoleRaidTargetTexture = GetMediaPath("raid_target_icons_small"),
+		RaidRoleRaidTargetTexture = GetMedia("raid_target_icons_small"),
 
 	UseRaidDebuff = true, -- Prio #1
 		RaidDebuffPostUpdate = function(element, unit)
@@ -2205,13 +2219,13 @@ local UnitFrameRaid = setmetatable({
 
 }, { __index = Template_TinyFrame })
 
-LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFramePlayerHUD)
-LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
-LibDB:NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameFocus]", UnitFrameFocus)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameBoss]", UnitFrameBoss)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameArena]", UnitFrameArena)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameParty]", UnitFrameParty)
-LibDB:NewDatabase(ADDON..": Layout [UnitFrameRaid]", UnitFrameRaid)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFramePlayerHUD)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameFocus]", UnitFrameFocus)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameBoss]", UnitFrameBoss)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameArena]", UnitFrameArena)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameParty]", UnitFrameParty)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameRaid]", UnitFrameRaid)

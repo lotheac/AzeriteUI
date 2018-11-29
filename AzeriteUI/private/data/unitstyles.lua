@@ -11,14 +11,6 @@ but any layout data will have to be passed as function arguments.
 --]]--
 
 local ADDON = ...
-
--- Retrieve existing databases
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
-local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
-local Colors = CogWheel("LibDB"):GetDatabase(ADDON..": Colors")
-local Fonts = CogWheel("LibDB"):GetDatabase(ADDON..": Fonts")
-
--- Define this database
 local UnitStyles = CogWheel("LibDB"):NewDatabase(ADDON..": UnitStyles")
 
 -- Lua API
@@ -62,8 +54,7 @@ local S_PLAYER_OFFLINE = _G.PLAYER_OFFLINE
 local _, PlayerClass = UnitClass("player")
 
 -- Speed shortcuts
-local GetMediaPath = Functions.GetMediaPath
-local PlayerHasXP = Functions.PlayerHasXP
+local PlayerHasXP = CogWheel("LibPlayerData").PlayerHasXP
 
 local short = function(value)
 	value = tonumber(value)
@@ -127,6 +118,7 @@ local PostCreateAuraButton = function(element, button)
 end
 
 local PostUpdateAuraButton = function(element, button)
+	local colors = element._owner.colors
 	local Layout = element._owner.layout
 	if (not button) or (not button:IsVisible()) or (not button.unit) or (not UnitExists(button.unit)) then 
 		local color = Layout.AuraBorderBackdropBorderColor
@@ -142,24 +134,24 @@ local PostUpdateAuraButton = function(element, button)
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		else
-			local color = Colors.debuff[button.debuffType or "none"] or Layout.AuraBorderBackdropBorderColor
+			local color = colors.debuff[button.debuffType or "none"] or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		end
 	else 
 		if button.isStealable then 
-			local color = Colors.power.ARCANE_CHARGES or Layout.AuraBorderBackdropBorderColor
+			local color = colors.power.ARCANE_CHARGES or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		elseif button.isBuff then 
-			local color = Colors.quest.green or Layout.AuraBorderBackdropBorderColor
+			local color = colors.quest.green or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
 		else
-			local color = Colors.debuff.none or Layout.AuraBorderBackdropBorderColor
+			local color = colors.debuff.none or Layout.AuraBorderBackdropBorderColor
 			if color then 
 				button.Border:SetBackdropBorderColor(color[1], color[2], color[3])
 			end 
@@ -806,8 +798,7 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		self:SetHitRectInsets(0, 0, 0, 0)
 	end 
 
-	-- Assign our own global custom colors
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 	self.layout = Layout
 
 	-- Scaffolds
@@ -910,8 +901,10 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		local absorb = content:CreateStatusBar()
 		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
 		absorb:Place(unpack(Layout.AbsorbBarPlace))
-		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) 
 		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
+		absorb.absorbThreshold = Layout.AbsorbThreshold
 
 		if (not Layout.UseProgressiveFrames) then
 			absorb:SetSize(unpack(Layout.AbsorbSize))
@@ -922,7 +915,6 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
 		end 
 
-		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
 		self.Absorb = absorb
 	end 
 
@@ -1238,7 +1230,7 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Assign our own global custom colors
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 	self.layout = Layout
 
 	-- Scaffolds
@@ -1342,8 +1334,10 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 		local absorb = content:CreateStatusBar()
 		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
 		absorb:Place(unpack(Layout.AbsorbBarPlace))
-		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) 
 		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
+		absorb.absorbThreshold = Layout.AbsorbThreshold
 
 		if (not Layout.UseProgressiveFrames) then
 			absorb:SetSize(unpack(Layout.AbsorbSize))
@@ -1354,7 +1348,6 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
 		end 
 
-		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
 		self.Absorb = absorb
 	end 
 
@@ -1589,7 +1582,7 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Assign our own global custom colors
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 	self.layout = Layout
 
 
@@ -1694,8 +1687,10 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		local absorb = content:CreateStatusBar()
 		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
 		absorb:Place(unpack(Layout.AbsorbBarPlace))
-		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetOrientation(Layout.AbsorbBarOrientation)
 		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
+		absorb.absorbThreshold = Layout.AbsorbThreshold
 
 		if (not Layout.UseProgressiveFrames) then
 			absorb:SetSize(unpack(Layout.AbsorbSize))
@@ -1703,10 +1698,9 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		end
 
 		if Layout.AbsorbBarSparkMap then 
-			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
+			absorb:SetSparkMap(Layout.AbsorbBarSparkMap)
 		end 
-
-		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
+		
 		self.Absorb = absorb
 	end 
 
@@ -2020,8 +2014,14 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 	else 
 		self:SetHitRectInsets(0, 0, 0, 0)
 	end 
+	if Layout.ExplorerHitRects then 
+		local topOffset, bottomOffset, leftOffset, rightOffset = unpack(Layout.ExplorerHitRects)
+		self.GetExplorerHitRects = function(self)
+			return topOffset, bottomOffset, leftOffset, rightOffset
+		end 
+	end 
 
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 	self.layout = Layout
 
 	-- Scaffolds
@@ -2117,7 +2117,9 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		local absorb = content:CreateStatusBar()
 		absorb:SetFrameLevel(health:GetFrameLevel() + 1)
 		absorb:Place(unpack(Layout.AbsorbBarPlace))
-		absorb:SetOrientation(Layout.AbsorbBarOrientation) -- grow the bar towards the left (grows from the end of the health)
+		absorb:SetOrientation(Layout.AbsorbBarOrientation) 
+		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
+		absorb.absorbThreshold = Layout.AbsorbThreshold
 
 		if (not Layout.UseProgressiveFrames) then
 			absorb:SetSize(unpack(Layout.AbsorbSize))
@@ -2128,7 +2130,6 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
 		end 
 
-		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) -- make the bar fairly transparent, it's just an overlay after all. 
 		self.Absorb = absorb
 	end 
 
@@ -2602,7 +2603,7 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 	self.ignoreMouseOver = Layout.IgnoreMouseOver
 
 	-- Assign our own global custom colors
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 	self.layout = Layout
 
 
@@ -2841,7 +2842,7 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Assign our own global custom colors
-	self.colors = Colors
+	self.colors = Layout.Colors or self.colors
 	self.layout = Layout
 
 	-- frame to contain art backdrops, shadows, etc
@@ -2941,11 +2942,13 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		absorb:SetOrientation(Layout.AbsorbBarOrientation) 
 		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
 		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
+		absorb.absorbThreshold = Layout.AbsorbThreshold
 
 		if (not Layout.UseProgressiveFrames) then
 			absorb:SetSize(unpack(Layout.AbsorbSize))
 			absorb:SetStatusBarTexture(Layout.AbsorbBarTexture)
 		end
+
 		if Layout.AbsorbBarSparkMap then 
 			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
 		end 

@@ -1,6 +1,6 @@
 local ADDON = ...
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
-local Functions = CogWheel("LibDB"):GetDatabase(ADDON..": Functions")
+local PlayerData = CogWheel("LibPlayerData")
 
 -- Lua API
 local _G = _G
@@ -27,7 +27,7 @@ local filterFlags = Auras.filterFlags
 
 local CURRENT_ROLE
 
-if Functions.PlayerIsDamageOnly() then
+if PlayerData.PlayerIsDamageOnly() then
 	CURRENT_ROLE = "DAMAGER"
 else
 	local Updater = CreateFrame("Frame")
@@ -36,7 +36,7 @@ else
 			self:UnregisterEvent(event)
 			self:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
 		end
-		CURRENT_ROLE = Functions.GetPlayerRole()
+		CURRENT_ROLE = PlayerData.GetPlayerRole()
 	end)
 	if IsLoggedIn() then 
 		Updater:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
