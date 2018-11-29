@@ -14,15 +14,15 @@
 	<Script file="locale\zhCN.lua"/>
 	<Script file="locale\zhTW.lua"/>
 
+	<Script file="private.lua"/>
+
 	<Script file="data\auralist.lua"/>
 	<Script file="data\aura_cc.lua"/>
 	<Script file="data\aura_class.lua"/>
 	<Script file="data\aura_dungeon.lua"/>
 	<Script file="data\aura_food.lua"/>
-	<Script file="data\colors.lua"/>
-	<Script file="data\fonts.lua"/>
-	<Script file="data\functions.lua"/>
 	<Script file="data\aura_filters.lua"/>
+
 	<Script file="data\unitstyles.lua"/>
 
 	<Script file="config\actionbars.lua"/>
