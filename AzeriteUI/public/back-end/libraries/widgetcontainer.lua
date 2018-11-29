@@ -436,12 +436,8 @@ LibWidgetContainer.GetScript = function(self, scriptHandler)
 	return scriptHandlers[scriptHandler]
 end
 
--- Create a frame with certain extra methods we like to have
-LibWidgetContainer.CreateWidgetContainer = function(self, frameType, frameName, parent, template, unit, styleFunc, ...) 
-
-	local frame = setmetatable(LibWidgetContainer:CreateFrame(frameType or "Frame", nil, parent, template or "SecureHandlerAttributeTemplate"), WidgetFrame_MT)
-	frame:SetFrameStrata("LOW")
-	
+-- Not a public method
+LibWidgetContainer.InitWidgetContainer = function(self, frame, unit, styleFunc, ...)
 	if (type(unit) == "string") then 
 		frame.unit = unit
 		frame.id = tonumber(string_match(unit, "^.-(%d+)"))
@@ -474,6 +470,37 @@ LibWidgetContainer.CreateWidgetContainer = function(self, frameType, frameName, 
 	
 	-- Return it to the user
 	return frame
+end
+
+-- Apply the widget container element and event handling to an existing frame
+-- Currently assumes a frame of type "Button" or anything farther up in the hierarchy
+LibWidgetContainer.ApplyWidgetContainer = function(self, frame, parent, unit, styleFunc, ...)
+	check(frame, 1, "table")
+	check(parent, 2, "string", "table", "nil")
+	check(unit, 3, "string", "nil")
+	check(styleFunc, 4, "function", "nil")
+
+	-- Assign the widget meta methods
+	setmetatable(frame, WidgetFrame_MT)
+
+	return LibWidgetContainer:InitWidgetContainer(frame, unit, styleFunc, ...)
+end
+
+-- Create a frame with certain extra methods we like to have
+-- Currently assumes a frame of type "Button" or anything farther up in the hierarchy
+LibWidgetContainer.CreateWidgetContainer = function(self, frameType, parent, template, unit, styleFunc, ...) 
+	check(frameType, 1, "string", "nil")
+	check(parent, 2, "string", "table", "nil")
+	check(template, 3, "string", "nil")
+	check(unit, 4, "string", "nil")
+	check(styleFunc, 5, "function", "nil")
+
+	local frame = setmetatable(LibWidgetContainer:CreateFrame(frameType or "Frame", nil, parent, template or "SecureHandlerAttributeTemplate"), WidgetFrame_MT)
+
+	-- we sure we want to be doing this?
+	frame:SetFrameStrata("LOW")
+	
+	return LibWidgetContainer:InitWidgetContainer(frame, unit, styleFunc, ...)
 end
 
 -- register a widget/element
@@ -546,7 +573,8 @@ end
 -- Module embedding
 local embedMethods = {
 	CreateWidgetContainer = true,
-	GetWidgetContainer = true
+	GetWidgetContainer = true,
+	ApplyWidgetContainer = true
 }
 
 LibWidgetContainer.Embed = function(self, target)
