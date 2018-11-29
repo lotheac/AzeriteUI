@@ -414,6 +414,8 @@ end
 -- Library API
 --------------------------------------------------------------------------
 LibWidgetContainer.SetScript = function(self, scriptHandler, script)
+	check(scriptHandler, 1, "string")
+	check(script, 2, "function", "nil")
 	scriptHandlers[scriptHandler] = script
 	if (scriptHandler == "OnUpdate") then
 		if (not scriptFrame) then
@@ -430,6 +432,7 @@ LibWidgetContainer.SetScript = function(self, scriptHandler, script)
 end
 
 LibWidgetContainer.GetScript = function(self, scriptHandler)
+	check(scriptHandler, 1, "string")
 	return scriptHandlers[scriptHandler]
 end
 
