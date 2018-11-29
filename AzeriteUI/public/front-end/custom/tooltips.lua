@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("TooltipStyling", "LibEvent", "LibDB", "LibTooltip")
+local Layout
 
 -- Lua API
 local _G = _G
@@ -20,7 +21,6 @@ local SetCVar = _G.SetCVar
 local UnitReaction = _G.UnitReaction
 
 local LEVEL = UnitLevel("player") 
-local Colors, Layout
 
 -- Bar post updates
 -- Show health values for tooltip health bars, and hide others.
@@ -80,44 +80,12 @@ Module.StyleTooltips = function(self)
 	self:SetDefaultTooltipPosition(unpack(Layout.TooltipPlace))
 
 	-- Set the default colors for new tooltips
-	self:SetDefaultTooltipColorTable(Colors)
+	self:SetDefaultTooltipColorTable(Layout.Colors)
 
 	-- Post update tooltips already created
 	-- with some important values
 	self:PostCreateTooltips()
 end 
-
--- This will be called by the library upon creating new tooltips.
-Module.PostCreateTooltip = function(self, tooltip)
-
-	-- many tooltip flags are not implemented yet!
-
-	-- Turn off UIParent scale matching
-	tooltip:SetCValue("autoCorrectScale", false)
-
-	-- What items will be displayed automatically when available
-	tooltip.showHealthBar =  true
-	tooltip.showPowerBar =  true
-
-	-- Unit tooltips
-	tooltip.colorUnitClass = true -- color the unit class on the info line
-	tooltip.colorUnitPetRarity = true -- color unit names by combat pet rarity
-	tooltip.colorUnitNameClass = true -- color unit names by player class
-	tooltip.colorUnitNameReaction = true -- color unit names by NPC standing
-	tooltip.colorHealthClass = true -- color health bars by player class
-	tooltip.colorHealthPetRarity = true -- color health by combat pet rarity
-	tooltip.colorHealthReaction = true -- color health bars by NPC standing 
-	tooltip.colorHealthTapped = true -- color health bars if unit is tap denied
-	tooltip.colorPower = true -- color power bars by power type
-	tooltip.colorPowerTapped = true -- color power bars if unit is tap denied
-
-
-	-- Force our colors into all tooltips created so far
-	tooltip.colors = Colors
-
-	-- Add our post updates for statusbars
-	tooltip.PostUpdateStatusBar = postUpdateStatusBar
-end
 
 -- Add some of our own stuff to our tooltips.
 -- Making this a proxy of the standard post creation method.
@@ -140,8 +108,14 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [TooltipStyling]")
+
+	-- This will be called by the library upon creating new tooltips.
+	self.PostCreateTooltip = function(self, tooltip)
+		if Layout.PostCreateTooltip then 
+			Layout.PostCreateTooltip(tooltip)
+		end 
+	end
 end
 
 Module.OnInit = function(self)
