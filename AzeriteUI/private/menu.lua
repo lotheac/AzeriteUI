@@ -7,7 +7,8 @@ against manually manipulating it as it'll change frequently.
 
 --]]--
 
-local ADDON = ...
+local ADDON, Private = ...
+local Colors = Private.Colors
 
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
@@ -15,7 +16,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
-local Colors, Fonts, Functions, Layout, L, MenuTable
+local Layout, L, MenuTable
 
 -- Registries
 Module.buttons = Module.buttons or {}
@@ -835,12 +836,8 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Colors = CogWheel("LibDB"):GetDatabase(PREFIX..": Colors")
-	Fonts = CogWheel("LibDB"):GetDatabase(PREFIX..": Fonts")
-	Functions = CogWheel("LibDB"):GetDatabase(PREFIX..": Functions")
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Core]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-
 	self:CreateMenuTable()
 end
 
