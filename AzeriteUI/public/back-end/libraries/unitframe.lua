@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 51)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 52)
 if (not LibUnitFrame) then	
 	return
 end
@@ -172,62 +172,67 @@ end
 
 -- Secure Snippets
 --------------------------------------------------------------------------
--- Not currently used. 
---[[--
 local secureSnippets = {
-	vehicleSwitcher = [=[
-		if (name == "state-vehicleswitch") then 
-			local frame = self:GetFrameRef("UnitFrame");
-			local unit = frame:GetAttribute("unit");
-			local realUnit = self:GetAttribute("realUnit");
-			local vehicleUnit = self:GetAttribute("vehicleUnit");
+	initialConfigFunction = [=[
+		local header = self:GetParent()
+		local frames = table.new()
+		table.insert(frames, self)
+		self:GetChildList(frames)
+		for i = 1, #frames do
+			local frame = frames[i]
+			local unit
+			-- There's no need to do anything on frames with onlyProcessChildren
+			if (not frame:GetAttribute("oUF-onlyProcessChildren")) then
+				RegisterUnitWatch(frame)
 
-			local newUnit; 
-			if (realUnit == "player") then 
-				if UnitHasVehicleUI("player") then 
-					newUnit = "pet";
-				else 
-					newUnit = "player"; 
-				end 
-			elseif (realUnit == "pet") then 
-				if UnitHasVehicleUI("player") then 
-					newUnit = "player"; 
-				else 
-					newUnit = "pet";
-				end 
-			elseif UnitHasVehicleUI(realUnit) then 
-				newUnit = vehicleUnit 
-			else
-				newUnit = realUnit
+				-- Attempt to guess what the header is set to spawn.
+				local groupFilter = header:GetAttribute("groupFilter")
+
+				if(type(groupFilter) == "string" and groupFilter:match("MAIN[AT]")) then
+					local role = groupFilter:match("MAIN([AT])")
+					if(role == "T") then
+						unit = "maintank"
+					else
+						unit = "mainassist"
+					end
+				elseif(header:GetAttribute("showRaid")) then
+					unit = "raid"
+				elseif(header:GetAttribute("showParty")) then
+					unit = "party"
+				end
+
+				local headerType = header:GetAttribute("oUF-headerType")
+				local suffix = frame:GetAttribute("unitsuffix")
+				if(unit and suffix) then
+					if(headerType == "pet" and suffix == "target") then
+						unit = unit .. headerType .. suffix
+					else
+						unit = unit .. suffix
+					end
+				elseif(unit and headerType == "pet") then
+					unit = unit .. headerType
+				end
+
+				frame:SetAttribute("*type1", "target")
+				frame:SetAttribute("*type2", "togglemenu")
+				frame:SetAttribute("oUF-guessUnit", unit)
 			end
 
-			if newUnit then 
-				-- compare to the current visibility driver, replace if needed
-				local newDriver 
-				if (newUnit == realUnit) then 
-					newDriver = frame:GetAttribute("visibilityDriver"); 
-				else 
-					-- Making an exception here for the pet frame, 
-					-- it's just a tricky one for some reason.
-					--if (realUnit == "pet") then 
-					--	newDriver = "show"
-					--else 
-					--	newDriver = "[@"..newUnit..",exists]show;hide"; 
-					--	newDriver = "[@"..newUnit..",exists]show;hide"; 
-					--end 
-				end 
+			local body = header:GetAttribute("oUF-initialConfigFunction")
+			if(body) then
+				frame:Run(body, unit)
+			end
+		end
 
-				UnregisterAttributeDriver(frame, "state-visibility"); 
-				RegisterAttributeDriver(frame, "state-visibility", newDriver); 
+		header:CallMethod("styleFunction", self:GetName())
 
-				-- set the frame's new unit
-				-- *this will fire a callback in Lua, updating frame events and elements
-				frame:SetAttribute("unit", newUnit);
-			end	
+		local Clique = header:GetFrameRef("clickcast_header")
+		if Clique then
+			Clique:SetAttribute("clickcast_button", self)
+			Clique:RunAttribute("clickcast_register")
 		end
 	]=]
 }
---]]--
 
 -- Utility Functions
 --------------------------------------------------------------------------
@@ -374,7 +379,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		template = "SecureUnitButtonTemplate"
 	end 
 
-	local frame = LibUnitFrame:CreateWidgetContainer("Button", nil, parent, template, unit, styleFunc, ...)
+	local frame = LibUnitFrame:CreateWidgetContainer("Button", parent, template, unit, styleFunc, ...)
 	for method,func in pairs(UnitFrame) do 
 		frame[method] = func
 	end 
@@ -493,7 +498,32 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 end
 
 -- spawn and style a new group header
-LibUnitFrame.SpawnHeader = function(self, visibility_macro, parent, styleFunc)
+LibUnitFrame.SpawnHeader = function(self, unit, parent, styleFunc, ...)
+	
+	local headerTemplate, unitTemplate
+	if _G.Clique then 
+		headerTemplate = "SecureGroupHeaderTemplate"
+		unitTemplate = "SecureUnitButtonTemplate, SecureHandlerStateTemplate, SecureHandlerEnterLeaveTemplate"
+	else 
+		headerTemplate = "SecureGroupHeaderTemplate"
+		unitTemplate = "SecureUnitButtonTemplate"
+	end 
+
+	local header = self:CreateFrame("Frame", nil, "UICenter", headerTemplate)
+	header:SetAttribute("template", unitTemplate)
+	header:SetAttribute("initialConfigFunction", secureSnippets.initialConfigFunction)
+	for i = 1, select("#", ...), 2 do
+		local attribute, value = select(i, ...)
+		if (not attribute) then 
+			break 
+		end
+		header:SetAttribute(attribute, value)
+	end
+	if _G.Clique then
+		header:SetFrameRef("clickcast_header", _G.Clique.header)
+	end
+
+	return header
 end
 
 -- Make this a proxy for development purposes
