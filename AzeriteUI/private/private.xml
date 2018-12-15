@@ -23,8 +23,6 @@
 	<Script file="data\aura_food.lua"/>
 	<Script file="data\aura_filters.lua"/>
 
-	<Script file="data\unitstyles.lua"/>
-
 	<Script file="config\actionbars.lua"/>
 	<Script file="config\blizzard.lua"/>
 	<Script file="config\core.lua"/>

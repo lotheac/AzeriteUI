@@ -4,10 +4,8 @@
 	<Script file="blizzard\chatwindows.lua"/>
 	<Script file="blizzard\floaters.lua"/>
 	<Script file="blizzard\fonts.lua"/>
-	<!-- 
 	<Script file="blizzard\gamemenu.lua"/>
 	<Script file="blizzard\micromenu.lua"/>
-	-->
 	<Script file="blizzard\minimap.lua"/>
 	<Script file="blizzard\objectivestracker.lua"/>
 	<Script file="blizzard\popups.lua"/>

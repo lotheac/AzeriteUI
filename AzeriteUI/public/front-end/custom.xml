@@ -10,6 +10,7 @@
 	<Script file="custom\tooltips.lua"/>
 
 	<!-- unitframes -->
+	<Script file="custom\unitstyles.lua"/>
 	<Script file="custom\arenaframes.lua"/>
 	<Script file="custom\bossframes.lua"/>
 	<Script file="custom\focusframe.lua"/>
