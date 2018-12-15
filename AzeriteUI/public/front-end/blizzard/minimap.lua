@@ -651,7 +651,6 @@ local Rep_OverrideValue = function(element, current, min, max, factionName, stan
 		end 
 	end 
 	if element.colorValue then 
-		local color
 		local color = element._owner.colors[isFriend and "friendship" or "reaction"][standingID]
 		value:SetTextColor(color[1], color[2], color[3])
 		if percent then 
