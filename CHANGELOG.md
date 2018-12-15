@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Changed TOC version to patch 8.1.0 now that Blizzard has done it too.
 - Moved styling of the game menu and the micro menu to the new layout system.
+- Lowered threshold for showing absorb bars from 15% to 10% of full health value. 
 
 ### Fixed
 - Reworked classpower element to be fully hidden when using a possessbar, overridebar or vehicles with no vehicleUIs.
+- Fixed explorer mode hover area to also include player auras. 
 
 ## [1.1.88-Release] 2018-11-26
 ### Fixed
