@@ -235,6 +235,19 @@ local Generic_MT = { __index = Generic }
 
 -- Specific powerTypes
 local ClassPower = {}
+ClassPower.None = {
+	EnablePower = function(self) 
+		local element = self.ClassPower
+		for i = 1, #element do 
+			element[i]:SetMinMaxValues(0,1)
+			element[i]:SetValue(0)
+			element[i]:Hide()
+		end 
+	end, 
+	DisablePower = function() end, 
+	UpdatePower = function() end, 
+	UpdateColor = function() end, 
+}
 
 ClassPower.ArcaneCharges = setmetatable({ 
 	EnablePower = function(self)
@@ -805,10 +818,25 @@ local UpdatePowerType = function(self, event, unit, ...)
 		if ((PLAYERCLASS == "PALADIN") and (level >= PALADINPOWERBAR_SHOW_LEVEL)) or (PLAYERCLASS == "WARLOCK") and (level >= SHARDBAR_SHOW_LEVEL) then
 			self:UnregisterEvent("PLAYER_LEVEL_UP", Proxy)
 		end 
+
+	elseif (event == "UPDATE_POSSESS_BAR") then 
+		element.hasPossessBar = IsPossessBarVisible()
+
+	elseif (event == "UPDATE_OVERRIDE_ACTIONBAR") then 
+		element.hasOverrideBar = HasOverrideActionBar() or HasTempShapeshiftActionBar() 
+
+	elseif (event == "UNIT_ENTERING_VEHICLE") 
+	or (event == "UNIT_ENTERED_VEHICLE") 
+	or (event == "UNIT_EXITING_VEHICLE") 
+	or (event == "UNIT_EXITED_VEHICLE") then 
+		element.inVehicle = UnitInVehicle("player")
+		element.hasVehicleUI = UnitHasVehiclePlayerFrameUI("player")
 	end 
 
 	local newType 
-	if (UnitHasVehiclePlayerFrameUI("player")) then 
+	if (element.hasPossessBar or element.hasOverrideBar) or (element.inVehicle and (not element.hasVehicleUI)) then 
+		newType = "None"
+	elseif (element.hasVehicleUI) then 
 		newType = "ComboPoints"
 	elseif (PLAYERCLASS == "DEATHKNIGHT") then 
 		newType = "Runes"
@@ -878,7 +906,13 @@ local Enable = function(self)
 		-- *Also of importance that none 
 		-- of the powerTypes remove this event.
 		self:RegisterEvent("UNIT_DISPLAYPOWER", Proxy)
-
+		self:RegisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
+		self:RegisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
+		self:RegisterEvent("UNIT_EXITING_VEHICLE", Proxy)
+		self:RegisterEvent("UNIT_EXITED_VEHICLE", Proxy)
+		self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", Proxy, true)
+		self:RegisterEvent("UPDATE_POSSESS_BAR", Proxy, true)
+		
 		-- We'll handle spec specific powers from here, 
 		-- but will leave level checking to the sub-elements.
 		if (PLAYERCLASS == "MONK") or (PLAYERCLASS == "MAGE") or (PLAYERCLASS == "PALADIN") then 
@@ -918,5 +952,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 19)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 20)
 end 
