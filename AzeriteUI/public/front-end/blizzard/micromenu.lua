@@ -27,7 +27,7 @@ local GetNetStats = _G.GetNetStats
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
 local buttonWidth, buttonHeight, buttonSpacing, sizeMod = 300,50,10, .75
 
-local Colors, L, Layout, CoreLayout
+local L, Layout, CoreLayout
 
 local getBindingKeyForAction = function(action, useNotBound, useParentheses)
 	local key = GetBindingKey(action)
@@ -93,56 +93,61 @@ local microButtonScripts = {
 
 	CharacterMicroButton_OnEnter = function(self)
 		self.tooltipText = getMicroButtonTooltipText(CHARACTER_BUTTON, "TOGGLECHARACTER0")
+		local titleColor, normalColor = Layout.MenuButtonTitleColor, Layout.MenuButtonNormalColor
 		local tooltip = Module:GetOptionsMenuTooltip()
 		tooltip:Hide()
 		tooltip:SetDefaultAnchor(self)
-		tooltip:AddLine(self.tooltipText, Colors.title[1], Colors.title[2], Colors.title[3], true)
-		tooltip:AddLine(self.newbieText or NEWBIE_TOOLTIP_CHARACTER, Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
+		tooltip:AddLine(self.tooltipText, titleColor[1], titleColor[2], titleColor[3], true)
+		tooltip:AddLine(self.newbieText or NEWBIE_TOOLTIP_CHARACTER, normalColor[1], normalColor[2], normalColor[3], true)
 		tooltip:Show()
 	end,
 	
 	SpellbookMicroButton_OnEnter = function(self)
 		self.tooltipText = getMicroButtonTooltipText(SPELLBOOK_ABILITIES_BUTTON, "TOGGLESPELLBOOK")
+		local titleColor, normalColor = Layout.MenuButtonTitleColor, Layout.MenuButtonNormalColor
 		local tooltip = Module:GetOptionsMenuTooltip()
 		tooltip:Hide()
 		tooltip:SetDefaultAnchor(self)
-		tooltip:AddLine(self.tooltipText, Colors.title[1], Colors.title[2], Colors.title[3], true)
-		tooltip:AddLine(self.newbieText or NEWBIE_TOOLTIP_SPELLBOOK, Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
+		tooltip:AddLine(self.tooltipText, titleColor[1], titleColor[2], titleColor[3], true)
+		tooltip:AddLine(self.newbieText or NEWBIE_TOOLTIP_SPELLBOOK, normalColor[1], normalColor[2], normalColor[3], true)
 		tooltip:Show()
 	end,
 	
 	CollectionsMicroButton_OnEnter = function(self)
 		self.tooltipText = getMicroButtonTooltipText(COLLECTIONS, "TOGGLECOLLECTIONS")
+		local titleColor, normalColor = Layout.MenuButtonTitleColor, Layout.MenuButtonNormalColor
 		local tooltip = Module:GetOptionsMenuTooltip()
 		tooltip:Hide()
 		tooltip:SetDefaultAnchor(self)
-		tooltip:AddLine(self.tooltipText, Colors.title[1], Colors.title[2], Colors.title[3], true)
-		tooltip:AddLine(self.newbieText or NEWBIE_TOOLTIP_MOUNTS_AND_PETS, Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
+		tooltip:AddLine(self.tooltipText, titleColor[1], titleColor[2], titleColor[3], true)
+		tooltip:AddLine(self.newbieText or NEWBIE_TOOLTIP_MOUNTS_AND_PETS, normalColor[1], normalColor[2], normalColor[3], true)
 		tooltip:Show()
 	end,
 
 
 	MainMenuMicroButton_OnEnter = function(self)
+		local titleColor, normalColor = Layout.MenuButtonTitleColor, Layout.MenuButtonNormalColor
 		local tooltip = Module:GetOptionsMenuTooltip()
 		tooltip:Hide()
 		tooltip:SetDefaultAnchor(self)
-		tooltip:AddLine(self.tooltipText, Colors.title[1], Colors.title[2], Colors.title[3], true)
-		tooltip:AddLine(self.newbieText, Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
+		tooltip:AddLine(self.tooltipText, titleColor[1], titleColor[2], titleColor[3], true)
+		tooltip:AddLine(self.newbieText, normalColor[1], normalColor[2], normalColor[3], true)
 		tooltip:Show()
 	end,
 
 	MicroButton_OnEnter = function(self)
 		if (self:IsEnabled() or self.minLevel or self.disabledTooltip or self.factionGroup) then
 	
+			local titleColor, normalColor = Layout.MenuButtonTitleColor, Layout.MenuButtonNormalColor
 			local tooltip = Module:GetOptionsMenuTooltip()
 			tooltip:Hide()
 			tooltip:SetDefaultAnchor(self)
-	
+
 			if self.tooltipText then
-				tooltip:AddLine(self.tooltipText, Colors.title[1], Colors.title[2], Colors.title[3], true)
-				tooltip:AddLine(self.newbieText, Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
+				tooltip:AddLine(self.tooltipText, titleColor[1], titleColor[2], titleColor[3], true)
+				tooltip:AddLine(self.newbieText, normalColor[1], normalColor[2], normalColor[3], true)
 			else
-				tooltip:AddLine(self.newbieText, Colors.title[1], Colors.title[2], Colors.title[3], true)
+				tooltip:AddLine(self.newbieText, titleColor[1], titleColor[2], titleColor[3], true)
 			end
 	
 			if (not self:IsEnabled()) then
@@ -361,25 +366,27 @@ Module.AddOptionsToMenuWindow = function(self)
 				microButton:SetScript("OnLeave", microButtonScripts.MicroButton_OnLeave)
 
 
-				if Layout.UseBorderBackdrop then 
+				microButton:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod) 
 
-				else 
-					microButton.normal = microButton:CreateTexture()
-					microButton.normal:SetDrawLayer("ARTWORK")
-					microButton.normal:SetTexture(GetMedia("menu_button_normal"))
-					microButton.normal:SetSize(1024 *1/3 *sizeMod, 256 *1/3 *sizeMod)
-					microButton.normal:SetPoint("CENTER")
-	
+				if Layout.MenuButton_PostCreate then 
+					Layout.MenuButton_PostCreate(microButton, microButtonTexts[buttonName])
+				end
+
+				if Layout.MenuButton_PostUpdate then 
+					local PostUpdate = Layout.MenuButton_PostUpdate
+					microButton:HookScript("OnEnter", PostUpdate)
+					microButton:HookScript("OnLeave", PostUpdate)
+					microButton:HookScript("OnMouseDown", function(self) self.isDown = true; return PostUpdate(self) end)
+					microButton:HookScript("OnMouseUp", function(self) self.isDown = false; return PostUpdate(self) end)
+					microButton:HookScript("OnShow", function(self) self.isDown = false; return PostUpdate(self) end)
+					microButton:HookScript("OnHide", function(self) self.isDown = false; return PostUpdate(self) end)
+					PostUpdate(microButton)
+				else
+					microButton:HookScript("OnMouseDown", function(self) self.isDown = true end)
+					microButton:HookScript("OnMouseUp", function(self) self.isDown = false end)
+					microButton:HookScript("OnShow", function(self) self.isDown = false end)
+					microButton:HookScript("OnHide", function(self) self.isDown = false end)
 				end 
-
-				microButton.newText = microButton:CreateFontString()
-				microButton.newText:SetDrawLayer("OVERLAY")
-				microButton.newText:SetTextColor(unpack(Layout.ButtonFontColor))
-				microButton.newText:SetFontObject(Layout.ButtonFont)
-				microButton.newText:SetShadowOffset(unpack(Layout.ButtonFontShadowOffset))
-				microButton.newText:SetShadowColor(unpack(Layout.ButtonFontShadowColor))
-				microButton.newText:SetText(microButtonTexts[buttonName])
-				microButton.newText:SetPoint("CENTER", 0, 0)
 
 				-- Add a frame the secure autohider can track,
 				-- and anchor it to the micro button

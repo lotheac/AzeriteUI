@@ -63,10 +63,6 @@ Module.UpdateButtonLayout = function(self)
 
 	first:ClearAllPoints()
 	first:SetPoint("TOP", UICenter, "TOP", 0, -y_position)
-
-	--self.border:SetPoint("TOPLEFT", first, "TOPLEFT", -(23*sizeMod + 20), (23*sizeMod + 20))
-	--self.border:SetPoint("BOTTOMRIGHT", last, "BOTTOMRIGHT", (23*sizeMod + 20), -(23*sizeMod + 20))
-
 end
 
 Module.StyleButtons = function(self)
@@ -74,6 +70,7 @@ Module.StyleButtons = function(self)
 
 	local need_addon_watch
 	for i,v in ipairs(self.buttons) do
+
 		-- figure out the real frame handle of the button
 		local button
 		if type(v.content) == "string" then
@@ -88,196 +85,68 @@ Module.StyleButtons = function(self)
 			if button then
 				-- Ignore hidden buttons, because that means Blizzard aren't using them.
 				-- An example of this is the mac options button which is hidden on windows/linux.
-				--if button:IsShown() then
-					local label
-					if type(v.label) == "function" then
-						label = v.label()
-					else
-						label = v.label
-					end
-					local anchor = v.anchor
-					
-					-- run custom scripts on the button, if any
-					if v.run then
-						v.run(button)
-					end
 
-					-- Hide some textures added in Legion that cause flickering
-					if button.Left then
-						button.Left:SetAlpha(0)
-					end
-					if button.Right then
-						button.Right:SetAlpha(0)
-					end
-					if button.Middle then
-						button.Middle:SetAlpha(0)
-					end
-
-					-- Clear away blizzard artwork
-					button:SetNormalTexture("")
-					button:SetHighlightTexture("")
-					button:SetPushedTexture("")
-
-					--button:SetText(" ") -- this is not enough, blizzard adds it back in some cases
-					
-					local fontstring = button:GetFontString()
-					if fontstring then
-						fontstring:SetAlpha(0) -- this is compatible with the Shop button
-					end
-					
-					-- We can NOT modify the :SetText function durictly, as it sometimes is called by secure code, 
-					-- and we would end up with a tainted GameMenuFrame!
-					--hooksecurefunc(button, "SetText", function(self, msg)
-					--	if not msg or msg == "" then
-					--		return
-					--	end
-						--self:SetText(" ")
-					--end)
-					
-					-- create our own artwork
-					button.normal = button:CreateTexture(nil, "ARTWORK")
-					button.normal:SetPoint("CENTER")
+				local label
+				if type(v.label) == "function" then
+					label = v.label()
+				else
+					label = v.label
+				end
+				local anchor = v.anchor
 				
-					button.highlight = button:CreateTexture(nil, "ARTWORK")
-					button.highlight:SetPoint("CENTER")
+				-- run custom scripts on the button, if any
+				if v.run then
+					v.run(button)
+				end
 
-					button.pushed = button:CreateTexture(nil, "ARTWORK")
-					button.pushed:SetPoint("CENTER")
+				-- Hide some textures added in Legion that cause flickering
+				if button.Left then
+					button.Left:SetAlpha(0)
+				end
+				if button.Right then
+					button.Right:SetAlpha(0)
+				end
+				if button.Middle then
+					button.Middle:SetAlpha(0)
+				end
+
+				-- Clear away blizzard artwork
+				button:SetNormalTexture("")
+				button:SetHighlightTexture("")
+				button:SetPushedTexture("")
+
+				--button:SetText(" ") -- this is not enough, blizzard adds it back in some cases
+				
+				local fontstring = button:GetFontString()
+				if fontstring then
+					fontstring:SetAlpha(0) -- this is compatible with the Shop button
+				end
+				
+				button:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod) 
+
+				if Layout.MenuButton_PostCreate then 
+					Layout.MenuButton_PostCreate(button, label)
+				end
+
+				if Layout.MenuButton_PostUpdate then 
+					local PostUpdate = Layout.MenuButton_PostUpdate
+					button:HookScript("OnEnter", PostUpdate)
+					button:HookScript("OnLeave", PostUpdate)
+					button:HookScript("OnMouseDown", function(self) self.isDown = true; return PostUpdate(self) end)
+					button:HookScript("OnMouseUp", function(self) self.isDown = false; return PostUpdate(self) end)
+					button:HookScript("OnShow", function(self) self.isDown = false; return PostUpdate(self) end)
+					button:HookScript("OnHide", function(self) self.isDown = false; return PostUpdate(self) end)
+					PostUpdate(button)
+				else
+					button:HookScript("OnMouseDown", function(self) self.isDown = true end)
+					button:HookScript("OnMouseUp", function(self) self.isDown = false end)
+					button:HookScript("OnShow", function(self) self.isDown = false end)
+					button:HookScript("OnHide", function(self) self.isDown = false end)
+				end 
+			
+				v.button = button -- add a reference to the frame handle for the layout function
+				v.styled = true -- avoid double styling
 					
-					button.text = {
-						normal = button:CreateFontString(nil, "OVERLAY"),
-						highlight = button:CreateFontString(nil, "OVERLAY"),
-						pushed = button:CreateFontString(nil, "OVERLAY"),
-
-						SetPoint = function(self, ...)
-							self.normal:SetPoint(...)
-							self.highlight:SetPoint(...)
-							self.pushed:SetPoint(...)
-						end,
-
-						ClearAllPoints = function(self)
-							self.normal:ClearAllPoints()
-							self.highlight:ClearAllPoints()
-							self.pushed:ClearAllPoints()
-						end,
-
-						SetText = function(self, ...)
-							self.normal:SetText(...)
-							self.highlight:SetText(...)
-							self.pushed:SetText(...)
-						end
-
-					}
-					button.text:SetPoint("CENTER")
-					
-					button:HookScript("OnEnter", function(self) self:UpdateLayers() end)
-					button:HookScript("OnLeave", function(self) self:UpdateLayers() end)
-					button:HookScript("OnMouseDown", function(self) 
-						self.isDown = true 
-						self:UpdateLayers()
-					end)
-					button:HookScript("OnMouseUp", function(self) 
-						self.isDown = false
-						self:UpdateLayers()
-					end)
-					button:HookScript("OnShow", function(self) 
-						self.isDown = false
-						self:UpdateLayers()
-					end)
-					button:HookScript("OnHide", function(self) 
-						self.isDown = false
-						self:UpdateLayers()
-					end)
-					button.UpdateLayers = function(self)
-						if self.isDown then
-							if self:IsMouseOver() then
-								self.pushed:SetAlpha(1)
-								self.text.pushed:SetAlpha(1)
-								self.text:ClearAllPoints()
-								self.text:SetPoint("CENTER", 0, -4)
-								self.highlight:SetAlpha(0)
-								self.text.normal:SetAlpha(0)
-								self.text.highlight:SetAlpha(0)
-							else
-								self.highlight:SetAlpha(1)
-								self.text.highlight:SetAlpha(1)
-								self.text:ClearAllPoints()
-								self.text:SetPoint("CENTER", 0, 0)
-								self.pushed:SetAlpha(0)
-								self.normal:SetAlpha(0)
-								self.text.pushed:SetAlpha(0)
-								self.text.normal:SetAlpha(0)
-							end
-							self.normal:SetAlpha(0)
-						else
-							self.text:ClearAllPoints()
-							self.text:SetPoint("CENTER", 0, 0)
-							if self:IsMouseOver() then
-								self.highlight:SetAlpha(1)
-								self.text.highlight:SetAlpha(1)
-								self.pushed:SetAlpha(0)
-								self.normal:SetAlpha(0)
-								self.text.pushed:SetAlpha(0)
-								self.text.normal:SetAlpha(0)
-							else
-								self.normal:SetAlpha(1)
-								self.text.normal:SetAlpha(1)
-								self.highlight:SetAlpha(0)
-								self.pushed:SetAlpha(0)
-								self.text.pushed:SetAlpha(0)
-								self.text.highlight:SetAlpha(0)
-							end
-						end
-					end
-					
-					button:SetSize(buttonWidth*sizeMod, buttonHeight*sizeMod) 
-					
-					-- guides to align textures by
-					--local test = button:CreateTexture()
-					--test:SetColorTexture(.7,0,0,.5)
-					--test:SetAllPoints()
-
-					button.normal:SetTexture(GetMedia("menu_button_normal"))
-					button.normal:SetSize(1024 *1/3*sizeMod, 256 *1/3*sizeMod)
-					button.normal:ClearAllPoints()
-					button.normal:SetPoint("CENTER")
-
-					button.highlight:SetTexture(GetMedia("menu_button_normal"))
-					button.highlight:SetSize(1024 *1/3*sizeMod, 256 *1/3*sizeMod)
-					button.highlight:ClearAllPoints()
-					button.highlight:SetPoint("CENTER")
-
-					button.pushed:SetTexture(GetMedia("menu_button_pushed"))
-					button.pushed:SetSize(1024 *1/3*sizeMod, 256 *1/3*sizeMod)
-					button.pushed:ClearAllPoints()
-					button.pushed:SetPoint("CENTER")
-
-					button.text.normal:SetTextColor(0,0,0)
-					button.text.normal:SetFontObject(GetFont(14, false))
-					button.text.normal:SetAlpha(.5)
-					button.text.normal:SetShadowOffset(0, -.85)
-					button.text.normal:SetShadowColor(1,1,1,.5)
-
-					button.text.highlight:SetTextColor(0,0,0)
-					button.text.highlight:SetFontObject(GetFont(14, false))
-					button.text.highlight:SetAlpha(.5)
-					button.text.highlight:SetShadowOffset(0, -.85)
-					button.text.highlight:SetShadowColor(1,1,1,.5)
-
-					button.text.pushed:SetTextColor(0,0,0)
-					button.text.pushed:SetFontObject(GetFont(14, false))
-					button.text.pushed:SetAlpha(.5)
-					button.text.pushed:SetShadowOffset(0, -.85)
-					button.text.pushed:SetShadowColor(1,1,1,.5)
-
-					button.text:SetText(label)
-
-					button:UpdateLayers() -- update colors and layers
-					
-					v.button = button -- add a reference to the frame handle for the layout function
-					v.styled = true -- avoid double styling
-					
-				--end
 			else
 				-- If the button doesn't exist, it could be something added by an addon later.
 				if v.addon then
@@ -336,7 +205,7 @@ end
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [ActionBarMain]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardGameMenu]")
 end
 
 Module.OnInit = function(self)
@@ -361,7 +230,6 @@ Module.OnInit = function(self)
 		{ content = GameMenuButtonQuit, label = EXIT_GAME },
 		{ content = GameMenuButtonContinue, label = RETURN_TO_GAME, anchor = "BOTTOM" }
 	}
-
 	
 	local UIHider = CreateFrame("Frame")
 	UIHider:Hide()
@@ -382,6 +250,8 @@ Module.OnInit = function(self)
 	-- Remove store button if there's no store available,
 	-- if we're currently using a trial account,
 	-- or if the account is in limited (no paid gametime) mode.
+	-- TODO: Hook a callback post-styling and post-showing this 
+	-- when the store becomes available mid-session. 
 	if GameMenuButtonStore 
 	and ((C_StorePublic and not C_StorePublic.IsEnabled())
 	or (IsTrialAccount and IsTrialAccount()) 
