@@ -34,6 +34,70 @@ local BlizzardChatFrames = {
 		ButtonTextureChatEmotes = GetMedia("config_button_emotes")
 }
 
+local BlizzardGameMenu = {
+
+	MenuButtonSize = { 300, 50 },
+	MenuButtonSpacing = 10, 
+	MenuButtonSizeMod = .75, 
+
+	MenuButton_PostCreate = function(self, text)
+		local msg = self:CreateFontString()
+		msg:SetPoint("CENTER", 0, 0)
+		msg:SetFontObject(GetFont(14, false))
+		msg:SetJustifyH("RIGHT")
+		msg:SetJustifyV("TOP")
+		msg:SetIndentedWordWrap(false)
+		msg:SetWordWrap(false)
+		msg:SetNonSpaceWrap(false)
+		msg:SetTextColor(0,0,0)
+		msg:SetShadowOffset(0, -.85)
+		msg:SetShadowColor(1,1,1,.5)
+		msg:SetText(text)
+		self.Msg = msg
+	
+		local bg = self:CreateTexture()
+		bg:SetDrawLayer("ARTWORK")
+		bg:SetTexture(GetMedia("menu_button_disabled"))
+		bg:SetVertexColor(.9, .9, .9)
+		bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+		bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
+		self.NormalBackdrop = bg
+
+		local pushed = self:CreateTexture()
+		pushed:SetDrawLayer("ARTWORK")
+		pushed:SetTexture(GetMedia("menu_button_pushed"))
+		pushed:SetVertexColor(.9, .9, .9)
+		pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+		pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
+		self.PushedBackdrop = pushed
+
+	end,
+
+	MenuButton_PostUpdate = function(self)
+		local show = self.isDown and self.PushedBackdrop or self.NormalBackdrop
+		local hide = self.isDown and self.NormalBackdrop or self.PushedBackdrop
+
+		hide:SetAlpha(0)
+		show:SetAlpha(1)
+
+		if self.isDown then
+			self.Msg:SetPoint("CENTER", 0, -2)
+			if self:IsMouseOver() then
+				show:SetVertexColor(1, 1, 1)
+			else
+				show:SetVertexColor(.75, .75, .75)
+			end
+		else
+			self.Msg:SetPoint("CENTER", 0, 0)
+			if self:IsMouseOver() then
+				show:SetVertexColor(1, 1, 1)
+			else
+				show:SetVertexColor(.75, .75, .75)
+			end
+		end
+	end, 
+}
+
 local BlizzardMicroMenu = {
 	Colors = Colors,
 
@@ -51,7 +115,70 @@ local BlizzardMicroMenu = {
 			left = 23 *.75, 
 			right = 23 *.75 
 		}
-	}
+	},
+
+	MenuButtonSize = { 300, 50 },
+	MenuButtonSpacing = 10, 
+	MenuButtonSizeMod = .75, 
+	MenuButtonTitleColor = { Colors.title[1], Colors.title[2], Colors.title[3] },
+	MenuButtonNormalColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] }, 
+
+	MenuButton_PostCreate = function(self, text)
+		local msg = self:CreateFontString()
+		msg:SetPoint("CENTER", 0, 0)
+		msg:SetFontObject(GetFont(14, false))
+		msg:SetJustifyH("RIGHT")
+		msg:SetJustifyV("TOP")
+		msg:SetIndentedWordWrap(false)
+		msg:SetWordWrap(false)
+		msg:SetNonSpaceWrap(false)
+		msg:SetTextColor(0,0,0)
+		msg:SetShadowOffset(0, -.85)
+		msg:SetShadowColor(1,1,1,.5)
+		msg:SetText(text)
+		self.Msg = msg
+	
+		local bg = self:CreateTexture()
+		bg:SetDrawLayer("ARTWORK")
+		bg:SetTexture(GetMedia("menu_button_disabled"))
+		bg:SetVertexColor(.9, .9, .9)
+		bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+		bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
+		self.NormalBackdrop = bg
+
+		local pushed = self:CreateTexture()
+		pushed:SetDrawLayer("ARTWORK")
+		pushed:SetTexture(GetMedia("menu_button_pushed"))
+		pushed:SetVertexColor(.9, .9, .9)
+		pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+		pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
+		self.PushedBackdrop = pushed
+
+	end,
+
+	MenuButton_PostUpdate = function(self)
+		local show = self.isDown and self.PushedBackdrop or self.NormalBackdrop
+		local hide = self.isDown and self.NormalBackdrop or self.PushedBackdrop
+
+		hide:SetAlpha(0)
+		show:SetAlpha(1)
+
+		if self.isDown then
+			self.Msg:SetPoint("CENTER", 0, -2)
+			if self:IsMouseOver() then
+				show:SetVertexColor(1, 1, 1)
+			else
+				show:SetVertexColor(.75, .75, .75)
+			end
+		else
+			self.Msg:SetPoint("CENTER", 0, 0)
+			if self:IsMouseOver() then
+				show:SetVertexColor(1, 1, 1)
+			else
+				show:SetVertexColor(.75, .75, .75)
+			end
+		end
+	end, 	
 }
 
 local BlizzardObjectivesTracker = {
@@ -246,6 +373,7 @@ local BlizzardFonts = {
 
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardChatFrames]", BlizzardChatFrames)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardFonts]", BlizzardFonts)
+CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardGameMenu]", BlizzardGameMenu)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardMicroMenu]", BlizzardMicroMenu)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardObjectivesTracker]", BlizzardObjectivesTracker)
 CogWheel("LibDB"):NewDatabase(ADDON..": Layout [BlizzardPopupStyling]", BlizzardPopupStyling)
