@@ -93,6 +93,14 @@ LibAura.UnregisterAuraWatch = function(self, unit)
 
 end
 
+LibAura.GetUnitAuraWatchCache = function(self, unit)
+	return Cache[unit]
+end
+
+LibAura.SendAuraUpdate = function(self, unit)
+	self:SendMessage("CG_UNIT_AURA", unit, Cache[unit])
+end
+
 local embedMethods = {
 	RegisterAuraWatch = true, 
 	UnregisterAuraWatch = true 
