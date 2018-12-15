@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.89-Release] 2018-12-15
+### Changed
+- Changed TOC version to patch 8.1.0 now that Blizzard has done it too.
+- Moved styling of the game menu and the micro menu to the new layout system.
+
+### Fixed
+- Reworked classpower element to be fully hidden when using a possessbar, overridebar or vehicles with no vehicleUIs.
+
 ## [1.1.88-Release] 2018-11-26
 ### Fixed
 - Whitelisted the missing additional spellID entry for the "Whispers of Power" debuff in Shrine of the Storm, to prevent killing more players. 
