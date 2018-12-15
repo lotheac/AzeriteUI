@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.90-Release] 2018-12-15
+### Fixed 
+- Fixed an issue that would cause bugs on reloads or when changing zones when tracking a reputation.
+
 ## [1.1.89-Release] 2018-12-15
 ### Changed
 - Changed TOC version to patch 8.1.0 now that Blizzard has done it too.
