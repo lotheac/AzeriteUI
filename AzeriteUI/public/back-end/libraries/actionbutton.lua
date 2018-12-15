@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 40)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 41)
 if (not LibSecureButton) then	
 	return
 end
@@ -552,8 +552,8 @@ ActionButton.UpdateCooldown = function(self)
 				end
 			end 
 
-			if hasChargeCooldown then 
-				SetCooldown(cooldown, 0, 0, false)
+			if (hasChargeCooldown) then 
+				SetCooldown(ChargeCooldown, 0, 0, false)
 			else 
 				SetCooldown(Cooldown, start, duration, enable, false, modRate)
 			end 
