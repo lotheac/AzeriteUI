@@ -4,6 +4,7 @@ local Auras = CogWheel("LibDB"):NewDatabase(ADDON..": Auras")
 -- Bitfield filter toggles
 local ByPlayer 			= tonumber("00000000000000000000000000000001", 2) -- Show when cast by player
 
+-- Unit visibility
 local OnPlayer 			= tonumber("00000000000000000000000000000010", 2) -- Show on player frame
 local OnTarget 			= tonumber("00000000000000000000000000000100", 2) -- Show on target frame 
 local OnPet 			= tonumber("00000000000000000000000000001000", 2) -- Show on pet frame
@@ -15,10 +16,20 @@ local OnArena			= tonumber("00000000000000000000000100000000", 2) -- Show on are
 local OnFriend 			= tonumber("00000000000000000000001000000000", 2) -- Show on friendly units, regardless of frame
 local OnEnemy 			= tonumber("00000000000000000000010000000000", 2) -- Show on enemy units, regardless of frame
 
+-- Player role visibility
 local PlayerIsDPS 		= tonumber("00000000000000000000100000000000", 2) -- Show when player is a damager
 local PlayerIsHealer 	= tonumber("00000000000000000001000000000000", 2) -- Show when player is a healer
 local PlayerIsTank 		= tonumber("00000000000000000010000000000000", 2) -- Show when player is a tank 
 
+-- Aura visibility priority
+local Never 			= tonumber("00000100000000000000000000000000", 2) -- Never show (Blacklist)
+local PrioLow 			= tonumber("00001000000000000000000000000000", 2) -- Low priority, will only be displayed if room
+local PrioMedium 		= tonumber("00010000000000000000000000000000", 2) -- Normal priority, same as not setting any
+local PrioHigh 			= tonumber("00100000000000000000000000000000", 2) -- High priority, shown first after boss
+local PrioBoss 			= tonumber("01000000000000000000000000000000", 2) -- Same priority as boss debuffs
+local Always 			= tonumber("10000000000000000000000000000000", 2) -- Always show (Whitelist)
+
+-- Aura information
 local IsCrowdControl 	= tonumber("00000000000000000100000000000000", 2) -- Aura is crowd control 
 local IsRoot 			= tonumber("00000000000000001000000000000000", 2) -- Aura is crowd control 
 local IsSnare 			= tonumber("00000000000000010000000000000000", 2) -- Aura is crowd control 
@@ -30,13 +41,6 @@ local IsDisarm 			= tonumber("00000000001000000000000000000000", 2) -- Aura is c
 
 local IsFood 			= tonumber("00000000100000000000000000000000", 2) -- Aura is a Well Fed! food buff
 local IsFlask 			= tonumber("00000001000000000000000000000000", 2) -- Aura is a flask buff of sorts 
-
-local Never 			= tonumber("00000100000000000000000000000000", 2) -- Never show (Blacklist)
-local PrioLow 			= tonumber("00001000000000000000000000000000", 2) -- Low priority, will only be displayed if room
-local PrioMedium 		= tonumber("00010000000000000000000000000000", 2) -- Normal priority, same as not setting any
-local PrioHigh 			= tonumber("00100000000000000000000000000000", 2) -- High priority, shown first after boss
-local PrioBoss 			= tonumber("01000000000000000000000000000000", 2) -- Same priority as boss debuffs
-local Always 			= tonumber("10000000000000000000000000000000", 2) -- Always show (Whitelist)
 
 -- Store the flags for the aura filtering functions
 Auras.filterFlags = {
