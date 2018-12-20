@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 15)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 16)
 if (not LibBlizzard) then	
 	return
 end
@@ -138,7 +138,11 @@ local killUnitFrame = function(baseName, keepParent)
 end
 
 UIWidgets["ActionBars"] = function(self)
+	UIWidgets["ActionBarsMainBar"](self)
+	UIWidgets["ActionBarsMicroButtons"](self)
+end 
 
+UIWidgets["ActionBarsMainBar"] = function(self)
 	MainMenuBar:EnableMouse(false)
 	MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
 	MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
@@ -215,6 +219,23 @@ UIWidgets["ActionBars"] = function(self)
 		_G["OverrideActionBarButton"..i]:EnableMouse(false) -- just in case it's still there
 	end
 	
+	MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
+	MainMenuBarVehicleLeaveButton:SetParent(UIHider)
+
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarRight"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarLeft"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomLeft"] = nil
+	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomRight"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["MultiCastActionBarFrame"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["MULTICASTACTIONBAR_YPOS"] = nil
+	
+	StreamingIcon:SetParent(UIHider)
+	FramerateLabel:SetParent(UIHider)
+	FramerateText:SetParent(UIHider)
+
+end 
+
+UIWidgets["ActionBarsMicroButtons"] = function(self)
 
 	MicroButtonAndBagsBar:Hide()
 	MicroButtonAndBagsBar:SetParent(UIHider)
@@ -237,26 +258,11 @@ UIWidgets["ActionBars"] = function(self)
 	TalentMicroButtonAlert:UnregisterAllEvents()
 	TalentMicroButtonAlert:SetParent(UIHider)
 
-	MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
-	MainMenuBarVehicleLeaveButton:SetParent(UIHider)
-
-	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarRight"] = nil
-	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarLeft"] = nil
-	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomLeft"] = nil
-	--UIPARENT_MANAGED_FRAME_POSITIONS["MultiBarBottomRight"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["MultiCastActionBarFrame"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["MULTICASTACTIONBAR_YPOS"] = nil
-	
-	StreamingIcon:SetParent(UIHider)
-	FramerateLabel:SetParent(UIHider)
-	FramerateText:SetParent(UIHider)
-
 	if _G.PlayerTalentFrame then
 		_G.PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	else
 		hooksecurefunc("TalentFrame_LoadUI", function() _G.PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED") end)
 	end
-
 end 
 
 UIWidgets["Alerts"] = function(self)
@@ -485,20 +491,18 @@ UIWidgets["Tutorials"] = function(self)
 end
 
 UIWidgets["UnitFrames"] = function(self)
+	UIWidgets["UnitFramePlayer"](self)
+	UIWidgets["UnitFramePet"](self)
+	UIWidgets["UnitFrameTarget"](self)
+	UIWidgets["UnitFrameToT"](self)
+	UIWidgets["UnitFramePet"](self)
+	UIWidgets["UnitFrameParty"](self)
+	UIWidgets["UnitFrameBoss"](self)
+	UIWidgets["UnitFrameArena"](self)
+end
 
+UIWidgets["UnitFramePlayer"] = function(self)
 	killUnitFrame("PlayerFrame")
-	killUnitFrame("PetFrame")
-	killUnitFrame("TargetFrame")
-	killUnitFrame("ComboFrame")
-	killUnitFrame("FocusFrame")
-	killUnitFrame("TargetofFocusFrame")
-	killUnitFrame("TargetFrameToT")
-
-	for i=1,4 do
-		killUnitFrame(("ArenaEnemyFrame%d"):format(i))
-		killUnitFrame(("Boss%dTargetFrame"):format(i))
-		killUnitFrame(("PartyMemberFrame%d"):format(i))
-	end
 
 	-- A lot of blizz modules relies on PlayerFrame.unit
 	-- This includes the aura frame and several others. 
@@ -514,8 +518,31 @@ UIWidgets["UnitFrames"] = function(self)
 
 	-- Disable stagger bar events
 	_G.MonkStaggerBar:UnregisterAllEvents()
+end
 
+UIWidgets["UnitFramePet"] = function(self)
+	killUnitFrame("PetFrame")
+end
+
+UIWidgets["UnitFrameTarget"] = function(self)
+	killUnitFrame("TargetFrame")
+	killUnitFrame("ComboFrame")
+end
+
+UIWidgets["UnitFrameToT"] = function(self)
+	killUnitFrame("TargetFrameToT")
 	TargetofTarget_Update(_G.TargetFrameToT)
+end
+
+UIWidgets["UnitFrameFocus"] = function(self)
+	killUnitFrame("FocusFrame")
+	killUnitFrame("TargetofFocusFrame")
+end 
+
+UIWidgets["UnitFrameParty"] = function(self)
+	for i = 1,4 do
+		killUnitFrame(("PartyMemberFrame%d"):format(i))
+	end
 
 	-- Kill off the party background
 	_G.PartyMemberBackground:SetParent(UIHider)
@@ -528,12 +555,23 @@ UIWidgets["UnitFrames"] = function(self)
 	--		killUnitFrame(_G["CompactPartyFrameMember" .. i])
 	--	end	
 	--end)
-	
+end
+
+UIWidgets["UnitFrameArena"] = function(self)
+	for i = 1,4 do
+		killUnitFrame(("ArenaEnemyFrame%d"):format(i))
+	end
+
 	-- Blizzard_ArenaUI should not be loaded
 	_G.Arena_LoadUI = function() end
 
 	SetCVar("showArenaEnemyFrames", "0", "SHOW_ARENA_ENEMY_FRAMES_TEXT")
+end
 
+UIWidgets["UnitFrameBoss"] = function(self)
+	for i = 1,4 do
+		killUnitFrame(("Boss%dTargetFrame"):format(i))
+	end
 end
 
 UIWidgets["WorldMap"] = function(self)
