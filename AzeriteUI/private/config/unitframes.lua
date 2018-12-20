@@ -466,6 +466,14 @@ local UnitFramePlayer = {
 			PowerValueFont = GetFont(18, true),
 			PowerValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .4 },
 
+		UseWinterVeilPower = true, 
+			WinterVeilPowerSize = { 120 / ((255-50*2)/255), 140 / ((255-37*2)/255) },
+			WinterVeilPowerPlace = { "CENTER", -2, 24 },
+			WinterVeilPowerTexture = GetMedia("seasonal_winterveil_crystal"), 
+			WinterVeilPowerDrawLayer = { "OVERLAY", 0 },
+			WinterVeilPowerColor = { 1, 1, 1 }, 
+			--WinterVeilPowerColor = { Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75 }, 
+
 	UseManaText = true,
 		ManaTextParent = "Power", 
 		ManaTextPlace = { "CENTER", 1, -32 },
@@ -575,6 +583,14 @@ local UnitFramePlayer = {
 			ManaValueJustifyV = "MIDDLE", 
 			ManaValueFont = GetFont(18, true),
 			ManaValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .4 },
+
+		UseWinterVeilMana = true, 
+			WinterVeilManaSize = { 188, 188 },
+			WinterVeilManaPlace = { "CENTER", 0, 0 },
+			WinterVeilManaTexture = GetMedia("seasonal_winterveil_orb"), 
+			WinterVeilManaDrawLayer = { "OVERLAY", 0 },
+			WinterVeilManaColor = { 1, 1, 1 }, 
+			--WinterVeilManaColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
 	UseAuras = true,
 		AuraSize = 40, -- aurasize
