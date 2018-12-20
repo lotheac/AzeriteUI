@@ -20,6 +20,7 @@ LibFrame:Embed(LibAura)
 -- Lua API
 local _G = _G
 local assert = assert
+local bit_band = bit.band
 local bit_bor = bit.bor
 local date = date
 local debugstack = debugstack
@@ -35,12 +36,14 @@ local type = type
 
 -- Library registries
 LibAura.embeds = LibAura.embeds or {}
+LibAura.auras = LibAura.auras or {}
 LibAura.cache = LibAura.cache or {}
 LibAura.infoFlags = LibAura.infoFlags or {}
 LibAura.userFlags = LibAura.userFlags or {}
 LibAura.frame = LibAura.frame or LibAura:CreateFrame("Frame")
 
 -- Shortcuts
+local Auras = LibAura.auras
 local Cache = LibAura.cache
 local InfoFlags = LibAura.infoFlags
 local UserFlags = LibAura.userFlags
@@ -106,9 +109,42 @@ LibAura.SendAuraUpdate = function(self, unit)
 	self:SendMessage("CG_UNIT_AURA", unit, Cache[unit])
 end
 
+LibAura.AddAuraFlags = function(self, spellID, flags)
+	if (not UserFlags[self]) then 
+		UserFlags[self] = {}
+	end 
+	if (not UserFlags[self][spellID]) then 
+		UserFlags[self][spellID] = flags
+		return 
+	end 
+	UserFlags[self][spellID] = bit_bor(UserFlags[self][spellID], flags)
+end 
+
+LibAura.RemoveAuraFlags = function(self, spellID, removalFlags)
+	if (not UserFlags[self]) or (not UserFlags[self][spellID]) then 
+		return 
+	end 
+	local userFlags = UserFlags[self][spellID]
+	local changed
+	for i = 1,64 do -- bit.bits ? 
+		local bit = (i-1)^2 -- create a mask 
+		local userFlagsHasBit = bit_band(userFlags, bit) -- see if the user filter has the bit set
+		local removalFlagsHasBit = bit_band(removalFlags, bit) -- see if the removal flags has the bit set
+		if (userFlagsHasBit and removalFlagsHasBit) then 
+			userFlags = userFlags - bit -- just simply deduct the masked bit value if it was set
+			changed = true 
+		end 
+	end 
+	if (changed) then 
+		UserFlags[self][spellID] = userFlags
+	end 
+end 
+
 local embedMethods = {
 	RegisterAuraWatch = true, 
-	UnregisterAuraWatch = true 
+	UnregisterAuraWatch = true,
+	AddAuraFlags = true, 
+	RemoveAuraFlags = true
 }
 
 LibAura.Embed = function(self, target)
@@ -205,6 +241,7 @@ InfoFlags.IsCrowdControl = IsCrowdControl
 InfoFlags.IsRoot = IsRoot
 InfoFlags.IsSnare = IsSnare
 InfoFlags.IsSilence = IsSilence
+InfoFlags.IsStun = IsStun
 InfoFlags.IsImmune = IsImmune
 InfoFlags.IsImmuneSpell = IsImmuneSpell
 InfoFlags.IsImmunePhysical = IsImmunePhysical
@@ -238,19 +275,22 @@ local IsTauren = IsRacialSpell + Tauren
 local IsTroll = IsRacialSpell + Troll
 local IsWorgen = IsRacialSpell + Worgen
 
+
 -- RegEx used to convert the database;
 -- 	Search: Cache\[([\d\s]+)\](.*?)= (.*?) (\-\-?)(.*?)(\n)
 -- 	Replace: AddFlags($1, $3) $4$5$6
 
+
 -- Add flags to or create the cache entry
 -- This is to avoid duplicate entries removing flags
 local AddFlags = function(spellID, flags)
-	if (not Cache[spellID]) then 
-		Cache[spellID] = flags
+	if (not Auras[spellID]) then 
+		Auras[spellID] = flags
 		return 
 	end 
-	Cache[spellID] = bit_bor(Cache[spellID], flags)
+	Auras[spellID] = bit_bor(Auras[spellID], flags)
 end
+
 
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
