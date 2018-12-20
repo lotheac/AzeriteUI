@@ -2172,6 +2172,20 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 			powerFg:SetTexture(Layout.PowerForegroundTexture)
 			self.Power.Fg = powerFg
 		end
+
+		if Layout.UseWinterVeilPower then 
+			local day = tonumber(date("%d"))
+			local month = tonumber(date("%m"))
+			if ((month >= 12) and (day >=16 )) or ((month <= 1) and (day <= 2)) then 
+				local winterVeilPower = power:CreateTexture()
+				winterVeilPower:SetSize(unpack(Layout.WinterVeilPowerSize))
+				winterVeilPower:SetPoint(unpack(Layout.WinterVeilPowerPlace))
+				winterVeilPower:SetDrawLayer(unpack(Layout.WinterVeilPowerDrawLayer))
+				winterVeilPower:SetTexture(Layout.WinterVeilPowerTexture)
+				winterVeilPower:SetVertexColor(unpack(Layout.WinterVeilPowerColor))
+				self.Power.WinterVeil = winterVeilPower
+			end
+		end 
 	end 
 
 
@@ -2237,6 +2251,21 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 
 				self.ExtraPower.Fg = extraPowerFg
 			end 
+
+			if Layout.UseWinterVeilMana then 
+				local day = tonumber(date("%d"))
+				local month = tonumber(date("%m"))
+				if ((month >= 12) and (day >=16 )) or ((month <= 1) and (day <= 2)) then 
+					local winterVeilMana = extraPower:CreateTexture()
+					winterVeilMana:SetSize(unpack(Layout.WinterVeilManaSize))
+					winterVeilMana:SetPoint(unpack(Layout.WinterVeilManaPlace))
+					winterVeilMana:SetDrawLayer(unpack(Layout.WinterVeilManaDrawLayer))
+					winterVeilMana:SetTexture(Layout.WinterVeilManaTexture)
+					winterVeilMana:SetVertexColor(unpack(Layout.WinterVeilManaColor))
+					self.ExtraPower.WinterVeil = winterVeilMana
+				end 
+			end 
+	
 		end 
 
 	end 
