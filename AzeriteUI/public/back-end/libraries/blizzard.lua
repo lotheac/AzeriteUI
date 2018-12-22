@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 16)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 17)
 if (not LibBlizzard) then	
 	return
 end
@@ -496,6 +496,7 @@ UIWidgets["UnitFrames"] = function(self)
 	UIWidgets["UnitFrameTarget"](self)
 	UIWidgets["UnitFrameToT"](self)
 	UIWidgets["UnitFramePet"](self)
+	UIWidgets["UnitFrameFocus"](self)
 	UIWidgets["UnitFrameParty"](self)
 	UIWidgets["UnitFrameBoss"](self)
 	UIWidgets["UnitFrameArena"](self)
