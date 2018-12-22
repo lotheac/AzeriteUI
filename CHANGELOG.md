@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.93-Release] 2018-12-22
+### Changed
+- Changed default setting for actionbuttons to "cast on down". User option to change coming in next update. 
+
+### Fixed
+- The Blizzard focus unit frame should once again remain hidden. 
+
 ## [1.1.92-Release] 2018-12-20
 ### Added
 - Some stuff. 
