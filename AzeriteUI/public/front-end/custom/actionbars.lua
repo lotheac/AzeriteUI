@@ -273,7 +273,7 @@ local defaults = {
 	visibilityPet = 1, 
 
 	-- todo
-	castOnDown = false,
+	castOnDown = true,
 	showBinds = true, 
 	showCooldown = true, 
 	showCooldownCount = true,
