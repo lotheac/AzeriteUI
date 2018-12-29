@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 23)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 24)
 if (not LibNamePlate) then	
 	return
 end
@@ -19,6 +19,7 @@ assert(LibStatusBar, "LibNamePlate requires LibStatusBar to be loaded.")
 LibEvent:Embed(LibNamePlate)
 LibFrame:Embed(LibNamePlate)
 LibStatusBar:Embed(LibNamePlate)
+LibClientBuild:Embed(LibNamePlate)
 
 -- Lua API
 local _G = _G
@@ -96,6 +97,19 @@ LibNamePlate.isEnabled = LibNamePlate.isEnabled or false
 -- we just need a value of some sort here as a fallback.
 LibNamePlate.SCALE = LibNamePlate.SCALE or 768/1080
 
+-- Frame to securely hide items
+if (not LibNamePlate.uiHider) then
+	local uiHider = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
+	uiHider:Hide()
+	uiHider:SetPoint("TOPLEFT", 0, 0)
+	uiHider:SetPoint("BOTTOMRIGHT", 0, 0)
+	RegisterAttributeDriver(uiHider, "state-visibility", "hide")
+
+	-- Attach it to our library
+	LibNamePlate.uiHider = uiHider
+end
+
+
 -- We need this one
 local UICenter = LibFrame:GetFrame()
 
@@ -114,6 +128,7 @@ local frameElementsEnabled = LibNamePlate.frameElementsEnabled
 local frameElementsDisabled = LibNamePlate.frameElementsDisabled
 local scriptHandlers = LibNamePlate.scriptHandlers
 local scriptFrame = LibNamePlate.scriptFrame
+local uiHider = LibNamePlate.uiHider
 
 -- This will be true if forced updates are needed on all plates
 -- All plates will be updated in the next frame cycle 
@@ -1005,7 +1020,31 @@ LibNamePlate.Enable = function(self)
 	self:RegisterEvent("DISPLAY_SIZE_CHANGED", "OnEvent")
 	self:RegisterEvent("UI_SCALE_CHANGED", "OnEvent")
 
+	self:Kill810Bars()
+
 	self.enabled = true
+end 
+
+LibNamePlate.Kill810Bars = function(self)
+	if self:IsBuild("8.0.1") then
+		local frame = ClassNameplateManaBarFrame
+		if frame then 
+			for _,object in pairs({
+				frame, 
+				frame.Border, 
+				frame.FeedbackFrame, 
+				frame.FullPowerFrame, 
+				frame.ManaCostPredictionBar, 
+				frame.background, 
+				frame.Texture
+			}) do
+				if object then 
+					object:ClearAllPoints()
+					object:SetParent(uiHider)
+				end 
+			end
+		end 
+	end
 end 
 
 LibNamePlate.StartNamePlateEngine = function(self)
