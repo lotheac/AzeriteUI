@@ -252,6 +252,10 @@ local secureSnippets = {
 
 			self:SetAttribute("buttonsComplimentary", buttonsComplimentary); 
 			self:RunAttribute("arrangeButtons"); 
+		
+		elseif (name == "change-castondown") then 
+			self:SetAttribute("castOnDown", value and true or false); 
+			self:CallMethod("UpdateCastOnDown"); 
 		end 
 
 	]=]
@@ -906,6 +910,7 @@ Module.SpawnButtons = function(self)
 	self.hoverButtons2 = hoverButtons2
 
 	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
+	proxy.UpdateCastOnDown = function(proxy) self:UpdateCastOnDown() end
 	proxy.UpdateFading = function(proxy) self:UpdateFading() end
 	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
 	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
@@ -1029,7 +1034,7 @@ Module.UpdateFadeAnchors = function(self)
 	end 
 end
 
-Module.UpdateSettings = function(self, event, ...)
+Module.UpdateCastOnDown = function(self)
 	if InCombatLockdown() then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateSettings")
 	end
@@ -1041,10 +1046,13 @@ Module.UpdateSettings = function(self, event, ...)
 		button:RegisterForClicks(db.castOnDown and "AnyDown" or "AnyUp")
 		button:Update()
 	end 
-	if (not Layout.UseHardCodedLayout) then 
-		self:UpdateFading()
-		self:UpdateFadeAnchors()
-	end 
+end 
+
+Module.UpdateSettings = function(self, event, ...)
+	local db = self.db
+	self:UpdateFading()
+	self:UpdateFadeAnchors()
+	self:UpdateCastOnDown()
 end 
 
 Module.OnEvent = function(self, event, ...)
