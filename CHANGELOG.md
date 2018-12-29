@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.95-Release] 2018-12-29
+### Fixed
+- Updated the nameplate back-end to automatically remove the new 8.0.1 patch personal resource display clutter. 
+
 ## [1.1.94-Release] 2018-12-29
 ### Added
 - Added the option to cast spells on button downpress to the actionbars menu. This setting is enabled by default for new users, as it is for new users in the game itself now. 
