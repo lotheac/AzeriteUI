@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.94-Release] 2018-12-29
+### Added
+- Added the option to cast spells on button downpress to the actionbars menu. This setting is enabled by default for new users, as it is for new users in the game itself now. 
+
 ## [1.1.93-Release] 2018-12-22
 ### Changed
 - Changed default setting for actionbuttons to "cast on down". User option to change coming in next update. 
