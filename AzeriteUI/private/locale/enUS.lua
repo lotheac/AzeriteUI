@@ -70,6 +70,7 @@ L["%s to toggle Options Menu."] = "%s to toggle "..ADDON.." Options Menu."
 
 -- Config Menu
 L["ActionBars"] = true
+L["Cast on Down: %s"] = true
 L["Primary Bar"] = true
 L["Button Count"] = true
 L["%d Buttons"] = true
