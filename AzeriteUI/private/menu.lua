@@ -715,6 +715,14 @@ Module.CreateMenuTable = function(self)
 							}
 						}
 					}
+				},
+				-- general actionbar options
+				{
+					enabledTitle = L["Cast on Down: %s"]:format(L["Enabled"]),
+					disabledTitle = L["Cast on Down: %s"]:format(L["Disabled"]),
+					type = "TOGGLE_VALUE", hasWindow = false, 
+					configDB = "ActionBars", configKey = "castOnDown", 
+					proxyModule = "ActionBarMain", 
 				}
 			}
 		})
