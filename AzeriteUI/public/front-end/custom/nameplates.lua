@@ -158,6 +158,7 @@ Module.PostUpdateNamePlateOptions = function(self, isInInstace)
 	-- Default size 110, 45
 	C_NamePlate.SetNamePlateFriendlySize(unpack(Layout.Size))
 	C_NamePlate.SetNamePlateEnemySize(unpack(Layout.Size))
+	C_NamePlate.SetNamePlateSelfSize(unpack(Layout.Size))
 
 	NamePlateDriverFrame.UpdateNamePlateOptions = function() end
 end
