@@ -369,6 +369,7 @@ if (playerClass == "PRIEST") then
 	auraList[187464] = ByPlayer -- Shadow Mend
 	auraList[   589] = ByPlayer -- Shadow Word: Pain
 	auraList[ 15487] = ByPlayer -- Silence
+	auraList[208772] = ByPlayer -- Smite
 	auraList[ 15286] = ByPlayer -- Vampiric Embrace
 	auraList[ 34914] = ByPlayer -- Vampiric Touch
 	auraList[227386] = ByPlayer -- Voidform -- NEEDS CHECK
@@ -463,6 +464,7 @@ if (playerClass == "SHAMAN") then
 	auraList[ 77756] = ByPlayer -- Lava Surge
 	auraList[197209] = ByPlayer -- Lightning Rod -- NEEDS CHECK
 	auraList[ 61295] = ByPlayer -- Riptide
+	auraList[268429] = ByPlayer -- Searing Assault
 	auraList[ 98007] = OnFriend -- Spirit Link Totem
 	auraList[ 58875] = ByPlayer -- Spirit Walk
 	auraList[ 79206] = ByPlayer -- Spiritwalker's Grace
@@ -509,6 +511,7 @@ if (playerClass == "WARLOCK") then
 	auraList[ 27243] = ByPlayer -- Seed of Corruption
 	auraList[205181] = ByPlayer -- Shadowflame
 	auraList[ 30283] = ByPlayer -- Shadowfury
+	auraList[ 63106] = ByPlayer -- Siphon Life
 	auraList[205178] = ByPlayer -- Soul Effigy
 	auraList[196098] = ByPlayer -- Soul Harvest
 	--auraList[ 20707] = ByPlayer -- Soulstone -- OOC

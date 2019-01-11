@@ -1938,6 +1938,7 @@ do
 	AddFlags(187464, IsPriest) -- Shadow Mend
 	AddFlags(   589, IsPriest) -- Shadow Word: Pain
 	AddFlags( 15487, IsPriest) -- Silence
+	AddFlags(208772, IsPriest) -- Smite
 	AddFlags( 15286, IsPriest) -- Vampiric Embrace
 	AddFlags( 34914, IsPriest) -- Vampiric Touch
 	AddFlags(227386, IsPriest) -- Voidform -- NEEDS CHECK
@@ -2030,6 +2031,7 @@ do
 	AddFlags( 77756, IsShaman) -- Lava Surge
 	AddFlags(197209, IsShaman) -- Lightning Rod -- NEEDS CHECK
 	AddFlags( 61295, IsShaman) -- Riptide
+	AddFlags(268429, IsShaman) -- Searing Assault
 	AddFlags( 98007, IsShaman) -- Spirit Link Totem
 	AddFlags( 58875, IsShaman) -- Spirit Walk
 	AddFlags( 79206, IsShaman) -- Spiritwalker's Grace
@@ -2075,6 +2077,7 @@ do
 	AddFlags( 27243, IsWarlock) -- Seed of Corruption
 	AddFlags(205181, IsWarlock) -- Shadowflame
 	AddFlags( 30283, IsWarlock) -- Shadowfury
+	AddFlags( 63106, IsWarlock) -- Siphon Life
 	AddFlags(205178, IsWarlock) -- Soul Effigy
 	AddFlags(196098, IsWarlock) -- Soul Harvest
 	--AddFlags( 20707, IsWarlock) -- Soulstone -- OOC
