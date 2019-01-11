@@ -63,13 +63,10 @@ local secureSnippets = {
 	arrangeButtons = [=[
 
 		local UICenter = self:GetFrameRef("UICenter"); 
-
-		local buttonsPrimary = tonumber(self:GetAttribute("buttonsPrimary")) or 1; 
-		local buttonsComplimentary = tonumber(self:GetAttribute("buttonsComplimentary")) or 1; 
-
-		local complimentaryOffset = buttonsPrimary == 1 and 7 or buttonsPrimary == 2 and 10 or buttonsPrimary == 3 and 10 or 7;
+		local extraButtonsCount = tonumber(self:GetAttribute("extraButtonsCount")) or 0;
+	
 		local buttonSize, buttonSpacing, iconSize = 64, 8, 44; 
-		local row2mod = -2/5 
+		local row2mod = -2/5; -- horizontal offset for upper row 
 
 		for id, button in ipairs(Buttons) do 
 			local buttonID = button:GetID(); 
@@ -78,74 +75,29 @@ local secureSnippets = {
 			button:ClearAllPoints(); 
 
 			if (barID == 1) then 
-				if (buttonID < 11) then
-					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
-				else
+				if (buttonID > 10) then
 					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + ((buttonID-2-1 + row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+				else
+					button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + ((buttonID-1) * (buttonSize + buttonSpacing)), 42 )
 				end 
 
 			elseif (barID == self:GetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE")) then 
 
-				-- 7 primary buttons
-				if (buttonsPrimary == 1) then
-					
-					-- 3x2 complimentary buttons
-					if (buttonsComplimentary == 1) then 
-						if (buttonID < 4) then 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-						else
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-2+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-						end
+				-- 3x2 complimentary buttons
+				if (extraButtonsCount <= 11) then 
+					if (buttonID < 4) then 
+						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 42 )
+					else
+						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-3+12)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+					end
 
-					-- 6x2 complimentary buttons
-					elseif (buttonsComplimentary == 2) then
-						if (buttonID < 7) then 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-						else
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-5+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-						end
-					end 
-
-
-				-- 10 primary buttons
-				elseif (buttonsPrimary == 2) then 
-					
-					-- 6 complimentary buttons
-					if (buttonsComplimentary == 1) then 
-						if (buttonID < 7) then 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-						else 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-						end 
-
-					-- 6x2 complimentary buttons
-					elseif (buttonsComplimentary == 2) then
-						if (buttonID < 7) then 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-						else 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-						end 
-					end 
-
-				-- 10+2 primary buttons
-				elseif (buttonsPrimary == 3) then 
-
-					-- 3x2 complimentary buttons
-					if (buttonsComplimentary == 1) then 
-						if (buttonID < 4) then 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-						else
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-3+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-						end
-
-					-- 6x2 complimentary buttons
-					elseif (buttonsComplimentary == 2) then
-						if (buttonID < 7) then 
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+complimentaryOffset)-1) * (buttonSize + buttonSpacing)), 42 )
-						else
-							button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+complimentaryOffset)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
-						end
-					end 
+				-- 6x2 complimentary buttons
+				else 
+					if (buttonID < 7) then 
+						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID+12)-1) * (buttonSize + buttonSpacing)), 42 )
+					else
+						button:SetPoint("BOTTOMLEFT", UICenter, "BOTTOMLEFT", 60 + (((buttonID-6+12)-1 +row2mod) * (buttonSize + buttonSpacing)), 42 + buttonSize + buttonSpacing)
+					end
 				end 
 			end 
 		end 
@@ -161,56 +113,18 @@ local secureSnippets = {
 			name = string.lower(name); 
 		end 
 
-		if (name == "change-visibilityprimary") then 
-			self:SetAttribute("visibilityPrimary", tonumber(value)); 
+		if (name == "change-extrabuttonsvisibility") then 
+			self:SetAttribute("extraButtonsVisibility", value); 
 			self:CallMethod("UpdateFading"); 
 
-		elseif (name == "change-visibilitycomplimentary") then 
-			self:SetAttribute("visibilityComplimentary", tonumber(value)); 
-			self:CallMethod("UpdateFading"); 
-
-		elseif (name == "change-enablecomplimentary") then 
-			local buttonsComplimentary = self:GetAttribute("buttonsComplimentary"); 
-			local numVisible = buttonsComplimentary == 1 and 6 or buttonsComplimentary == 2 and 12 or 6; 
+		elseif (name == "change-extrabuttonscount") then 
+			local extraButtonsCount = tonumber(value) or 0; 
+			local visible = extraButtonsCount + 7; 
 	
-			if value then 
-				for i = 13,24 do 
-					local pager = Pagers[i]; 
-					if (i > (12 + numVisible)) then 
-						if pager:IsShown() then 
-							pager:Hide(); 
-						end 
-					else 
-						if (not pager:IsShown()) then 
-							pager:Show(); 
-						end 
-					end 
-				end 
-			else
-				for i = 13,24 do 
-					local pager = Pagers[i]; 
-					if pager:IsShown() then 
-						pager:Hide(); 
-					end 
-				end 
-			end 
-
-			self:SetAttribute("enableComplimentary", value); 
-			self:RunAttribute("arrangeButtons"); 
-
-		elseif (name == "change-enablepet") then 
-			self:SetAttribute("enablePet", value); 
-
-		elseif (name == "change-enablestance") then 
-			self:SetAttribute("enableStance", value); 
-
-		elseif (name == "change-buttonsprimary") then 
-			local buttonsPrimary = tonumber(value) or 1; 
-			local numVisible = buttonsPrimary == 1 and 7 or buttonsPrimary == 2 and 10 or buttonsPrimary == 3 and 12 or 7; 
-	
-			for i = 8,12 do 
+			-- Update button visibility counts
+			for i = 8,24 do 
 				local pager = Pagers[i]; 
-				if (i > numVisible) then 
+				if (i > visible) then 
 					if pager:IsShown() then 
 						pager:Hide(); 
 					end 
@@ -221,36 +135,7 @@ local secureSnippets = {
 				end 
 			end 
 
-			self:SetAttribute("buttonsPrimary", buttonsPrimary); 
-			self:RunAttribute("arrangeButtons"); 
-
-		elseif (name == "change-buttonscomplimentary") then 
-			local buttonsComplimentary = tonumber(value); 
-
-			if self:GetAttribute("enableComplimentary") then 
-				local numVisible = buttonsComplimentary == 1 and 6 or buttonsComplimentary == 2 and 12 or 6; 
-				for i = 13,24 do 
-					local pager = Pagers[i]; 
-					if (i > (12 + numVisible)) then 
-						if pager:IsShown() then 
-							pager:Hide(); 
-						end 
-					else 
-						if (not pager:IsShown()) then 
-							pager:Show(); 
-						end 
-					end 
-				end 
-			else
-				for i = 13,24 do 
-					local pager = Pagers[i]; 
-					if pager:IsShown() then 
-						pager:Hide(); 
-					end 
-				end 
-			end 
-
-			self:SetAttribute("buttonsComplimentary", buttonsComplimentary); 
+			self:SetAttribute("extraButtonsCount", extraButtonsCount); 
 			self:RunAttribute("arrangeButtons"); 
 		
 		elseif (name == "change-castondown") then 
@@ -262,27 +147,50 @@ local secureSnippets = {
 }
 
 -- Default settings
+-- *Note that changing these have no effect in-game, 
+--  as they are only defaults, not current ones. 
 local defaults = {
 
+	-- Valid range is 0 to 17. anything outside will be limited to this range. 
+	extraButtonsCount = 5, -- default this to a full standard bar, just to make it slightly easier for people
+
+	-- Valid values are 'always','hover','combat'
+	extraButtonsVisibility = "combat", -- defaulting this to combat, so new users can access their full default bar
+
+	-- Whether actions are performed when pressing the button or releasing it
+	castOnDown = true,
+
+	-- TODO! 
+	-- *Options below are not yet implemented!
+
+	-- Modifier keys required to drag spells, 
+	-- if none are selected, buttons aren't locked. 
+	dragRequireAlt = true, 
+	dragRequireCtrl = true, 
+	dragRequireShift = true, 
+
+	petBarEnabled = true, 
+	petBarVisibility = "hover",
+
+	stanceBarEnabled = true, 
+	stanceBarVisibility = "hover"
+}
+
+-- Old removed settings we need to purge from old databases
+local deprecated = {
 	buttonsPrimary = 1, 
 	buttonsComplimentary = 1, 
-
 	enableComplimentary = false, 
 	enableStance = false, 
 	enablePet = false, 
-
-	visibilityPrimary = 1,
-	visibilityComplimentary = 1, 
-	visibilityStance = 1, 
-	visibilityPet = 1, 
-
-	-- todo
-	castOnDown = true,
 	showBinds = true, 
 	showCooldown = true, 
 	showCooldownCount = true,
-
-	--showNames = false,
+	showNames = false,
+	visibilityPrimary = 1,
+	visibilityComplimentary = 1,
+	visibilityStance = 1, 
+	visibilityPet = 1
 }
 
 local Layout, L
@@ -754,103 +662,27 @@ end
 Module.SpawnButtons = function(self)
 	local db = self.db
 
-	local buttonsPrimary = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 12 or 7
-	local buttonsComplimentary = db.buttonsComplimentary == 1 and 6 or db.buttonsComplimentary == 2 and 12 or 6
-
-	-- test mode to show all
+	-- Private test mode to show all
 	local FORCED = false 
 
-	local buttons = {} -- local button registry
-	local hoverButtons1, hoverButtons2 = {}, {} -- buttons hiding
-	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
-
-	-- Mainbar, visible part
-	for id = 1,7 do
-		local button = self:SpawnActionButton("action", self.frame, ActionButton, 1, id) 
-		buttons[#buttons + 1] = button
-	end
-
-	-- Mainbar, hidden part
-	for id = 8,12 do 
-		local button = self:SpawnActionButton("action", self.frame, ActionButton, 1, id) 
-		if (id > buttonsPrimary) then 
-			button:GetPager():Hide()
-		end 
-		--button:GetPager():SetAlpha(0)
-
-		buttons[#buttons + 1] = button
-		hoverButtons1[#hoverButtons1 + 1] = button 
-		hoverButtons1[button] = true
-	end 
-
-	-- store the button cache
-	self.buttons = buttons
-
-	local hoverFrame1 = self:CreateFrame("Frame")
-	hoverFrame1:SetPoint("BOTTOMLEFT", hoverButtons1[1], "BOTTOMLEFT", 0, 0)
-	hoverFrame1:SetPoint("TOPRIGHT", hoverButtons1[#hoverButtons1], "TOPRIGHT", 0, 0)
-	hoverFrame1:SetScript("OnUpdate", function(self, elapsed) 
-		self.elapsed = (self.elapsed or 0) - elapsed
-
-		if (self.elapsed <= 0) then
-			if FORCED or self.always or (self.incombat and IN_COMBAT) or self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
-				if (not self.isMouseOver) then 
-					self.isMouseOver = true
-					self.alpha = 1
-					for id, button in ipairs(hoverButtons1) do
-						button:GetPager():SetAlpha(self.alpha)
-					end 
-				end 
-			else 
-				if self.isMouseOver then 
-					self.isMouseOver = nil
-					if (not self.fadeOutTime) then 
-						self.fadeOutTime = fadeOutTime
-					end 
-				end 
-				if self.fadeOutTime then 
-					self.fadeOutTime = self.fadeOutTime - elapsed
-					if self.fadeOutTime > 0 then 
-						self.alpha = self.fadeOutTime / fadeOutTime
-					else 
-						self.alpha = 0
-						self.fadeOutTime = nil
-					end 
-					for id, button in ipairs(hoverButtons1) do
-						button:GetPager():SetAlpha(self.alpha)
-					end 
-				end 
-			end 
-			self.elapsed = .05
-		end 
-	end)
-	hoverFrame1:SetScript("OnEvent", function(self, event, ...) 
-		if (event == "ACTIONBAR_SHOWGRID") then 
-			self.forced = true
-		elseif (event == "ACTIONBAR_HIDEGRID") then
-			self.forced = nil
-		end 
-	end)
-	hoverFrame1:RegisterEvent("ACTIONBAR_HIDEGRID")
-	hoverFrame1:RegisterEvent("ACTIONBAR_SHOWGRID")
-	hoverFrame1.isMouseOver = true -- Set this to initiate the first fade-out
-
-	-- "Bottomleft"
+	local buttons, hover = {}, {} 
 	for id = 1,12 do 
-		local button = self:SpawnActionButton("action", self.frame, ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
-		if (not db.enableComplimentary) or (id > buttonsComplimentary) then 
+		buttons[id] = self:SpawnActionButton("action", self.frame, ActionButton, 1, id)
+		buttons[id + 12] = self:SpawnActionButton("action", self.frame, ActionButton, _G.BOTTOMLEFT_ACTIONBAR_PAGE, id)
+		hover[buttons[id]] = id > 7 
+		hover[buttons[id + 12]] = true
+	end 
+	for id,button in ipairs(buttons) do 
+		if (hover[button] and (id > db.extraButtonsCount + 7)) then 
 			button:GetPager():Hide()
 		end 
-
-		buttons[#buttons + 1] = button
-		hoverButtons2[#hoverButtons2 + 1] = button 
-		hoverButtons2[button] = true
 	end 
+	self.buttons = buttons
+	self.hover = hover
 
-	local hoverFrame2 = self:CreateFrame("Frame")
-	hoverFrame2:SetPoint("BOTTOMLEFT", hoverButtons2[1], "BOTTOMLEFT", 0, 0)
-	hoverFrame2:SetPoint("TOPRIGHT", hoverButtons2[#hoverButtons2], "TOPRIGHT", 0, 0)
-	hoverFrame2:SetScript("OnUpdate", function(self, elapsed) 
+	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
+	local hoverFrame = self:CreateFrame("Frame")
+	hoverFrame:SetScript("OnUpdate", function(self, elapsed) 
 		self.elapsed = (self.elapsed or 0) - elapsed
 
 		if (self.elapsed <= 0) then
@@ -858,8 +690,8 @@ Module.SpawnButtons = function(self)
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
 					self.alpha = 1
-					for id, button in ipairs(hoverButtons2) do
-						button:GetPager():SetAlpha(self.alpha)
+					for id = 8,24 do 
+						buttons[id]:GetPager():SetAlpha(self.alpha)
 					end 
 				end 
 			else 
@@ -877,54 +709,49 @@ Module.SpawnButtons = function(self)
 						self.alpha = 0
 						self.fadeOutTime = nil
 					end 
-					for id, button in ipairs(hoverButtons2) do
-						button:GetPager():SetAlpha(self.alpha)
+					for id = 8,24 do 
+						buttons[id]:GetPager():SetAlpha(self.alpha)
 					end 
 				end 
 			end 
 			self.elapsed = .05
 		end 
 	end)
-	hoverFrame2:SetScript("OnEvent", function(self, event, ...) 
+	hoverFrame:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "ACTIONBAR_SHOWGRID") then 
 			self.forced = true
 		elseif (event == "ACTIONBAR_HIDEGRID") then
 			self.forced = nil
 		end 
 	end)
-	hoverFrame2:RegisterEvent("ACTIONBAR_HIDEGRID")
-	hoverFrame2:RegisterEvent("ACTIONBAR_SHOWGRID")
-	hoverFrame2.isMouseOver = true -- Set this to initiate the first fade-out
-	
-	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
-		if hoverButtons1[self] then 
-			hoverFrame1.flyout = self:IsFlyoutShown()
-		elseif hoverButtons2[self] then 
-			hoverFrame2.flyout = self:IsFlyoutShown()
-		end 
-	end)
-
-	self.hoverFrame1 = hoverFrame1
-	self.hoverFrame2 = hoverFrame2
-	self.hoverButtons1 = hoverButtons1
-	self.hoverButtons2 = hoverButtons2
+	hoverFrame:RegisterEvent("ACTIONBAR_HIDEGRID")
+	hoverFrame:RegisterEvent("ACTIONBAR_SHOWGRID")
+	hoverFrame.isMouseOver = true -- Set this to initiate the first fade-out
+	self.hoverFrame = hoverFrame
 
 	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
+
+	-- Proxy some module methods
 	proxy.UpdateCastOnDown = function(proxy) self:UpdateCastOnDown() end
 	proxy.UpdateFading = function(proxy) self:UpdateFading() end
 	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
-	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
-	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", BOTTOMLEFT_ACTIONBAR_PAGE);
 
+	-- Add some needed values and references 
+	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
+	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", _G.BOTTOMLEFT_ACTIONBAR_PAGE);
+
+	-- Link the buttons and their pagers 
 	for id,button in ipairs(buttons) do 
 		proxy:SetFrameRef("Button"..id, button)
 		proxy:SetFrameRef("Pager"..id, button:GetPager())
 	end 
 
+	-- Mirror our saved settings on our secure updater frame
 	for key,value in pairs(db) do 
 		proxy:SetAttribute(key,value)
 	end 
 
+	-- Setup the secure snippets
 	proxy:Execute([=[
 		Buttons = table.new(); 
 		Pagers = table.new();
@@ -938,11 +765,17 @@ Module.SpawnButtons = function(self)
 			button = self:GetFrameRef("Button"..counter);
 		end 
 	]=])
-
 	proxy:SetAttribute("arrangeButtons", secureSnippets.arrangeButtons)
 	proxy:SetAttribute("_onattributechanged", secureSnippets.attributeChanged)
 
 	self.proxyUpdater = proxy
+
+	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
+		if hover[self] then 
+			hoverFrame.flyout = self:IsFlyoutShown()
+		end
+	end)
+
 end 
 
 Module.GetSecureUpdater = function(self)
@@ -951,87 +784,70 @@ end
 
 Module.UpdateFading = function(self)
 	local db = self.db
+	local combat = db.extraButtonsVisibility == "combat"
+	local always = db.extraButtonsVisibility == "always"
 
-	self.hoverFrame1.incombat = db.visibilityPrimary == 2
-	self.hoverFrame1.always = db.visibilityPrimary == 3
-
-	self.hoverFrame2.incombat = db.visibilityComplimentary == 2
-	self.hoverFrame2.always = db.visibilityComplimentary == 3
-
+	self.hoverFrame.incombat = combat
+	self.hoverFrame.always = always
 end 
 
 Module.UpdateFadeAnchors = function(self)
 	local db = self.db
-	local numPrimary = db.buttonsPrimary == 1 and 7 or db.buttonsPrimary == 2 and 10 or db.buttonsPrimary == 3 and 12 or 7
-	local numComplimentary = db.buttonsComplimentary == 1 and 6 or db.buttonsComplimentary == 2 and 12 or 6
 
-	self.hoverFrame1:ClearAllPoints()
-	self.hoverFrame2:ClearAllPoints()
 	self.frame:ClearAllPoints()
+	self.hoverFrame:ClearAllPoints() 
 
-	if db.enableComplimentary then 
-		self.frame:SetPoint("LEFT", self.buttons[1], "LEFT", 0, 0)
-		self.frame:SetPoint("TOPRIGHT", self.hoverFrame2, "TOPRIGHT", 0, 0)
-		self.frame:SetPoint("BOTTOMRIGHT", self.hoverFrame2, "BOTTOMRIGHT", 0, 0)
-	else 
-		self.frame:SetPoint("LEFT", self.buttons[1], "LEFT", 0, 0)
-		self.frame:SetPoint("TOPRIGHT", self.hoverFrame1, "TOPRIGHT", 0, 0)
-		self.frame:SetPoint("BOTTOMRIGHT", self.hoverFrame1, "BOTTOMRIGHT", 0, 0)
+	-- Parse buttons for hoverbutton IDs
+	local first, last, left, right, top, bottom, mLeft, mRight, mTop, mBottom
+	for id,button in ipairs(self.buttons) do 
+		-- If we pass number of visible hoverbuttons, just bail out
+		if (id > db.extraButtonsCount + 7) then 
+			break 
+		end 
+
+		local bLeft = button:GetLeft()
+		local bRight = button:GetRight()
+		local bTop = button:GetTop()
+		local bBottom = button:GetBottom()
+		
+		if self.hover[button] then 
+			-- Only counting the first encountered as the first
+			if (not first) then 
+				first = id 
+			end 
+
+			-- Counting every button as the last, until we actually reach it 
+			last = id 
+
+			-- Figure out hoverframe anchor buttons
+			left = left and (self.buttons[left]:GetLeft() < bLeft) and left or id
+			right = right and (self.buttons[right]:GetRight() > bRight) and right or id
+			top = top and (self.buttons[top]:GetTop() > bTop) and top or id
+			bottom = bottom and (self.buttons[bottom]:GetBottom() < bBottom) and bottom or id
+		end 
+
+		-- Figure out main frame anchor buttons, 
+		-- as we need this for the explorer mode fade anchors!
+		mLeft = mLeft and (self.buttons[mLeft]:GetLeft() < bLeft) and mLeft or id
+		mRight = mRight and (self.buttons[mRight]:GetRight() > bRight) and mRight or id
+		mTop = mTop and (self.buttons[mTop]:GetTop() > bTop) and mTop or id
+		mBottom = mBottom and (self.buttons[mBottom]:GetBottom() < bBottom) and mBottom or id
 	end 
 
-	-- 12 main buttons, complimentary tilted towards the left
-	if (db.buttonsPrimary == 3) then 
+	-- Setup main frame anchors for explorer mode! 
+	self.frame:SetPoint("TOP", self.buttons[mTop], "TOP", 0, 0)
+	self.frame:SetPoint("BOTTOM", self.buttons[mBottom], "BOTTOM", 0, 0)
+	self.frame:SetPoint("LEFT", self.buttons[mLeft], "LEFT", 0, 0)
+	self.frame:SetPoint("RIGHT", self.buttons[mRight], "RIGHT", 0, 0)
 
-		-- 2 + 3
-		self.hoverFrame1:SetPoint("BOTTOMLEFT", self.hoverButtons1[1], "BOTTOMLEFT", 0, 0)
-		self.hoverFrame1:SetPoint("BOTTOMRIGHT", self.hoverButtons1[3], "BOTTOMRIGHT", 0, 0)
-		self.hoverFrame1:SetPoint("TOP", self.hoverButtons1[5], "TOP", 0, 0)
+	-- If we have hoverbuttons, setup the anchors
+	if (left and right and top and bottom) then 
+		self.hoverFrame:SetPoint("TOP", self.buttons[top], "TOP", 0, 0)
+		self.hoverFrame:SetPoint("BOTTOM", self.buttons[bottom], "BOTTOM", 0, 0)
+		self.hoverFrame:SetPoint("LEFT", self.buttons[left], "LEFT", 0, 0)
+		self.hoverFrame:SetPoint("RIGHT", self.buttons[right], "RIGHT", 0, 0)
+	end
 
-		-- 6x2
-		if (db.buttonsComplimentary == 2) then 
-			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[7], "TOPLEFT", 0, 0)
-			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
-	
-		-- 3x2
-		else 
-			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[4], "TOPLEFT", 0, 0)
-			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[3], "BOTTOMRIGHT", 0, 0)
-		end 
-
-	-- 10 main buttons, complimentary tilted towards the left
-	elseif (db.buttonsPrimary == 2) then 
-
-		-- 3x1
-		self.hoverFrame1:SetPoint("BOTTOMLEFT", self.hoverButtons1[1], "BOTTOMLEFT", 0, 0)
-		self.hoverFrame1:SetPoint("TOPRIGHT", self.hoverButtons1[3], "TOPRIGHT", 0, 0)
-
-		-- 6x2
-		if (db.buttonsComplimentary == 2) then 
-			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[7], "TOPLEFT", 0, 0)
-			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
-
-		-- 6x1
-		else 
-			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[1], "TOPLEFT", 0, 0)
-			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[6], "BOTTOMRIGHT", 0, 0)
-		end 
-
-
-	-- 7 main buttons, complimentary tilted towards the right
-	else 
-
-		-- 6x2
-		if (db.buttonsComplimentary == 2) then 
-			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[1], "BOTTOMRIGHT", 0, 0)
-			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[12], "TOPLEFT", 0, 0)
-
-		-- 3x2
-		else 
-			self.hoverFrame2:SetPoint("BOTTOMRIGHT", self.hoverButtons2[1], "BOTTOMRIGHT", 0, 0)
-			self.hoverFrame2:SetPoint("TOPLEFT", self.hoverButtons2[6], "TOPLEFT", 0, 0)
-		end 
-
-	end 
 end
 
 Module.UpdateCastOnDown = function(self)
@@ -1067,6 +883,67 @@ Module.OnEvent = function(self, event, ...)
 	end 
 end 
 
+Module.ParseSavedSettings = function(self)
+	local db = self:NewConfig("ActionBars", defaults, "global")
+
+	-- Convert old options to new, if present 
+	local extraButtons
+	if (db.enableComplimentary) then 
+		if (db.buttonsComplimentary == 1) then 
+			extraButtons = 11
+		elseif (db.buttonsComplimentary == 2) then 
+			extraButtons = 17
+		end 
+	elseif (db.buttonsPrimary) then 
+		if (db.buttonsPrimary == 1) then
+			extraButtons = 0 
+		elseif (db.buttonsPrimary == 2) then 
+			extraButtons = 3 
+		elseif (db.buttonsPrimary == 3) then 
+			extraButtons = 5 
+		end 
+	end 
+	
+	-- If extra buttons existed we also need to figure out their visibility
+	if extraButtons then 
+		-- Store the old number of buttons in our new button setting 
+		db.extraButtonsCount = extraButtons
+
+		-- Use complimentary bar visibility settings if it was enabled, 
+		-- use primary bar visibility settings if it wasn't. No more split options. 
+		local extraVisibility
+		if (extraButtons > 5) then 
+			if (db.visibilityComplimentary == 1) then -- hover 
+				extraVisibility = "hover"
+			elseif (db.visibilityComplimentary == 2) then -- hover + combat 
+				extraVisibility = "combat"
+			elseif (db.visibilityComplimentary == 3) then -- always 
+				extraVisibility = "always"
+			end 
+		else 
+			if (db.visibilityPrimary == 1) then -- hover 
+				extraVisibility = "hover"
+			elseif (db.visibilityPrimary == 2) then -- hover + combat 
+				extraVisibility = "combat"
+			elseif (db.visibilityPrimary == 3) then -- always 
+				extraVisibility = "always"
+			end 
+		end 
+		if extraVisibility then 
+			db.extraButtonsVisibility = extraVisibility
+		end 
+	end  
+
+	-- Remove old deprecated options 
+	for option in pairs(db) do 
+		if (deprecated[option] ~= nil) then 
+			db[option] = nil
+		end 
+	end 
+
+	return db
+end
+
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
@@ -1074,7 +951,7 @@ Module.PreInit = function(self)
 end
 
 Module.OnInit = function(self)
-	self.db = self:NewConfig("ActionBars", defaults, "global")
+	self.db = self:ParseSavedSettings()
 	self.frame = self:CreateFrame("Frame", nil, "UICenter")
 
 	-- Spawn the buttons

@@ -610,6 +610,63 @@ Module.CreateMenuTable = function(self)
 		table_insert(MenuTable, {
 			title = L["ActionBars"], type = nil, hasWindow = true, 
 			buttons = {
+				{
+					title = L["More Buttons"], type = nil, hasWindow = true, 
+					buttons = {
+						{
+							title = L["No Extra Buttons"], type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 0 }, 
+							proxyModule = "ActionBarMain"
+						},
+						{
+							title = L["+%d Buttons"]:format(5), type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 5 }, 
+							proxyModule = "ActionBarMain"
+						},
+						{
+							title = L["+%d Buttons"]:format(11), type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 11 }, 
+							proxyModule = "ActionBarMain"
+						},
+						{
+							title = L["+%d Buttons"]:format(17), type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 17 }, 
+							proxyModule = "ActionBarMain"
+						}
+					}
+				}, 
+				{
+					title = L["Extra Buttons Visibility"], type = nil, hasWindow = true, 
+					buttons = {
+						{
+							title = L["MouseOver"], 
+							type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsVisibility", optionArgs = { "hover" }, 
+							proxyModule = "ActionBarMain"
+						},
+						{
+							title = L["MouseOver + Combat"], 
+							type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsVisibility", optionArgs = { "combat" }, 
+							proxyModule = "ActionBarMain"
+						},
+						{
+							title = L["Always Visible"], 
+							type = "SET_VALUE", 
+							configDB = "ActionBars", configKey = "extraButtonsVisibility", optionArgs = { "always" }, 
+							proxyModule = "ActionBarMain"
+						}
+					}
+				},
+				{
+					enabledTitle = L["Cast on Down: %s"]:format(L["Enabled"]),
+					disabledTitle = L["Cast on Down: %s"]:format(L["Disabled"]),
+					type = "TOGGLE_VALUE", hasWindow = false, 
+					configDB = "ActionBars", configKey = "castOnDown", 
+					proxyModule = "ActionBarMain", 
+				}
+
+				--[[
 				-- Primary bar options
 				{
 					title = L["Primary Bar"], type = nil, hasWindow = true, 
@@ -715,15 +772,9 @@ Module.CreateMenuTable = function(self)
 							}
 						}
 					}
-				},
-				-- general actionbar options
-				{
-					enabledTitle = L["Cast on Down: %s"]:format(L["Enabled"]),
-					disabledTitle = L["Cast on Down: %s"]:format(L["Disabled"]),
-					type = "TOGGLE_VALUE", hasWindow = false, 
-					configDB = "ActionBars", configKey = "castOnDown", 
-					proxyModule = "ActionBarMain", 
 				}
+				]]
+
 			}
 		})
 	end
