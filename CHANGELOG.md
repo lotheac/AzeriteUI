@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.96-Release] 2019-01-11
+### Added
+- Added Affliction Warlock's Siphon Life, Discipline Priest's Smite and Enhancement Shaman's Searing Assault to the aura filter. 
+
+### Changed
+- Redid actionbar menu structure. It's easier to understand now. 
+
+### Fixed
+- Fixed an issue causing an error when hovering over inactive Blizzard micro menu buttons.  
+
 ## [1.1.95-Release] 2018-12-29
 ### Fixed
 - Updated the nameplate back-end to automatically remove the new 8.0.1 patch personal resource display clutter. 
