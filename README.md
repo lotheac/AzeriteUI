@@ -32,7 +32,8 @@ You can't. This is as much UX as UI, meaning the interface is designed around a 
 * Twitter: [@AzeriteUI](https://twitter.com/azeriteui)  
 * Instagram: [@AzeriteUI](https://instagram.com/azeriteui/)  
 * Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)  
-* YouTube: [UChE6I9HirNw5m14Vytah0cQ](https://www.youtube.com/channel/UChE6I9HirNw5m14Vytah0cQ) 
+* YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui)) 
+* Reddit: [@AzeriteUI](https://www.reddit.com/r/azeriteui/)
 
 ## **Follow the team:**
 * Twitter Blakmane: [@troko512](https://twitter.com/troko512)
