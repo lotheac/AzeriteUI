@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.97-Release] 2019-01-12
+### Fixed
+- There should no longer be a gap 2x2 button large in the middle of the actionbars. That was a typo in last night's update! Sowwy! 
+
 ## [1.1.96-Release] 2019-01-11
 ### Added
 - Added Affliction Warlock's Siphon Life, Discipline Priest's Smite and Enhancement Shaman's Searing Assault to the aura filter. 
