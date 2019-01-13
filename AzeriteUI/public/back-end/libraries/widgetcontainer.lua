@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 13)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 15)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -495,7 +495,18 @@ LibWidgetContainer.CreateWidgetContainer = function(self, frameType, parent, tem
 	check(unit, 4, "string", "nil")
 	check(styleFunc, 5, "function", "nil")
 
-	local frame = setmetatable(LibWidgetContainer:CreateFrame(frameType or "Frame", nil, parent, template or "SecureHandlerAttributeTemplate"), WidgetFrame_MT)
+	-- This is for Clique compatibility, 
+	-- as it requires global frame names to function. 
+	local name
+	if unit then 
+		local counter = 0
+		for frame in pairs(frames) do 
+			counter = counter + 1
+		end 
+		name = "CG_UnitFrame_"..(counter + 1)
+	end 
+
+	local frame = setmetatable(LibWidgetContainer:CreateFrame(frameType or "Frame", name, parent, template or "SecureHandlerAttributeTemplate"), WidgetFrame_MT)
 
 	-- we sure we want to be doing this?
 	frame:SetFrameStrata("LOW")
