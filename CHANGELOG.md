@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.98-Release] 2019-01-13
+### Changed
+- Keybind abbreviations should no longer rely on an English gaming client. 
+
+### Fixed
+- Issue with Clique should be solved now. Tested with spells bound to both mousebuttons and keys with and without modifier keys and on both player- and other targets. 
+
 ## [1.1.97-Release] 2019-01-12
 ### Fixed
 - There should no longer be a gap 2x2 button large in the middle of the actionbars. That was a typo in last night's update! Sowwy! 
