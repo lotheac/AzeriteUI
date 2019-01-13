@@ -5,6 +5,9 @@ if (not Core) then
 	return 
 end
 
+-- Note that there's still a lot of hardcoded things in this file, 
+-- and it will eventually be changed to be fully Layout driven. 
+
 local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer", "LibPlayerData")
 
 -- Lua API
@@ -33,20 +36,8 @@ local UnitLevel = _G.UnitLevel
 local UnitOnTaxi = _G.UnitOnTaxi
 local UnitRace = _G.UnitRace
 
--- WoW Objects
-local MAX_PLAYER_LEVEL_TABLE = _G.MAX_PLAYER_LEVEL_TABLE
-
 -- Blizzard textures for generic styling
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
-local BLING_TEXTURE = [[Interface\Cooldown\star4]]
-local EDGE_LOC_TEXTURE = [[Interface\Cooldown\edge-LoC]]
-local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
-
--- Styling options
-local buttonSize, buttonSpacing = 54, 2
-local iconSize = buttonSize - 8*2
-local rowWidth = buttonSize*12 + buttonSpacing*11
-local barHeight, barPadding = 22, 10
 
 -- Pandaren can get 300% rested bonus
 local maxRested = select(2, UnitRace("player")) == "Pandaren" and 3 or 1.5
@@ -60,6 +51,8 @@ local shortLevelString = "%s %d"
 
 -- Secure Code Snippets
 local secureSnippets = {
+	-- TODO: 
+	-- Make this a formatstring, and fill in layout options from the Layout cache to make these universal. 
 	arrangeButtons = [=[
 
 		local UICenter = self:GetFrameRef("UICenter"); 
@@ -211,7 +204,7 @@ local short = function(value)
 end
 
 -- Hotkey abbreviations for better readability
-local shortenKeybind = function(key)
+local abbreviateEnglish = function(key)
 	if key then
 		key = key:upper()
 		key = key:gsub(" ", "")
@@ -254,6 +247,72 @@ local shortenKeybind = function(key)
 		return key
 	end
 end
+
+local abbreviateLocalized = function(key)
+	if key then 
+		local old = key 
+
+		key = key:gsub(LALT_KEY_TEXT.."%-", L["Left Alt"])
+		key = key:gsub(RALT_KEY_TEXT.."%-", L["Right Alt"])
+		key = key:gsub(ALT_KEY_TEXT.."%-", L["Alt"])
+
+		key = key:gsub(LCTRL_KEY_TEXT.."%-", L["Left Ctrl"])
+		key = key:gsub(RCTRL_KEY_TEXT.."%-", L["Right Ctrl"])
+		key = key:gsub(CTRL_KEY_TEXT.."%-", L["Ctrl"])
+
+		key = key:gsub(LSHIFT_KEY_TEXT.."%-", L["Left Shift"])
+		key = key:gsub(RSHIFT_KEY_TEXT.."%-", L["Right Shift"])
+		key = key:gsub(SHIFT_KEY_TEXT.."%-", L["Shift"])
+
+		key = key:gsub(KEY_NUMPADPLUS, "%+")
+		key = key:gsub(KEY_NUMPADMINUS, "%-")
+		key = key:gsub(KEY_NUMPADMULTIPLY, "%*")
+		key = key:gsub(KEY_NUMPADDIVIDE, "%/")
+		key = key:gsub(KEY_NUMPADDECIMAL, "%.")
+
+		key = key:gsub(KEY_BACKSPACE, L["Backspace"])
+		key = key:gsub(KEY_BACKSPACE_MAC, L["Delete"])
+	
+		for i = 0,9 do
+			key = key:gsub(_G["KEY_NUMPAD"..i], L["NumPad"..i])
+		end
+
+		for i = 1,31 do
+			key = key:gsub(_G["KEY_BUTTON"..i], L["Button"..i])
+		end
+
+		key = key:gsub(CAPSLOCK_KEY_TEXT, L["Capslock"])
+		
+		key = key:gsub(KEY_DELETE, L["Delete"])
+		key = key:gsub(KEY_DELETE_MAC, L["Delete"])
+		key = key:gsub(KEY_END, L["End"])
+		key = key:gsub(KEY_ENTER, L["Enter"])
+		key = key:gsub(KEY_ENTER_MAC, L["Return"])
+		key = key:gsub(KEY_HOME, L["Home"])
+		key = key:gsub(KEY_INSERT, L["Insert"])
+		key = key:gsub(KEY_INSERT_MAC, L["Help"])
+		key = key:gsub(KEY_MOUSEWHEELDOWN, L["Mouse Wheel Down"])
+		key = key:gsub(KEY_MOUSEWHEELUP, L["Mouse Wheel Up"])
+		key = key:gsub(KEY_NUMLOCK, L["Num Lock"])
+		key = key:gsub(KEY_NUMLOCK_MAC, L["Clear"])
+		key = key:gsub(KEY_PAGEDOWN, L["Page Down"])
+		key = key:gsub(KEY_PAGEUP, L["Page Up"])
+		key = key:gsub(KEY_PRINTSCREEN, L["Print Screen"])
+		key = key:gsub(KEY_SCROLLLOCK, L["Scroll Lock"])
+		key = key:gsub(KEY_SPACE, L["Spacebar"])
+		key = key:gsub(KEY_TAB, L["Tab"])
+
+		key = key:gsub(KEY_DOWN, L["Down Arrow"])
+		key = key:gsub(KEY_LEFT, L["Left Arrow"])
+		key = key:gsub(KEY_RIGHT, L["Right Arrow"])
+		key = key:gsub(KEY_UP, L["Up Arrow"])
+
+		-- Fallback to the old function if this didn't work
+		if (key == old) then 
+			return abbreviateEnglish(key)
+		end
+	end 
+end 
 
 -- Callbacks
 ----------------------------------------------------
@@ -370,7 +429,7 @@ ActionButton.UpdateBinding = function(self)
 	local Keybind = self.Keybind
 	if Keybind then 
 		local key = self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton")
-		Keybind:SetText(shortenKeybind(key) or "")
+		Keybind:SetText(abbreviateLocalized(key) or "")
 	end 
 end
 
@@ -598,6 +657,7 @@ end
 
 -- Module API
 ----------------------------------------------------
+-- Just a proxy for the secure method. Only call out of combat. 
 Module.ArrangeButtons = function(self)
 	local Proxy = self:GetSecureUpdater()
 	if Proxy then
@@ -661,22 +721,40 @@ end
 
 Module.SpawnButtons = function(self)
 	local db = self.db
-
-	-- Private test mode to show all
-	local FORCED = false 
-
+	local proxy = self:GetSecureUpdater()
 	local buttons, hover = {}, {} 
-	for id = 1,12 do 
+
+	local FORCED = false -- Private test mode to show all
+
+	for id = 1,NUM_ACTIONBAR_BUTTONS do 
+		local id2 = id + NUM_ACTIONBAR_BUTTONS
+		
+		-- Store all buttons
 		buttons[id] = self:SpawnActionButton("action", self.frame, ActionButton, 1, id)
-		buttons[id + 12] = self:SpawnActionButton("action", self.frame, ActionButton, _G.BOTTOMLEFT_ACTIONBAR_PAGE, id)
+		buttons[id2] = self:SpawnActionButton("action", self.frame, ActionButton, _G.BOTTOMLEFT_ACTIONBAR_PAGE, id)
+
+		-- Store the buttons that have hover options
 		hover[buttons[id]] = id > 7 
-		hover[buttons[id + 12]] = true
+		hover[buttons[id2]] = true
+	
+		-- Link the buttons and their pagers 
+		proxy:SetFrameRef("Button"..id, buttons[id])
+		proxy:SetFrameRef("Button"..id2, buttons[id2])
+		proxy:SetFrameRef("Pager"..id, buttons[id]:GetPager())
+		proxy:SetFrameRef("Pager"..id2, buttons[id2]:GetPager())
 	end 
+
+	-- Hide buttons beyond our current maximum visible
 	for id,button in ipairs(buttons) do 
+		proxy:Execute(([=[
+			table.insert(Buttons, self:GetFrameRef("Button"..%d)); 
+			table.insert(Pagers, self:GetFrameRef("Pager"..%d)); 
+		]=]):format(id, id))
 		if (hover[button] and (id > db.extraButtonsCount + 7)) then 
 			button:GetPager():Hide()
 		end 
 	end 
+
 	self.buttons = buttons
 	self.hover = hover
 
@@ -686,7 +764,7 @@ Module.SpawnButtons = function(self)
 		self.elapsed = (self.elapsed or 0) - elapsed
 
 		if (self.elapsed <= 0) then
-			if FORCED or self.always or (self.incombat and IN_COMBAT) or self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
+			if FORCED or self.FORCED or self.always or (self.incombat and IN_COMBAT) or self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
 					self.alpha = 1
@@ -703,7 +781,7 @@ Module.SpawnButtons = function(self)
 				end 
 				if self.fadeOutTime then 
 					self.fadeOutTime = self.fadeOutTime - elapsed
-					if self.fadeOutTime > 0 then 
+					if (self.fadeOutTime > 0) then 
 						self.alpha = self.fadeOutTime / fadeOutTime
 					else 
 						self.alpha = 0
@@ -729,47 +807,6 @@ Module.SpawnButtons = function(self)
 	hoverFrame.isMouseOver = true -- Set this to initiate the first fade-out
 	self.hoverFrame = hoverFrame
 
-	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
-
-	-- Proxy some module methods
-	proxy.UpdateCastOnDown = function(proxy) self:UpdateCastOnDown() end
-	proxy.UpdateFading = function(proxy) self:UpdateFading() end
-	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
-
-	-- Add some needed values and references 
-	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
-	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", _G.BOTTOMLEFT_ACTIONBAR_PAGE);
-
-	-- Link the buttons and their pagers 
-	for id,button in ipairs(buttons) do 
-		proxy:SetFrameRef("Button"..id, button)
-		proxy:SetFrameRef("Pager"..id, button:GetPager())
-	end 
-
-	-- Mirror our saved settings on our secure updater frame
-	for key,value in pairs(db) do 
-		proxy:SetAttribute(key,value)
-	end 
-
-	-- Setup the secure snippets
-	proxy:Execute([=[
-		Buttons = table.new(); 
-		Pagers = table.new();
-
-		local counter = 1; 
-		local button = self:GetFrameRef("Button"..counter);
-		while button do 
-			table.insert(Buttons, button); 
-			table.insert(Pagers, self:GetFrameRef("Pager"..counter)); 
-			counter = counter + 1;
-			button = self:GetFrameRef("Button"..counter);
-		end 
-	]=])
-	proxy:SetAttribute("arrangeButtons", secureSnippets.arrangeButtons)
-	proxy:SetAttribute("_onattributechanged", secureSnippets.attributeChanged)
-
-	self.proxyUpdater = proxy
-
 	hooksecurefunc("ActionButton_UpdateFlyout", function(self) 
 		if hover[self] then 
 			hoverFrame.flyout = self:IsFlyoutShown()
@@ -777,6 +814,17 @@ Module.SpawnButtons = function(self)
 	end)
 
 end 
+
+Module.SetForcedVisibility = function(self, force)
+	if (not self.hoverFrame) then 
+		return 
+	end 
+	if (force) then 
+		self.hoverFrame.FORCED = true
+	else 
+		self.hoverFrame.FORCED = nil
+	end 
+end
 
 Module.GetSecureUpdater = function(self)
 	return self.proxyUpdater
@@ -954,9 +1002,24 @@ Module.OnInit = function(self)
 	self.db = self:ParseSavedSettings()
 	self.frame = self:CreateFrame("Frame", nil, "UICenter")
 
+	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
+	proxy.UpdateCastOnDown = function(proxy) self:UpdateCastOnDown() end
+	proxy.UpdateFading = function(proxy) self:UpdateFading() end
+	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
+	for key,value in pairs(self.db) do 
+		proxy:SetAttribute(key,value)
+	end 
+	proxy:Execute([=[ Buttons = table.new(); Pagers = table.new(); ]=])
+	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
+	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", _G.BOTTOMLEFT_ACTIONBAR_PAGE);
+	proxy:SetAttribute("arrangeButtons", secureSnippets.arrangeButtons)
+	proxy:SetAttribute("_onattributechanged", secureSnippets.attributeChanged)
+	self.proxyUpdater = proxy
+
 	-- Spawn the buttons
 	self:SpawnButtons()
 
+	-- Spawn the optional Exit button
 	if Layout.UseExitButton then 
 		self:SpawnExitButton()
 	end
