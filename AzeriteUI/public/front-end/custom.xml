@@ -26,6 +26,7 @@
 	<Script file="custom\grouptools.lua"/>
 
 	<!-- plugins -->
+	<Script file="custom\bindings.lua"/>
 	<Script file="custom\explorer.lua"/>
 
 </Ui>
