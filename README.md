@@ -1,6 +1,6 @@
 [ ![Becoma a Patreon](http://azerite.org/img/social-media-buttons-patreon-small.jpg) ](https://www.patreon.com/AzeriteUI) 
 
-This is a custom user interface for World of Warcraft: Battle For Azeroth, with a fresh new design and brand new custom codebase at its core. It's designed by Daniel Troko & coded by Lars "Goldpaw" Norberg. 
+This is a custom user interface for World of Warcraft: Battle For Azeroth, with a fresh new design and brand new custom codebase at its core. It's designed by Daniel "Blakmane" Troko & coded by Lars "Goldpaw" Norberg. 
 
 The motivation of this user interface is immersion, and a more simplified gaming experience then what the "norm" has turned into. This game has SO much information that if not handled carefully becomes cumbersome, therefore blocking the most important asset of the game, the world. The best interface is no interface at all, but in a game such as this that is not possible. But if we have to block away parts of the game world to see information about the game mechanics, then at least let’s make it dynamic, beautiful and in sync with the game's aesthetics. Let's make it Warcraft!  
 
@@ -32,7 +32,7 @@ You can't. This is as much UX as UI, meaning the interface is designed around a 
 * Twitter: [@AzeriteUI](https://twitter.com/azeriteui)  
 * Instagram: [@AzeriteUI](https://instagram.com/azeriteui/)  
 * Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)  
-* YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui)) 
+* YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui) 
 * Reddit: [@AzeriteUI](https://www.reddit.com/r/azeriteui/)
 
 ## **Follow the team:**
