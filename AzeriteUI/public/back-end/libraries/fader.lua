@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 11)
+local LibFader = CogWheel:Set("LibFader", 12)
 if (not LibFader) then	
 	return
 end
@@ -57,6 +57,7 @@ LibFader.defaultAlphas = LibFader.defaultAlphas or {} -- maximum opacity for reg
 LibFader.data = LibFader.data or {} -- various global data
 LibFader.frame = LibFader.frame or LibFader:CreateFrame("Frame", nil, "UICenter")
 LibFader.frame._owner = LibFader
+LibFader.FORCED = nil -- we want this disabled from the start
 
 -- Speed!
 local Data = LibFader.data
@@ -176,6 +177,15 @@ LibFader.UnregisterObjectFade = function(self, object)
 
 	-- Restore the original alpha
 	object:SetAlpha(alpha)
+end
+
+-- Force all faded objects visible 
+LibFader.SetObjectFadeOverride = function(self, force)
+	if (force) then 
+		self.FORCED = true 
+	else 
+		self.FORCED = nil 
+	end 
 end
 
 -- Set the default alpha of an opaque object
@@ -352,6 +362,7 @@ LibFader.OnEvent = function(self, event, ...)
 
 		self:ForAll(SetToDefaultAlpha)
 
+		self.FORCED = nil
 		self.elapsed = 0
 		self.frame:SetScript("OnUpdate", InitiateDelay)
 
@@ -425,7 +436,8 @@ LibFader.OnUpdate = function(self, elapsed)
 		return 
 	end 
 
-	if Data.inCombat 
+	if self.FORCED
+	or Data.inCombat 
 	or Data.hasTarget 
 	or Data.hasFocus 
 	or Data.inGroup 
@@ -478,6 +490,7 @@ LibFader.ForAll = function(self, method, ...)
 end
 
 local embedMethods = {
+	SetObjectFadeOverride = true, 
 	RegisterObjectFade = true,
 	UnregisterObjectFade = true
 }
