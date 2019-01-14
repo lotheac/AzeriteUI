@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.99-Release] 2019-01-14
+### Added
+- Added several item types to our custom actionbar tooltips. You should now be able to see what your food, Hearthstone and Flight Master's Whistle actually do. 
+
+### Changed
+- When the player is either grouped or in an instance, the target frame should now display a power crystal for other players instead of the level badge. Meaning you now can see the power type and percentage of enemy players in battlegrounds and arenas. 
+
+### Fixed
+- Fixed an issue where stack sizes of stackable items like food, herbs and similar placed on the actionbars didn't show up. 
+- Removed a whole lot of class resource clutter from the personal resource display. 
+
 ## [1.1.98-Release] 2019-01-13
 ### Changed
 - Keybind abbreviations should no longer rely on an English gaming client. 
