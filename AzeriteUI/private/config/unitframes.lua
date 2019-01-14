@@ -1265,17 +1265,14 @@ local UnitFrameTarget = {
 			if UnitIsDeadOrGhost(unit) then 
 				return false 
 			end 
+			if (UnitIsPlayer(unit) and (IsInGroup() or IsInInstance())) then 
+				return true 
+			end 
 			local unitLevel = UnitLevel(unit)
 			local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
 			if (unitClassification == "boss") or (unitClassification == "worldboss") then 
 				return true
 			end 
-			--for i = 1,5 do 
-			--	local bossUnit = "boss"..i
-			--	if (UnitExists(bossUnit) and UnitIsUnit(bossUnit, unit)) then 
-			--		return true
-			--	end 
-			--end 
 		end,
 
 		PowerInOverlay = true, 
@@ -1379,17 +1376,14 @@ local UnitFrameTarget = {
 			if UnitIsDeadOrGhost(unit) then 
 				return false 
 			end 
+			if (UnitIsPlayer(unit) and (IsInGroup() or IsInInstance())) then 
+				return false
+			end 
 			local unitLevel = UnitLevel(unit)
 			local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
 			if (unitClassification == "boss") or (unitClassification == "worldboss") then 
 				return false
 			end 
-			--for i = 1,5 do 
-			--	local bossUnit = "boss"..i
-			--	if (UnitExists(bossUnit) and UnitIsUnit(bossUnit, unit)) then 
-			--		return false
-			--	end 
-			--end 
 			return true
 		end,
 
