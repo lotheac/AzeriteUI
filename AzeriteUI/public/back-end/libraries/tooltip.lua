@@ -1174,9 +1174,17 @@ Tooltip.SetActionItem = function(self, slot)
 			else 
 				self:AddLine(_G[data.itemEquipLoc], offwhiteR, offwhiteG, offwhiteB)
 			end 
-
+		
 		elseif (data.itemType or data.itemSubType) then 
-			self:AddLine(data.itemSubType or data.itemType, offwhiteR, offwhiteG, offwhiteB)
+			if (data.itemClassID == LE_ITEM_CLASS_MISCELLANEOUS) then 
+				-- This includes hearthstones, flight master's whistle and similar
+
+			elseif (data.itemClassID == LE_ITEM_CLASS_CONSUMABLE) then 
+				-- Food, drink, flasks, etc
+
+			else 
+				self:AddLine(data.itemSubType or data.itemType, offwhiteR, offwhiteG, offwhiteB)
+			end 
 		end 
 
 		-- damage and speed
