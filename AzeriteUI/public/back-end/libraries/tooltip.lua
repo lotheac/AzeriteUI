@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 41)
+local LibTooltip = CogWheel:Set("LibTooltip", 42)
 if (not LibTooltip) then	
 	return
 end
@@ -1245,13 +1245,18 @@ Tooltip.SetActionItem = function(self, slot)
 
 		-- use effect
 		-- equip effect
+
 		-- description
+		if data.itemDescription then
+			for _,msg in ipairs(data.itemDescription) do 
+				self:AddLine(msg, colors.quest.green[1], colors.quest.green[2], colors.quest.green[3], true)
+			end 
+		end
 
 		-- durability
 		if data.itemDurability then 
 			self:AddLine(string_format(DURABILITY_TEMPLATE, data.itemDurability, data.itemDurabilityMax), offwhiteR, offwhiteG, offwhiteB)
 		end 
-
 
 		-- sell value
 

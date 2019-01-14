@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 19)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 20)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -99,6 +99,8 @@ local Constants = {
 	ItemDamage = _G.DAMAGE_TEMPLATE,
 	ItemDurability = _G.DURABILITY_TEMPLATE,
 	ItemLevel = _G.ITEM_LEVEL,
+	ItemReqLevel = _G.ITEM_MIN_LEVEL, 
+	ItemSellPrice = _G.SELL_PRICE, 
 	ItemUnique = _G.ITEM_UNIQUE, -- "Unique"
 	ItemUniqueEquip = _G.ITEM_UNIQUE_EQUIPPABLE, -- "Unique-Equipped"
 	ItemUniqueMultiple = _G.ITEM_UNIQUE_MULTIPLE, -- "Unique (%d)"
@@ -217,6 +219,12 @@ local Patterns = {
 	ItemBind1 = 				"^" .. Constants.ItemBoundSoul, 
 	ItemBind2 = 				"^" .. Constants.ItemBoundAccount, 
 	ItemBind3 = 				"^" .. Constants.ItemBoundBnet, 
+
+	-- Item required level 
+	ItemReqLevel = 				"^" .. Constants.ItemReqLevel, 
+
+	-- Item sell price
+	ItemSellPrice = 			"^" .. Constants.ItemSellPrice,
 
 	-- Item unique status
 	ItemUnique1 = 				"^" .. Constants.ItemUnique,
@@ -684,7 +692,7 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 			end 
 		end 
 
-
+		-- Get the item level
 		local line = _G[ScannerName.."TextLeft2"]
 		if line then
 			local msg = line:GetText()
@@ -708,9 +716,11 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 			end
 		end
 
-		local foundItemBlock, foundItemBind, foundItemUnique, foundItemDurability, foundItemDamage, foundItemSpeed
+		local foundItemBlock, foundItemBind, foundItemUnique, foundItemDurability, foundItemDamage, foundItemSpeed, foundItemSellPrice, foundItemReqLevel
 					
 		local numLines = Scanner:NumLines()
+		local firstLine, lastLine = 2, numLines
+
 		for lineIndex = 2,numLines do 
 			local line = _G[ScannerName.."TextLeft"..lineIndex]
 			if line then 
@@ -730,7 +740,10 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 									local msg = line:GetText()
 									if msg then 
 										local int,float = string_match(msg, "(%d+)%.(%d+)")
-										if int or float then 
+										if (int or float) then 
+											if (lineIndex >= firstLine) then 
+												firstLine = lineIndex + 1
+											end 
 											foundItemSpeed = lineIndex
 											tbl.itemSpeed = int .. "." .. (float or 00)
 										end 
@@ -744,6 +757,9 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 					if ((not foundItemDurability) and (string_find(msg, Patterns.ItemDurability))) then 
 						local min,max = string_match(msg, Patterns.ItemDurability)
 						if (max) then 
+							if (lineIndex <= lastLine) then 
+								lastLine = lineIndex - 1
+							end 
 							foundItemDurability = lineIndex
 							tbl.itemDurability = tonumber(min)
 							tbl.itemDurabilityMax = tonumber(max)
@@ -754,6 +770,9 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 					if ((not foundItemBlock) and (string_find(msg, Patterns.ItemBlock))) then 
 						local itemBlock = tonumber(string_match(msg, Patterns.ItemBlock))
 						if (itemBlock and (itemBlock ~= 0)) then 
+							if (lineIndex >= firstLine) then 
+								firstLine = lineIndex + 1
+							end 
 							foundItemBlock = lineIndex
 							tbl.itemBlock = itemBlock
 						end 
@@ -764,7 +783,10 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 						local id = 1
 						while Patterns["ItemBind"..id] do 
 							if (string_find(msg, Patterns["ItemBind"..id])) then 
-							
+								if (lineIndex >= firstLine) then 
+									firstLine = lineIndex + 1
+								end 
+								
 								-- found the bind line
 								foundItemBind = lineIndex
 								tbl.itemBind = msg
@@ -781,7 +803,10 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 						local id = 1
 						while Patterns["ItemUnique"..id] do 
 							if (string_find(msg, Patterns["ItemUnique"..id])) then 
-							
+								if (lineIndex >= firstLine) then 
+									firstLine = lineIndex + 1 
+								end 
+								
 								-- found the unique line
 								foundItemUnique = lineIndex
 								tbl.itemUnique = msg
@@ -793,11 +818,43 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 						end 
 					end 
 
-	
+					-- item sell price
+					-- *we don't retrieve this from here, but need to know the line number
+					if ((not foundItemSellPrice) and (string_find(msg, Patterns.ItemSellPrice))) then 
+						if (lineIndex <= lastLine) then 
+							lastLine = lineIndex - 1
+						end 
+						foundItemSellPrice = lineIndex
+					end 
+
+					-- item required level
+					-- *we don't retrieve this from here, but need to know the line number
+					if ((not foundItemReqLevel) and (string_find(msg, Patterns.ItemReqLevel))) then 
+						if (lineIndex <= lastLine) then 
+							lastLine = lineIndex - 1
+						end 
+						foundItemReqLevel = lineIndex
+					end 
+
 				end 
 			end 
 		end 
 
+		-- Figure out a description for select items
+		if (itemClassID == LE_ITEM_CLASS_MISCELLANEOUS) or (itemClassID == LE_ITEM_CLASS_CONSUMABLE) then 
+			for lineIndex = firstLine, lastLine do 
+				local line = _G[ScannerName.."TextLeft"..lineIndex]
+				if line then 
+					local msg = line:GetText()
+					if msg then 
+						if (not tbl.itemDescription) then 
+							tbl.itemDescription = {}
+						end 
+						tbl.itemDescription[#tbl.itemDescription + 1] = msg
+					end 
+				end 
+			end 
+		end 
 
 		return tbl
 	end 
