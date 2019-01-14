@@ -1157,7 +1157,9 @@ Tooltip.SetActionItem = function(self, slot)
 		end 
 
 		-- item unique status
-
+		if data.itemIsUnique then 
+			self:AddLine(data.itemUnique, offwhiteR, offwhiteG, offwhiteB)
+		end 
 
 		-- item equip location and type
 		if (data.itemEquipLoc and (data.itemEquipLoc ~= "")) then 
