@@ -1020,29 +1020,45 @@ LibNamePlate.Enable = function(self)
 	self:RegisterEvent("DISPLAY_SIZE_CHANGED", "OnEvent")
 	self:RegisterEvent("UI_SCALE_CHANGED", "OnEvent")
 
-	self:Kill810Bars()
+	self:KillClassClutter()
 
 	self.enabled = true
 end 
 
-LibNamePlate.Kill810Bars = function(self)
-	if self:IsBuild("8.0.1") then
-		local frame = ClassNameplateManaBarFrame
-		if frame then 
-			for _,object in pairs({
-				frame, 
-				frame.Border, 
-				frame.FeedbackFrame, 
-				frame.FullPowerFrame, 
-				frame.ManaCostPredictionBar, 
-				frame.background, 
-				frame.Texture
-			}) do
-				if object then 
-					object:ClearAllPoints()
-					object:SetParent(uiHider)
+-- TODO: Move to back-end(?)
+LibNamePlate.KillClassClutter = function(self)
+	for _,object in pairs({
+		ClassNameplateBarFrame, 
+		ClassNameplateBarShardFrame, 
+		ClassNameplateBarWarlockFrame, 
+		ClassNameplateBarComboPointFrame, 
+		ClassNameplateBarRogueDruidFrame, 
+		ClassNameplateBarPaladinRuneFrame,
+		ClassNameplateBarPaladinFrame, 
+		ClassNameplateBarWindwalkerMonkFrame, 
+		ClassNameplateBrewmasterBarFrame, 
+		ClassNameplateBarChiFrame, 
+		ClassNameplateBarMageFrame, 
+		ClassNameplateBarArcaneChargeFrame, 
+		ClassNameplateBarDeathKnightRuneButton, 
+		DeathKnightResourceOverlayFrame, 
+
+		ClassNameplateManaBarFrame, 
+		ClassNameplateManaBarFrame.Border, 
+		ClassNameplateManaBarFrame.FeedbackFrame, 
+		ClassNameplateManaBarFrame.FullPowerFrame, 
+		ClassNameplateManaBarFrame.ManaCostPredictionBar, 
+		ClassNameplateManaBarFrame.background, 
+		ClassNameplateManaBarFrame.Texture
+	}) do
+		if object then 
+			object:ClearAllPoints()
+			object:SetParent(uiHider)
+			hooksecurefunc(object, "SetParent", function(self, parent) 
+				if (parent ~= uiHider) then 
+					self:SetParent(uiHider)
 				end 
-			end
+			end)
 		end 
 	end
 end 
