@@ -557,6 +557,14 @@ ActionButton.PostCreate = function(self, ...)
 	self.Count:SetShadowColor(unpack(Layout.CountShadowColor))
 	self.Count:SetTextColor(unpack(Layout.CountColor))
 
+	if Layout.CountMaxDisplayed then 
+		self.maxDisplayCount = Layout.CountMaxDisplayed
+	end
+
+	if Layout.CountPostUpdate then 
+		self.PostUpdateCount = Layout.CountPostUpdate
+	end
+
 	self.Keybind:ClearAllPoints()
 	self.Keybind:SetPoint(unpack(Layout.KeybindPlace))
 	self.Keybind:SetFontObject(Layout.KeybindFont)

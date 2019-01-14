@@ -78,6 +78,13 @@ local ActionBarMain = {
 	CountShadowOffset = { 0, 0 },
 	CountShadowColor = { 0, 0, 0, 1 },
 	CountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+	CountMaxDisplayed = 99,
+	CountPostUpdate = function(self, count)
+		local font = GetFont(((tonumber(count) or 0) < 10) and 18 or 14, true) 
+		if (self.Count:GetFontObject() ~= font) then 
+			self.Count:SetFontObject(font)
+		end
+	end, 
 
 	-- Keybind Text
 	KeybindPlace = { "TOPLEFT", 5, -5 },

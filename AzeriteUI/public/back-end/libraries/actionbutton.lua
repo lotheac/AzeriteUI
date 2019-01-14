@@ -578,7 +578,7 @@ ActionButton.UpdateCount = function(self)
 		local action = self.buttonAction
 		if HasAction(action) then 
 			if IsConsumableAction(action) or IsStackableAction(action) then
-				local count = GetActionCount(action)
+				count = GetActionCount(action)
 				if (count > (self.maxDisplayCount or 9999)) then
 					count = "*"
 				end
@@ -591,6 +591,9 @@ ActionButton.UpdateCount = function(self)
 	
 		end 
 		Count:SetText(count or "")
+		if self.PostUpdateCount then 
+			return self:PostUpdateCount(count)
+		end 
 	end 
 end 
 
