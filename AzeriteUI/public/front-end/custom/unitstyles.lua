@@ -2144,6 +2144,7 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		power:SetOrientation(Layout.PowerBarOrientation or "RIGHT") -- set the bar to grow towards the top.
 		power:SetSmoothingMode(Layout.PowerBarSmoothingMode) -- set the smoothing mode.
 		power:SetSmoothingFrequency(Layout.PowerBarSmoothingFrequency or .5) -- set the duration of the smoothing.
+		power.frequent = true
 
 		if Layout.PowerBarSparkMap then 
 			power:SetSparkMap(Layout.PowerBarSparkMap) -- set the map the spark follows along the bar.
@@ -2215,6 +2216,7 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 
 			extraPower:Place(unpack(Layout.ManaPlace))  
 			extraPower:SetSize(unpack(Layout.ManaSize)) 
+			extraPower.frequent = true
 			extraPower.exclusiveResource = Layout.ManaExclusiveResource or "MANA" 
 			self.ExtraPower = extraPower
 			self.ExtraPower.OverrideColor = Player_OverrideExtraPowerColor
