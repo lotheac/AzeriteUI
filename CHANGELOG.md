@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.100-Release] 2019-01-15
+### Changed
+- Frequent updates enabled for player power crystal and mana orb. They should both be filling up even more smoothly now.
+
 ## [1.1.99-Release] 2019-01-14
 ### Added
 - Added several item types to our custom actionbar tooltips. You should now be able to see what your food, Hearthstone and Flight Master's Whistle actually do. 
