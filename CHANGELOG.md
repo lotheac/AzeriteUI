@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.101-Release] 2019-01-16
+### Added
+- Added a spell queue window display to the on-screen castbar. If your spell queue window / custom lag tolerance is set to 100ms or higher or the queue window make up 5% of your cast time or more, the castbar will now show a transparent overlay in the area where spells can be queued up. This area will position itself logically based on whether you're casting or channeling, meaning if the bar shrinks from full to empty like when channeling, the queue area will be displayed at the start of the bar, while with normal casts it'll be at the end. 
+
+Note that the default spell queue window in World of Warcraft currently is a whopping high 400ms, which might be fine for healers or casters queueing up spells in a raid situation, but for more accuracy for let's say melee in a PvP situation you can change this manually to something closer to your world latency with the in-game command `/run SetCVar("SpellQueueWindow", latency)`, where you replace `latency` with a numerical value matching your world latency. I advice rounding up to the nearest 5ms above your actual latency, so if you generally have 51-53ms latency, set it to 55. This setting can only be changed out of combat. 
+
 ## [1.1.100-Release] 2019-01-15
 ### Changed
 - Frequent updates enabled for player power crystal and mana orb. They should both be filling up even more smoothly now.
