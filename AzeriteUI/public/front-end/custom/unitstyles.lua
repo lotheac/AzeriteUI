@@ -2726,6 +2726,20 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 				hooksecurefunc(self.Cast.Shield, "Hide", function() self.Cast.Bg:Show() end)
 			end 
 		end 
+
+		if Layout.UseCastBarSpellQueue then 
+			local spellQueue = content:CreateStatusBar()
+			spellQueue:SetFrameLevel(self.Cast:GetFrameLevel() + 1)
+			spellQueue:Place(unpack(Layout.CastBarSpellQueuePlace))
+			spellQueue:SetSize(unpack(Layout.CastBarSpellQueueSize))
+			spellQueue:SetOrientation(Layout.CastBarSpellQueueOrientation) 
+			spellQueue:SetStatusBarTexture(Layout.CastBarSpellQueueTexture) 
+			spellQueue:SetStatusBarColor(unpack(Layout.CastBarSpellQueueColor)) 
+			spellQueue:DisableSmoothing(true)
+			spellQueue.threshold = CastBarSpellQueueThreshold
+			self.Cast.SpellQueue = spellQueue
+		end 
+
 	end 
 
 	-- Class Power

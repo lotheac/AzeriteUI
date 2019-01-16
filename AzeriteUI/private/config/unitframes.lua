@@ -770,6 +770,27 @@ local UnitFramePlayerHUD = {
 			CastBarShieldColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 			CastShieldHideBgWhenShielded = true, 
 
+		UseCastBarSpellQueue = true, 
+			CastBarSpellQueuePlace = { "CENTER", "UICenter", "CENTER", 0, -133 }, 
+			CastBarSpellQueueSize = Constant.SmallBar,
+			CastBarSpellQueueTexture = Constant.SmallBarTexture, 
+			CastBarSpellQueueColor = { 1, 1, 1, .5 },
+			CastBarSpellQueueOrientation = "LEFT",
+			CastBarSpellQueueSparkMap = {
+				top = {
+					{ keyPercent =   0/128, offset = -16/32 }, 
+					{ keyPercent =  10/128, offset =   0/32 }, 
+					{ keyPercent = 119/128, offset =   0/32 }, 
+					{ keyPercent = 128/128, offset = -16/32 }
+				},
+				bottom = {
+					{ keyPercent =   0/128, offset = -16/32 }, 
+					{ keyPercent =  10/128, offset =   0/32 }, 
+					{ keyPercent = 119/128, offset =   0/32 }, 
+					{ keyPercent = 128/128, offset = -16/32 }
+				}
+			},
+
 	UseClassPower = true, 
 		ClassPowerPlace = { "CENTER", "UICenter", "CENTER", 0, 0 }, 
 		ClassPowerSize = { 2,2 }, 
