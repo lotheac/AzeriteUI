@@ -9,6 +9,7 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
+local GetCVar = _G.GetCVar
 local GetNetStats = _G.GetNetStats
 local GetTime = _G.GetTime
 local UnitCastingInfo = _G.UnitCastingInfo
@@ -101,23 +102,74 @@ if (gameLocale == "zhCN") then
 	end
 end 
 
+local clear = function(element)
+	element.name = nil
+	element.text = nil
+	if element.Name then 
+		element.Name:SetText("")
+	end
+	if element.Value then 
+		element.Value:SetText("")
+	end
+	if element.SpellQueue then 
+		element.SpellQueue:SetValue(0, true)
+	end
+	element:SetValue(0, true)
+end
+
+local updateSpellQueueOrientation = function(element)
+	if (element.channeling) then 
+		local orientation = element:GetOrientation()
+		if (orientation ~= element.SpellQueue:GetOrientation()) then 
+			element.SpellQueue:SetOrientation(orientation)
+		end 
+	else 
+		local orientation
+		local barDirection = element:GetOrientation()
+		if (barDirection == "LEFT") then
+			orientation = "RIGHT" 
+		elseif (barDirection == "RIGHT") then 
+			orientation = "LEFT" 
+		elseif (barDirection == "UP") then 
+			orientation = "DOWN" 
+		elseif (barDirection == "DOWN") then 
+			orientation = "UP" 
+		end
+		local spellQueueDirection = element.SpellQueue:GetOrientation()
+		if (spellQueueDirection ~= orientation) then 
+			element.SpellQueue:SetOrientation(orientation)
+		end
+	end 
+end
+
+local updateSpellQueueValue = function(element)
+	local ms = tonumber(GetCVar("SpellQueueWindow")) or 400 -- that large value is WoW's default
+	local max = element.total or element.max
+
+	-- Don't allow values above max, it'd look wrong
+	local value = ms / 1e3
+	if (value > max) then
+		value = max
+	end
+
+	-- Hide the overlay if it'd take up less than 5% of your bar, 
+	-- or if the total length of the window is shorter than 100ms. 
+	local ratio = value / max 
+	if (ratio < .05) or (ms < 100) then 
+		value = 0
+	end 
+
+	element.SpellQueue:SetMinMaxValues(0, max)
+	element.SpellQueue:SetValue(value, true)
+end
+
 local OnUpdate = function(element, elapsed)
 	local unit = element._owner.unit
 	if (not unit) or (not UnitExists(unit)) then 
-		element.casting = nil
+		clear(element)
 		element.castID = nil
+		element.casting = nil
 		element.channeling = nil
-		element.name = nil
-		element.text = nil
-
-		if element.Name then 
-			element.Name:SetText("")
-		end
-		if element.Value then 
-			element.Value:SetText("")
-		end
-		
-		element:SetValue(0, true)
 		element:Hide()
 		return element.PostUpdate and element:PostUpdate(unit)
 	end
@@ -125,31 +177,25 @@ local OnUpdate = function(element, elapsed)
 	if (element.casting or element.tradeskill) then
 		local duration = element.duration + elapsed
 		if (duration >= element.max) then
-			element.casting = nil
+			clear(element) 
 			element.tradeskill = nil
-			element.total = nil
-			element.name = nil
-			element.text = nil
-	
-			if element.Name then 
-				element.Name:SetText("")
-			end
-			if element.Value then 
-				element.Value:SetText("")
-			end
-			element:SetValue(0, true)
+			element.casting = nil
+			element.channeling = nil
 			element:Hide()
 			return element.PostUpdate and element:PostUpdate(unit)
 		end
 		if element.Value then
 			if element.tradeskill then
 				element.Value:SetText(formatTime(element.max - duration))
-			elseif (element.delay and (element.delay ~= 0)) then
-				element.Value:SetFormattedText("%s|cffff0000 -%s|r", formatTime(floor(element.max - duration)), formatTime(element.delay))
+			elseif (element.delay and (element.delay > 0)) then
+				element.Value:SetFormattedText("%s|cffff0000 +%s|r", formatTime(floor(element.max - duration)), formatTime(element.delay))
 			else
 				element.Value:SetText(formatTime(element.max - duration))
 			end
 		end
+		if element.SpellQueue then 
+			updateSpellQueueValue(element)
+		end 
 		element.duration = duration
 		element:SetValue(duration)
 
@@ -160,30 +206,22 @@ local OnUpdate = function(element, elapsed)
 	elseif element.channeling then
 		local duration = element.duration - elapsed
 		if (duration <= 0) then
+			clear(element)
 			element.channeling = nil
-			element.name = nil
-			element.text = nil
-	
-			if element.Name then 
-				element.Name:SetText("")
-			end
-			if element.Value then 
-				element.Value:SetText("")
-			end
-			
-			element:SetValue(0, true)
 			return element.PostUpdate and element:PostUpdate(unit)
-
 		end
 		if element.Value then
 			if element.tradeskill then
 				element.Value:SetText(formatTime(duration))
-			elseif (element.delay and (element.delay ~= 0)) then
-				element.Value:SetFormattedText("%s|cffff0000 -%s|r", formatTime(duration), formatTime(element.delay))
+			elseif (element.delay and (element.delay > 0)) then
+				element.Value:SetFormattedText("%s|cffff0000 +%s|r", formatTime(duration), formatTime(element.delay))
 			else
 				element.Value:SetText(formatTime(duration))
 			end
 		end
+		if element.SpellQueue then 
+			updateSpellQueueValue(element)
+		end 
 		element.duration = duration
 		element:SetValue(duration)
 
@@ -192,22 +230,11 @@ local OnUpdate = function(element, elapsed)
 		end
 		
 	else
+		clear(element)
 		element.casting = nil
 		element.castID = nil
 		element.channeling = nil
-		element.name = nil
-		element.text = nil
-
-		if element.Name then 
-			element.Name:SetText("")
-		end
-		if element.Value then 
-			element.Value:SetText("")
-		end
-		
-		element:SetValue(0, true)
 		return element.PostUpdate and element:PostUpdate(unit)
-
 	end
 end 
 
@@ -255,7 +282,11 @@ Update = function(self, event, unit, ...)
 					element.Shield:Hide()
 				end
 			end
-
+			if element.SpellQueue then 
+				updateSpellQueueOrientation(element)
+				updateSpellQueueValue(element)
+			end 
+	
 			element:Show()
 
 		else
@@ -268,22 +299,14 @@ Update = function(self, event, unit, ...)
 		if (element.castID ~= castID) then
 			return
 		end
-
+		
+		clear(element)
+		
 		element.tradeskill = nil
 		element.total = nil
 		element.casting = nil
 		element.interrupt = nil
-		element.name = nil
-		element.text = nil
 
-		if element.Name then 
-			element.Name:SetText("")
-		end
-		if element.Value then 
-			element.Value:SetText("")
-		end
-
-		element:SetValue(0, true)
 		element:Hide()
 		
 	elseif (event == "UNIT_SPELLCAST_STOP") then
@@ -292,21 +315,12 @@ Update = function(self, event, unit, ...)
 			return
 		end
 
+		clear(element)
 		element.casting = nil
 		element.interrupt = nil
 		element.tradeskill = nil
 		element.total = nil
-		element.name = nil
-		element.text = nil
 
-		if element.Name then 
-			element.Name:SetText("")
-		end
-		if element.Value then 
-			element.Value:SetText("")
-		end
-
-		element:SetValue(0, true)
 		element:Hide()
 		
 	elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
@@ -314,22 +328,14 @@ Update = function(self, event, unit, ...)
 		if (element.castID ~= castID) then
 			return
 		end
+		
+		clear(element)
 
 		element.tradeskill = nil
 		element.total = nil
 		element.casting = nil
 		element.interrupt = nil
-		element.name = nil
-		element.text = nil
 
-		if element.Name then 
-			element.Name:SetText("")
-		end
-		if element.Value then 
-			element.Value:SetText("")
-		end
-
-		element:SetValue(0, true)
 		element:Hide()
 		
 	elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then	
@@ -421,6 +427,11 @@ Update = function(self, event, unit, ...)
 					element.Shield:Hide()
 				end
 			end
+			if element.SpellQueue then 
+				updateSpellQueueOrientation(element)
+				updateSpellQueueValue(element)
+			end 
+
 			element:Show()
 			
 		else
@@ -438,25 +449,19 @@ Update = function(self, event, unit, ...)
 		element.delay = (element.delay or 0) + element.duration - duration
 		element.duration = duration
 		element.max = (endTime - startTime) / 1000
-		
+
+		if element.SpellQueue then 
+			updateSpellQueueValue(element)
+		end 
+	
 		element:SetMinMaxValues(0, element.max)
 		element:SetValue(duration)
 	
 	elseif (event == "UNIT_SPELLCAST_CHANNEL_STOP") then
 		if element:IsShown() then
+			clear(element)
 			element.channeling = nil
 			element.interrupt = nil
-			element.name = nil
-			element.text = nil
-
-			if element.Name then 
-				element.Name:SetText("")
-			end
-			if element.Value then 
-				element.Value:SetText("")
-			end
-		
-			element:SetValue(0, true)
 			element:Hide()
 		end
 		
@@ -468,267 +473,18 @@ Update = function(self, event, unit, ...)
 			return Update(self, "UNIT_SPELLCAST_CHANNEL_START", unit)
 		end
 
+		clear(element)
+
 		element.casting = nil
 		element.interrupt = nil
 		element.tradeskill = nil
 		element.total = nil
-		element.name = nil
-		element.text = nil
 
-		if element.Name then 
-			element.Name:SetText("")
-		end
-		if element.Value then 
-			element.Value:SetText("")
-		end
-
-		element:SetValue(0, true)
 		element:Hide()
 	end
 
 	if element.PostUpdate then 
 		return element:PostUpdate(unit)
-	end 
-end 
-
--- Override for Legion clients
--- Not strictly needed anymore, but it doesn't slow down the code, 
--- so we're leaving it here to simplify possible future backports.
-if (not ENGINE_801) then 
-	Update = function(self, event, unit, ...)
-		if (not unit) or (unit ~= self.unit) then 
-			return 
-		end 
-	
-		local element = self.Cast
-		if element.PreUpdate then
-			element:PreUpdate(unit)
-		end
-	
-		if (event == "UNIT_SPELLCAST_START") then
-			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
-			if (not name) then
-				element:Hide()
-				element:SetValue(0, true)
-				return
-			end
-	
-			endTime = endTime / 1e3
-			startTime = startTime / 1e3
-	
-			local now = GetTime()
-			local max = endTime - startTime
-	
-			element.castID = castID
-			element.duration = now - startTime
-			element.max = max
-			element.delay = 0
-			element.casting = true
-			element.interrupt = notInterruptible
-			element.tradeskill = isTradeSkill
-			element.total = nil
-			element.starttime = nil
-	
-			element:SetMinMaxValues(0, element.total or element.max)
-			element:SetValue(element.duration) 
-	
-			if element.Name then element.Name:SetText(utf8sub(text, 32, true)) end
-			if element.Icon then element.Icon:SetTexture(texture) end
-			if element.Value then element.Value:SetText("") end
-			if element.Shield then 
-				if element.interrupt and not UnitIsUnit(unit, "player") then
-					element.Shield:Show()
-				else
-					element.Shield:Hide()
-				end
-			end
-	
-			element:Show()
-	
-		elseif (event == "UNIT_SPELLCAST_FAILED") then
-			local _, _, castID = ...
-			if (element.castID ~= castID) then
-				return
-			end
-	
-			element.tradeskill = nil
-			element.total = nil
-			element.casting = nil
-			element.interrupt = nil
-	
-			element:SetValue(0, true)
-			element:Hide()
-			
-		elseif (event == "UNIT_SPELLCAST_STOP") then
-			local _, _, castID = ...
-			if (element.castID ~= castID) then
-				return
-			end
-	
-			element.casting = nil
-			element.interrupt = nil
-			element.tradeskill = nil
-			element.total = nil
-	
-			element:SetValue(0, true)
-			element:Hide()
-			
-		elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
-			local _, _, castID = ...
-			if (element.castID ~= castID) then
-				return
-			end
-	
-			element.tradeskill = nil
-			element.total = nil
-			element.casting = nil
-			element.interrupt = nil
-	
-			element:SetValue(0, true)
-			element:Hide()
-			
-		elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then	
-			if element.casting then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
-				if name then
-					element.interrupt = notInterruptible
-				end
-	
-			elseif element.channeling then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
-				if name then
-					element.interrupt = notInterruptible
-				end
-			end
-	
-			if element.Shield then 
-				if element.interrupt and not UnitIsUnit(unit ,"player") then
-					element.Shield:Show()
-				else
-					element.Shield:Hide()
-				end
-			end
-		
-		elseif (event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
-			if element.casting then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
-				if name then
-					element.interrupt = notInterruptible
-				end
-	
-			elseif element.channeling then
-				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
-				if name then
-					element.interrupt = notInterruptible
-				end
-			end
-	
-			if element.Shield then 
-				if element.interrupt and not UnitIsUnit(unit ,"player") then
-					element.Shield:Show()
-				else
-					element.Shield:Hide()
-				end
-			end
-		
-		elseif (event == "UNIT_SPELLCAST_DELAYED") then
-			local name, _, text, texture, startTime, endTime = UnitCastingInfo(unit)
-			if (not startTime) or (not element.duration) then 
-				return 
-			end
-			
-			local duration = GetTime() - (startTime / 1000)
-			if (duration < 0) then 
-				duration = 0 
-			end
-	
-			element.delay = (element.delay or 0) + element.duration - duration
-			element.duration = duration
-	
-			element:SetValue(duration)
-			
-		elseif (event == "UNIT_SPELLCAST_CHANNEL_START") then	
-			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
-			if (not name) then
-				element:SetValue(0, true)
-				element:Hide()
-				return
-			end
-			
-			endTime = endTime / 1e3
-			startTime = startTime / 1e3
-	
-			local max = endTime - startTime
-			local duration = endTime - GetTime()
-	
-			element.duration = duration
-			element.max = max
-			element.delay = 0
-			element.channeling = true
-			element.interrupt = notInterruptible
-	
-			element.casting = nil
-			element.castID = nil
-	
-			element:SetMinMaxValues(0, max)
-			element:SetValue(duration)
-			
-			if element.Name then element.Name:SetText(utf8sub(name, 32, true)) end
-			if element.Icon then element.Icon:SetTexture(texture) end
-			if element.Value then element.Value:SetText("") end
-			if element.Shield then 
-				if element.interrupt and not UnitIsUnit(unit ,"player") then
-					element.Shield:Show()
-				else
-					element.Shield:Hide()
-				end
-			end
-	
-			element:Show()
-			
-		elseif (event == "UNIT_SPELLCAST_CHANNEL_UPDATE") then
-			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo(unit)
-			if (not name) or (not element.duration) then 
-				return 
-			end
-	
-			local duration = (endTime / 1000) - GetTime()
-			element.delay = (element.delay or 0) + element.duration - duration
-			element.duration = duration
-			element.max = (endTime - startTime) / 1000
-			
-			element:SetMinMaxValues(0, element.max)
-			element:SetValue(duration)
-		
-		elseif (event == "UNIT_SPELLCAST_CHANNEL_STOP") then
-			local unit, spellname = ...
-	
-			if element:IsShown() then
-				element.channeling = nil
-				element.interrupt = nil
-	
-				element:SetValue(0, true)
-				element:Hide()
-			end
-			
-		else 
-			if UnitCastingInfo(unit) then
-				return Update(self, "UNIT_SPELLCAST_START", unit)
-			end
-			if UnitChannelInfo(self.unit) then
-				return Update(self, "UNIT_SPELLCAST_CHANNEL_START", unit)
-			end
-			element.casting = nil
-			element.interrupt = nil
-			element.tradeskill = nil
-			element.total = nil
-			element:SetValue(0, true)
-			element:Hide()
-		end
-	
-		if element.PostUpdate then 
-			return element:PostUpdate(unit)
-		end 
 	end 
 end 
 
@@ -790,5 +546,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 14)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 15)
 end 
