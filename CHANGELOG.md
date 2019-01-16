@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.102-Release] 2019-01-16
+### Fixed
+- Fixed some issues with the hotkey abbreviation code that confused binding key identifier with button display text and just ended with MAYHEM (and missing binds on the bars)!
+
 ## [1.1.101-Release] 2019-01-16
 ### Added
 - Added a spell queue window display to the on-screen castbar. If your spell queue window / custom lag tolerance is set to 100ms or higher or the queue window make up 5% of your cast time or more, the castbar will now show a transparent overlay in the area where spells can be queued up. This area will position itself logically based on whether you're casting or channeling, meaning if the bar shrinks from full to empty like when channeling, the queue area will be displayed at the start of the bar, while with normal casts it'll be at the end. 
