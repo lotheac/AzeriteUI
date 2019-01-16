@@ -18,19 +18,14 @@ local UnitExists = _G.UnitExists
 -- WoW Constants
 local MILLISECONDS_ABBR = MILLISECONDS_ABBR
 
--- WoW Client Constants
-local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
-
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 
 -- Define it here so it can call itself later on
 local Update
 
-
 -- Utility Functions
 -----------------------------------------------------------
-
 local utf8sub = function(str, i, dots)
 	if not str then return end
 	local bytes = str:len()
