@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.103-Release] 2019-01-17
+### Changed
+- Changed how item tooltips from items with a Use effect placed on the actionbars are displayed. They are more similar to other spells now, not showing elements like their stats, bind status and so on, but instead focusing on the Use portion of the item. This does not affect items without a Use effect, like weapons placed on your bars for easier swapping in combat. 
+- Certain requirements to use a spell - like having to be in Bear Form - will no longer be displayed in the action button tooltips if the criteria has been met. This only affects action button tooltips, and has no effect on the spell book or other Blizzard elements. 
+
 ## [1.1.102-Release] 2019-01-16
 ### Fixed
 - Fixed some issues with the hotkey abbreviation code that confused binding key identifier with button display text and just ended with MAYHEM (and missing binds on the bars)!
