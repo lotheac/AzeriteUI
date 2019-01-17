@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 20)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 22)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -104,12 +104,16 @@ local Constants = {
 	ItemUnique = _G.ITEM_UNIQUE, -- "Unique"
 	ItemUniqueEquip = _G.ITEM_UNIQUE_EQUIPPABLE, -- "Unique-Equipped"
 	ItemUniqueMultiple = _G.ITEM_UNIQUE_MULTIPLE, -- "Unique (%d)"
+	ItemEquipEffect = _G.ITEM_SPELL_TRIGGER_ONEQUIP, -- "Equip:"
+	ItemUseEffect = _G.ITEM_SPELL_TRIGGER_ONUSE, -- "Use:"
 	Level = _G.LEVEL,
 
 	RangeCaster = _G.SPELL_RANGE_AREA,
 	RangeMelee = _G.MELEE_RANGE,
 	RangeSpell = _G.SPELL_RANGE, -- SPELL_RANGE_DUAL = "%1$s: %2$s yd range"
 	RangeUnlimited = _G.SPELL_RANGE_UNLIMITED, 
+
+	SpellRequiresForm = _G.SPELL_REQUIRED_FORM, 
 }
 
 -- Listing them for personal reference
@@ -231,6 +235,10 @@ local Patterns = {
 	ItemUnique2 = 				"^" .. Constants.ItemUniqueEquip,
 	ItemUnique3 = 				"^" .. string_gsub(Constants.ItemUniqueMultiple, "%%d", "(%%d+)"),
 
+	-- Item effects
+	ItemEquipEffect = 			"^" .. Constants.ItemEquipEffect, 
+	ItemUseEffect = 			"^" .. Constants.ItemUseEffect, 
+
 	-- Recharge Remaining
 	RechargeTimeRemaining1 = 	"^" .. string_gsub(Constants.RechargeTimeRemaining1, "%%d", "(%%d+)"), 
 	RechargeTimeRemaining2 = 	"^" .. string_gsub(Constants.RechargeTimeRemaining2, "%%d", "(%%d+)"), 
@@ -241,6 +249,9 @@ local Patterns = {
 	Range2 = 					"^" .. Constants.RangeUnlimited,
 	Range3 = 					"^" .. Constants.RangeCaster, 
 	Range4 = 					"^" .. string_gsub(Constants.RangeSpell, "%%s", "(%.+)"),
+
+	-- Spell Requirements
+	SpellRequiresForm = 			   "(" .. (string_gsub(Constants.SpellRequiresForm, "%%s", "(.+)")) .. ")", 
 
 }
 
@@ -408,6 +419,7 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 		local foundRemainingCooldown, foundRemainingRecharge
 		local foundDescription
 		local foundResourceMod
+		local foundRequirement, foundUnmetRequirement
 		
 		local numLines = Scanner:NumLines() -- total number of lines
 		local lastInfoLine = 1 -- The last line where information exists
@@ -478,6 +490,17 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 
 					--if (string_find(msg, SPELL_RECHARGE_TIME)) then 
 					--end 
+
+					if not(foundUnmetRequirement or foundRequirement) and string_find(leftMsg, Patterns.SpellRequiresForm) then 
+						local r, g, b = left:GetTextColor()
+						if (r + g + b < 2) then 
+							foundUnmetRequirement = lineIndex
+							tbl.unmetRequirement = leftMsg
+						else 
+							foundRequirement = lineIndex
+							tbl.requirement = leftMsg
+						end 
+					end 
 
 					-- Search for remaining cooldown, if one is active (?)
 					if (not foundRemainingCooldown) then 
@@ -564,7 +587,7 @@ LibTooltipScanner.GetTooltipDataForAction = function(self, actionSlot, tbl)
 		if (numLines > lastInfoLine) then 
 			for lineIndex = lastInfoLine+1, numLines do 
 				left = _G[ScannerName.."TextLeft"..lineIndex]
-				if left then 
+				if left and (lineIndex ~= foundRequirement) and (lineIndex ~= foundUnmetRequirement) then 
 					local msg = left:GetText()
 					if msg then
 						if tbl.description then 
@@ -716,7 +739,7 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 			end
 		end
 
-		local foundItemBlock, foundItemBind, foundItemUnique, foundItemDurability, foundItemDamage, foundItemSpeed, foundItemSellPrice, foundItemReqLevel
+		local foundItemBlock, foundItemBind, foundItemUnique, foundItemDurability, foundItemDamage, foundItemSpeed, foundItemSellPrice, foundItemReqLevel, foundUseEffect, foundEquipEffect
 					
 		local numLines = Scanner:NumLines()
 		local firstLine, lastLine = 2, numLines
@@ -818,6 +841,27 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 						end 
 					end 
 
+					-- item USe effect. Can only be one. I think. 
+					if ((not foundUseEffect) and (string_find(msg, Patterns.ItemUseEffect))) then 
+						foundUseEffect = lineIndex
+						tbl.itemUseEffect = msg
+						tbl.itemHasUseEffect = true
+					end 
+
+					-- Items can have multiple Equip effects
+					--if ((not foundEquipEffect) and (string_find(msg, Patterns.ItemEquipEffect))) then 
+					if (string_find(msg, Patterns.ItemEquipEffect)) then 
+						if (not tbl.itemEquipEffects) then 
+							tbl.itemEquipEffects = {}
+						end 
+						if (not foundEquipEffect) then
+							foundEquipEffect = {}
+						end  
+						foundEquipEffect[#foundEquipEffect + 1] = lineIndex
+						tbl.itemEquipEffects[#tbl.itemEquipEffects + 1] = msg
+						tbl.itemHasEquipEffect = true
+					end 
+
 					-- item sell price
 					-- *we don't retrieve this from here, but need to know the line number
 					if ((not foundItemSellPrice) and (string_find(msg, Patterns.ItemSellPrice))) then 
@@ -843,16 +887,38 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 		-- Figure out a description for select items
 		if (itemClassID == LE_ITEM_CLASS_MISCELLANEOUS) or (itemClassID == LE_ITEM_CLASS_CONSUMABLE) then 
 			for lineIndex = firstLine, lastLine do 
-				local line = _G[ScannerName.."TextLeft"..lineIndex]
-				if line then 
-					local msg = line:GetText()
-					if msg then 
-						if (not tbl.itemDescription) then 
-							tbl.itemDescription = {}
-						end 
-						tbl.itemDescription[#tbl.itemDescription + 1] = msg
+				if (lineIndex ~= foundItemBlock)
+					and (lineIndex ~= foundItemBind)
+					and (lineIndex ~= foundItemUnique)
+					and (lineIndex ~= foundItemDamage)
+					and (lineIndex ~= foundItemDurability)
+					and (lineIndex ~= foundItemSpeed)
+					and (lineIndex ~= foundItemSellPrice)
+					and (lineIndex ~= foundItemReqLevel)
+					and (lineIndex ~= foundUseEffect)
+				then 
+					local skip
+					if foundEquipEffect then 
+						for lineID in pairs(foundEquipEffect) do 
+							if (lineID == lineIndex) then 
+								skip = true 
+								break 
+							end
+						end
 					end 
-				end 
+					if (not skip) then 
+						local line = _G[ScannerName.."TextLeft"..lineIndex]
+						if line then 
+							local msg = line:GetText()
+							if (msg and (msg ~= "") and (msg ~= " ")) then 
+								if (not tbl.itemDescription) then 
+									tbl.itemDescription = {}
+								end 
+								tbl.itemDescription[#tbl.itemDescription + 1] = msg
+							end 
+						end 
+					end 
+				end
 			end 
 		end 
 
