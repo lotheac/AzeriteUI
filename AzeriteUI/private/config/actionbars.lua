@@ -13,6 +13,16 @@ local L = CogWheel("LibLocale"):GetLocale(ADDON)
 local ActionBarMain = {
 	Colors = Colors,
 
+	-- Button Tooltips
+	-------------------------------------------------------
+	UseTooltipSettings = true, 
+		TooltipColorNameAsSpellWithUse = true, -- color item name as a spell (not by rarity) when it has a Use effect
+		TooltipHideItemLevelWithUse = true, -- hide item level when it has a Use effect 
+		TooltipHideBindsWithUse = true, -- hide item bind status when it has a Use effect
+		TooltipHideEquipTypeWithUse = false, -- hide item equip location and item type with Use effect
+		TooltipHideUniqueWithUse = true, -- hide item unique status when it has a Use effect
+		TooltipHideStatsWithUse = true, -- hide item stats when it has a Use effect
+
 	-- Bar Layout
 	-------------------------------------------------------
 	UseActionBarMenu = true, 

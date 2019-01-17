@@ -916,11 +916,25 @@ Module.UpdateCastOnDown = function(self)
 	end 
 end 
 
+Module.UpdateTooltipSettings = function(self)
+	if (not Layout.UseTooltipSettings) then 
+		return 
+	end 
+	local tooltip = self:GetActionButtonTooltip()
+	tooltip.colorNameAsSpellWithUse = Layout.TooltipColorNameAsSpellWithUse
+	tooltip.hideItemLevelWithUse = Layout.TooltipHideItemLevelWithUse
+	tooltip.hideStatsWithUseEffect = Layout.TooltipHideStatsWithUse
+	tooltip.hideBindsWithUseEffect = Layout.TooltipHideBindsWithUse
+	tooltip.hideUniqueWithUseEffect = Layout.TooltipHideUniqueWithUse
+	tooltip.hideEquipTypeWithUseEffect = Layout.TooltipHideEquipTypeWithUse
+end 
+
 Module.UpdateSettings = function(self, event, ...)
 	local db = self.db
 	self:UpdateFading()
 	self:UpdateFadeAnchors()
 	self:UpdateCastOnDown()
+	self:UpdateTooltipSettings()
 end 
 
 Module.OnEvent = function(self, event, ...)
