@@ -1,5 +1,5 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 17)
-if (not LibBlizzard) then	
+local LibBlizzard = CogWheel:Set("LibBlizzard", 18)
+if (not LibBlizzard) then 
 	return
 end
 
@@ -488,18 +488,6 @@ UIWidgets["Tutorials"] = function(self)
 	TutorialFrame:UnregisterAllEvents()
 	TutorialFrame:Hide()
 	TutorialFrame.Show = TutorialFrame.Hide
-end
-
-UIWidgets["UnitFrames"] = function(self)
-	UIWidgets["UnitFramePlayer"](self)
-	UIWidgets["UnitFramePet"](self)
-	UIWidgets["UnitFrameTarget"](self)
-	UIWidgets["UnitFrameToT"](self)
-	UIWidgets["UnitFramePet"](self)
-	UIWidgets["UnitFrameFocus"](self)
-	UIWidgets["UnitFrameParty"](self)
-	UIWidgets["UnitFrameBoss"](self)
-	UIWidgets["UnitFrameArena"](self)
 end
 
 UIWidgets["UnitFramePlayer"] = function(self)
