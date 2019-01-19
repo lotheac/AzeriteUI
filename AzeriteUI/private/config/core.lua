@@ -32,7 +32,19 @@ local Core = {
 		PlayerPowerBarAlt = true, 
 		TotemFrame = true, 
 		Tutorials = true,
-		UnitFrames = true,
+		
+		UnitFramePlayer = true,
+		UnitFramePet = true,
+		UnitFrameTarget = true,
+		UnitFrameToT = true,
+		UnitFramePet = true,
+		UnitFrameFocus = true,
+		UnitFrameParty = true,
+		UnitFrameBoss = true,
+		UnitFrameArena = not(	CogWheel("LibModule"):IsAddOnEnabled("sArena") 
+							or	CogWheel("LibModule"):IsAddOnEnabled("Gladius") 
+							or 	CogWheel("LibModule"):IsAddOnEnabled("GladiusEx") ),
+
 		--Warnings = true,
 		WorldMap = true,
 		WorldState = true,
