@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("UnitFrameArena", "LibDB", "LibEvent", "LibUnitFrame", "LibFrame")
+Module:SetIncompatible("sArena")
 Module:SetIncompatible("Gladius")
 Module:SetIncompatible("GladiusEx")
 
