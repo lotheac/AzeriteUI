@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 12)
+local LibFader = CogWheel:Set("LibFader", 13)
 if (not LibFader) then	
 	return
 end
@@ -182,9 +182,9 @@ end
 -- Force all faded objects visible 
 LibFader.SetObjectFadeOverride = function(self, force)
 	if (force) then 
-		self.FORCED = true 
+		LibFader.FORCED = true 
 	else 
-		self.FORCED = nil 
+		LibFader.FORCED = nil 
 	end 
 end
 
