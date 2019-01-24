@@ -112,6 +112,10 @@ Module.PreInit = function(self)
 
 	-- This will be called by the library upon creating new tooltips.
 	self.PostCreateTooltip = function(self, tooltip)
+
+		tooltip.PostCreateLinePair = Layout.PostCreateLinePair
+		tooltip.PostCreateBar = Layout.PostCreateBar
+
 		if Layout.PostCreateTooltip then 
 			Layout.PostCreateTooltip(tooltip)
 		end 
