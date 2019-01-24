@@ -243,7 +243,7 @@ end
 local CreateAuraButton = function(element)
 
 	local button = setmetatable(element:CreateFrame("Button"), Aura_MT)
-	button:EnableMouse(true)
+	button:EnableMouse(not element.disableMouse)
 	button:RegisterForClicks("RightButtonUp")
 	button:SetSize(element.auraSize, element.auraSize)
 	button._owner = element
@@ -796,5 +796,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 33)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 34)
 end 
