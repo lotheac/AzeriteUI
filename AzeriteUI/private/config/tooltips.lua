@@ -48,6 +48,18 @@ local TooltipStyling = {
 
 		-- Add our post updates for statusbars
 		tooltip.PostUpdateStatusBar = postUpdateStatusBar
+	end,
+
+	PostCreateLinePair = function(tooltip, lineIndex, left, right)
+		local fontObject = (lineIndex == 1) and GetFont(15, true) or GetFont(13, true)
+		left:SetFontObject(fontObject)
+		right:SetFontObject(fontObject)
+	end, 
+
+	PostCreateBar = function(tooltip, bar)
+		if bar.Value then 
+			bar.Value:SetFontObject(GetFont(15, true))
+		end
 	end
 }
 
