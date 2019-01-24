@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.104-Release] 2019-01-24
+### Changed
+- Added post updates to line pair creation in the tooltip back-end, to allow the addon to use custom font sets for the tooltips. 
+
+### Fixed
+- Properly disabled mouse input on the nameplate aura element.
+
 ## [1.1.103-Release] 2019-01-17
 ### Changed
 - Changed how item tooltips from items with a Use effect placed on the actionbars are displayed. They are more similar to other spells now, not showing elements like their stats, bind status and so on, but instead focusing on the Use portion of the item. This does not affect items without a Use effect, like weapons placed on your bars for easier swapping in combat. 
