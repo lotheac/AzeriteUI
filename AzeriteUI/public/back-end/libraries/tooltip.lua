@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 44)
+local LibTooltip = CogWheel:Set("LibTooltip", 45)
 if (not LibTooltip) then	
 	return
 end
@@ -271,6 +271,10 @@ local createNewLinePair = function(tooltip, lineIndex)
 	right:SetPoint("RIGHT", tooltip, "RIGHT", -TEXT_INSET, 0)
 	tooltip["TextRight"..lineIndex] = right
 	tooltip.lines.right[#tooltip.lines.right + 1] = right
+
+	if tooltip.PostCreateLinePair then 
+		tooltip:PostCreateLinePair(lineIndex, left, right)
+	end 
 
 	-- Align the new line
 	alignLine(tooltip, lineIndex)
@@ -642,6 +646,10 @@ Tooltip.AddBar = function(self, barType)
 
 		-- Store the new bar
 		self.bars[self.numBars] = bar
+
+		if self.PostCreateBar then 
+			self:PostCreateBar(bar)
+		end
 	end 
 
 	local bar = self.bars[self.numBars]
