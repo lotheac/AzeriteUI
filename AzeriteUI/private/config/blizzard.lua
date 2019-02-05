@@ -141,7 +141,7 @@ local BlizzardMicroMenu = {
 		local bg = self:CreateTexture()
 		bg:SetDrawLayer("ARTWORK")
 		bg:SetTexture(GetMedia("menu_button_disabled"))
-		bg:SetVertexColor(.9, .9, .9)
+		bg:SetVertexColor(.75, .75, .75)
 		bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
 		bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
 		self.NormalBackdrop = bg
@@ -149,7 +149,7 @@ local BlizzardMicroMenu = {
 		local pushed = self:CreateTexture()
 		pushed:SetDrawLayer("ARTWORK")
 		pushed:SetTexture(GetMedia("menu_button_pushed"))
-		pushed:SetVertexColor(.9, .9, .9)
+		pushed:SetVertexColor(.75, .75, .75)
 		pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
 		pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
 		self.PushedBackdrop = pushed

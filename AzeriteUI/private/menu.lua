@@ -255,8 +255,12 @@ Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
 
 	option:HookScript("OnEnable", Button.OnEnable)
 	option:HookScript("OnDisable", Button.OnDisable)
-	option:HookScript("OnShow", Button.Update)
-	option:HookScript("OnHide", Button.Update)
+	option:HookScript("OnShow", Button.OnShow)
+	option:HookScript("OnHide", Button.OnHide)
+	option:HookScript("OnMouseDown", Button.OnMouseDown)
+	option:HookScript("OnMouseUp", Button.OnMouseUp)
+	option:HookScript("OnEnter", Button.Update)
+	option:HookScript("OnLeave", Button.Update)
 
 	option:SetAttribute("updateType", updateType)
 	option:SetAttribute("optionDB", optionDB)
@@ -358,15 +362,38 @@ end
 
 Button.OnEnable = function(self)
 	self:SetAlpha(1)
+	self:Update()
 end 
 
 Button.OnDisable = function(self)
 	self:SetAlpha(.5)
+	self:Update()
+end 
+
+Button.OnShow = function(self)
+	self.isDown = false
+	self:Update()
+end 
+
+Button.OnHide = function(self)
+	self.isDown = false
+	self:Update()
+end 
+
+Button.OnMouseDown = function(self)
+	self.isDown = true
+	self:Update()
+end 
+
+Button.OnMouseUp = function(self)
+	self.isDown = false
+	self:Update()
 end 
 
 Button.Update = function(self)
 	if Layout.MenuButton_PostUpdate then 
 		if (self.updateType == "GET_VALUE") then 
+			return Layout.MenuButton_PostUpdate(self)
 		elseif (self.updateType == "SET_VALUE") then 
 			local db = Module:GetConfig(self.optionDB, defaults, "global")
 			local option = db[self.optionName]
@@ -376,6 +403,8 @@ Button.Update = function(self)
 			local db = Module:GetConfig(self.optionDB, defaults, "global")
 			local option = db[self.optionName]
 			return Layout.MenuButton_PostUpdate(self, self.updateType, db, option)
+		else
+			return Layout.MenuButton_PostUpdate(self)
 		end 
 	end 
 end

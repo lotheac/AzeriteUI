@@ -95,53 +95,59 @@ local Core = {
 				bg:SetVertexColor(.9, .9, .9)
 				bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
 				bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
-				self.Bg = bg
+				self.NormalBackdrop = bg
+		
+				local pushed = self:CreateTexture()
+				pushed:SetDrawLayer("ARTWORK")
+				pushed:SetTexture(GetMedia("menu_button_pushed"))
+				pushed:SetVertexColor(.9, .9, .9)
+				pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+				pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
+				self.PushedBackdrop = pushed
 			end,
 
 			MenuButton_PostUpdate = function(self, updateType, db, option, checked)
 				if (updateType == "GET_VALUE") then 
 				elseif (updateType == "SET_VALUE") then 
 					if checked then 
-						local texture = self.Bg:GetTexture()
-						local pushed = GetMedia("menu_button_pushed")
-						if (texture ~= pushed) then 
-							self.Bg:SetTexture(pushed)
-							self.Bg:SetVertexColor(1,1,1)
-							self.Msg:SetPoint("CENTER", 0, -2)
-						end 
+						self.isChecked = true
 					else
-						local texture = self.Bg:GetTexture()
-						local normal = GetMedia("menu_button_disabled")
-						if (texture ~= normal) then 
-							self.Bg:SetTexture(normal)
-							self.Bg:SetVertexColor(.9, .9, .9)
-							self.Msg:SetPoint("CENTER", 0, 0)
-						end 
+						self.isChecked = false
 					end 
-			
 				elseif (updateType == "TOGGLE_VALUE") then 
 					if option then 
 						self.Msg:SetText(self.enabledTitle or L["Disable"])
-			
-						local texture = self.Bg:GetTexture()
-						local pushed = GetMedia("menu_button_pushed")
-						if (texture ~= pushed) then 
-							self.Bg:SetTexture(pushed)
-							self.Bg:SetVertexColor(1,1,1)
-							self.Msg:SetPoint("CENTER", 0, -2)
-						end 
+						self.isChecked = true
 					else 
 						self.Msg:SetText(self.disabledTitle or L["Enable"])
-			
-						local texture = self.Bg:GetTexture()
-						local normal = GetMedia("menu_button_disabled")
-						if (texture ~= normal) then 
-							self.Bg:SetTexture(normal)
-							self.Bg:SetVertexColor(.9, .9, .9)
-							self.Msg:SetPoint("CENTER", 0, 0)
-						end 
+						self.isChecked = false
 					end 
 				end 
+
+				local isPushed = self.isDown or self.isChecked
+				local show = isPushed and self.PushedBackdrop or self.NormalBackdrop
+				local hide = isPushed and self.NormalBackdrop or self.PushedBackdrop
+		
+				hide:SetAlpha(0)
+				show:SetAlpha(1)
+
+				if isPushed then
+					self.Msg:SetPoint("CENTER", 0, -2)
+					if self:IsMouseOver() then
+						show:SetVertexColor(1, 1, 1)
+					elseif self.isChecked then 
+						show:SetVertexColor(.9, .9, .9)
+					else
+						show:SetVertexColor(.75, .75, .75)
+					end
+				else
+					self.Msg:SetPoint("CENTER", 0, 0)
+					if self:IsMouseOver() then
+						show:SetVertexColor(1, 1, 1)
+					else
+						show:SetVertexColor(.75, .75, .75)
+					end
+				end
 			end, 
 	
 			MenuBorderBackdropColor = { .05, .05, .05, .85 },
@@ -170,25 +176,11 @@ local Core = {
 			end,
 
 			MenuWindow_OnHide = function(self)
-				local button = self:GetParent()
-				local texture = button.Bg:GetTexture()
-				local normal = GetMedia("menu_button_disabled")
-				if (texture ~= normal) then 
-					button.Bg:SetTexture(normal)
-					button.Bg:SetVertexColor(.9, .9, .9)
-					button.Msg:SetPoint("CENTER", 0, 0)
-				end 
+				self:GetParent():Update()
 			end, 
 
 			MenuWindow_OnShow = function(self)
-				local button = self:GetParent()
-				local texture = button.Bg:GetTexture()
-				local pushed = GetMedia("menu_button_pushed")
-				if (texture ~= pushed) then 
-					button.Bg:SetTexture(pushed)
-					button.Bg:SetVertexColor(1,1,1)
-					button.Msg:SetPoint("CENTER", 0, -2)
-				end 
+				self:GetParent():Update()
 			end, 
 
 }
