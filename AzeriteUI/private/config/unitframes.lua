@@ -517,6 +517,12 @@ local UnitFramePlayer = {
 		CombatIndicatorColor = { Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75 }, 
 		UseCombatIndicatorGlow = false, 
 
+		UseLoveCombatIndicator = true, 
+			LoveCombatIndicatorPlace = { "BOTTOMLEFT", -(41 + 48/2 -4), (22 - 48/2 +4) },
+			LoveCombatIndicatorSize = { 48,48 },
+			LoveCombatIndicatorTexture = GetMedia("icon-heart-red"),
+			LoveCombatIndicatorDrawLayer = {"OVERLAY", -2 },
+			LoveCombatIndicatorColor = { Colors.ui.stone[1] *.75, Colors.ui.stone[2] *.75, Colors.ui.stone[3] *.75 }, 
 		
 	UseThreat = true,
 		ThreatHideSolo = true, 
@@ -1381,6 +1387,23 @@ local UnitFrameTarget = {
 		TargetIndicatorPetByEnemySize = { 96, 48 },
 		TargetIndicatorPetByEnemyTexture = GetMedia("icon_target_blue"),
 		TargetIndicatorPetByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+
+		UseLoveTargetIndicator = true, 
+			LoveTargetIndicatorYouByFriendPlace = { "TOPRIGHT", -10 + 50/2 + 4, 12 + 50/2 -4 },
+			LoveTargetIndicatorYouByFriendSize = { 48,48 },
+			LoveTargetIndicatorYouByFriendTexture = GetMedia("icon-heart-green"),
+			LoveTargetIndicatorYouByFriendColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+
+			LoveTargetIndicatorYouByEnemyPlace = { "TOPRIGHT", -10 + 50/2 + 4, 12 + 50/2 -4 },
+			LoveTargetIndicatorYouByEnemySize = { 48,48 },
+			LoveTargetIndicatorYouByEnemyTexture = GetMedia("icon-heart-red"),
+			LoveTargetIndicatorYouByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+
+			LoveTargetIndicatorPetByEnemyPlace = { "TOPRIGHT", -10 + 50/2 + 4, 12 + 50/2 -4 },
+			LoveTargetIndicatorPetByEnemySize = { 48,48 },
+			LoveTargetIndicatorPetByEnemyTexture = GetMedia("icon-heart-blue"),
+			LoveTargetIndicatorPetByEnemyColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+
 
 	UseClassificationIndicator = true, 
 		ClassificationPlace = { "BOTTOMRIGHT", 72, -43 },

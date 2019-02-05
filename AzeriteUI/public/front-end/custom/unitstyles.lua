@@ -15,6 +15,7 @@ local UnitStyles = CogWheel("LibDB"):NewDatabase(ADDON..": UnitStyles")
 
 -- Lua API
 local _G = _G
+local date = date
 local math_floor = math.floor
 local math_pi = math.pi
 local select = select
@@ -2189,10 +2190,8 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		end 
 	end 
 
-
 	-- Mana Orb
 	-----------------------------------------------------------
-	
 	-- Only create this for actual mana classes
 	local hasMana = (PlayerClass == "DRUID") or (PlayerClass == "MONK")  or (PlayerClass == "PALADIN")
 				 or (PlayerClass == "SHAMAN") or (PlayerClass == "PRIEST")
@@ -2406,12 +2405,21 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 	-- Combat Indicator
 	if Layout.UseCombatIndicator then 
 		local combat = overlay:CreateTexture()
-		combat:SetSize(unpack(Layout.CombatIndicatorSize))
-		combat:SetPoint(unpack(Layout.CombatIndicatorPlace)) 
-		combat:SetTexture(Layout.CombatIndicatorTexture)
-		combat:SetDrawLayer(unpack(Layout.CombatIndicatorDrawLayer))
-		combat:SetVertexColor(unpack(Layout.CombatIndicatorColor))
-	
+
+		local prefix = "CombatIndicator"
+		if Layout.UseLoveCombatIndicator then 
+			local day = tonumber(date("%d"))
+			local month = tonumber(date("%m"))
+			if ((month == 2) and (day >= 12) and (day <= 26)) then 
+				prefix = "Love"..prefix
+			end
+		end
+		combat:SetSize(unpack(Layout[prefix.."Size"]))
+		combat:SetPoint(unpack(Layout[prefix.."Place"])) 
+		combat:SetTexture(Layout[prefix.."Texture"])
+		combat:SetDrawLayer(unpack(Layout[prefix.."DrawLayer"]))
+		self.Combat = combat
+		
 		if Layout.UseCombatIndicatorGlow then 
 			local combatGlow = overlay:CreateTexture()
 			combatGlow:SetSize(unpack(Layout.CombatIndicatorGlowSize))
@@ -2419,10 +2427,8 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 			combatGlow:SetTexture(Layout.CombatIndicatorGlowTexture)
 			combatGlow:SetDrawLayer(unpack(Layout.CombatIndicatorGlowDrawLayer))
 			combatGlow:SetVertexColor(unpack(Layout.CombatIndicatorGlowColor))
+			self.Combat.Glow = combatGlow
 		end
-
-		self.Combat = combat
-		self.Combat.Glow = combatGlow
 	end 
 
 	-- Auras
@@ -3409,25 +3415,34 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 	if Layout.UseTargetIndicator then 
 		self.Targeted = {}
 
+		local prefix = "TargetIndicator"
+		if Layout.UseLoveTargetIndicator then 
+			local day = tonumber(date("%d"))
+			local month = tonumber(date("%m"))
+			if ((month == 2) and (day >= 12) and (day <= 26)) then 
+				prefix = "Love"..prefix
+			end
+		end
+
 		local friend = overlay:CreateTexture()
-		friend:SetPoint(unpack(Layout.TargetIndicatorYouByFriendPlace))
-		friend:SetSize(unpack(Layout.TargetIndicatorYouByFriendSize))
-		friend:SetTexture(Layout.TargetIndicatorYouByFriendTexture)
-		friend:SetVertexColor(unpack(Layout.TargetIndicatorYouByFriendColor))
+		friend:SetPoint(unpack(Layout[prefix.."YouByFriendPlace"]))
+		friend:SetSize(unpack(Layout[prefix.."YouByFriendSize"]))
+		friend:SetTexture(Layout[prefix.."YouByFriendTexture"])
+		friend:SetVertexColor(unpack(Layout[prefix.."YouByFriendColor"]))
 		self.Targeted.YouByFriend = friend
 
 		local enemy = overlay:CreateTexture()
-		enemy:SetPoint(unpack(Layout.TargetIndicatorYouByEnemyPlace))
-		enemy:SetSize(unpack(Layout.TargetIndicatorYouByEnemySize))
-		enemy:SetTexture(Layout.TargetIndicatorYouByEnemyTexture)
-		enemy:SetVertexColor(unpack(Layout.TargetIndicatorYouByEnemyColor))
+		enemy:SetPoint(unpack(Layout[prefix.."YouByEnemyPlace"]))
+		enemy:SetSize(unpack(Layout[prefix.."YouByEnemySize"]))
+		enemy:SetTexture(Layout[prefix.."YouByEnemyTexture"])
+		enemy:SetVertexColor(unpack(Layout[prefix.."YouByEnemyColor"]))
 		self.Targeted.YouByEnemy = enemy
 
 		local pet = overlay:CreateTexture()
-		pet:SetPoint(unpack(Layout.TargetIndicatorPetByEnemyPlace))
-		pet:SetSize(unpack(Layout.TargetIndicatorPetByEnemySize))
-		pet:SetTexture(Layout.TargetIndicatorPetByEnemyTexture)
-		pet:SetVertexColor(unpack(Layout.TargetIndicatorPetByEnemyColor))
+		pet:SetPoint(unpack(Layout[prefix.."PetByEnemyPlace"]))
+		pet:SetSize(unpack(Layout[prefix.."PetByEnemySize"]))
+		pet:SetTexture(Layout[prefix.."PetByEnemyTexture"])
+		pet:SetVertexColor(unpack(Layout[prefix.."PetByEnemyColor"]))
 		self.Targeted.PetByEnemy = pet
 	end 
 
