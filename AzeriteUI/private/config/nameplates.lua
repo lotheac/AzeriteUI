@@ -170,7 +170,7 @@ local NamePlates = {
 
 	UseAuras = true, 
 		AuraFrameSize = { 30*3 + 2*5, 30*2 + 5  }, 
-		AuraFramePlace = { "TOP", 0, 30*2+5 + 10 },-- { "BOTTOMRIGHT", 10, 32 + 10 }, -- bottom isn't reliable anymore
+		AuraFramePlace = { "TOP", 0, 30*2+5 + 10 },
 		AuraSize = 30, 
 		AuraSpaceH = 4, 
 		AuraSpaceV = 4, 
