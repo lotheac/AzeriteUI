@@ -67,6 +67,7 @@ L["Main Menu"] = ADDON
 L["Click here to get access to game panels."] = "Click here to get access to the various in-game windows such as the character paperdoll, spellbook, talents and similar, or to change various settings for the actionbars."
 L["%s to toggle Blizzard Menu."] = "%s to toggle Blizzard Micro Menu."
 L["%s to toggle Options Menu."] = "%s to toggle "..ADDON.." Options Menu."
+L["%s to toggle your Bags."] = true
 
 -- Config Menu
 L["ActionBars"] = true

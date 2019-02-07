@@ -60,6 +60,9 @@ local secureSnippets = {
 			end 
 		end
 	]=],
+	bagToggle = [=[ 
+		self:CallMethod("ToggleAllBags"); 
+	]=],
 	windowToggle = [=[
 		local window = self:GetFrameRef("Window"); 
 		if window:IsShown() then 
@@ -239,6 +242,9 @@ Toggle.OnEnter = function(self)
 	end 
 	if self.rightButtonTooltip then 
 		tooltip:AddLine(self.rightButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+	end 
+	if self.middleButtonTooltip then 
+		tooltip:AddLine(self.middleButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
 	end 
 	tooltip:Show()
 end
@@ -503,6 +509,11 @@ Module.GetToggleButton = function(self)
 				if rightclick then
 					self:RunAttribute("rightclick", button);
 				end
+			elseif (button == "MiddleButton") then
+				local middleclick = self:GetAttribute("middleclick");
+				if middleclick then
+					self:RunAttribute("middleclick", button);
+				end
 			end
 		]])
 
@@ -567,12 +578,18 @@ Module.AddOptionsToMenuButton = function(self)
 	if (not self.addedToMenuButton) then 
 		self.addedToMenuButton = true
 
+		local menuWindow = self:GetConfigWindow()
 		local toggleButton = self:GetToggleButton()
-		toggleButton:SetFrameRef("OptionsMenu", self:GetConfigWindow())
+		toggleButton:SetFrameRef("OptionsMenu", menuWindow)
 		toggleButton:SetAttribute("rightclick", secureSnippets.menuToggle)
+		toggleButton:SetAttribute("middleclick", secureSnippets.bagToggle)
+		toggleButton.ToggleAllBags = function(self)
+			ToggleAllBags()
+		end
 		for reference,frame in pairs(self:GetAutoHideReferences()) do 
-			self:GetConfigWindow():SetFrameRef(reference,frame)
+			menuWindow:SetFrameRef(reference,frame)
 		end 
+		toggleButton.middleButtonTooltip = L["%s to toggle your Bags."]:format(L["<Middle-Click>"])
 		toggleButton.rightButtonTooltip = L["%s to toggle Options Menu."]:format(L["<Right-Click>"])
 	end
 end 
