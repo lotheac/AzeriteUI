@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.106-Release] 2019-02-07
+### Fixed
+- Menu buttons with open windows connected to them should now also appear as downpressed while the window is open. This should have been a part of the previous update, but I simply forgot it!
+
 ## [1.1.105-Release] 2019-02-07
 ### Added
 - Getting ready for love. 
