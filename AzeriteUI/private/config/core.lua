@@ -124,7 +124,7 @@ local Core = {
 					end 
 				end 
 
-				local isPushed = self.isDown or self.isChecked
+				local isPushed = self.isDown or self.isChecked or self.windowIsShown
 				local show = isPushed and self.PushedBackdrop or self.NormalBackdrop
 				local hide = isPushed and self.NormalBackdrop or self.PushedBackdrop
 		
@@ -135,7 +135,7 @@ local Core = {
 					self.Msg:SetPoint("CENTER", 0, -2)
 					if self:IsMouseOver() then
 						show:SetVertexColor(1, 1, 1)
-					elseif self.isChecked then 
+					elseif (self.isChecked or self.windowIsShown) then 
 						show:SetVertexColor(.9, .9, .9)
 					else
 						show:SetVertexColor(.75, .75, .75)

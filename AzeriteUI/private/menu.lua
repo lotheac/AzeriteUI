@@ -344,12 +344,14 @@ Window.UpdateSiblings = function(self)
 end
 
 Window.OnHide = function(self)
+	self:GetParent().windowIsShown = nil
 	if Layout.MenuWindow_OnHide then 
 		return Layout.MenuWindow_OnHide(self)
 	end 
 end
 
 Window.OnShow = function(self)
+	self:GetParent().windowIsShown = true
 	if Layout.MenuWindow_OnShow then 
 		return Layout.MenuWindow_OnShow(self)
 	end 
