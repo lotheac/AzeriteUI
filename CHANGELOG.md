@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.105-Release] 2019-02-07
+### Added
+- Getting ready for love. 
+
+### Changed
+- AzeriteUI menu buttons should now follows the same graphical usage schemes as the micromenu and gamemenu, which should result in more clearity regarding what options are chosen, what you're hovering over and so on. 
+
 ## [1.1.104-Release] 2019-01-24
 ### Changed
 - Added post updates to line pair creation in the tooltip back-end, to allow the addon to use custom font sets for the tooltips. 
