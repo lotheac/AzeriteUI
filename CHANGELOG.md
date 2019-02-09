@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.107-Release] 2019-02-09
+### Changed
+- Middle-clicking the cogwheel menu button will now toggle your bags. 
+
+### Fixed
+- Your bar shouldn't randomly fail to change when entering vehicles anymore. This problem turned out to be a bug or unwanted delay within Blizzard's secure environment that would sometimes return false for the existence of a vehicle bar directly after a vehicle change, even though the functions to retrieve the bar index and the return values from the macro driver all return the right values. We are now working around this by simply skipping the randomly succesful checks and relying on macro results and bar index functions instead.
+
 ## [1.1.106-Release] 2019-02-07
 ### Fixed
 - Menu buttons with open windows connected to them should now also appear as downpressed while the window is open. This should have been a part of the previous update, but I simply forgot it!
