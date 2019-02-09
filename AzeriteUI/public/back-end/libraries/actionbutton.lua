@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 41)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 43)
 if (not LibSecureButton) then	
 	return
 end
@@ -1142,28 +1142,43 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	]=])
 
 	-- Add a page driver layer, basically a fake bar for the current button
+	-- *Note that the functions meant to check for the various types of bars
+	--  sometimes will return 'false' directly after a page change, when they should be 'true'. 
+	--  No idea as to why this randomly happens, but the macro driver at least responds correctly, 
+	--  and the bar index can still be retrieved correctly, so for now we just skip the checks. 
+	
+	-- HasVehicleActionBar()
+	-- HasOverrideActionBar()
+	-- HasTempShapeshiftActionBar()
+	-- HasBonusActionBar()
+
 	local page = visibility:CreateFrame("Frame", nil, "SecureHandlerAttributeTemplate")
 	page.id = barID
 	page:SetID(barID) 
 	page:SetAttribute("_onattributechanged", [=[ 
 		if (name == "state-page") then 
+			local page; 
+			if (value == "vehicle") 
+			or (value == "override")
+			or (value == "shapeshift")
+			or (value == "possess")
+			or (value == "11") then 
+				if (value == "vehicle") then 
+					page = GetVehicleBarIndex(); 
+				elseif (value == "override") then 
+					page = GetOverrideBarIndex(); 
+				elseif (value == "shapeshift") then 
+					page = GetTempShapeshiftBarIndex(); 
+				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then  
+					page = GetBonusBarIndex(); 
+				else 
+					page = 12; 
+				end 
+			end 
 
-			if (value == "possess") or (value == "11") then
-				if HasVehicleActionBar() then
-					value = GetVehicleBarIndex(); 
-				elseif HasOverrideActionBar() then 
-					value = GetOverrideBarIndex(); 
-				elseif HasTempShapeshiftActionBar() then
-					value = GetTempShapeshiftBarIndex(); 
-				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then 
-					value = GetBonusBarIndex();
-				else
-					value = nil;
-				end
-				if (not value) then
-					value = 12; 
-				end
-			end
+			if page then 
+				value = page; 
+			end 
 
 			self:SetAttribute("state", value);
 
@@ -1281,7 +1296,8 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 
 	local driver 
 	if (barID == 1) then 
-		driver = "[vehicleui][overridebar][possessbar][shapeshift]possess; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
+		--driver = "[vehicleui][overridebar][possessbar][shapeshift]possess; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
+		driver = "[vehicleui]vehicle; [overridebar]override; [possessbar]possess; [shapeshift]shapeshift; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
 
 		local _, playerClass = UnitClass("player")
 		if (playerClass == "DRUID") then
