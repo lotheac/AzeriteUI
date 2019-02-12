@@ -112,6 +112,13 @@ L["E"] = true -- compass East
 L["S"] = true -- compass South
 L["W"] = true -- compass West
 
+-- Keybind mode
+L["Keybinds cannot be changed while engaged in combat."] = true
+L["Keybind changes were discarded because you entered combat."] = true
+L["Keybind changes were saved."] = true
+L["Keybind changes were discarded."] = true
+L["No keybinds were changed."] = true
+
 -- Keybinds (visible on the actionbuttons)
 L["Alt"] = "A"
 L["Left Alt"] = "LA"
