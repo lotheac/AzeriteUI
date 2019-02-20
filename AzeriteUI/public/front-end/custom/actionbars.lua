@@ -8,7 +8,7 @@ end
 -- Note that there's still a lot of hardcoded things in this file, 
 -- and it will eventually be changed to be fully Layout driven. 
 
-local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer", "LibPlayerData")
+local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibMessage", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer", "LibPlayerData")
 
 -- Lua API
 local _G = _G
@@ -130,10 +130,14 @@ local secureSnippets = {
 
 			self:SetAttribute("extraButtonsCount", extraButtonsCount); 
 			self:RunAttribute("arrangeButtons"); 
-		
+
+			-- tell lua about it
+			self:CallMethod("UpdateButtonCount"); 
+
 		elseif (name == "change-castondown") then 
 			self:SetAttribute("castOnDown", value and true or false); 
 			self:CallMethod("UpdateCastOnDown"); 
+
 		end 
 
 	]=]
@@ -816,8 +820,11 @@ Module.SpawnButtons = function(self)
 			hoverFrame.flyout = self:IsFlyoutShown()
 		end
 	end)
-
 end 
+
+Module.GetButtons = function(self)
+	return pairs(self.buttons)
+end
 
 Module.SetForcedVisibility = function(self, force)
 	if (not self.hoverFrame) then 
@@ -900,6 +907,11 @@ Module.UpdateFadeAnchors = function(self)
 		self.hoverFrame:SetPoint("RIGHT", self.buttons[right], "RIGHT", 0, 0)
 	end
 
+end
+
+Module.UpdateButtonCount = function(self)
+	-- Announce the updated button count to the world
+	self:SendMessage("CG_UPDATE_ACTIONBUTTON_COUNT")
 end
 
 Module.UpdateCastOnDown = function(self)
@@ -1024,6 +1036,7 @@ Module.OnInit = function(self)
 	proxy.UpdateCastOnDown = function(proxy) self:UpdateCastOnDown() end
 	proxy.UpdateFading = function(proxy) self:UpdateFading() end
 	proxy.UpdateFadeAnchors = function(proxy) self:UpdateFadeAnchors() end
+	proxy.UpdateButtonCount = function(proxy) self:UpdateButtonCount() end
 	for key,value in pairs(self.db) do 
 		proxy:SetAttribute(key,value)
 	end 
