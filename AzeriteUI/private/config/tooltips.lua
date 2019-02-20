@@ -9,6 +9,10 @@ local Colors = Private.Colors
 local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
+-- Lua API
+local math_floor = math.floor
+local tostring = tostring
+
 -- Bar post updates
 -- Show health values for tooltip health bars, and hide others.
 -- Will expand on this later to tailer all tooltips to our needs.  
