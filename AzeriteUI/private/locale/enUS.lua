@@ -119,8 +119,9 @@ L["Keybind changes were discarded because you entered combat."] = true
 L["Keybind changes were saved."] = true
 L["Keybind changes were discarded."] = true
 L["No keybinds were changed."] = true
-L["Keybinds cleared for %s"] = true
-L["Keybind for %s set to %s"] = true
+L["No keybinds set."] = true
+L["%s is now unbound."] = true
+L["%s is now bound to %s"] = true
 
 -- Keybinds (visible on the actionbuttons)
 L["Alt"] = "A"
