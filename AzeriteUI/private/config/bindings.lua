@@ -25,7 +25,7 @@ local Bindings = {
 		self.bg:SetSize(64 + 8, 64 + 8) -- icon is 44, 44
 		self.bg:SetVertexColor(.4, .6, .9, .75)
 
-		self.msg:SetFontObject(GetFont(18, true))
+		self.msg:SetFontObject(GetFont(16, true))
 	end, 
 
 	BindButton_PostEnter = function(self)
