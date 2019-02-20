@@ -20,18 +20,12 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
-local ClearOverrideBindings = _G.ClearOverrideBindings
 local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
-local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
 local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
-local GetBindingKey = _G.GetBindingKey
 local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
 local InCombatLockdown = _G.InCombatLockdown
 local IsMounted = _G.IsMounted
-local IsXPUserDisabled = _G.IsXPUserDisabled
-local SetOverrideBindingClick = _G.SetOverrideBindingClick
 local TaxiRequestEarlyLanding = _G.TaxiRequestEarlyLanding
-local ToggleCalendar = _G.ToggleCalendar
 local UnitLevel = _G.UnitLevel
 local UnitOnTaxi = _G.UnitOnTaxi
 local UnitRace = _G.UnitRace
