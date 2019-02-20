@@ -186,6 +186,14 @@ local secureSnippets = {
 					end
 				end 
 			end 
+
+		elseif (updateType == "TOGGLE_MODE") then 
+
+			-- Bypass all secure menthods and run it in pure lua
+			self:CallMethod("ToggleMode"); 
+
+			-- Fire lua post updates to menu buttons
+			self:CallMethod("Update"); 
 		end 
 	]=]
 }
@@ -284,7 +292,7 @@ Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
 	option.optionDB = optionDB
 	option.optionName = optionName
 
-	if (updateType == "SET_VALUE") or (updateType == "GET_VALUE") or (updateType == "TOGGLE_VALUE") then 
+	if (updateType == "SET_VALUE") or (updateType == "GET_VALUE") or (updateType == "TOGGLE_VALUE") or (updateType == "TOGGLE_MODE") then 
 		option:SetAttribute("_onclick", secureSnippets.buttonClick)
 	end
 
@@ -314,6 +322,7 @@ Window.ParseOptionsTable = function(self, tbl, parentLevel)
 		button.enabledTitle = data.enabledTitle
 		button.disabledTitle = data.disabledTitle
 		button.proxyModule = data.proxyModule
+		button.modeName = data.modeName
 		if data.isSlave then 
 			button:SetAsSlave(data.slaveDB, data.slaveKey)
 		end 
@@ -398,10 +407,19 @@ Button.OnMouseUp = function(self)
 	self:Update()
 end 
 
+Button.ToggleMode = function(self)
+	local Module = self.proxyModule and Core:GetModule(self.proxyModule, true)
+	if Module and Module.OnModeToggle then 
+		Module:OnModeToggle(self.modeName)
+		self:Update()
+	end
+end
+
 Button.Update = function(self)
 	if Layout.MenuButton_PostUpdate then 
 		if (self.updateType == "GET_VALUE") then 
 			return Layout.MenuButton_PostUpdate(self)
+
 		elseif (self.updateType == "SET_VALUE") then 
 			local db = Module:GetConfig(self.optionDB, defaults, "global")
 			local option = db[self.optionName]
@@ -411,6 +429,12 @@ Button.Update = function(self)
 			local db = Module:GetConfig(self.optionDB, defaults, "global")
 			local option = db[self.optionName]
 			return Layout.MenuButton_PostUpdate(self, self.updateType, db, option)
+
+		elseif (self.updateType == "TOGGLE_MODE") then
+			local Module = self.proxyModule and Core:GetModule(self.proxyModule, true)
+			if Module then 
+				return Layout.MenuButton_PostUpdate(self, self.updateType, nil, Module:IsModeEnabled(self.modeName))
+			end 
 		else
 			return Layout.MenuButton_PostUpdate(self)
 		end 
@@ -653,9 +677,9 @@ Module.CreateMenuTable = function(self)
 	MenuTable = {}
 
 	-- Actionbars 
-	local ActionBarMain = Core:GetModule("ActionBarMain")
+	local ActionBarMain = Core:GetModule("ActionBarMain", true)
 	if ActionBarMain and not (ActionBarMain:IsIncompatible() or ActionBarMain:DependencyFailed()) then 
-		table_insert(MenuTable, {
+		local ActionBarMenu =  {
 			title = L["ActionBars"], type = nil, hasWindow = true, 
 			buttons = {
 				{
@@ -713,118 +737,18 @@ Module.CreateMenuTable = function(self)
 					configDB = "ActionBars", configKey = "castOnDown", 
 					proxyModule = "ActionBarMain", 
 				}
-
-				--[[
-				-- Primary bar options
-				{
-					title = L["Primary Bar"], type = nil, hasWindow = true, 
-					buttons = {
-						{
-							title = L["Button Count"], type = nil, hasWindow = true, 
-							buttons = {
-								{
-									title = L["%d Buttons"]:format(7), type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["%d Buttons"]:format(10),	type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["%d Buttons"]:format(12), type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 3 }, 
-									proxyModule = "ActionBarMain"
-								}
-							}
-						},
-						{
-							title = L["Button Visibility"],	type = "GET_VALUE", hasWindow = true, 
-							configDB = "ActionBars", configKey = "buttonsPrimary", optionArgs = { 2, 3 }, 
-							buttons = {
-								{
-									title = L["MouseOver"], 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["MouseOver + Combat"], 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["Always Visible"], 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "visibilityPrimary", optionArgs = { 3 }, 
-									proxyModule = "ActionBarMain"
-								}
-							}
-						}
-					}
-				},
-				-- Complimentary bar options
-				{
-					title = L["Complimentary Bar"], type = nil, hasWindow = true, 
-					buttons = {
-						{
-							enabledTitle = L["Enabled"],
-							disabledTitle = L["Disabled"],
-							type = "TOGGLE_VALUE", hasWindow = false, 
-							configDB = "ActionBars", configKey = "enableComplimentary", 
-							proxyModule = "ActionBarMain", 
-						},
-						{
-							title = L["Button Count"], isSlave = true, hasWindow = true, 
-							slaveDB = "ActionBars", slaveKey = "enableComplimentary",
-							proxyModule = "ActionBarMain",
-							buttons = {
-								{
-									title = L["%d Buttons"]:format(6), 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "buttonsComplimentary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["%d Buttons"]:format(12), 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "buttonsComplimentary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain"
-								}
-							}
-						},
-						{
-							title = L["Button Visibility"], isSlave = true, hasWindow = true, 
-							slaveDB = "ActionBars", slaveKey = "enableComplimentary", 
-							buttons = {
-								{
-									title = L["MouseOver"], 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 1 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["MouseOver + Combat"], 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 2 }, 
-									proxyModule = "ActionBarMain"
-								},
-								{
-									title = L["Always Visible"], 
-									type = "SET_VALUE", 
-									configDB = "ActionBars", configKey = "visibilityComplimentary", optionArgs = { 3 }, 
-									proxyModule = "ActionBarMain"
-								}
-							}
-						}
-					}
-				}
-				]]
-
 			}
-		})
+		}
+		local Bindings = Core:GetModule("Bindings", true)
+		if Bindings then 
+			table_insert(ActionBarMenu.buttons, {
+				enabledTitle = L["Bind Mode: %s"]:format(L["Enabled"]),
+				disabledTitle = L["Bind Mode: %s"]:format(L["Disabled"]),
+				type = "TOGGLE_MODE", hasWindow = false, 
+				proxyModule = "Bindings", modeName = "bindMode"
+			})
+		end 
+		table_insert(MenuTable, ActionBarMenu)
 	end
 
 	-- Unitframes
@@ -835,7 +759,7 @@ Module.CreateMenuTable = function(self)
 		}
 	}
 
-	local UnitFrameParty = Core:GetModule("UnitFrameParty")
+	local UnitFrameParty = Core:GetModule("UnitFrameParty", true)
 	if UnitFrameParty and not (UnitFrameParty:IsIncompatible() or UnitFrameParty:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
 			enabledTitle = L["Party Frames: %s"]:format(L["Enabled"]),
@@ -846,7 +770,7 @@ Module.CreateMenuTable = function(self)
 		})
 	end
 
-	local UnitFrameRaid = Core:GetModule("UnitFrameRaid")
+	local UnitFrameRaid = Core:GetModule("UnitFrameRaid", true)
 	if UnitFrameRaid and not (UnitFrameRaid:IsIncompatible() or UnitFrameRaid:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
 			enabledTitle = L["Raid Frames: %s"]:format(L["Enabled"]),
@@ -857,7 +781,7 @@ Module.CreateMenuTable = function(self)
 		})
 	end
 
-	local UnitFrameArena = Core:GetModule("UnitFrameArena")
+	local UnitFrameArena = Core:GetModule("UnitFrameArena", true)
 	if UnitFrameArena and not (UnitFrameArena:IsIncompatible() or UnitFrameArena:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
 			enabledTitle = L["PvP Frames: %s"]:format(L["Enabled"]),
@@ -871,7 +795,7 @@ Module.CreateMenuTable = function(self)
 		
 
 	-- Nameplates
-	local NamePlates = Core:GetModule("NamePlates")
+	local NamePlates = Core:GetModule("NamePlates", true)
 	if NamePlates and not (NamePlates:IsIncompatible() or NamePlates:DependencyFailed()) then 
 		table_insert(MenuTable, {
 			title = L["NamePlates"], type = nil, hasWindow = true, 
@@ -915,7 +839,7 @@ Module.CreateMenuTable = function(self)
 	})
 	
 	-- Explorer Mode
-	local ExplorerMode = Core:GetModule("ExplorerMode")
+	local ExplorerMode = Core:GetModule("ExplorerMode", true)
 	if ExplorerMode and not (ExplorerMode:IsIncompatible() or ExplorerMode:DependencyFailed()) then 
 		table_insert(MenuTable, {
 			title = L["Explorer Mode"], type = nil, hasWindow = true, 
