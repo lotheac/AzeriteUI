@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 43)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 44)
 if (not LibSecureButton) then	
 	return
 end
@@ -728,6 +728,10 @@ end
 ActionButton.GetActionTexture = function(self) 
 	return GetActionTexture(self.buttonAction)
 end
+
+ActionButton.GetBindingText = function(self)
+	return self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton")
+end 
 
 ActionButton.GetCooldown = function(self) 
 	return GetActionCooldown(self.buttonAction) 
