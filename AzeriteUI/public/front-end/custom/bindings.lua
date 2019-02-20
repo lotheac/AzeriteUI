@@ -12,7 +12,9 @@ local _G = _G
 local pairs = pairs
 local print = print
 local setmetatable = setmetatable
+local string_find = string.find
 local string_format = string.format
+local string_gsub = string.gsub
 
 -- WoW API
 local GetCurrentBindingSet = _G.GetCurrentBindingSet
@@ -65,10 +67,23 @@ BindFrame.OnEnter = function(self)
 	-- Tell the module that we have a current button
 	bindingFrame.bindButton = self.button
 
+	-- Retrieve the action
+	local bindingAction = self.button.bindingAction
+	local binds = { GetBindingKey(bindingAction) } 
+	
 	-- Show the tooltip
 	local tooltip = self.module:GetBindingsTooltip()
 	tooltip:SetDefaultAnchor(self)
 	tooltip:AddLine(self:GetActionName(), 1, .82, .1)
+
+	if (#binds == 0) then 
+		tooltip:AddLine(L["No keybinds set."], 1, 0, 0)
+	else 
+		tooltip:AddDoubleLine("Binding", "Key", .6, .6, .6, .6, .6, .6)
+		for i = 1,#binds do
+			tooltip:AddDoubleLine(i .. ":", self.module:GetBindingName(binds[i]), 1, .82, 0, 0, 1, 0)
+		end
+	end 
 	tooltip:Show()
 
 	-- Let the layout do its graphical post updates
@@ -161,9 +176,25 @@ Module.RegisterButton = function(self, button, ...)
 	self.binds[button] = bindFrame
 end
 
+Module.GetBindingName = function(self, binding)
+	local bindingName = ""
+	if string_find(binding, "ALT%-") then
+		binding = string_gsub(binding, "(ALT%-)", "") 
+		bindingName = bindingName .. ALT_KEY_TEXT .. "+"
+	end 
+	if string_find(binding, "CTRL%-") then 
+		binding = string_gsub(binding, "(CTRL%-)", "") 
+		bindingName = bindingName .. CTRL_KEY_TEXT .. "+"
+	end 
+	if string_find(binding, "SHIFT%-") then 
+		binding = string_gsub(binding, "(SHIFT%-)", "") 
+		bindingName = bindingName .. SHIFT_KEY_TEXT .. "+"
+	end 
+	return bindingName .. (_G[binding.."_KEY_TEXT"] or _G["KEY_"..binding] or binding)
+end
+
 -- Figure out the correct binding key combination and its display name
-Module.GetBindingName = function(self, key)
-	local alt, ctrl, shift, altName, ctrlName, shiftName
+Module.GetBinding = function(self, key)
 
 	-- Mousebutton translations
 	if (key == "LeftButton") then key = "BUTTON1" end
@@ -173,34 +204,11 @@ Module.GetBindingName = function(self, key)
 		key = key:upper()
 	end
 	
-	if IsAltKeyDown() then 
-		alt = "ALT-"
-		altName = "|cff00b200"..ALT_KEY_TEXT.."|r+"
-	else 
-		alt = ""
-		altName = ""
-	end
+	local alt = IsAltKeyDown() and "ALT-" or ""
+	local ctrl = IsControlKeyDown() and "CTRL-" or ""
+	local shift = IsShiftKeyDown() and "SHIFT-" or ""
 
-	if IsControlKeyDown() then 
-		ctrl = "CTRL-"
-		ctrlName = "|cff00b200"..CTRL_KEY_TEXT.."|r+"
-	else 
-		ctrl = ""
-		ctrlName = ""
-	end
-
-	if IsShiftKeyDown() then 
-		shift = "SHIFT-"
-		shiftName = "|cff00b200"..SHIFT_KEY_TEXT.."|r+"
-	else 
-		shift = ""
-		shiftName = ""
-	end
-
-	local binding = alt..ctrl..shift..key
-	local bindingName = altName..ctrlName..shiftName.."|cff00ff00"..(_G[key.."_KEY_TEXT"] or _G["KEY_"..key] or key).."|r"
-
-	return binding, bindingName
+	return alt..ctrl..shift..key
 end
 
 Module.ProcessInput = function(self, key)
@@ -218,16 +226,22 @@ Module.ProcessInput = function(self, key)
 	end
 
 	-- Retrieve the action
+	local bindFrame = self.binds[button]
 	local bindingAction = button.bindingAction
 	local binds = { GetBindingKey(bindingAction) } 
-
 
 	-- Clear the button's bindings
 	if (key == "ESCAPE") and (#binds > 0) then
 		for i = 1, #binds do 
 			SetBinding(binds[i], nil)
 		end
-		self:Print(L["Keybinds cleared for %s"]:format("|cffffd200".. self.binds[button]:GetActionName() .."|r"))
+
+		self:Print(1, 0, 0, L["%s is now unbound."]:format(bindFrame:GetActionName()))
+
+		-- Post update tooltips with changes
+		if self:GetBindingsTooltip():IsShown() then 
+			bindFrame:OnEnter()
+		end
 		return 
 	end
 
@@ -241,7 +255,8 @@ Module.ProcessInput = function(self, key)
 	end
 
 	-- Get the binding key and its display name
-	local keybind, keybindName = self:GetBindingName(key)
+	local keybind = self:GetBinding(key)
+	local keybindName = self:GetBindingName(keybind)
 
 	-- Hidden defaults that some addons and UIs allow the user to change. 
 	-- Leaving it here for my own reference. 
@@ -288,7 +303,12 @@ Module.ProcessInput = function(self, key)
 	SetBinding(keybind, bindingAction)
 
 	-- Display a message about the new bind
-	self:Print(L["Keybind for %s set to %s"]:format("|cffffd200".. self.binds[button]:GetActionName() .."|r", keybindName))
+	self:Print(0, 1, 0, L["%s is now bound to %s"]:format(self.binds[button]:GetActionName(), keybindName))
+
+	-- Post update tooltips with changes
+	if self:GetBindingsTooltip():IsShown() then 
+		bindFrame:OnEnter()
+	end
 end
 
 Module.UpdateBindings = function(self)
