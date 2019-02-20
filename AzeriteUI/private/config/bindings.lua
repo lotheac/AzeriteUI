@@ -18,6 +18,28 @@ local Bindings = {
 	MenuButtonSpacing = 10, 
 	MenuButtonSizeMod = .75, 
 
+	BindButton_PostCreate = function(self)
+		self.bg:ClearAllPoints()
+		self.bg:SetPoint("CENTER", 0, 0)
+		self.bg:SetTexture(GetMedia("actionbutton_circular_mask"))
+		self.bg:SetSize(64 + 8, 64 + 8) -- icon is 44, 44
+		self.bg:SetVertexColor(.4, .6, .9, .75)
+
+		self.msg:SetFontObject(GetFont(18, true))
+	end, 
+
+	BindButton_PostEnter = function(self)
+		self.bg:SetVertexColor(.4, .6, .9, 1)
+	end,
+
+	BindButton_PostLeave = function(self)
+		self.bg:SetVertexColor(.4, .6, .9, .75)
+	end,
+
+	BindButton_PostUpdate = function(self)
+		self.bg:SetVertexColor(.4, .6, .9, .75)
+	end,
+
 	MenuButton_PostCreate = function(self, text, ...)
 		local msg = self:CreateFontString()
 		msg:SetPoint("CENTER", 0, 0)
