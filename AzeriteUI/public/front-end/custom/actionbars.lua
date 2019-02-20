@@ -247,67 +247,6 @@ local getBindingKeyText = function(key)
 	end
 end
 
-local abbreviateBindingText = function(bindingText)
-	if bindingText then 
-		bindingText = bindingText:gsub(LALT_KEY_TEXT.."%-", L["Left Alt"])
-		bindingText = bindingText:gsub(RALT_KEY_TEXT.."%-", L["Right Alt"])
-		bindingText = bindingText:gsub(ALT_KEY_TEXT.."%-", L["Alt"])
-
-		bindingText = bindingText:gsub(LCTRL_KEY_TEXT.."%-", L["Left Ctrl"])
-		bindingText = bindingText:gsub(RCTRL_KEY_TEXT.."%-", L["Right Ctrl"])
-		bindingText = bindingText:gsub(CTRL_KEY_TEXT.."%-", L["Ctrl"])
-
-		bindingText = bindingText:gsub(LSHIFT_KEY_TEXT.."%-", L["Left Shift"])
-		bindingText = bindingText:gsub(RSHIFT_KEY_TEXT.."%-", L["Right Shift"])
-		bindingText = bindingText:gsub(SHIFT_KEY_TEXT.."%-", L["Shift"])
-
-		bindingText = bindingText:gsub(KEY_NUMPADPLUS, "%+")
-		bindingText = bindingText:gsub(KEY_NUMPADMINUS, "%-")
-		bindingText = bindingText:gsub(KEY_NUMPADMULTIPLY, "%*")
-		bindingText = bindingText:gsub(KEY_NUMPADDIVIDE, "%/")
-		bindingText = bindingText:gsub(KEY_NUMPADDECIMAL, "%.")
-
-		bindingText = bindingText:gsub(KEY_BACKSPACE, L["Backspace"])
-		bindingText = bindingText:gsub(KEY_BACKSPACE_MAC, L["Delete"])
-	
-		for i = 0,9 do
-			bindingText = bindingText:gsub(_G["KEY_NUMPAD"..i], L["NumPad"..i])
-		end
-
-		for i = 1,31 do
-			bindingText = bindingText:gsub(_G["KEY_BUTTON"..i], L["Button"..i])
-		end
-
-		bindingText = bindingText:gsub(CAPSLOCK_KEY_TEXT, L["Capslock"])
-		
-		bindingText = bindingText:gsub(KEY_DELETE, L["Delete"])
-		bindingText = bindingText:gsub(KEY_DELETE_MAC, L["Delete"])
-		bindingText = bindingText:gsub(KEY_END, L["End"])
-		bindingText = bindingText:gsub(KEY_ENTER, L["Enter"])
-		bindingText = bindingText:gsub(KEY_ENTER_MAC, L["Return"])
-		bindingText = bindingText:gsub(KEY_HOME, L["Home"])
-		bindingText = bindingText:gsub(KEY_INSERT, L["Insert"])
-		bindingText = bindingText:gsub(KEY_INSERT_MAC, L["Help"])
-		bindingText = bindingText:gsub(KEY_MOUSEWHEELDOWN, L["Mouse Wheel Down"])
-		bindingText = bindingText:gsub(KEY_MOUSEWHEELUP, L["Mouse Wheel Up"])
-		bindingText = bindingText:gsub(KEY_NUMLOCK, L["Num Lock"])
-		bindingText = bindingText:gsub(KEY_NUMLOCK_MAC, L["Clear"])
-		bindingText = bindingText:gsub(KEY_PAGEDOWN, L["Page Down"])
-		bindingText = bindingText:gsub(KEY_PAGEUP, L["Page Up"])
-		bindingText = bindingText:gsub(KEY_PRINTSCREEN, L["Print Screen"])
-		bindingText = bindingText:gsub(KEY_SCROLLLOCK, L["Scroll Lock"])
-		bindingText = bindingText:gsub(KEY_SPACE, L["Spacebar"])
-		bindingText = bindingText:gsub(KEY_TAB, L["Tab"])
-
-		bindingText = bindingText:gsub(KEY_DOWN, L["Down Arrow"])
-		bindingText = bindingText:gsub(KEY_LEFT, L["Left Arrow"])
-		bindingText = bindingText:gsub(KEY_RIGHT, L["Right Arrow"])
-		bindingText = bindingText:gsub(KEY_UP, L["Up Arrow"])
-
-		return bindingText
-	end 
-end 
-
 -- Callbacks
 ----------------------------------------------------
 local Bars_GetTooltip = function(self)
@@ -419,11 +358,14 @@ end
 ----------------------------------------------------
 local ActionButton = {}
 
+ActionButton.GetBindingTextAbbreviated = function(self)
+	return getBindingKeyText(self:GetBindingText())
+end
+
 ActionButton.UpdateBinding = function(self)
 	local Keybind = self.Keybind
 	if Keybind then 
-		local key = self.bindingAction and GetBindingKey(self.bindingAction) or GetBindingKey("CLICK "..self:GetName()..":LeftButton")
-		Keybind:SetText(getBindingKeyText(key) or "")
+		Keybind:SetText(self:GetBindingTextAbbreviated() or "")
 	end 
 end
 
