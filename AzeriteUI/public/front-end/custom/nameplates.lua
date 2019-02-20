@@ -9,6 +9,7 @@ local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB",
 local Layout
 
 Module:SetIncompatible("Kui_Nameplates")
+Module:SetIncompatible("NeatPlates")
 Module:SetIncompatible("SimplePlates")
 Module:SetIncompatible("TidyPlates")
 Module:SetIncompatible("TidyPlates_ThreatPlates")
