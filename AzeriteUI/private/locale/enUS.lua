@@ -71,6 +71,7 @@ L["%s to toggle your Bags."] = true
 
 -- Config Menu
 L["ActionBars"] = true
+L["Bind Mode: %s"] = true
 L["Cast on Down: %s"] = true
 L["More Buttons"] = true
 L["No Extra Buttons"] = true
@@ -118,6 +119,8 @@ L["Keybind changes were discarded because you entered combat."] = true
 L["Keybind changes were saved."] = true
 L["Keybind changes were discarded."] = true
 L["No keybinds were changed."] = true
+L["Keybinds cleared for %s"] = true
+L["Keybind for %s set to %s"] = true
 
 -- Keybinds (visible on the actionbuttons)
 L["Alt"] = "A"
