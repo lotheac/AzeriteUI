@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.109-Alpha] 2019-02-20
+### Added
+- Keybind mode added! It's accessible either with the `/bind` command or through the ActionBars section of the cogwheel addon menu. Note that some tooltip text is missing currently, same with display of multiple keybinds on the same button. These will be completed before we make this a release build. The chat output messages will also be slightly more descriptive when done.  
+
+### Changed
+- Our nameplates will now disable themselves if the NeatPlates addon is loaded. 
+
+## [1.1.108-Release] 2019-02-12
+### Fixed
+- Unit tooltips from our own unit frames once again displays a value on their health bars in the same manner the world mouseover tooltips do. 
+
 ## [1.1.107-Release] 2019-02-09
 ### Changed
 - Middle-clicking the cogwheel menu button will now toggle your bags. 
