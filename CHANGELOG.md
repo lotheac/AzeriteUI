@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.109-Alpha] 2019-02-20
+## [1.1.109-Release] 2019-02-20
 ### Added
-- Keybind mode added! It's accessible either with the `/bind` command or through the ActionBars section of the cogwheel addon menu. Note that some tooltip text is missing currently, same with display of multiple keybinds on the same button. These will be completed before we make this a release build. The chat output messages will also be slightly more descriptive when done.  
+- Keybind mode added! It's accessible either with the `/bind` command or through the ActionBars section of the cogwheel addon menu.
 
 ### Changed
 - Our nameplates will now disable themselves if the NeatPlates addon is loaded. 
