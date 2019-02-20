@@ -122,6 +122,14 @@ local Core = {
 						self.Msg:SetText(self.disabledTitle or L["Enable"])
 						self.isChecked = false
 					end 
+				elseif (updateType == "TOGGLE_MODE") then 
+					if option then 
+						self.Msg:SetText(self.enabledTitle or L["Disable"])
+						self.isChecked = true
+					else 
+						self.Msg:SetText(self.disabledTitle or L["Enable"])
+						self.isChecked = false
+					end 
 				end 
 
 				local isPushed = self.isDown or self.isChecked or self.windowIsShown
