@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.110-Release] 2019-02-20
+### Fixed
+- Fixed the bug occurring when mousing over the unitframe of a unit with less than full health introduced recently.
+
 ## [1.1.109-Release] 2019-02-20
 ### Added
 - Keybind mode added! It's accessible either with the `/bind` command or through the ActionBars section of the cogwheel addon menu.
