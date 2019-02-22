@@ -24,7 +24,7 @@ Module.PreInit = function(self)
 end
 
 Module.OnInit = function(self)
-	local dev --= true
+	local dev -- = true
 
 	self.db = self:NewConfig("UnitFrameParty", defaults, "global")
 

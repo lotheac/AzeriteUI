@@ -167,7 +167,17 @@ local Template_SmallFrame = {
 		local isCasting = UnitCastingInfo(unit) or UnitChannelInfo(unit)
 		health.Value:SetShown(not isCasting)
 		health._owner.Cast.Name:SetShown(isCasting)
-	end
+	end, 
+
+	UseTargetHighlight = true, 
+		TargetHighlightParent = "Health", 
+		TargetHighlightPlace = { "CENTER", 1, -2 },
+		TargetHighlightSize = { 193,93 },
+		TargetHighlightTexture = GetMedia("cast_back_outline"), 
+		TargetHighlightDrawLayer = { "BACKGROUND", 0 },
+		TargetHighlightShowTarget = true, TargetHighlightTargetColor = { 255/255, 239/255, 169/255, 1 }, 
+		TargetHighlightShowFocus = true, TargetHighlightFocusColor = { 144/255, 195/255, 255/255, 1 }, 
+
 } 
 
 local Template_SmallFrame_Auras = setmetatable({
@@ -333,6 +343,15 @@ local Template_TinyFrame = {
 
 	UseRange = true, 
 		RangeOutsideAlpha = .6, -- was .35, but that's too hard to see
+
+	UseTargetHighlight = true, 
+		TargetHighlightParent = "Health", 
+		TargetHighlightPlace = { "CENTER", 1, -2 },
+		TargetHighlightSize = { 140, 90 },
+		TargetHighlightTexture = GetMedia("cast_back_outline"), 
+		TargetHighlightDrawLayer = { "BACKGROUND", 0 },
+		TargetHighlightShowTarget = true, TargetHighlightTargetColor = { 255/255, 229/255, 109/255, 1 }, 
+		TargetHighlightShowFocus = true, TargetHighlightFocusColor = { 44/255, 165/255, 255/255, 1 }, 
 
 }
 
@@ -2100,7 +2119,7 @@ local UnitFrameRaid = setmetatable({
 		AbsorbBarColor = { 1, 1, 1, .5 },
 
 	UseName = true, 
-		NamePlace = { "TOP", 0, 1 }, 
+		NamePlace = { "TOP", 0, 1 - 2 }, 
 		NameDrawLayer = { "ARTWORK", 1 },
 		NameJustifyH = "CENTER",
 		NameJustifyV = "TOP",
@@ -2270,6 +2289,8 @@ local UnitFrameRaid = setmetatable({
 				end 
 			end 
 		end, 
+
+	TargetHighlightSize = { 140 * .94, 90 *.94 },
 
 }, { __index = Template_TinyFrame })
 

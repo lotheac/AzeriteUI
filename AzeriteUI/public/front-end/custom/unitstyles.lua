@@ -984,6 +984,22 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		self.Cast.PostUpdate = Layout.CastBarPostUpdate
 	end 
 
+	-- Target Highlighting
+	-----------------------------------------------------------
+	if Layout.UseTargetHighlight then
+		local targetHighlight = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self) :CreateTexture()
+		targetHighlight:SetDrawLayer(unpack(Layout.TargetHighlightDrawLayer))
+		targetHighlight:SetSize(unpack(Layout.TargetHighlightSize))
+		targetHighlight:SetPoint(unpack(Layout.TargetHighlightPlace))
+		targetHighlight:SetTexture(Layout.TargetHighlightTexture)
+		targetHighlight.showFocus = Layout.TargetHighlightShowFocus
+		targetHighlight.colorFocus = Layout.TargetHighlightFocusColor
+		targetHighlight.showTarget = Layout.TargetHighlightShowTarget
+		targetHighlight.colorTarget = Layout.TargetHighlightTargetColor
+
+		self.TargetHighlight = targetHighlight
+	end
+
 
 	-- Auras
 	-----------------------------------------------------------
@@ -1564,6 +1580,23 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 	if Layout.UseHealthValue then 
 		self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
 	end
+
+	-- Target Highlighting
+	-----------------------------------------------------------
+	if Layout.UseTargetHighlight then
+		local targetHighlight = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self) :CreateTexture()
+		targetHighlight:SetDrawLayer(unpack(Layout.TargetHighlightDrawLayer))
+		targetHighlight:SetSize(unpack(Layout.TargetHighlightSize))
+		targetHighlight:SetPoint(unpack(Layout.TargetHighlightPlace))
+		targetHighlight:SetTexture(Layout.TargetHighlightTexture)
+		targetHighlight.showFocus = Layout.TargetHighlightShowFocus
+		targetHighlight.colorFocus = Layout.TargetHighlightFocusColor
+		targetHighlight.showTarget = Layout.TargetHighlightShowTarget
+		targetHighlight.colorTarget = Layout.TargetHighlightTargetColor
+
+		self.TargetHighlight = targetHighlight
+	end
+
 end
 
 local StyleRaidFrame = function(self, unit, id, Layout, ...)
@@ -1859,6 +1892,22 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	if Layout.UseRange then 
 		self.Range = { outsideAlpha = Layout.RangeOutsideAlpha }
 	end 
+
+	-- Target Highlighting
+	-----------------------------------------------------------
+	if Layout.UseTargetHighlight then
+		local targetHighlight = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self) :CreateTexture()
+		targetHighlight:SetDrawLayer(unpack(Layout.TargetHighlightDrawLayer))
+		targetHighlight:SetSize(unpack(Layout.TargetHighlightSize))
+		targetHighlight:SetPoint(unpack(Layout.TargetHighlightPlace))
+		targetHighlight:SetTexture(Layout.TargetHighlightTexture)
+		targetHighlight.showFocus = Layout.TargetHighlightShowFocus
+		targetHighlight.colorFocus = Layout.TargetHighlightFocusColor
+		targetHighlight.showTarget = Layout.TargetHighlightShowTarget
+		targetHighlight.colorTarget = Layout.TargetHighlightTargetColor
+
+		self.TargetHighlight = targetHighlight
+	end
 
 	-- Texts
 	-----------------------------------------------------------
@@ -2403,6 +2452,7 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Combat Indicator
+	-----------------------------------------------------------
 	if Layout.UseCombatIndicator then 
 		local combat = overlay:CreateTexture()
 
@@ -2525,7 +2575,6 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
 		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 	end 
-
 
 	-- Texts
 	-----------------------------------------------------------
