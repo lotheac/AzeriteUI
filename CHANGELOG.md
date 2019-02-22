@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.111-Release] 2019-02-22
+### Added
+- Added target and focus highlighting for small unit frames. Most frames should support both, with the exception of the focus unit frame which never will get the focus highlight, because it really goes without saying that your focus target is your focus target. 
+
 ## [1.1.110-Release] 2019-02-20
 ### Fixed
 - Fixed the bug occurring when mousing over the unitframe of a unit with less than full health introduced recently.
