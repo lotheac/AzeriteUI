@@ -2019,6 +2019,151 @@ local UnitFrameParty = setmetatable({
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
 
+	UseUnitStatus = true, -- Prio #4
+		UnitStatusPlace = { "CENTER", 0, -(7 + 100/2) },
+		UnitStatusDrawLayer = { "ARTWORK", 2 },
+		UnitStatusJustifyH = "CENTER",
+		UnitStatusJustifyV = "MIDDLE",
+		UnitStatusFont = GetFont(12, true),
+		UnitStatusColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		UseUnitStatusMessageOOM = L["oom"],
+		UnitStatusHideAFK = true, 
+		UnitStatusHideOffline = true, 
+		UnitStatusHideDead = true, 
+		UnitStatusSize = nil, 
+		UnitStatusPostUpdate = function(element, unit) 
+			local self = element._owner
+
+			local rc = self.ReadyCheck
+			local rd = self.RaidDebuff
+			local rz = self.ResurrectIndicator
+			local hv = self.Health.Value
+
+			if element:IsShown() then 
+				-- Hide if a higher priority element is visible
+				if (rd:IsShown() or rc.status or rz.status) then 
+					element:Hide()
+				end 
+				hv:Hide()
+			else
+				hv:Show()
+			end 
+		end,
+
+	UseResurrectIndicator = true, -- Prio #3
+		ResurrectIndicatorPlace = { "CENTER", 0, -7 }, 
+		ResurrectIndicatorSize = { 32, 32 }, 
+		ResurrectIndicatorDrawLayer = { "OVERLAY", 1 },
+		ResurrectIndicatorPostUpdate = function(element, unit, incomingResurrect) 
+			local self = element._owner
+
+			local rc = self.ReadyCheck
+			local rd = self.RaidDebuff
+			local us = self.UnitStatus
+			local hv = self.Health.Value
+
+			if element:IsShown() then 
+				hv:Hide()
+
+				-- Hide if a higher priority element is visible
+				if (rd:IsShown() or rc.status) then 
+					return element:Hide()
+				end 
+				-- Hide lower priority element
+				us:Hide()
+			else
+				-- Show lower priority elements if no higher is visible
+				if (not rd:IsShown()) and (not rc.status) then 
+					if (us.status) then 
+						us:Show()
+						hv:Hide()
+					else
+						hv:Show()
+					end 
+				end
+			end 
+		end,
+
+	UseReadyCheck = true, -- Prio #2
+		ReadyCheckPlace = { "CENTER", 0, -7 }, 
+		ReadyCheckSize = { 32, 32 }, 
+		ReadyCheckDrawLayer = { "OVERLAY", 7 },
+		ReadyCheckPostUpdate = function(element, unit, status) 
+			local self = element._owner
+
+			local rd = self.RaidDebuff
+			local rz = self.ResurrectIndicator
+			local us = self.UnitStatus
+			local hv = self.Health.Value
+
+			if element:IsShown() then 
+				hv:Hide()
+
+				-- Hide if a higher priority element is visible
+				if rd:IsShown() then 
+					return element:Hide()
+				end 
+				-- Hide all lower priority elements
+				rz:Hide()
+				us:Hide()
+			else 
+				-- Show lower priority elements if no higher is visible
+				if (not rd:IsShown()) then 
+					if (rz.status) then 
+						rz:Show()
+						us:Hide()
+						hv:Hide()
+					elseif (us.status) then 
+						rz:Hide()
+						us:Show()
+						hv:Hide()
+					else 
+						hv:Show()
+					end 
+				else 
+					hv:Show()
+				end 
+			end 
+		end,
+
+	UseRaidDebuff = true, -- Prio #1
+		RaidDebuffPostUpdate = function(element, unit)
+			local self = element._owner 
+
+			local rz = self.ResurrectIndicator
+			local rc = self.ReadyCheck
+			local us = self.UnitStatus
+			local hv = self.Health.Value
+
+			if element:IsShown() then 
+				-- Hide all lower priority elements
+				rc:Hide()
+				rz:Hide()
+				us:Hide()
+				hv:Hide()
+			else 
+				-- Display lower priority elements as needed 
+				if rc.status then 
+					rc:Show()
+					rz:Hide()
+					us:Hide()
+					hv:Hide()
+				elseif rz.status then 
+					rc:Hide()
+					rz:Show()
+					us:Hide()
+					hv:Hide()
+				elseif us.status then 
+					rc:Hide()
+					rz:Hide()
+					us:Show()
+					hv:Hide()
+				else
+					hv:Show()
+				end 
+			end 
+		end, 
+
 	UseGroupRole = true, 
 		GroupRolePlace = { "TOP", 0, 0 }, 
 		GroupRoleSize = { 40, 40 }, 

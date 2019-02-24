@@ -1493,6 +1493,59 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 		self.Range = { outsideAlpha = Layout.RangeOutsideAlpha }
 	end 
 
+		-- Resurrection Indicator
+	-----------------------------------------------------------
+	if Layout.UseResurrectIndicator then 
+		local rezIndicator = overlay:CreateTexture()
+		rezIndicator:SetPoint(unpack(Layout.ResurrectIndicatorPlace))
+		rezIndicator:SetSize(unpack(Layout.ResurrectIndicatorSize))
+		rezIndicator:SetDrawLayer(unpack(Layout.ResurrectIndicatorDrawLayer))
+		self.ResurrectIndicator = rezIndicator
+		self.ResurrectIndicator.PostUpdate = Layout.ResurrectIndicatorPostUpdate
+	end
+
+	-- Ready Check
+	-----------------------------------------------------------
+	if Layout.UseReadyCheck then 
+		local readyCheck = overlay:CreateTexture()
+		readyCheck:SetPoint(unpack(Layout.ReadyCheckPlace))
+		readyCheck:SetSize(unpack(Layout.ReadyCheckSize))
+		readyCheck:SetDrawLayer(unpack(Layout.ReadyCheckDrawLayer))
+		self.ReadyCheck = readyCheck
+		self.ReadyCheck.PostUpdate = Layout.ReadyCheckPostUpdate
+	end 
+
+	-- Raid Debuff
+	-----------------------------------------------------------
+	if Layout.UseRaidDebuff then 
+		local raidDebuff = overlay:CreateFrame("Button")
+		self.RaidDebuff = raidDebuff
+	end 
+
+	-- Unit Status
+	-----------------------------------------------------------
+	if Layout.UseUnitStatus then 
+		local unitStatus = overlay:CreateFontString()
+		unitStatus:SetPoint(unpack(Layout.UnitStatusPlace))
+		unitStatus:SetDrawLayer(unpack(Layout.UnitStatusDrawLayer))
+		unitStatus:SetJustifyH(Layout.UnitStatusJustifyH)
+		unitStatus:SetJustifyV(Layout.UnitStatusJustifyV)
+		unitStatus:SetFontObject(Layout.UnitStatusFont)
+		unitStatus:SetTextColor(unpack(Layout.UnitStatusColor))
+		unitStatus.hideAFK = Layout.UnitStatusHideAFK
+		unitStatus.hideDead = Layout.UnitStatusHideDead
+		unitStatus.hideOffline = Layout.UnitStatusHideOffline
+		unitStatus.afkMsg = Layout.UseUnitStatusMessageAFK
+		unitStatus.deadMsg = Layout.UseUnitStatusMessageDead
+		unitStatus.offlineMsg = Layout.UseUnitStatusMessageDC
+		unitStatus.oomMsg = Layout.UseUnitStatusMessageOOM
+		if Layout.UnitStatusSize then 
+			unitStatus:SetSize(unpack(Layout.UnitStatusSize))
+		end 
+		self.UnitStatus = unitStatus
+		self.UnitStatus.PostUpdate = Layout.UnitStatusPostUpdate
+	end 
+
 	-- Texts
 	-----------------------------------------------------------
 	-- Unit Name
@@ -1535,6 +1588,9 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 		self.Health.Value = healthVal
 		self.Health.Percent = healthPerc
 		self.Health.OverrideValue = Layout.HealthValueOverride or TinyFrame_OverrideHealthValue
+
+		-- Health Value Callback
+		self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
 	end 
 
 	-- Cast Name
@@ -1577,10 +1633,6 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 		end 
 	end 
 
-	if Layout.UseHealthValue then 
-		self:RegisterEvent("PLAYER_FLAGS_CHANGED", TinyFrame_OnEvent)
-	end
-
 	-- Target Highlighting
 	-----------------------------------------------------------
 	if Layout.UseTargetHighlight then
@@ -1596,6 +1648,7 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 
 		self.TargetHighlight = targetHighlight
 	end
+
 
 end
 
@@ -1937,10 +1990,13 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		unitStatus:SetJustifyV(Layout.UnitStatusJustifyV)
 		unitStatus:SetFontObject(Layout.UnitStatusFont)
 		unitStatus:SetTextColor(unpack(Layout.UnitStatusColor))
-		unitStatus.oomMsg = Layout.UseUnitStatusMessageOOM
-		unitStatus.offlineMsg = Layout.UseUnitStatusMessageDC
-		unitStatus.deadMsg = Layout.UseUnitStatusMessageDead
+		unitStatus.hideAFK = Layout.UnitStatusHideAFK
+		unitStatus.hideDead = Layout.UnitStatusHideDead
+		unitStatus.hideOffline = Layout.UnitStatusHideOffline
 		unitStatus.afkMsg = Layout.UseUnitStatusMessageAFK
+		unitStatus.deadMsg = Layout.UseUnitStatusMessageDead
+		unitStatus.offlineMsg = Layout.UseUnitStatusMessageDC
+		unitStatus.oomMsg = Layout.UseUnitStatusMessageOOM
 		if Layout.UnitStatusSize then 
 			unitStatus:SetSize(unpack(Layout.UnitStatusSize))
 		end 
@@ -2044,8 +2100,6 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		self.RaidTarget = raidTarget
 		self.RaidTarget.PostUpdate = Layout.PostUpdateRaidTarget
 	end 
-
-
 
 end
 
