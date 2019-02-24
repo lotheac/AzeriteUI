@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.112-Alpha] 2019-02-24
+### Added
+- Added ready check, ressurect indicator and mana status messages to Party frames. 
+
+### Changed
+- The mana threshold for a warning to appear on all group frames was raised from 15% to 25% mana. The warning will turn red at 10% mana or lower. 
+
 ## [1.1.111-Release] 2019-02-22
 ### Added
 - Added target and focus highlighting for small unit frames. Most frames should support both, with the exception of the focus unit frame which never will get the focus highlight, because it really goes without saying that your focus target is your focus target. 
