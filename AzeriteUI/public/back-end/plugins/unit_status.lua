@@ -27,7 +27,7 @@ local Update = function(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
-	local msg
+	local msg, critical
 	if (not UnitIsConnected(unit)) then 
 		msg = element.offlineMsg or S_PLAYER_OFFLINE
 	elseif UnitIsDeadOrGhost(unit) then 
@@ -40,8 +40,10 @@ local Update = function(self, event, unit)
 			local min = UnitPower(unit, ManaID)
 			local max = UnitPowerMax(unit, ManaID)
 			if (max and (max > 0)) then 
-				if (min/max <= (element.manaThreshold or .15)) then 
+				local ratio = min/max
+				if (ratio <= (element.manaThreshold or .25)) then 
 					msg = element.oomMsg or "oom"
+					critical = ratio <= .10
 				end 
 			end 
 		end 
@@ -49,16 +51,21 @@ local Update = function(self, event, unit)
 
 	element.status = msg
 
-	if msg then
-		element:SetText(msg)
+	if msg then 
+		if critical then 
+			element:SetFormattedText("|cffff3333%s|r", msg)
+		else 
+			element:SetText(msg)
+		end 
 		element:Show()
-	else
+	else 
+		element.status = nil
 		element:SetText("")
 		element:Hide()
-	end
-			
+	end 
+
 	if element.PostUpdate then
-		return element:PostUpdate(unit, msg)
+		return element:PostUpdate(unit, msg, critical)
 	end	
 end 
 
@@ -109,5 +116,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("UnitStatus", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("UnitStatus", Enable, Disable, Proxy, 6)
 end 
