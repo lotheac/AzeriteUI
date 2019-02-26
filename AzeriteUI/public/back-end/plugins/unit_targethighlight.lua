@@ -14,12 +14,15 @@ local Update = function(self, event, unit, ...)
 		element:PreUpdate(unit)
 	end
 
+	-- Don't highlight the focus frame as the current focus
 	if element.showFocus and (unit ~= "focus") and UnitIsUnit("focus", unit) then 
 		if element.colorFocus then 
 			element:SetVertexColor(element.colorFocus[1], element.colorFocus[2], element.colorFocus[3], element.colorFocus[4])
 		end
 		element:Show()
-	elseif element.showTarget and (unit ~= "target") and UnitIsUnit("target", unit) then 
+
+	-- Don't highlight the target frame nor the tot frame as the current target
+	elseif element.showTarget and (unit ~= "target") and (unit ~= "targettarget") and UnitIsUnit("target", unit) then 
 		if element.colorTarget then 
 			element:SetVertexColor(element.colorTarget[1], element.colorTarget[2], element.colorTarget[3], element.colorTarget[4])
 		end
@@ -72,5 +75,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("TargetHighlight", Enable, Disable, Proxy, 1)
+	Lib:RegisterElement("TargetHighlight", Enable, Disable, Proxy, 2)
 end 
