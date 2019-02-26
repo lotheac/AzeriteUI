@@ -26,8 +26,7 @@ local Layout
 -- Default settings
 local defaults = {
 	enableTalkingHead = true,
-	enableAlerts = true, 
-
+	enableAlerts = true 
 }
 
 local DisableTexture = function(texture, _, loop)
