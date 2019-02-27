@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 24)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 25)
 if (not LibNamePlate) then	
 	return
 end
@@ -65,7 +65,7 @@ local WorldFrame = _G.WorldFrame
 LibNamePlate.allPlates = LibNamePlate.allPlates or {}
 LibNamePlate.visiblePlates = LibNamePlate.visiblePlates or {}
 LibNamePlate.castData = LibNamePlate.castData or {}
-LibNamePlate.alphaLevels = LibNamePlate.alphaLevels or {}
+LibNamePlate.alphaLevels = nil -- remove deprecated library data
 
 LibNamePlate.elements = LibNamePlate.elements or {} -- global element registry
 LibNamePlate.callbacks = LibNamePlate.callbacks or {} -- global frame and element callback registry
@@ -116,7 +116,6 @@ local UICenter = LibFrame:GetFrame()
 -- Speed shortcuts
 local allPlates = LibNamePlate.allPlates
 local visiblePlates = LibNamePlate.visiblePlates
-local alphaLevels = LibNamePlate.alphaLevels
 
 local elements = LibNamePlate.elements
 local callbacks = LibNamePlate.callbacks
@@ -140,35 +139,36 @@ local FRAMELEVEL_IMPORTANT = 124 -- rares, bosses, etc
 local FRAMELEVEL_CURRENT, FRAMELEVEL_MIN, FRAMELEVEL_MAX, FRAMELEVEL_STEP = 21, 21, 125, 2
 local FRAMELEVEL_TRIVAL_CURRENT, FRAMELEVEL_TRIVIAL_MIN, FRAMELEVEL_TRIVIAL_MAX, FRAMELEVEL_TRIVIAL_STEP = 1, 1, 20, 2
 
--- Opacity Settings
-alphaLevels.InCombat = alphaLevels.InCombat or {}
-alphaLevels.InCombat[0] = 0 								-- Not visible. Not configurable by modules. 
-alphaLevels.InCombat[1] = alphaLevels.InCombat[1] or 1 		-- For the current target, if any
-alphaLevels.InCombat[2] = alphaLevels.InCombat[2] or .85 	-- For players when not having a target, also for World Bosses when not targeted
-alphaLevels.InCombat[3] = alphaLevels.InCombat[3] or .7 	-- For non-targeted players when having a target
-alphaLevels.InCombat[4] = alphaLevels.InCombat[4] or .35 	-- For non-targeted trivial mobs
-alphaLevels.InCombat[5] = alphaLevels.InCombat[5] or .25 	-- For non-targeted NPCs 
-
-alphaLevels.NoCombat = alphaLevels.NoCombat or {}
-alphaLevels.NoCombat[0] = 0 								-- Not visible. Not configurable by modules. 
-alphaLevels.NoCombat[1] = alphaLevels.NoCombat[1] or 1 		-- For the current target, if any
-alphaLevels.NoCombat[2] = alphaLevels.NoCombat[2] or .7 	-- For players when not having a target, also for World Bosses when not targeted
-alphaLevels.NoCombat[3] = alphaLevels.NoCombat[3] or .35 	-- For non-targeted players when having a target
-alphaLevels.NoCombat[4] = alphaLevels.NoCombat[4] or .25 	-- For non-targeted trivial mobs
-alphaLevels.NoCombat[5] = alphaLevels.NoCombat[5] or .15 	-- For non-targeted NPCs 
-
 -- Flag tracking combat state
 local IN_COMBAT = false
-
--- Remove remnants from older library version
-for id in ipairs(alphaLevels) do 
-	alphaLevels[id] = nil
-end 
 
 -- Update and fading frequencies
 local THROTTLE = 1/30 -- global update limit, no elements can go above this
 local FADE_IN = 3/4 -- time in seconds to fade in
 local FADE_OUT = 1/20 -- time in seconds to fade out
+
+-- Opacity Settings
+-- *From library build 25 we're keeping these local
+local ALPHA = {
+	-- Opacity while engaged in combat
+	InCombat = {
+		[0] = 0, 	-- Not visible.  
+		[1] = 1, 	-- For the current target, if any
+		[2] = .85, 	-- For players when not having a target, also for World Bosses when not targeted
+		[3] = .7, 	-- For non-targeted players when having a target
+		[4] = .35, 	-- For non-targeted trivial mobs
+		[5] = .25 	-- For non-targeted friendly NPCs 
+	},
+	-- Opacity while not in combat
+	NoCombat = {
+		[0] = 0, 	-- Not visible.
+		[1] = 1, 	-- For the current target, if any
+		[2] = .7, 	-- For players when not having a target, also for World Bosses when not targeted
+		[3] = .35, 	-- For non-targeted players when having a target
+		[4] = .25, 	-- For non-targeted trivial mobs
+		[5] = .15 	-- For non-targeted friendly NPCs 
+	}
+}
 
 -- Color Table Utility
 local hex = function(r, g, b)
@@ -330,7 +330,7 @@ NamePlate.UpdateAlpha = function(self)
 			end	
 		end
 	end
-	self.targetAlpha = alphaLevels[IN_COMBAT and "InCombat" or "NoCombat"][alphaLevel]
+	self.targetAlpha = ALPHA[IN_COMBAT and "InCombat" or "NoCombat"][alphaLevel]
 	if (self.PostUpdateAlpha) then 
 		self:PostUpdateAlpha(unit, self.targetAlpha, alphaLevel)
 	end 
