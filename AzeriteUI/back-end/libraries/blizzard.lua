@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 19)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 20)
 if (not LibBlizzard) then 
 	return
 end
@@ -26,6 +26,7 @@ local type = type
 -- WoW API
 local CreateFrame = _G.CreateFrame
 local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
+local IsAddOnLoaded = _G.IsAddOnLoaded
 local RegisterStateDriver = _G.RegisterStateDriver
 local SetCVar = _G.SetCVar
 local TargetofTarget_Update = _G.TargetofTarget_Update
