@@ -18,21 +18,21 @@ If you're looking for a very high amount of actionbuttons and for some reason is
 You can't. This is as much UX as UI, meaning the interface is designed around a concept, this isn't meant to be a pretty skin over your current interface, it's instead a full user experience system where how you interact with the game is affected.
 
 ## **Downloads & Bug Reports**
-* Download: [curse.azeriteui.com](http://curse.azeriteui.com)
-* Issues: [issues.azeriteui.com](http://issues.azeriteui.com)
+* Download: [curse.azeriteui.com](http://curse.azeriteui.com)  
+* Issues: [issues.azeriteui.com](http://issues.azeriteui.com)  
 
 ## **Pledge to our work:**  
-* Patreon: [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui)
-* PayPal: [www.paypal.me/AzeriteUI](https://www.paypal.me/azeriteui)
+* Patreon: [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui)  
+* PayPal: [www.paypal.me/AzeriteUI](https://www.paypal.me/azeriteui)  
 
 ## **Follow AzeriteUI:**  
-* Discord: [discord.gg/MUSfWXd](https://discord.gg/MUSfWXd)
+* Discord: [discord.gg/MUSfWXd](https://discord.gg/MUSfWXd)  
 * Twitter: [@AzeriteUI](https://twitter.com/azeriteui)  
 * Instagram: [@AzeriteUI](https://instagram.com/azeriteui/)  
 * Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)  
-* YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui) 
-* Reddit: [@AzeriteUI](https://www.reddit.com/r/azeriteui/)
+* YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui)  
+* Reddit: [@AzeriteUI](https://www.reddit.com/r/azeriteui/)  
 
 ## **Follow the team:**
-* Twitter Blakmane: [@troko512](https://twitter.com/troko512)
-* Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)
+* Twitter Blakmane: [@troko512](https://twitter.com/troko512)  
+* Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
