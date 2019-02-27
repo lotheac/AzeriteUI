@@ -30,12 +30,6 @@ local SetBinding = _G.SetBinding
 local ACCOUNT_BINDINGS = 1
 local CHARACTER_BINDINGS = 2
 
--- Using a function to decide the display name
--- Will add in exceptions and special buttons here, 
--- leaving the rest of the code generic and untouched.
-local getBindingName = function(button)
-end
-
 -- BindFrame Template
 ----------------------------------------------------
 local BindFrame = Module:CreateFrame("Frame")

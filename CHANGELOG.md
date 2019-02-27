@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.112-Alpha] 2019-02-26
+### Changed
+- Major folder and code restructuring. This is both in preparation for our next major projects as well as the upcoming WoW Classic. 
+
 ## [1.1.112-Release] 2019-02-26
 ### Added
 - Added ready check, ressurect indicator and mana status messages to Party frames. 

@@ -1,7 +1,7 @@
 ## Interface: 80100
 ## Name: AzeriteUI
 ## Title: |cff7284abAzerite|r|cffffffffUI|r
-## Author: Daniel Troko, Lars "Goldpaw" Norberg
+## Author: Daniel Troko, Lars Norberg
 ## Notes: Custom user graphical interface.|n|nDesign by Daniel Troko.|nCode by Lars Norberg.|n|n|cff4488ffPayPal|r|cffffffff:|r |n|cffffffffwww.paypal.me/AzeriteUI|r|n|n|cff4488ffPatreon|r|cffffffff:|r |n|cffffffffwww.patreon.com/AzeriteUI|r
 ## Version: 1.0-RC
 ## DefaultState: Enabled
@@ -12,10 +12,147 @@
 ## X-Curse-Project-Name: AzeriteUI
 ## X-BugReport: http://issues.azeriteui.com
 ## X-Discord: https://discord.gg/MUSfWXd
-## X-Twitter: https://twitter.com/azeriteui
 ## X-Donate: https://www.paypal.me/azeriteui
 ## X-Website: https://www.patreon.com/azeriteui
-## X-License: All Rights Reserved
+## X-Facebook: https://www.facebook.com/azeriteui/
+## X-Instagram: https://instagram.com/azeriteui/
+## X-Reddit: https://www.reddit.com/r/azeriteui/
+## X-Twitter: https://twitter.com/azeriteui
+## X-YouTube: https://www.youtube.com/azeriteui
+## X-License: Custom
 
-public\public.xml
-private\private.xml
+FontStyles.xml
+
+back-end\wheel.lua
+back-end\libraries\clientbuild.lua
+back-end\libraries\locale.lua
+back-end\libraries\hook.lua
+back-end\libraries\securehook.lua
+back-end\libraries\message.lua
+back-end\libraries\event.lua
+back-end\libraries\scale.lua
+back-end\libraries\db.lua
+back-end\libraries\module.lua
+back-end\libraries\frame.lua
+back-end\libraries\orb.lua
+back-end\libraries\statusbar.lua
+back-end\libraries\spinbar.lua
+back-end\libraries\sound.lua
+back-end\libraries\time.lua
+back-end\libraries\tooltipscanner.lua
+back-end\libraries\tooltip.lua
+back-end\libraries\fader.lua
+back-end\libraries\mover.lua
+back-end\libraries\shine.lua
+back-end\libraries\bagbutton.lua
+back-end\libraries\actionbutton.lua
+back-end\libraries\widgetcontainer.lua
+back-end\libraries\unitframe.lua
+back-end\libraries\blizzard.lua
+back-end\libraries\slash.lua
+back-end\libraries\aura.lua
+back-end\libraries\playerdata.lua
+back-end\libraries\menu.lua
+back-end\libraries\quest.lua
+back-end\libraries\bonusquest.lua
+back-end\libraries\chatbubble.lua
+back-end\libraries\chatframe.lua
+back-end\libraries\minimap.lua
+back-end\libraries\nameplates.lua
+back-end\libraries\taint.lua 
+
+back-end\plugins\generic_artifactpower.lua
+back-end\plugins\generic_clock.lua
+back-end\plugins\generic_coordinates.lua
+back-end\plugins\generic_difficulty.lua
+back-end\plugins\generic_framerate.lua
+back-end\plugins\generic_groupfinder.lua
+back-end\plugins\generic_honor.lua
+back-end\plugins\generic_latency.lua
+back-end\plugins\generic_mail.lua
+back-end\plugins\generic_reputation.lua
+back-end\plugins\generic_xp.lua
+back-end\plugins\generic_zone.lua
+back-end\plugins\unit_absorb.lua
+back-end\plugins\unit_altpower.lua
+back-end\plugins\unit_auras.lua
+back-end\plugins\unit_cast.lua
+back-end\plugins\unit_classification.lua
+back-end\plugins\unit_classpower.lua
+back-end\plugins\unit_combat.lua
+back-end\plugins\unit_crowdcontrol.lua
+back-end\plugins\unit_extrapower.lua
+back-end\plugins\unit_grouprole.lua
+back-end\plugins\unit_health.lua
+back-end\plugins\unit_healpredict.lua
+back-end\plugins\unit_level.lua
+back-end\plugins\unit_manatext.lua
+back-end\plugins\unit_name.lua
+back-end\plugins\unit_portrait.lua
+back-end\plugins\unit_power.lua
+back-end\plugins\unit_range.lua
+back-end\plugins\unit_raiddebuff.lua
+back-end\plugins\unit_raidrole.lua
+back-end\plugins\unit_raidtarget.lua
+back-end\plugins\unit_readycheck.lua
+back-end\plugins\unit_resurrectindicator.lua
+back-end\plugins\unit_spec.lua
+back-end\plugins\unit_status.lua
+back-end\plugins\unit_targeted.lua
+back-end\plugins\unit_targethighlight.lua
+back-end\plugins\unit_totem.lua
+back-end\plugins\unit_threat.lua
+
+locale\enUS.lua
+locale\esES.lua
+locale\esMX.lua
+locale\esMX.lua
+locale\frFR.lua
+locale\koKR.lua
+locale\ptBR.lua
+locale\ptPT.lua
+locale\ruRU.lua
+locale\zhCN.lua
+locale\zhTW.lua
+
+front-end\deprecated\auralist.lua
+front-end\deprecated\aura_cc.lua
+front-end\deprecated\aura_class.lua
+front-end\deprecated\aura_dungeon.lua
+front-end\deprecated\aura_food.lua
+front-end\deprecated\aura_filters.lua
+
+front-end\private.lua
+front-end\stylesheet.lua
+front-end\root.lua
+
+front-end\blizzard\chatbubbles.lua
+front-end\blizzard\chatwindows.lua
+front-end\blizzard\floaters.lua
+front-end\blizzard\fonts.lua
+front-end\blizzard\gamemenu.lua
+front-end\blizzard\micromenu.lua
+front-end\blizzard\minimap.lua
+front-end\blizzard\objectivestracker.lua
+front-end\blizzard\popups.lua
+front-end\blizzard\timers.lua
+front-end\blizzard\tooltips.lua
+front-end\blizzard\tradeskillframe.lua
+front-end\custom\actionbars.lua
+front-end\custom\nameplates.lua
+front-end\custom\tooltips.lua
+front-end\custom\unitstyles.lua
+front-end\custom\arenaframes.lua
+front-end\custom\bossframes.lua
+front-end\custom\focusframe.lua
+front-end\custom\partyframes.lua
+front-end\custom\petframe.lua
+front-end\custom\playerframe.lua
+front-end\custom\playerhud.lua
+front-end\custom\raidframes.lua
+front-end\custom\targetframe.lua
+front-end\custom\totframe.lua
+front-end\custom\grouptools.lua
+front-end\custom\bindings.lua
+front-end\custom\explorer.lua
+front-end\custom\menu.lua

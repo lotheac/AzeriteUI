@@ -288,4 +288,4 @@ colorDB.worldquestquality[LE_WORLD_QUEST_QUALITY_EPIC] = colorDB.quality[ITEM_QU
 -----------------------------------------------------------------
 Private.Colors = colorDB
 Private.GetFont = function(size, outline) return fontsDB[outline and "outline" or "normal"][size] end
-Private.GetMedia = function(name, type) return ([[Interface\AddOns\%s\private\media\%s.%s]]):format(ADDON, name, type or "tga") end
+Private.GetMedia = function(name, type) return ([[Interface\AddOns\%s\media\%s.%s]]):format(ADDON, name, type or "tga") end

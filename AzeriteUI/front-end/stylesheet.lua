@@ -1,32 +1,1579 @@
+--[[--
+
+The purpose of this file is to supply all the front-end modules 
+with static layout data used during the setup phase. 
+
+--]]--
+
 local ADDON, Private = ...
 
--- Private Addon Methods
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
+local LibDB = CogWheel("LibDB")
+
+-- *will be replaced by LibAura
+local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras") 
+
+------------------------------------------------
+-- Addon Environment
+------------------------------------------------
+-- Lua API
+local _G = _G
+local math_cos = math.cos
+local math_floor = math.floor
+local math_pi = math.pi 
+local math_sin = math.sin
+local setmetatable = setmetatable
+local tonumber = tonumber
+local tostring = tostring
+
+-- WoW API
+local UnitCanAttack = _G.UnitCanAttack
+local UnitClassification = _G.UnitClassification
+local UnitExists = _G.UnitExists
+local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
+local UnitIsEnemy = _G.UnitIsEnemy
+local UnitIsPlayer = _G.UnitIsPlayer
+local UnitIsUnit = _G.UnitIsUnit
+local UnitLevel = _G.UnitLevel
+
+-- Private Addon API
 local GetFont = Private.GetFont
 local GetMedia = Private.GetMedia
 local Colors = Private.Colors
 
--- Retrieve addon databases
-local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras")
-local L = CogWheel("LibLocale"):GetLocale(ADDON)
-
--- Lua API
-local _G = _G
-local math_floor = math.floor
-local setmetatable = setmetatable
-
--- WoW API
-local UnitClassification = _G.UnitClassification
-local UnitExists = _G.UnitExists
-local UnitIsDeadOrGhost = _G.UnitIsDeadOrGhost
-local UnitIsUnit = _G.UnitIsUnit
-local UnitLevel = _G.UnitLevel
-
+------------------------------------------------
+-- Utility Functions
+------------------------------------------------
+local degreesToRadiansConstant = 360 * 2*math_pi
 local degreesToRadians = function(degrees)
-	return degrees/360 * 2*math.pi
+	return degrees/degreesToRadiansConstant
 end 
 
+------------------------------------------------
+-- Module Updates
+------------------------------------------------
+local Core_Window_CreateBorder = function(self)
+	local border = self:CreateFrame("Frame")
+	border:SetFrameLevel(self:GetFrameLevel()-1)
+	border:SetPoint("TOPLEFT", -23*.75, 23*.75)
+	border:SetPoint("BOTTOMRIGHT", 23*.75, -23*.75)
+	border:SetBackdrop({
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+		edgeFile = GetMedia("tooltip_border"),
+		edgeSize = 32*.75, 
+		tile = false, 
+		insets = { 
+			top = 23*.75, 
+			bottom = 23*.75, 
+			left = 23*.75, 
+			right = 23*.75 
+		}
+	})
+	border:SetBackdropBorderColor(1, 1, 1, 1)
+	border:SetBackdropColor(.05, .05, .05, .85)
+
+	return border
+end
+
+local Core_Window_OnHide = function(self)
+	self:GetParent():Update()
+end
+
+local Core_Window_OnShow = function(self)
+	self:GetParent():Update()
+end
+
+local Core_MenuButton_PostCreate = function(self, text, ...)
+	local msg = self:CreateFontString()
+	msg:SetPoint("CENTER", 0, 0)
+	msg:SetFontObject(GetFont(14, false))
+	msg:SetJustifyH("RIGHT")
+	msg:SetJustifyV("TOP")
+	msg:SetIndentedWordWrap(false)
+	msg:SetWordWrap(false)
+	msg:SetNonSpaceWrap(false)
+	msg:SetTextColor(0,0,0)
+	msg:SetShadowOffset(0, -.85)
+	msg:SetShadowColor(1,1,1,.5)
+	msg:SetText(text)
+	self.Msg = msg
+
+	local bg = self:CreateTexture()
+	bg:SetDrawLayer("ARTWORK")
+	bg:SetTexture(GetMedia("menu_button_disabled"))
+	bg:SetVertexColor(.9, .9, .9)
+	bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+	bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
+	self.NormalBackdrop = bg
+
+	local pushed = self:CreateTexture()
+	pushed:SetDrawLayer("ARTWORK")
+	pushed:SetTexture(GetMedia("menu_button_pushed"))
+	pushed:SetVertexColor(.9, .9, .9)
+	pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+	pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
+	self.PushedBackdrop = pushed
+
+	return self
+end
+
+local Core_MenuButton_Layers_PostUpdate = function(self)
+	local isPushed = self.isDown or self.isChecked or self.windowIsShown
+	local show = isPushed and self.PushedBackdrop or self.NormalBackdrop
+	local hide = isPushed and self.NormalBackdrop or self.PushedBackdrop
+
+	hide:SetAlpha(0)
+	show:SetAlpha(1)
+
+	if isPushed then
+		self.Msg:SetPoint("CENTER", 0, -2)
+		if self:IsMouseOver() then
+			show:SetVertexColor(1, 1, 1)
+		elseif (self.isChecked or self.windowIsShown) then 
+			show:SetVertexColor(.9, .9, .9)
+		else
+			show:SetVertexColor(.75, .75, .75)
+		end
+	else
+		self.Msg:SetPoint("CENTER", 0, 0)
+		if self:IsMouseOver() then
+			show:SetVertexColor(1, 1, 1)
+		else
+			show:SetVertexColor(.75, .75, .75)
+		end
+	end
+end
+
+local Core_MenuButton_PostUpdate = function(self, updateType, db, option, checked)
+	if (updateType == "GET_VALUE") then 
+	elseif (updateType == "SET_VALUE") then 
+		if checked then 
+			self.isChecked = true
+		else
+			self.isChecked = false
+		end 
+	elseif (updateType == "TOGGLE_VALUE") then 
+		if option then 
+			self.Msg:SetText(self.enabledTitle or L["Disable"])
+			self.isChecked = true
+		else 
+			self.Msg:SetText(self.disabledTitle or L["Enable"])
+			self.isChecked = false
+		end 
+	elseif (updateType == "TOGGLE_MODE") then 
+		if option then 
+			self.Msg:SetText(self.enabledTitle or L["Disable"])
+			self.isChecked = true
+		else 
+			self.Msg:SetText(self.disabledTitle or L["Enable"])
+			self.isChecked = false
+		end 
+	end 
+	Core_MenuButton_Layers_PostUpdate(self, updateType, db, option, checked)
+end
+
+-- ActionButton stack/charge count Post Update
+local ActionButton_StackCount_PostUpdate = function(self, count)
+	local font = GetFont(((tonumber(count) or 0) < 10) and 18 or 14, true) 
+	if (self.Count:GetFontObject() ~= font) then 
+		self.Count:SetFontObject(font)
+	end
+end
+
+-- General bind mode border creation method
+local BindMode_MenuWindow_CreateBorder = Core_Window_CreateBorder
+
+-- Binding Dialogue MenuButton graphical post creation
+local BindMode_MenuButton_PostCreate = Core_MenuButton_PostCreate
+
+-- Binding Dialogue MenuButton graphical post update
+local BindMode_MenuButton_PostUpdate = Core_MenuButton_Layers_PostUpdate
+
+-- BindButton PostCreate 
+local BindMode_BindButton_PostCreate = function(self)
+	self.bg:ClearAllPoints()
+	self.bg:SetPoint("CENTER", 0, 0)
+	self.bg:SetTexture(GetMedia("actionbutton_circular_mask"))
+	self.bg:SetSize(64 + 8, 64 + 8) -- icon is 44, 44
+	self.bg:SetVertexColor(.4, .6, .9, .75)
+	self.msg:SetFontObject(GetFont(16, true))
+end
+
+-- BindButton PostUpdate
+local BindMode_BindButton_PostUpdate = function(self)
+	self.bg:SetVertexColor(.4, .6, .9, .75)
+end
+
+-- BindButton PostEnter graphic updates 
+local BindMode_BindButton_PostEnter = function(self)
+	self.bg:SetVertexColor(.4, .6, .9, 1)
+end
+
+-- BindButton PostLeave graphic updates
+local BindMode_BindButton_PostLeave = function(self)
+	self.bg:SetVertexColor(.4, .6, .9, .75)
+end
+
+-- Blizzard GameMenu Button PostCreate
+local Blizzard_GameMenu_Button_PostCreate = function(self, text)
+	local msg = self:CreateFontString()
+	msg:SetPoint("CENTER", 0, 0)
+	msg:SetFontObject(GetFont(14, false))
+	msg:SetJustifyH("RIGHT")
+	msg:SetJustifyV("TOP")
+	msg:SetIndentedWordWrap(false)
+	msg:SetWordWrap(false)
+	msg:SetNonSpaceWrap(false)
+	msg:SetTextColor(0,0,0)
+	msg:SetShadowOffset(0, -.85)
+	msg:SetShadowColor(1,1,1,.5)
+	msg:SetText(text)
+	self.Msg = msg
+
+	local bg = self:CreateTexture()
+	bg:SetDrawLayer("ARTWORK")
+	bg:SetTexture(GetMedia("menu_button_disabled"))
+	bg:SetVertexColor(.9, .9, .9)
+	bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+	bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
+	self.NormalBackdrop = bg
+
+	local pushed = self:CreateTexture()
+	pushed:SetDrawLayer("ARTWORK")
+	pushed:SetTexture(GetMedia("menu_button_pushed"))
+	pushed:SetVertexColor(.9, .9, .9)
+	pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+	pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
+	self.PushedBackdrop = pushed
+end
+
+-- Blizzard GameMenu Button PostUpdate
+local Blizzard_GameMenu_Button_PostUpdate = function(self)
+	local show = self.isDown and self.PushedBackdrop or self.NormalBackdrop
+	local hide = self.isDown and self.NormalBackdrop or self.PushedBackdrop
+
+	hide:SetAlpha(0)
+	show:SetAlpha(1)
+
+	if self.isDown then
+		self.Msg:SetPoint("CENTER", 0, -2)
+		if self:IsMouseOver() then
+			show:SetVertexColor(1, 1, 1)
+		else
+			show:SetVertexColor(.75, .75, .75)
+		end
+	else
+		self.Msg:SetPoint("CENTER", 0, 0)
+		if self:IsMouseOver() then
+			show:SetVertexColor(1, 1, 1)
+		else
+			show:SetVertexColor(.75, .75, .75)
+		end
+	end
+end
+
+-- Blizzard MicroMenu Button PostCreate
+local BlizzardMicroMenu_Button_PostCreate = Core_MenuButton_PostCreate
+
+-- Blizzard MicroMenu Button PostUpdate
+local BlizzardMicroMenu_Button_PostUpdate = Core_MenuButton_Layers_PostUpdate
+
+-- Blizzard Popup PostCreate styling
+local BlizzardPopup_PostCreate = function(self, popup)
+	popup:SetBackdrop(nil)
+	popup:SetBackdropColor(0,0,0,0)
+	popup:SetBackdropBorderColor(0,0,0,0)
+
+	-- add a bigger backdrop frame with room for our larger buttons
+	if (not popup.backdrop) then
+		local backdrop = CreateFrame("Frame", nil, popup)
+		backdrop:SetFrameLevel(popup:GetFrameLevel())
+		backdrop:SetPoint("TOPLEFT", -10, 10)
+		backdrop:SetPoint("BOTTOMRIGHT", 10, -10)
+		popup.backdrop = backdrop
+	end	
+
+	local backdrop = popup.backdrop
+	backdrop:SetBackdrop({
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+		edgeFile = GetMedia("tooltip_border_blizzcompatible"),
+		edgeSize = 32, 
+		tile = false, -- tiles don't tile vertically (?)
+		--tile = true, tileSize = 256, 
+		insets = { top = 2.5, bottom = 2.5, left = 2.5, right = 2.5 }
+	})
+	backdrop:SetBackdropColor(.05, .05, .05, .85)
+	backdrop:SetBackdropBorderColor(1,1,1,1)
+
+	-- remove button artwork
+	for i = 1,4 do
+		local button = popup["button"..i]
+		if button then
+			button:GetNormalTexture():SetVertexColor(0, 0, 0, 0)
+			button:GetHighlightTexture():SetVertexColor(0, 0, 0, 0)
+			button:GetPushedTexture():SetVertexColor(0, 0, 0, 0)
+			button:GetDisabledTexture():SetVertexColor(0, 0, 0, 0)
+			button:SetBackdrop(nil)
+			button:SetBackdropColor(0,0,0,0)
+			button:SetBackdropBorderColor(0,0,0.0)
+
+			-- Create our own custom border.
+			-- Using our new thick tooltip border, just scaled down slightly.
+			local sizeMod = 3/4
+			local border = CreateFrame("Frame", nil, button)
+			border:SetFrameLevel(button:GetFrameLevel() - 1)
+			border:SetPoint("TOPLEFT", -23*sizeMod, 23*sizeMod -2)
+			border:SetPoint("BOTTOMRIGHT", 23*sizeMod, -23*sizeMod -2)
+			border:SetBackdrop({
+				bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+				edgeFile = GetMedia("tooltip_border"),
+				edgeSize = 32*sizeMod,
+				insets = {
+					left = 22*sizeMod,
+					right = 22*sizeMod,
+					top = 22*sizeMod +2,
+					bottom = 22*sizeMod -2
+				}
+			})
+			border:SetBackdropColor(.05, .05, .05, .75)
+			border:SetBackdropBorderColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
+		
+			button:HookScript("OnEnter", function() 
+				button:SetBackdropColor(0,0,0,0)
+				button:SetBackdropBorderColor(0,0,0.0)
+				border:SetBackdropColor(.1, .1, .1, .75)
+				border:SetBackdropBorderColor(Colors.highlight[1], Colors.highlight[2], Colors.highlight[3])
+			end)
+
+			button:HookScript("OnLeave", function() 
+				button:SetBackdropColor(0,0,0,0)
+				button:SetBackdropBorderColor(0,0,0.0)
+				border:SetBackdropColor(.05, .05, .05, .75)
+				border:SetBackdropBorderColor(Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3])
+			end)
+		end
+	end
+
+	-- remove editbox artwork
+	local name = popup:GetName()
+
+	local editbox = _G[name .. "EditBox"]
+	local editbox_left = _G[name .. "EditBoxLeft"]
+	local editbox_mid = _G[name .. "EditBoxMid"]
+	local editbox_right = _G[name .. "EditBoxRight"]
+
+	-- these got added in... uh... cata?
+	if editbox_left then editbox_left:SetTexture(nil) end
+	if editbox_mid then editbox_mid:SetTexture(nil) end
+	if editbox_right then editbox_right:SetTexture(nil) end
+
+	editbox:SetBackdrop(nil)
+	editbox:SetBackdrop({
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+		edgeFile = [[Interface\ChatFrame\ChatFrameBackground]],
+		edgeSize = 1,
+		tile = false,
+		tileSize = 0,
+		insets = {
+			left = -6,
+			right = -6,
+			top = 0,
+			bottom = 0
+		}
+	})
+	editbox:SetBackdropColor(0, 0, 0, 0)
+	editbox:SetBackdropBorderColor(.15, .1, .05, 1)
+	editbox:SetTextInsets(6,6,0,0)
+end
+
+-- Blizzard Popup anchor points post updates
+local BlizzardPopup_Anchors_PostUpdate = function(self)
+	local previous
+	for i = 1, _G.STATICPOPUP_NUMDIALOGS do
+		local popup = _G["StaticPopup"..i]
+		local point, anchor, rpoint, x, y = popup:GetPoint()
+		if (anchor == previous) then
+			-- We only change the offsets values, not the anchor points, 
+			-- since experience tells me that this is a safer way to avoid potential taint!
+			popup:ClearAllPoints()
+			popup:SetPoint(point, anchor, rpoint, 0, -32)
+		end
+		previous = popup
+	end
+end
+
+-- Group Tools Menu Button Creation 
+local GroupTools_Button_PostCreate = function(self) end 
+
+-- Group Tools Menu Button Disable
+local GroupTools_Button_OnDisable = function(self) end
+
+-- Group Tools Menu Button Enable
+local GroupTools_Button_OnEnable = function(self) end
+
+-- Group Tools Menu Window Border
+local GroupTools_Window_CreateBorder = function(self)
+	local mod = 1 -- not .75 as the rest?
+	local border = self:CreateFrame("Frame")
+	border:SetFrameLevel(self:GetFrameLevel()-1)
+	border:SetPoint("TOPLEFT", -23*mod, 23*mod)
+	border:SetPoint("BOTTOMRIGHT", 23*mod, -23*mod)
+	border:SetBackdrop({
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+		edgeFile = GetMedia("tooltip_border"),
+		edgeSize = 32*mod, 
+		tile = false, 
+		insets = { 
+			top = 23*mod, 
+			bottom = 23*mod, 
+			left = 23*mod, 
+			right = 23*mod 
+		}
+	})
+	border:SetBackdropBorderColor(1, 1, 1, 1)
+	border:SetBackdropColor(.05, .05, .05, .85)
+
+	return border
+end
+
+local Minimap_RingFrame_SingleRing_ValueFunc = function(Value, Handler) 
+	Value:ClearAllPoints()
+	Value:SetPoint("BOTTOM", Handler.Toggle.Frame.Bg, "CENTER", 2, -2)
+	Value:SetFontObject(GetFont(24, true)) 
+end
+
+local Minimap_RingFrame_OuterRing_ValueFunc = function(Value, Handler) 
+	Value:ClearAllPoints()
+	Value:SetPoint("TOP", Handler.Toggle.Frame.Bg, "CENTER", 1, -2)
+	Value:SetFontObject(GetFont(16, true)) 
+	Value.Description:Hide()
+end
+
+local Minimap_ZoneName_PlaceFunc = function(Handler) 
+	return "BOTTOMRIGHT", Handler.Clock, "BOTTOMLEFT", -8, 0 
+end
+
+local Minimap_Performance_PlaceFunc = function(performanceFrame, Handler)
+	performanceFrame:ClearAllPoints()
+	performanceFrame:SetPoint("TOPLEFT", Handler.Latency, "TOPLEFT", 0, 0)
+	performanceFrame:SetPoint("BOTTOMRIGHT", Handler.FrameRate, "BOTTOMRIGHT", 0, 0)
+end
+
+local Minimap_Performance_Latency_PlaceFunc = function(Handler) 
+	return "BOTTOMRIGHT", Handler.Zone, "TOPRIGHT", 0, 6 
+end
+
+local Minimap_Performance_FrameRate_PlaceFunc = function(Handler) 
+	return "BOTTOM", Handler.Clock, "TOP", 0, 6 
+end 
+
+local NamePlates_RaidTarget_PostUpdate = function(element, unit)
+	local self = element._owner
+	if self:IsElementEnabled("Auras") then 
+		self.Auras:ForceUpdate()
+	else 
+		element:ClearAllPoints()
+		element:SetPoint(unpack(self.layout.RaidTargetPlace))
+	end 
+end
+
+local NamePlates_Auras_PostUpdate = function(element, unit, visible)
+	local self = element._owner
+	local raidTarget = self.RaidTarget
+	if raidTarget then 
+		raidTarget:ClearAllPoints()
+		if visible then
+			if visible > 3 then 
+				raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace_AuraRows))
+			elseif visible > 0 then
+				raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace_AuraRow))
+			else 
+				raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace))
+			end  
+		else
+			raidTarget:SetPoint(unpack(self.layout.RaidTargetPlace))
+		end
+	end 
+end
+
+local NamePlate_CastBar_PostUpdate = function(cast, unit)
+	if cast.interrupt then
+
+		-- Set it to the protected look 
+		if (cast.currentStyle ~= "protected") then 
+			cast:SetSize(68, 9)
+			cast:ClearAllPoints()
+			cast:SetPoint("TOP", 0, -26)
+			cast:SetStatusBarTexture(GetMedia("cast_bar"))
+			cast:SetTexCoord(0, 1, 0, 1)
+			cast.Bg:SetSize(68, 9)
+			cast.Bg:SetTexture(GetMedia("cast_bar"))
+			cast.Bg:SetVertexColor(.15, .15, .15, 1)
+
+			cast.currentStyle = "protected"
+		end 
+
+		-- Color the bar appropriately
+		if UnitIsPlayer(unit) then 
+			if UnitIsEnemy(unit, "player") then 
+				cast:SetStatusBarColor(Colors.quest.red[1], Colors.quest.red[2], Colors.quest.red[3]) 
+			else 
+				cast:SetStatusBarColor(Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3]) 
+			end  
+		elseif UnitCanAttack("player", unit) then 
+			cast:SetStatusBarColor(Colors.quest.red[1], Colors.quest.red[2], Colors.quest.red[3]) 
+		else 
+			cast:SetStatusBarColor(Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3]) 
+		end 
+	else 
+
+		-- Return to standard castbar styling and position 
+		if (cast.currentStyle == "protected") then 
+			cast:SetSize(84, 14)
+			cast:ClearAllPoints()
+			cast:SetPoint("TOP", 0, -22)
+			cast:SetStatusBarTexture(GetMedia("nameplate_bar"))
+			cast:SetTexCoord(14/256, 242/256, 14/64, 50/64)
+
+			cast.Bg:SetSize(84*256/228, 14*64/36)
+			cast.Bg:SetTexture(GetMedia("nameplate_backdrop"))
+			cast.Bg:SetVertexColor(1, 1, 1, 1)
+
+			cast.currentStyle = nil 
+		end 
+
+		-- Standard bar coloring
+		cast:SetStatusBarColor(Colors.cast[1], Colors.cast[2], Colors.cast[3]) 
+	end 
+end
+
+-- Tooltip Bar post updates
+-- Show health values for tooltip health bars, and hide others.
+-- Will expand on this later to tailer all tooltips to our needs.  
+local Tooltip_StatusBar_PostUpdate = function(tooltip, bar, value, min, max)
+	if (bar.barType == "health") then 
+		if (value >= 1e8) then 			bar.Value:SetFormattedText("%dm", value/1e6) 		-- 100m, 1000m, 2300m, etc
+		elseif (value >= 1e6) then 		bar.Value:SetFormattedText("%.1fm", value/1e6) 		-- 1.0m - 99.9m 
+		elseif (value >= 1e5) then 		bar.Value:SetFormattedText("%dk", value/1e3) 		-- 100k - 999k
+		elseif (value >= 1e3) then 		bar.Value:SetFormattedText("%.1fk", value/1e3) 		-- 1.0k - 99.9k
+		elseif (value > 0) then 		bar.Value:SetText(tostring(math_floor(value))) 		-- 1 - 999
+		else 							bar.Value:SetText("")
+		end 
+		if (not bar.Value:IsShown()) then 
+			bar.Value:Show()
+		end
+	else 
+		if (bar.Value:IsShown()) then 
+			bar.Value:Hide()
+			bar.Value:SetText("")
+		end
+	end 
+end 
+
+local Tooltip_LinePair_PostCreate = function(tooltip, lineIndex, left, right)
+	local fontObject = (lineIndex == 1) and GetFont(15, true) or GetFont(13, true)
+	left:SetFontObject(fontObject)
+	right:SetFontObject(fontObject)
+end
+
+local Tooltip_Bar_PostCreate = function(tooltip, bar)
+	if bar.Value then 
+		bar.Value:SetFontObject(GetFont(15, true))
+	end
+end
+
+local Tooltip_PostCreate = function(tooltip)
+	-- Turn off UIParent scale matching
+	tooltip:SetCValue("autoCorrectScale", false)
+
+	-- What items will be displayed automatically when available
+	tooltip.showHealthBar =  true
+	tooltip.showPowerBar =  true
+
+	-- Unit tooltips
+	tooltip.colorUnitClass = true -- color the unit class on the info line
+	tooltip.colorUnitPetRarity = true -- color unit names by combat pet rarity
+	tooltip.colorUnitNameClass = true -- color unit names by player class
+	tooltip.colorUnitNameReaction = true -- color unit names by NPC standing
+	tooltip.colorHealthClass = true -- color health bars by player class
+	tooltip.colorHealthPetRarity = true -- color health by combat pet rarity
+	tooltip.colorHealthReaction = true -- color health bars by NPC standing 
+	tooltip.colorHealthTapped = true -- color health bars if unit is tap denied
+	tooltip.colorPower = true -- color power bars by power type
+	tooltip.colorPowerTapped = true -- color power bars if unit is tap denied
+
+	-- Force our colors into all tooltips created so far
+	tooltip.colors = Colors
+
+	-- Add our post updates for statusbars
+	tooltip.PostUpdateStatusBar = Tooltip_StatusBar_PostUpdate
+end
+
+------------------------------------------------
+-- Module Stylesheets
+------------------------------------------------
+-- Addon Core
+local Core = {
+	Colors = Colors,
+
+	FadeInUI = true, 
+		FadeInSpeed = .75,
+		FadeInDelay = 1.5,
+
+	DisableUIWidgets = {
+		ActionBars = true, 
+		--Alerts = true,
+		Auras = true,
+		BuffTimer = true, 
+		CaptureBar = true,
+		CastBars = true,
+		Chat = true,
+		LevelUpDisplay = true,
+		Minimap = true,
+		--ObjectiveTracker = true,
+		OrderHall = true,
+		PlayerPowerBarAlt = true, 
+		TotemFrame = true, 
+		Tutorials = true,
+		
+		UnitFramePlayer = true,
+		UnitFramePet = true,
+		UnitFrameTarget = true,
+		UnitFrameToT = true,
+		UnitFramePet = true,
+		UnitFrameFocus = true,
+		UnitFrameParty = true,
+		UnitFrameBoss = true,
+		UnitFrameArena = not(	CogWheel("LibModule"):IsAddOnEnabled("sArena") 
+							or	CogWheel("LibModule"):IsAddOnEnabled("Gladius") 
+							or 	CogWheel("LibModule"):IsAddOnEnabled("GladiusEx") ),
+
+		--Warnings = true,
+		WorldMap = true,
+		WorldState = true,
+		ZoneText = true
+	},
+	DisableUIMenuPages = {
+		{ ID = 5, Name = "InterfaceOptionsActionBarsPanel" },
+		{ ID = 10, Name = "CompactUnitFrameProfiles" }
+	},
+	UseEasySwitch = true, 
+		EasySwitch = {
+			["GoldpawUI"] = { goldpawui5 = true, goldpawui = true, goldpaw = true, goldui = true, gui5 = true, gui = true },
+			["DiabolicUI"] = { diabolicui2 = true, diabolicui = true, diabolic = true, diabloui = true, dui2 = true, dui = true }
+		},
+		
+	UseMenu = true, 
+		MenuPlace = { "BOTTOMRIGHT", -41, 32 },
+		MenuSize = { 320, 70 }, 
+
+		MenuToggleButtonSize = { 48, 48 }, 
+		MenuToggleButtonPlace = { "BOTTOMRIGHT", -4, 4 }, 
+		MenuToggleButtonIcon = GetMedia("config_button"), 
+		MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
+		MenuToggleButtonIconSize = { 96, 96 }, 
+		MenuToggleButtonIconColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+
+		MenuBorderBackdropColor = { .05, .05, .05, .85 },
+		MenuBorderBackdropBorderColor = { 1, 1, 1, 1 },
+		MenuWindow_CreateBorder = Core_Window_CreateBorder,
+		MenuWindow_OnHide = Core_Window_OnHide, 
+		MenuWindow_OnShow = Core_Window_OnShow,
+
+		MenuButtonSize = { 300, 50 },
+		MenuButtonSpacing = 10, 
+		MenuButtonSizeMod = .75, 
+		MenuButton_PostCreate = Core_MenuButton_PostCreate, 
+		MenuButton_PostUpdate = Core_MenuButton_PostUpdate
+}
+
+-- ActionBars
+local ActionBars = {
+	Colors = Colors,
+
+	-- Button Tooltips
+	-------------------------------------------------------
+	UseTooltipSettings = true, 
+		TooltipColorNameAsSpellWithUse = true, -- color item name as a spell (not by rarity) when it has a Use effect
+		TooltipHideItemLevelWithUse = true, -- hide item level when it has a Use effect 
+		TooltipHideBindsWithUse = true, -- hide item bind status when it has a Use effect
+		TooltipHideEquipTypeWithUse = false, -- hide item equip location and item type with Use effect
+		TooltipHideUniqueWithUse = true, -- hide item unique status when it has a Use effect
+		TooltipHideStatsWithUse = true, -- hide item stats when it has a Use effect
+
+	-- Bar Layout
+	-------------------------------------------------------
+	UseActionBarMenu = true, 
+
+	-- Button Layout
+	-------------------------------------------------------
+	-- Generic
+	ButtonSize = { 64, 64 },
+	MaskTexture = GetMedia("actionbutton_circular_mask"),
+
+	-- Icon
+	IconSize = { 44, 44 },
+	IconPlace = { "CENTER", 0, 0 },
+
+	-- Button Pushed Icon Overlay
+	PushedSize = { 44, 44 },
+	PushedPlace = { "CENTER", 0, 0 },
+	PushedColor = { 1, 1, 1, .15 },
+	PushedDrawLayer = { "ARTWORK", 1 },
+	PushedBlendMode = "ADD",
+
+	-- Auto-Attack Flash
+	FlashSize = { 44, 44 },
+	FlashPlace = { "CENTER", 0, 0 },
+	FlashColor = { 1, 0, 0, .25 },
+	FlashTexture = [[Interface\ChatFrame\ChatFrameBackground]],
+	FlashDrawLayer = { "ARTWORK", 2 },
+
+	-- Cooldown Count Number
+	CooldownCountPlace = { "CENTER", 1, 0 },
+	CooldownCountJustifyH = "CENTER",
+	CooldownCountJustifyV = "MIDDLE",
+	CooldownCountFont = GetFont(16, true),
+	CooldownCountShadowOffset = { 0, 0 },
+	CooldownCountShadowColor = { 0, 0, 0, 1 },
+	CooldownCountColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .85 },
+
+	-- Cooldown 
+	CooldownSize = { 44, 44 },
+	CooldownPlace = { "CENTER", 0, 0 },
+	CooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+	CooldownBlingTexture = GetMedia("blank"),
+	CooldownSwipeColor = { 0, 0, 0, .75 },
+	CooldownBlingColor = { 0, 0, 0 , 0 },
+	ShowCooldownSwipe = true,
+	ShowCooldownBling = true,
+
+	-- Charge Cooldown 
+	ChargeCooldownSize = { 44, 44 },
+	ChargeCooldownPlace = { "CENTER", 0, 0 },
+	ChargeCooldownSwipeColor = { 0, 0, 0, .5 },
+	ChargeCooldownBlingColor = { 0, 0, 0, 0 },
+	ChargeCooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+	ChargeCooldownBlingTexture = GetMedia("blank"),
+	ShowChargeCooldownSwipe = true,
+	ShowChargeCooldownBling = false,
+
+	-- Charge Count / Stack Size Text
+	CountPlace = { "BOTTOMRIGHT", -3, 3 },
+	CountJustifyH = "CENTER",
+	CountJustifyV = "BOTTOM",
+	CountFont = GetFont(18, true),
+	CountShadowOffset = { 0, 0 },
+	CountShadowColor = { 0, 0, 0, 1 },
+	CountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+	CountMaxDisplayed = 99,
+	CountPostUpdate = ActionButton_StackCount_PostUpdate, 
+
+	-- Keybind Text
+	KeybindPlace = { "TOPLEFT", 5, -5 },
+	KeybindJustifyH = "CENTER",
+	KeybindJustifyV = "BOTTOM",
+	KeybindFont = GetFont(15, true),
+	KeybindShadowOffset = { 0, 0 },
+	KeybindShadowColor = { 0, 0, 0, 1 },
+	KeybindColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3], .75 },
+
+	-- Spell Highlights
+	UseSpellHighlight = true, 
+		SpellHighlightPlace = { "CENTER", 0, 0 },
+		SpellHighlightSize = { 64/(122/256), 64/(122/256) },
+		SpellHighlightTexture = GetMedia("actionbutton-spellhighlight"),
+		SpellHighlightColor = { 255/255, 225/255, 125/255, .75 }, 
+
+	-- Spell AutoCast
+	UseSpellAutoCast = true, 
+		SpellAutoCastPlace = { "CENTER", 0, 0 },
+		SpellAutoCastSize = { 64/(122/256), 64/(122/256) },
+		SpellAutoCastAntsTexture = GetMedia("actionbutton-ants-small"),
+		SpellAutoCastAntsColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3] },
+		SpellAutoCastGlowTexture = GetMedia("actionbutton-ants-small-glow"),
+		SpellAutoCastGlowColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3] },
+
+	-- Backdrop 
+	UseBackdropTexture = true, 
+		BackdropPlace = { "CENTER", 0, 0 },
+		BackdropSize = { 64/(122/256), 64/(122/256) },
+		BackdropTexture = GetMedia("actionbutton-backdrop"),
+		BackdropDrawLayer = { "BACKGROUND", 1 },
+
+	-- Border 
+	UseBorderTexture = true, 
+		BorderPlace = { "CENTER", 0, 0 },
+		BorderSize = { 64/(122/256), 64/(122/256) },
+		BorderTexture = GetMedia("actionbutton-border"),
+		BorderDrawLayer = { "BORDER", 1 },
+		BorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
+
+	-- Gloss
+	UseGlow = true, 
+		GlowPlace = { "CENTER", 0, 0 },
+		GlowSize = { 44/(122/256),44/(122/256) },
+		GlowTexture = GetMedia("actionbutton-glow-white"),
+		GlowDrawLayer = { "ARTWORK", 1 },
+		GlowBlendMode = "ADD",
+		GlowColor = { 1, 1, 1, .5 },
+
+	-- Floaters
+	-------------------------------------------------------
+	UseExitButton = true, 
+		--ExitButtonPlace = { "CENTER", "Minimap", "TOPLEFT", 14,-36 }, 
+		ExitButtonPlace = { "CENTER", "Minimap", "CENTER", -math_cos(45*math_pi/180) * (213/2 + 10), math_sin(45*math_pi/180) * (213/2 + 10) }, 
+		ExitButtonSize = { 32, 32 },
+		ExitButtonTexturePlace = { "CENTER", 0, 0 }, 
+		ExitButtonTextureSize = { 80, 80 }, 
+		ExitButtonTexturePath = GetMedia("icon_exit_flight")
+
+}
+
+-- Bind Mode
+local BindMode = {
+	Colors = Colors,
+
+	-- Binding Dialogue
+	Place = { "TOP", "UICenter", "TOP", 0, -100 }, 
+	Size = { 520, 180 },
+
+	-- General border creation method
+	MenuWindow_CreateBorder = BindMode_MenuWindow_CreateBorder,
+
+	-- Binding Dialogue Buttons
+	MenuButtonSize = { 300, 50 },
+	MenuButtonSpacing = 10, 
+	MenuButtonSizeMod = .75, 
+	MenuButton_PostCreate = BindMode_MenuButton_PostCreate,
+	MenuButton_PostUpdate = BindMode_MenuButton_PostUpdate, 
+
+	-- ActionButton Bind Overlays
+	BindButton_PostCreate = BindMode_BindButton_PostCreate, 
+	BindButton_PostUpdate = BindMode_BindButton_PostUpdate,
+	BindButton_PostEnter = BindMode_BindButton_PostEnter,
+	BindButton_PostLeave = BindMode_BindButton_PostLeave
+}
+
+-- Blizzard Chat Frames
+local BlizzardChatFrames = {
+	Colors = Colors,
+
+	DefaultChatFramePlace = { "LEFT", 85, -60 },
+	DefaultChatFrameSize = { 499, 176 }, -- 519, 196
+	DefaultClampRectInsets = { -54, -54, -310, -330 },
+
+	ChatFadeTime = 5, 
+	ChatVisibleTime = 15, 
+	ChatIndentedWordWrap = false, 
+
+	EditBoxHeight = 45, 
+	EditBoxOffsetH = 15, 
+	
+	UseButtonTextures = true,
+		ButtonFrameWidth = 48, ScrollBarWidth = 32, 
+		ButtonTextureSize = { 64, 64 }, 
+		ButtonTextureColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+		ButtonTextureNormal = GetMedia("point_block"),
+		ButtonTextureScrollToBottom = GetMedia("icon_chat_down"), 
+		ButtonTextureMinimizeButton = GetMedia("icon_chat_minus"),
+		ButtonTextureChatEmotes = GetMedia("config_button_emotes")
+}
+
+-- Blizzard Floaters
+local BlizzardFloaterHUD = {
+	Colors = Colors,
+
+	StyleExtraActionButton = true, 
+		ExtraActionButtonFramePlace = { "CENTER", 210 + 27, -60 },
+		ExtraActionButtonPlace = { "CENTER", 0, 0 },
+		ExtraActionButtonSize = { 64, 64 },
+
+		ExtraActionButtonIconPlace = { "CENTER", 0, 0 },
+		ExtraActionButtonIconSize = { 44, 44 },
+		ExtraActionButtonIconMaskTexture = GetMedia("actionbutton_circular_mask"),  
+
+		ExtraActionButtonCount = GetFont(18, true),
+		ExtraActionButtonCountPlace = { "BOTTOMRIGHT", -3, 3 },
+		ExtraActionButtonCountJustifyH = "CENTER",
+		ExtraActionButtonCountJustifyV = "BOTTOM",
+
+		ExtraActionButtonCooldownSize = { 44, 44 },
+		ExtraActionButtonCooldownPlace = { "CENTER", 0, 0 },
+		ExtraActionButtonCooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+		ExtraActionButtonCooldownBlingTexture = GetMedia("blank"),
+		ExtraActionButtonCooldownSwipeColor = { 0, 0, 0, .5 },
+		ExtraActionButtonCooldownBlingColor = { 0, 0, 0 , 0 },
+		ExtraActionButtonShowCooldownSwipe = true,
+		ExtraActionButtonShowCooldownBling = true,
+
+		ExtraActionButtonKeybindPlace = { "TOPLEFT", 5, -5 },
+		ExtraActionButtonKeybindJustifyH = "CENTER",
+		ExtraActionButtonKeybindJustifyV = "BOTTOM",
+		ExtraActionButtonKeybindFont = GetFont(15, true),
+		ExtraActionButtonKeybindShadowOffset = { 0, 0 },
+		ExtraActionButtonKeybindShadowColor = { 0, 0, 0, 1 },
+		ExtraActionButtonKeybindColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3], .75 },
+	
+		UseExtraActionButtonBorderTexture = true,
+			ExtraActionButtonBorderPlace = { "CENTER", 0, 0 },
+			ExtraActionButtonBorderSize = { 64/(122/256), 64/(122/256) },
+			ExtraActionButtonBorderTexture = GetMedia("actionbutton-border"),
+			ExtraActionButtonBorderDrawLayer = { "BORDER", 1 },
+			ExtraActionButtonBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
+
+		ExtraActionButtonKillStyleTexture = true, 
+
+	StyleZoneAbilityButton = true, 
+		ZoneAbilityButtonFramePlace = { "CENTER", 210 + 27, -60 },
+		ZoneAbilityButtonPlace = { "CENTER", 0, 0 },
+		ZoneAbilityButtonSize = { 64, 64 },
+
+		ZoneAbilityButtonIconPlace = { "CENTER", 0, 0 },
+		ZoneAbilityButtonIconSize = { 44, 44 },
+		ZoneAbilityButtonIconMaskTexture = GetMedia("actionbutton_circular_mask"),  
+
+		ZoneAbilityButtonCount = GetFont(18, true),
+		ZoneAbilityButtonCountPlace = { "BOTTOMRIGHT", -3, 3 },
+		ZoneAbilityButtonCountJustifyH = "CENTER",
+		ZoneAbilityButtonCountJustifyV = "BOTTOM",
+
+		ZoneAbilityButtonCooldownSize = { 44, 44 },
+		ZoneAbilityButtonCooldownPlace = { "CENTER", 0, 0 },
+		ZoneAbilityButtonCooldownSwipeTexture = GetMedia("actionbutton_circular_mask"),
+		ZoneAbilityButtonCooldownBlingTexture = GetMedia("blank"),
+		ZoneAbilityButtonCooldownSwipeColor = { 0, 0, 0, .5 },
+		ZoneAbilityButtonCooldownBlingColor = { 0, 0, 0 , 0 },
+		ZoneAbilityButtonShowCooldownSwipe = true,
+		ZoneAbilityButtonShowCooldownBling = true,
+
+		UseZoneAbilityButtonBorderTexture = true,
+			ZoneAbilityButtonBorderPlace = { "CENTER", 0, 0 },
+			ZoneAbilityButtonBorderSize = { 64/(122/256), 64/(122/256) },
+			ZoneAbilityButtonBorderTexture = GetMedia("actionbutton-border"),
+			ZoneAbilityButtonBorderDrawLayer = { "BORDER", 1 },
+			ZoneAbilityButtonBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3], 1 },
+
+		ZoneAbilityButtonKillStyleTexture = true, 
+
+	StyleDurabilityFrame = true, 
+		DurabilityFramePlace = { "CENTER", 190, 0 },
+
+	StyleVehicleSeatIndicator = true, 
+		VehicleSeatIndicatorPlace = { "CENTER", 424, 0 }, 
+
+	StyleTalkingHeadFrame = true, 
+		StyleTalkingHeadFramePlace = { "TOP", 0, -(60 + 40) }, 
+
+	StyleAlertFrames = true, 
+		AlertFramesPlace = { "TOP", "UICenter", "TOP", 0, -40 }, 
+		AlertFramesPlaceTalkingHead = { "TOP", "UICenter", "TOP", 0, -240 }, 
+		AlertFramesSize = { 180, 20 },
+		AlertFramesPosition = "TOP",
+		AlertFramesAnchor = "BOTTOM", 
+		AlertFramesOffset = -10,
+
+	StyleErrorFrame = true, 
+		ErrorFrameStrata = "LOW"
+}
+
+-- Blizzard Game Menu (Esc)
+local BlizzardGameMenu = {
+	MenuButtonSize = { 300, 50 },
+	MenuButtonSpacing = 10, 
+	MenuButtonSizeMod = .75, 
+	MenuButton_PostCreate = Blizzard_GameMenu_Button_PostCreate,
+	MenuButton_PostUpdate = Blizzard_GameMenu_Button_PostUpdate
+}
+
+-- Blizzard MicroMenu
+local BlizzardMicroMenu = {
+	Colors = Colors,
+
+	ButtonFont = GetFont(14, false),
+	ButtonFontColor = { 0, 0, 0 }, 
+	ButtonFontShadowOffset = { 0, -.85 },
+	ButtonFontShadowColor = { 1, 1, 1, .5 },
+	ConfigWindowBackdrop = {
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+		edgeFile = GetMedia("tooltip_border"),
+		edgeSize = 32 *.75, 
+		insets = { 
+			top = 23 *.75, 
+			bottom = 23 *.75, 
+			left = 23 *.75, 
+			right = 23 *.75 
+		}
+	},
+
+	MenuButtonSize = { 300, 50 },
+	MenuButtonSpacing = 10, 
+	MenuButtonSizeMod = .75, 
+	MenuButtonTitleColor = { Colors.title[1], Colors.title[2], Colors.title[3] },
+	MenuButtonNormalColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] }, 
+	MenuButton_PostCreate = BlizzardMicroMenu_Button_PostCreate,
+	MenuButton_PostUpdate = BlizzardMicroMenu_Button_PostUpdate, 	
+}
+
+-- Blizzard Objectives Tracker
+local BlizzardObjectivesTracker = {
+	Colors = Colors,
+
+	Place = { "TOPRIGHT", -60, -260 },
+	Width = 235, -- 235 default
+	Scale = 1.1, 
+	SpaceTop = 260, 
+	SpaceBottom = 330, 
+	MaxHeight = 480,
+	HideInCombat = false, 
+	HideInBossFights = true, 
+	HideInArena = true
+}
+
+-- Blizzard Instance Countdown Timers
+local BlizzardTimers = {
+	Colors = Colors,
+
+	Size = { 111, 14 },
+		Anchor = CogWheel("LibFrame"):GetFrame(),
+		AnchorPoint = "TOP",
+		AnchorOffsetX = 0,
+		AnchorOffsetY = -370, -- -220
+		Growth = -50, 
+
+	BlankTexture = GetMedia("blank"), 
+
+	BarPlace = { "CENTER", 0, 0 },
+		BarSize = { 111, 12 }, 
+		BarTexture = GetMedia("cast_bar"), 
+		BarColor = { Colors.quest.red[1], Colors.quest.red[2], Colors.quest.red[3] }, 
+		BarSparkMap = {
+			top = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/128, offset = -16/32 }, 
+				{ keyPercent =  10/128, offset =   0/32 }, 
+				{ keyPercent = 119/128, offset =   0/32 }, 
+				{ keyPercent = 128/128, offset = -16/32 }
+			}
+		},
+
+	UseBarValue = true, 
+		BarValuePlace = { "CENTER", 0, 0 }, 
+		BarValueFont = GetFont(14, true),
+		BarValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .7 },
+
+	UseBackdrop = true, 
+		BackdropPlace = { "CENTER", 1, -2 }, 
+		BackdropSize = { 193,93 }, 
+		BackdropTexture = GetMedia("cast_back"),
+		BackdropDrawLayer = { "BACKGROUND", -5 },
+		BackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }
+
+}
+
+-- Blizzard Popup Styling
+local BlizzardPopupStyling = {
+	Colors = Colors, 
+	PostCreatePopup = BlizzardPopup_PostCreate,
+	PostUpdateAnchors = BlizzardPopup_Anchors_PostUpdate
+}
+
+-- Blizzard font replacements
+local BlizzardFonts = {
+	ChatFont = GetFont(15, true),
+	ChatBubbleFont = GetFont(10, true)
+}
+
+-- Group Leader Tools
+local GroupTools = {
+	Colors = Colors,
+
+	MenuPlace = { "TOPLEFT", "UICenter", "TOPLEFT", 22, -42 },
+	MenuSize = { 300*.75 +30, 410 }, 
+
+	MenuToggleButtonSize = { 48, 48 }, 
+	MenuToggleButtonPlace = { "TOPLEFT", "UICenter", "TOPLEFT", -18, -40 }, 
+	MenuToggleButtonIcon = GetMedia("raidtoolsbutton"), 
+	MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
+	MenuToggleButtonIconSize = { 64*.75, 128*.75 }, 
+	MenuToggleButtonIconColor = { 1, 1, 1 }, 
+
+	UseMemberCount = true, 
+		MemberCountNumberPlace = { "TOP", 0, -20 }, 
+		MemberCountNumberJustifyH = "CENTER",
+		MemberCountNumberJustifyV = "MIDDLE", 
+		MemberCountNumberFont = GetFont(14, true),
+		MemberCountNumberColor = { Colors.title[1], Colors.title[2], Colors.title[3] },
+
+	UseRoleCount = true, 
+		RoleCountTankPlace = { "TOP", -70, -100 }, 
+		RoleCountTankFont = GetFont(14, true),
+		RoleCountTankColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] },
+		RoleCountTankTexturePlace = { "TOP", -70, -44 },
+		RoleCountTankTextureSize = { 64, 64 },
+		RoleCountTankTexture = GetMedia("grouprole-icons-tank"),
+		
+		RoleCountHealerPlace = { "TOP", 0, -100 }, 
+		RoleCountHealerFont = GetFont(14, true),
+		RoleCountHealerColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] },
+		RoleCountHealerTexturePlace = { "TOP", 0, -44 },
+		RoleCountHealerTextureSize = { 64, 64 },
+		RoleCountHealerTexture = GetMedia("grouprole-icons-heal"),
+
+		RoleCountDPSPlace = { "TOP", 70, -100 }, 
+		RoleCountDPSFont = GetFont(14, true),
+		RoleCountDPSColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] },
+		RoleCountDPSTexturePlace = { "TOP", 70, -44 },
+		RoleCountDPSTextureSize = { 64, 64 },
+		RoleCountDPSTexture = GetMedia("grouprole-icons-dps"),
+
+	UseRaidTargetIcons = true, 
+		RaidTargetIcon1Place = { "TOP", -80, -140 },
+		RaidTargetIcon2Place = { "TOP", -28, -140 },
+		RaidTargetIcon3Place = { "TOP",  28, -140 },
+		RaidTargetIcon4Place = { "TOP",  80, -140 },
+		RaidTargetIcon5Place = { "TOP", -80, -190 },
+		RaidTargetIcon6Place = { "TOP", -28, -190 },
+		RaidTargetIcon7Place = { "TOP",  28, -190 },
+		RaidTargetIcon8Place = { "TOP",  80, -190 },
+		RaidTargetIconsSize = { 48, 48 }, 
+		RaidRoleRaidTargetTexture = GetMedia("raid_target_icons"),
+		RaidRoleCancelTexture = nil,
+
+	UseRolePollButton = true, 
+		RolePollButtonPlace = { "TOP", 0, -260 }, 
+		RolePollButtonSize = { 300*.75, 50*.75 },
+		RolePollButtonTextFont = GetFont(14, false), 
+		RolePollButtonTextColor = { 0, 0, 0 }, 
+		RolePollButtonTextShadowColor = { 1, 1, 1, .5 }, 
+		RolePollButtonTextShadowOffset = { 0, -.85 }, 
+		RolePollButtonTextureSize = { 1024 *1/3 *.75, 256 *1/3 *.75 },
+		RolePollButtonTextureNormal = GetMedia("menu_button_disabled"), 
+	
+	UseReadyCheckButton = true, 
+		ReadyCheckButtonPlace = { "TOP", -30, -310 }, 
+		ReadyCheckButtonSize = { 300*.75 - 80, 50*.75 },
+		ReadyCheckButtonTextFont = GetFont(14, false), 
+		ReadyCheckButtonTextColor = { 0, 0, 0 }, 
+		ReadyCheckButtonTextShadowColor = { 1, 1, 1, .5 }, 
+		ReadyCheckButtonTextShadowOffset = { 0, -.85 }, 
+		ReadyCheckButtonTextureSize = { 1024 *1/3 *.75, 256 *1/3 *.75 },
+		ReadyCheckButtonTextureNormal = GetMedia("menu_button_smaller"), 
+		
+	UseWorldMarkerFlag = true, 
+		WorldMarkerFlagPlace = { "TOP", 88, -310 }, 
+		WorldMarkerFlagSize = { 70*.75, 50*.75 },
+		WorldMarkerFlagContentSize = { 32, 32 }, 
+		WorldMarkerFlagBackdropSize = { 512 *1/3 *.75, 256 *1/3 *.75 },
+		WorldMarkerFlagBackdropTexture = GetMedia("menu_button_tiny"), 
+
+	UseConvertButton = true, 
+		ConvertButtonPlace = { "TOP", 0, -360 }, 
+		ConvertButtonSize = { 300*.75, 50*.75 },
+		ConvertButtonTextFont = GetFont(14, false), 
+		ConvertButtonTextColor = { 0, 0, 0 }, 
+		ConvertButtonTextShadowColor = { 1, 1, 1, .5 }, 
+		ConvertButtonTextShadowOffset = { 0, -.85 }, 
+		ConvertButtonTextureSize = { 1024 *1/3 *.75, 256 *1/3 *.75 },
+		ConvertButtonTextureNormal = GetMedia("menu_button_disabled"), 
+
+	MenuWindow_CreateBorder = GroupTools_Window_CreateBorder,
+	PostCreateButton = GroupTools_Button_PostCreate, 
+	OnButtonDisable = GroupTools_Button_OnDisable, 
+	OnButtonEnable = GroupTools_Button_OnEnable
+}
+
+-- Minimap
+local Minimap = {
+	Colors = Colors,
+
+	Size = { 213, 213 }, 
+	Place = { "BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -58, 59 }, 
+	MaskTexture = GetMedia("minimap_mask_circle_transparent"),
+	BlobAlpha = { 0, 127, 0, 0 }, -- blobInside, blobOutside, ringOutside, ringInside 
+
+	-- Allow addon minimap buttons
+	-- *note that enabling this isn't recommended as most addons don't handle buttons properly, 
+	--  resulting in buttons placed inside, beneath or outside the map, 
+	--  colliding with other objects and generally not working at all. 
+	AllowButtons = false, 
+
+	UseCompass = true, 
+		CompassTexts = { L["N"] }, -- only setting the North tag text, as we don't want a full compass ( order is NESW )
+		CompassFont = GetFont(12, true), 
+		CompassColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .75 }, 
+		CompassRadiusInset = 10, -- move the text 10 points closer to the center of the map
+
+	UseMapBorder = true, 
+		MapBorderPlace = { "CENTER", 0, 0 }, 
+		MapBorderSize = { 419, 419 }, 
+		MapBorderTexture = GetMedia("minimap-border"),
+		MapBorderColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+	
+	UseMapBackdrop = true, 
+		MapBackdropTexture = GetMedia("minimap_mask_circle"),
+		MapBackdropColor = { 0, 0, 0, .75 }, 
+
+	UseMapOverlay = true, 
+		MapOverlayTexture = GetMedia("minimap_mask_circle"),
+		MapOverlayColor = { 0, 0, 0, .15 },
+
+	-- Put XP and XP on the minimap!
+	UseStatusRings = true, 
+		RingFrameBackdropPlace = { "CENTER", 0, 0 },
+		RingFrameBackdropSize = { 413, 413 }, 
+		
+		-- Backdrops
+		RingFrameBackdropDrawLayer = { "BACKGROUND", 1 }, 
+		RingFrameBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+		RingFrameBackdropTexture = GetMedia("minimap-onebar-backdrop"), 
+		RingFrameBackdropDoubleTexture = GetMedia("minimap-twobars-backdrop"), 
+
+		-- Single Ring
+		RingFrameSingleRingTexture = GetMedia("minimap-bars-single"), 
+		RingFrameSingleRingSparkSize = { 6,34 * 208/256 }, 
+		RingFrameSingleRingSparkInset = { 22 * 208/256 }, 
+		RingFrameSingleRingValueFunc = Minimap_RingFrame_SingleRing_ValueFunc,
+
+		-- Outer Ring
+		RingFrameOuterRingTexture = GetMedia("minimap-bars-two-outer"), 
+		RingFrameOuterRingSparkSize = { 6,20 * 208/256 }, 
+		RingFrameOuterRingSparkInset = { 15 * 208/256 }, 
+		RingFrameOuterRingValueFunc = Minimap_RingFrame_OuterRing_ValueFunc,
+
+		-- Outer Ring
+		OuterRingPlace = { "CENTER", 0, 2 }, 
+		OuterRingSize = { 208, 208 }, 
+		OuterRingClockwise = true, 
+		OuterRingDegreeOffset = 90*3 - 14,
+		OuterRingDegreeSpan = 360 - 14*2, 
+		OuterRingShowSpark = true, 
+		OuterRingSparkBlendMode = "ADD",
+		OuterRingSparkOffset = -1/10, 
+		OuterRingSparkFlash = { nil, nil, 1, 1 }, 
+		OuterRingColorXP = true,
+		OuterRingColorStanding = true,
+		OuterRingColorPower = true,
+		OuterRingColorValue = true,
+		OuterRingBackdropMultiplier = 1, 
+		OuterRingSparkMultiplier = 1, 
+		OuterRingValuePlace = { "CENTER", 0, -9 },
+		OuterRingValueJustifyH = "CENTER",
+		OuterRingValueJustifyV = "MIDDLE",
+		OuterRingValueFont = GetFont(15, true),
+		OuterRingValueShowDeficit = true, 
+		OuterRingValueDescriptionPlace = { "CENTER", 0, -25 }, 
+		OuterRingValueDescriptionWidth = 100, 
+		OuterRingValueDescriptionColor = { Colors.quest.gray[1], Colors.quest.gray[2], Colors.quest.gray[3] }, 
+		OuterRingValueDescriptionJustifyH = "CENTER", 
+		OuterRingValueDescriptionJustifyV = "MIDDLE", 
+		OuterRingValueDescriptionFont = GetFont(12, true),
+		OuterRingValuePercentFont = GetFont(16, true),
+
+		-- Inner Ring
+		InnerRingPlace = { "CENTER", 0, 2 }, 
+		InnerRingSize = { 208, 208 }, 
+		InnerRingBarTexture = GetMedia("minimap-bars-two-inner"),
+		InnerRingClockwise = true, 
+		InnerRingDegreeOffset = 90*3 - 21,
+		InnerRingDegreeSpan = 360 - 21*2, 
+		InnerRingShowSpark = true, 
+		InnerRingSparkSize = { 6, 27 * 208/256 },
+		InnerRingSparkBlendMode = "ADD",
+		InnerRingSparkOffset = -1/10,
+		InnerRingSparkInset = 46 * 208/256,  
+		InnerRingSparkFlash = { nil, nil, 1, 1 }, 
+		InnerRingColorXP = true,
+		InnerRingColorStanding = true,
+		InnerRingColorPower = true,
+		InnerRingColorValue = true,
+		InnerRingBackdropMultiplier = 1, 
+		InnerRingSparkMultiplier = 1, 
+		InnerRingValueFont = GetFont(15, true),
+		InnerRingValuePercentFont = GetFont(15, true), 
+
+	ToggleSize = { 56, 56 }, 
+	ToggleBackdropSize = { 100, 100 },
+	ToggleBackdropTexture = GetMedia("point_plate"), 
+	ToggleBackdropColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
+
+	-- Change alpha on texts based on target
+	UseTargetUpdates = true, 
+
+	UseClock = true, 
+		ClockPlace = { "BOTTOMRIGHT", -(13 + 213), -8 },
+		ClockFont = GetFont(15, true),
+		ClockColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] }, 
+
+	UseZone = true, 
+		ZonePlaceFunc = Minimap_ZoneName_PlaceFunc,
+		ZoneFont = GetFont(15, true),
+
+	UseCoordinates = true, 
+		CoordinatePlace = { "BOTTOM", 3, 23 },
+		CoordinateFont = GetFont(12, true), 
+		CoordinateColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 }, 
+
+	UsePerformance = true, 
+		PerformanceFramePlaceAdvancedFunc = Minimap_Performance_PlaceFunc,
+
+		LatencyFont = GetFont(12, true), 
+		LatencyColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .5 },
+		LatencyPlaceFunc = Minimap_Performance_Latency_PlaceFunc, 
+
+		FrameRateFont = GetFont(12, true), 
+		FrameRateColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .5 },
+		FrameRatePlaceFunc = Minimap_Performance_FrameRate_PlaceFunc, 
+
+	UseMail = true,
+		MailPlace = { "BOTTOMRIGHT", -(31 + 213), 35 },
+		MailSize = { 43, 32 },
+		MailTexture = GetMedia("icon_mail"),
+		MailTexturePlace = { "CENTER", 0, 0 }, 
+		MailTextureSize = { 66, 66 },
+		MailTextureDrawLayer = { "ARTWORK", 1 },
+		MailTextureRotation = 15 * (2*math_pi)/360,
+
+	UseGroupFinderEye = true, 
+		GroupFinderEyePlace = { "CENTER", math.cos(45*math_pi/180) * (213/2 + 10), math.sin(45*math_pi/180) * (213/2 + 10) }, 
+		GroupFinderEyeSize = { 64, 64 }, 
+		GroupFinderEyeTexture = GetMedia("group-finder-eye-green"),
+		GroupFinderEyeColor = { .90, .95, 1 }, 
+		GroupFinderQueueStatusPlace = { "BOTTOMRIGHT", _G.QueueStatusMinimapButton, "TOPLEFT", 0, 0 }
+}
+
+-- NamePlates
+local NamePlates = {
+	Colors = Colors,
+
+	UseNamePlates = true, 
+		Size = { 80, 32 }, 
+	
+	UseHealth = true, 
+		HealthPlace = { "TOP", 0, -2 },
+		HealthSize = { 84, 14 }, 
+		HealthOrientation = "LEFT", 
+		HealthTexture = GetMedia("nameplate_bar"),
+		HealthTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
+		HealthSparkMap = {
+			top = {
+				{ keyPercent =   0/256, offset = -16/32 }, 
+				{ keyPercent =   4/256, offset = -16/32 }, 
+				{ keyPercent =  19/256, offset =   0/32 }, 
+				{ keyPercent = 236/256, offset =   0/32 }, 
+				{ keyPercent = 256/256, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/256, offset = -16/32 }, 
+				{ keyPercent =   4/256, offset = -16/32 }, 
+				{ keyPercent =  19/256, offset =   0/32 }, 
+				{ keyPercent = 236/256, offset =   0/32 }, 
+				{ keyPercent = 256/256, offset = -16/32 }
+			}
+		},
+		HealthColorTapped = true,
+		HealthColorDisconnected = true,
+		HealthColorClass = true, -- color players in their class colors
+		HealthColorCivilian = true, -- color friendly players as civilians
+		HealthColorReaction = true,
+		HealthColorHealth = true,
+		HealthColorThreat = true,
+		HealthThreatFeedbackUnit = "player",
+		HealthThreatHideSolo = false, 
+		HealthFrequent = 1/120,
+
+	UseHealthBackdrop = true, 
+		HealthBackdropPlace = { "CENTER", 0, 0 },
+		HealthBackdropSize = { 84*256/(256-28), 14*64/(64-28) },
+		HealthBackdropTexture = GetMedia("nameplate_backdrop"),
+		HealthBackdropDrawLayer = { "BACKGROUND", -2 },
+		HealthBackdropColor = { 1, 1, 1, 1 },
+
+	UseCast = true, 
+		CastPlace = { "TOP", 0, -22 },
+		CastSize = { 84, 14 }, 
+		CastOrientation = "LEFT", 
+		CastColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3], 1 },
+		CastTexture = GetMedia("nameplate_bar"),
+		CastTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
+		CastSparkMap = {
+			top = {
+				{ keyPercent =   0/256, offset = -16/32 }, 
+				{ keyPercent =   4/256, offset = -16/32 }, 
+				{ keyPercent =  19/256, offset =   0/32 }, 
+				{ keyPercent = 236/256, offset =   0/32 }, 
+				{ keyPercent = 256/256, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/256, offset = -16/32 }, 
+				{ keyPercent =   4/256, offset = -16/32 }, 
+				{ keyPercent =  19/256, offset =   0/32 }, 
+				{ keyPercent = 236/256, offset =   0/32 }, 
+				{ keyPercent = 256/256, offset = -16/32 }
+			}
+		},
+
+		UseCastBackdrop = true, 
+			CastBackdropPlace = { "CENTER", 0, 0 },
+			CastBackdropSize = { 84*256/(256-28), 14*64/(64-28) },
+			CastBackdropTexture = GetMedia("nameplate_backdrop"),
+			CastBackdropDrawLayer = { "BACKGROUND", 0 },
+			CastBackdropColor = { 1, 1, 1, 1 },
+
+		UseCastName = true, 
+			CastNamePlace = { "TOP", 0, -20 },
+			CastNameFont = GetFont(12, true),
+			CastNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
+			CastNameDrawLayer = { "OVERLAY", 1 }, 
+			CastNameJustifyH = "CENTER", 
+			CastNameJustifyV = "MIDDLE",
+
+		UseCastShield = true, 
+			CastShieldPlace = { "CENTER", 0, -1 }, 
+			CastShieldSize = { 124, 69 },
+			CastShieldTexture = GetMedia("cast_back_spiked"),
+			CastShieldDrawLayer = { "BACKGROUND", -5 },
+			CastShieldColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
+
+		CastPostUpdate = NamePlate_CastBar_PostUpdate,
+
+	UseThreat = true, 
+		ThreatPlace = { "CENTER", 0, 0 },
+		ThreatSize = { 84*256/(256-28), 14*64/(64-28) },
+		ThreatTexture = GetMedia("nameplate_glow"),
+		TheatColor = { 1, 1, 1, 1 },
+		ThreatDrawLayer = { "BACKGROUND", -3 },
+		ThreatHideSolo = true, 
+
+	UseAuras = true, 
+		AuraFrameSize = { 30*3 + 2*5, 30*2 + 5  }, 
+		AuraFramePlace = { "TOP", 0, 30*2+5 + 10 },
+		AuraSize = 30, 
+		AuraSpaceH = 4, 
+		AuraSpaceV = 4, 
+		AuraGrowthX = "LEFT", 
+		AuraGrowthY = "UP", 
+		AuraMax = 6, 
+		AuraMaxBuffs = nil, 
+		AuraMaxDebuffs = nil, 
+		AuraDebuffsFirst = false, 
+		ShowAuraCooldownSpirals = false, 
+		ShowAuraCooldownTime = true, 
+		AuraFilter = nil, 
+		AuraBuffFilter = "PLAYER HELPFUL", 
+		AuraDebuffFilter = "PLAYER HARMFUL", 
+		AuraFilterFunc = Auras:GetFilterFunc("nameplate"), 
+		BuffFilterFunc = Auras:GetFilterFunc("nameplate"), 
+		DebuffFilterFunc = nil, 
+		AuraDisableMouse = true, -- don't allow mouse input here
+		AuraTooltipDefaultPosition = nil, 
+		AuraTooltipPoint = "BOTTOMLEFT", 
+		AuraTooltipAnchor = nil, 
+		AuraTooltipRelPoint = "TOPLEFT", 
+		AuraTooltipOffsetX = -8, 
+		AuraTooltipOffsetY = -16,
+
+		AuraIconPlace = { "CENTER", 0, 0 },
+		AuraIconSize = { 30 - 6, 30 - 6 },
+		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
+		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
+		AuraCountFont = GetFont(12, true),
+		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+		AuraTimePlace = { "TOPLEFT", -6, 6 },
+		AuraTimeFont = GetFont(11, true),
+		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
+		AuraBorderFrameSize = { 30 + 10, 30 + 10 },
+		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 12 },
+		AuraBorderBackdropColor = { 0, 0, 0, 0 },
+		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
+
+		PostUpdateAura = NamePlates_Auras_PostUpdate,
+
+	UseRaidTarget = true, 
+		RaidTargetPlace = { "TOP", 0, 44 }, -- no auras
+		RaidTargetPlace_AuraRow = { "TOP", 0, 80 }, -- auras, 1 row
+		RaidTargetPlace_AuraRows = { "TOP", 0, 112 }, -- auras, 2 rows
+		RaidTargetSize = { 64, 64 },
+		RaidTargetTexture = GetMedia("raid_target_icons"),
+		RaidTargetDrawLayer = { "ARTWORK", 0 },
+		PostUpdateRaidTarget = NamePlates_RaidTarget_PostUpdate,
+
+	-- CVars adjusted at startup
+	SetConsoleVars = {
+		-- Because we want friendly NPC nameplates
+		-- We're toning them down a lot as it is, 
+		-- but we still prefer to have them visible, 
+		-- and not the fugly super sized names we get otherwise.
+		--nameplateShowFriendlyNPCs = 1, -- Don't enforce this
+
+		-- Insets at the top and bottom of the screen 
+		-- which the target nameplate will be kept away from. 
+		-- Used to avoid the target plate being overlapped 
+		-- by the target frame or actionbars and keep it in view.
+		nameplateLargeTopInset = .08, -- default .1
+		nameplateOtherTopInset = .08, -- default .08
+		nameplateLargeBottomInset = .02, -- default .15
+		nameplateOtherBottomInset = .02, -- default .1
+		
+		nameplateClassResourceTopInset = 0,
+		nameplateGlobalScale = 1,
+		NamePlateHorizontalScale = 1,
+		NamePlateVerticalScale = 1,
+
+		-- Scale modifier for large plates, used for important monsters
+		nameplateLargerScale = 1, -- default 1.2
+
+		-- The minimum scale and alpha of nameplates 
+		nameplateMinScale = 1, -- .5 default .8
+		nameplateMinAlpha = 1, -- .3, -- default .5 (leave this to the modules?)
+
+		-- The maximum scale and alpha of nameplates
+		nameplateMaxScale = 1, -- default 1
+		nameplateMaxAlpha = 1, -- 0.85, -- default 0.9
+
+		-- The minimum distance from the camera plates will reach their minimum scale and alpa
+		nameplateMinScaleDistance = 30, -- default 10
+		nameplateMinAlphaDistance = 30, -- default 10
+		
+		-- The maximum distance from the camera where plates will still have max scale and alpa
+		nameplateMaxScaleDistance = 10, -- default 10
+		nameplateMaxAlphaDistance = 10, -- default 10
+
+		-- Show nameplates above heads or at the base (0 or 2,
+		nameplateOtherAtBase = 0,
+
+		-- Scale and Alpha of the selected nameplate (current target,
+		nameplateSelectedAlpha = 1, -- default 1
+		nameplateSelectedScale = 1 -- default 1
+	}
+}
+
+-- Custom Tooltips
+local TooltipStyling = {
+	Colors = Colors,
+
+	TooltipPlace = { "BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -48, 107 }, 
+	TooltipStatusBarTexture = GetMedia("statusbar_normal"), 
+	TooltipBackdrop = {
+		bgFile = [[Interface\ChatFrame\ChatFrameBackground]], tile = false, 
+		edgeFile = GetMedia("tooltip_border_blizzcompatible"), edgeSize = 32, 
+		insets = { top = 2.5, bottom = 2.5, left = 2.5, right = 2.5 }
+	},
+	TooltipBackdropColor = { .05, .05, .05, .85 },
+	TooltipBackdropBorderColor = { 1, 1, 1, 1 },
+
+	PostCreateTooltip = Tooltip_PostCreate,
+	PostCreateLinePair = Tooltip_LinePair_PostCreate, 
+	PostCreateBar = Tooltip_Bar_PostCreate
+}
+
 ------------------------------------------------------------------
--- Config Templates
+-- UnitFrame Config Templates
 ------------------------------------------------------------------
 -- Table containing common values for the templates
 local Constant = {
@@ -2439,13 +3986,29 @@ local UnitFrameRaid = setmetatable({
 
 }, { __index = Template_TinyFrame })
 
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFramePlayerHUD)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameFocus]", UnitFrameFocus)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameBoss]", UnitFrameBoss)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameArena]", UnitFrameArena)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameParty]", UnitFrameParty)
-CogWheel("LibDB"):NewDatabase(ADDON..": Layout [UnitFrameRaid]", UnitFrameRaid)
+
+LibDB:NewDatabase(ADDON..": Layout [Core]", Core)
+LibDB:NewDatabase(ADDON..": Layout [ActionBarMain]", ActionBars)
+LibDB:NewDatabase(ADDON..": Layout [Bindings]", BindMode)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardChatFrames]", BlizzardChatFrames)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardFloaterHUD]", BlizzardFloaterHUD)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardFonts]", BlizzardFonts)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardGameMenu]", BlizzardGameMenu)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardMicroMenu]", BlizzardMicroMenu)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardObjectivesTracker]", BlizzardObjectivesTracker)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardPopupStyling]", BlizzardPopupStyling)
+LibDB:NewDatabase(ADDON..": Layout [BlizzardTimers]", BlizzardTimers)
+LibDB:NewDatabase(ADDON..": Layout [GroupTools]", GroupTools)
+LibDB:NewDatabase(ADDON..": Layout [Minimap]", Minimap)
+LibDB:NewDatabase(ADDON..": Layout [NamePlates]", NamePlates)
+LibDB:NewDatabase(ADDON..": Layout [TooltipStyling]", TooltipStyling)
+LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayerHUD]", UnitFramePlayerHUD)
+LibDB:NewDatabase(ADDON..": Layout [UnitFramePlayer]", UnitFramePlayer)
+LibDB:NewDatabase(ADDON..": Layout [UnitFramePet]", UnitFramePet)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameTarget]", UnitFrameTarget)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameToT]", UnitFrameToT)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameFocus]", UnitFrameFocus)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameBoss]", UnitFrameBoss)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameArena]", UnitFrameArena)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameParty]", UnitFrameParty)
+LibDB:NewDatabase(ADDON..": Layout [UnitFrameRaid]", UnitFrameRaid)

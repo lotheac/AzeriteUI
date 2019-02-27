@@ -8,7 +8,6 @@ against manually manipulating it as it'll change frequently.
 --]]--
 
 local ADDON, Private = ...
-local Colors = Private.Colors
 
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
@@ -242,6 +241,7 @@ Toggle.OnEnter = function(self)
 		end 
 		return 
 	end 
+	local Colors = Layout.Colors
 	tooltip:SetDefaultAnchor(self)
 	tooltip:AddLine(L["Main Menu"], Colors.title[1], Colors.title[2], Colors.title[3])
 	tooltip:AddLine(L["Click here to get access to game panels."], Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
@@ -822,7 +822,7 @@ Module.CreateMenuTable = function(self)
 				disabledTitle = L["TalkingHead: %s"]:format(L["Disabled"]),
 				type = "TOGGLE_VALUE", 
 				configDB = "FloaterHUD", configKey = "enableTalkingHead", 
-				proxyModule = "FloaterHUD"
+				proxyModule = "BlizzardFloaterHUD"
 			},
 
 			-- Alerts 
@@ -831,7 +831,7 @@ Module.CreateMenuTable = function(self)
 				disabledTitle = L["Alerts: %s"]:format(L["Disabled"]),
 				type = "TOGGLE_VALUE", 
 				configDB = "FloaterHUD", configKey = "enableAlerts", 
-				proxyModule = "FloaterHUD"
+				proxyModule = "BlizzardFloaterHUD"
 			}
 
 			

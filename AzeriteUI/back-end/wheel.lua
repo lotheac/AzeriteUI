@@ -1,9 +1,12 @@
 -- Forcefully showing script errors because I need this.
 -- I also forcefully enable the taint log. 
-SetCVar("scriptErrors", 1)
-SetCVar("taintLog", 1)
+-- *will remove this later on and implement it in a safer way
+if not InCombatLockdown() then
+	SetCVar("scriptErrors", 1)
+	SetCVar("taintLog", 1)
+end
 
-local Global, Version = "CogWheel", 5
+local Global, Version = "CogWheel", 6
 
 local CogWheel = _G[Global]
 if (CogWheel and (CogWheel.version >= Version)) then

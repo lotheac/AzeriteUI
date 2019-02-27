@@ -325,6 +325,14 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		plate.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 		plate.Auras.PostUpdate = Layout.PostUpdateAura
 
+		--[[
+		local devHelp = auras:CreateTexture()
+		devHelp:SetColorTexture(0,0,0,.25)
+		devHelp:SetAllPoints()
+		devHelp:SetDrawLayer("BACKGROUND")
+		devHelp:Hide()
+		]]--
+
 		if (not db.enableAuras) then 
 			plate:DisableElement("Auras")
 		end 

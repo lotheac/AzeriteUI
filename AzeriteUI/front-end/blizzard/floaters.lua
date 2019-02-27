@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("FloaterHUD", "LibEvent", "LibFrame", "LibTooltip", "LibDB", "LibBlizzard")
+local Module = Core:NewModule("BlizzardFloaterHUD", "LibEvent", "LibFrame", "LibTooltip", "LibDB", "LibBlizzard")
 
 -- Lua API
 local _G = _G
@@ -586,7 +586,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [FloaterHUD]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardFloaterHUD]")
 end 
 
 Module.OnInit = function(self)
