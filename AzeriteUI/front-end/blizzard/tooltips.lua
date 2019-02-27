@@ -272,7 +272,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [TooltipStyling]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[TooltipStyling]")
 end 
 
 Module.OnEnable = function(self)

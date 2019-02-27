@@ -11,7 +11,35 @@ but any layout data will have to be passed as function arguments.
 --]]--
 
 local ADDON = ...
-local UnitStyles = CogWheel("LibDB"):NewDatabase(ADDON..": UnitStyles")
+
+local Core = CogWheel("LibModule"):GetModule(ADDON)
+if (not Core) then 
+	return 
+end
+
+-- Primary Units
+local UnitFramePlayer = Core:NewModule("UnitFramePlayer", "LibEvent", "LibUnitFrame", "LibFrame")
+local UnitFramePlayerHUD = Core:NewModule("UnitFramePlayerHUD", "LibEvent", "LibUnitFrame")
+local UnitFrameTarget = Core:NewModule("UnitFrameTarget", "LibEvent", "LibUnitFrame", "LibSound")
+
+-- Secondary Units
+local UnitFrameFocus = Core:NewModule("UnitFrameFocus", "LibUnitFrame")
+local UnitFramePet = Core:NewModule("UnitFramePet", "LibUnitFrame", "LibFrame")
+local UnitFrameToT = Core:NewModule("UnitFrameToT", "LibUnitFrame")
+
+-- Grouped Units
+local UnitFrameArena = Core:NewModule("UnitFrameArena", "LibDB", "LibUnitFrame", "LibFrame")
+local UnitFrameBoss = Core:NewModule("UnitFrameBoss", "LibUnitFrame")
+local UnitFrameParty = Core:NewModule("UnitFrameParty", "LibDB", "LibFrame", "LibUnitFrame")
+local UnitFrameRaid = Core:NewModule("UnitFrameRaid", "LibDB", "LibFrame", "LibUnitFrame", "LibBlizzard")
+
+-- Incompatibilities
+UnitFrameArena:SetIncompatible("sArena")
+UnitFrameArena:SetIncompatible("Gladius")
+UnitFrameArena:SetIncompatible("GladiusEx")
+
+-- Keep these local
+local UnitStyles = {} 
 
 -- Lua API
 local _G = _G
@@ -29,8 +57,10 @@ local unpack = unpack
 
 -- WoW API
 local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
+local GetCVarBool = _G.GetCVarBool
 local GetExpansionLevel = _G.GetExpansionLevel
 local IsXPUserDisabled = _G.IsXPUserDisabled
+local RegisterAttributeDriver = _G.RegisterAttributeDriver
 local UnitClass = _G.UnitClass
 local UnitClassification = _G.UnitClassification
 local UnitExists = _G.UnitExists
@@ -43,8 +73,9 @@ local UnitIsTrivial = _G.UnitIsTrivial
 local UnitIsUnit = _G.UnitIsUnit
 local UnitLevel = _G.UnitLevel
 
--- WoW Objects
-local MAX_PLAYER_LEVEL_TABLE = _G.MAX_PLAYER_LEVEL_TABLE
+-- Addon API
+local GetEffectiveExpansionMaxLevel = CogWheel("LibPlayerData").GetEffectiveExpansionMaxLevel
+local PlayerHasXP = CogWheel("LibPlayerData").PlayerHasXP
 
 -- WoW Strings
 local S_AFK = _G.AFK
@@ -52,11 +83,169 @@ local S_DEAD = _G.DEAD
 local S_PLAYER_OFFLINE = _G.PLAYER_OFFLINE
 
 -- Player data
-local _, PlayerClass = UnitClass("player")
+local _,PlayerClass = UnitClass("player")
+local _,PlayerLevel = UnitLevel("player")
 
--- Speed shortcuts
-local PlayerHasXP = CogWheel("LibPlayerData").PlayerHasXP
+-----------------------------------------------------------
+-- Secure Snippets
+-----------------------------------------------------------
+local SECURE = {
+	Arena_OnAttribute = [=[
+		if (name == "state-vis") then
+			if (value == "show") then 
+				if (not self:IsShown()) then 
+					self:Show(); 
+				end 
+			elseif (value == "hide") then 
+				if (self:IsShown()) then 
+					self:Hide(); 
+				end 
+			end 
+		end
+	]=],
+	Arena_SecureCallback = [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enablearenaframes") then 
+			self:SetAttribute("enableArenaFrames", value); 
+			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
+			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
+			if value then 
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "[@arena1,exists]show;hide"); 
+			else 
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
+			end 
+		end 
+	]=],
 
+	Party_OnAttribute = [=[
+		if (name == "state-vis") then
+			if (value == "show") then 
+				if (not self:IsShown()) then 
+					self:Show(); 
+				end 
+			elseif (value == "hide") then 
+				if (self:IsShown()) then 
+					self:Hide(); 
+				end 
+			end 
+		end
+	]=], 
+	Party_SecureCallback = [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enablepartyframes") then 
+			self:SetAttribute("enablePartyFrames", value); 
+			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
+			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
+			if value then 
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "%s"); 
+			else 
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
+			end 
+		end 
+	]=],
+
+	Raid_FrameTable_Create = [=[ 
+		Frames = table.new(); 
+	]=],
+	Raid_FrameTable_InsertCurrentFrame = [=[ 
+		local frame = self:GetFrameRef("CurrentFrame"); 
+		table.insert(Frames, frame); 
+	]=],
+	Raid_OnAttribute = [=[
+		if (name == "state-vis") then
+			if (value == "show") then 
+				if (not self:IsShown()) then 
+					self:Show(); 
+				end 
+			elseif (value == "hide") then 
+				if (self:IsShown()) then 
+					self:Hide(); 
+				end 
+			end 
+		elseif (name == "state-layout") then
+			local groupLayout = self:GetAttribute("groupLayout"); 
+			if (groupLayout ~= value) or true then 
+
+				local colSize; 
+				local growthX;
+				local growthY;
+				local groupGrowthX;
+				local groupGrowthY;
+				local groupCols;
+				local groupRows;
+				local groupAnchor;
+
+				if (value == "normal") then 
+					colSize = %d;
+					growthX = %d;
+					growthY = %d;
+					groupGrowthX = %d;
+					groupGrowthY = %d;
+					groupCols = %d;
+					groupRows = %d;
+					groupAnchor = "%s";
+
+				elseif (value == "epic") then 
+					colSize = %d;
+					growthX = %d;
+					growthY = %d;
+					groupGrowthX = %d;
+					groupGrowthY = %d;
+					groupCols = %d;
+					groupRows = %d;
+					groupAnchor = "%s";
+				end
+
+				-- This should never happen: it does!
+				if not colSize then 
+					return 
+				end 
+
+				-- Iterate the frames
+				for id,frame in ipairs(Frames) do 
+
+					local groupID = floor((id-1)/colSize) + 1; 
+					local groupX = mod(groupID-1,groupCols) * groupGrowthX; 
+					local groupY = floor((groupID-1)/groupCols) * groupGrowthY; 
+
+					local modID = mod(id-1,colSize) + 1;
+					local unitX = growthX*(modID-1) + groupX;
+					local unitY = growthY*(modID-1) + groupY;
+
+					frame:ClearAllPoints(); 
+					frame:SetPoint(groupAnchor, self, groupAnchor, unitX, unitY); 
+				end 
+
+				-- Store the new layout setting
+				self:SetAttribute("groupLayout", value);
+			end 
+		end
+	]=],
+	Raid_SecureCallback = [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enableraidframes") then 
+			self:SetAttribute("enableRaidFrames", value); 
+			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
+			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
+			if value then 
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "%s"); 
+			else 
+				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
+			end 
+		end 
+		
+	]=]
+}
+
+-----------------------------------------------------------
+-- Utility Functions
+-----------------------------------------------------------
 local short = function(value)
 	value = tonumber(value)
 	if (not value) then return "" end
@@ -69,6 +258,33 @@ local short = function(value)
 	else
 		return tostring(value - value%1)
 	end	
+end
+
+local CreateSecureCallbackFrame = function(module, header, db, script)
+
+	-- Create a secure proxy frame for the menu system
+	local callbackFrame = module:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+
+	-- Attach the module's visibility frame to the proxy
+	callbackFrame:SetFrameRef("VisibilityFrame", header)
+
+	-- Register module db with the secure proxy
+	if db then 
+		for key,value in pairs(db) do 
+		callbackFrame:SetAttribute(key,value)
+		end 
+	end
+
+	-- Now that attributes have been defined, attach the onattribute script
+	callbackFrame:SetAttribute("_onattributechanged", script)
+
+	-- Attach a getter method for the menu to the module
+	module.GetSecureUpdater = function(self) 
+		return callbackFrame 
+	end
+
+	-- Return the proxy updater to the module
+	return callbackFrame
 end
 
 -----------------------------------------------------------
@@ -643,7 +859,7 @@ local Target_PostUpdateTextures = function(self)
 	-- We could put this into element post updates, 
 	-- but to avoid needless checks we limit this to actual target updates. 
 	local targetLevel = UnitLevel("target") or 0
-	local maxLevel = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
+	local maxLevel = GetEffectiveExpansionMaxLevel()
 	local classification = UnitClassification("target")
 
 	if UnitIsPlayer("target") then 
@@ -3758,3 +3974,295 @@ UnitStyles.StyleRaidFrames = function(self, unit, id, Layout, ...)
 	end 
 	return StyleRaidFrame(self, unit, id, Layout, ...)
 end
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+-- 				UnitFrame Modules
+-----------------------------------------------------------
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+-- Player
+-----------------------------------------------------------
+UnitFramePlayer.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFramePlayer]", true)
+	self.frame = self:SpawnUnitFrame("player", "UICenter", function(frame, unit, id, _, ...)
+		return UnitStyles.StylePlayerFrame(frame, unit, id, self.layout, ...)
+	end)
+end 
+
+UnitFramePlayer.OnEnable = function(self)
+	self:RegisterEvent("PLAYER_ALIVE", "OnEvent")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
+	self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
+	self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")
+	self:RegisterEvent("PLAYER_XP_UPDATE", "OnEvent")
+end
+
+UnitFramePlayer.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_LEVEL_UP") then 
+		local level = ...
+		if (level and (level ~= PlayerLevel)) then
+			PlayerLevel = level
+		else
+			local level = UnitLevel("player")
+			if (level ~= PlayerLevel) then
+				PlayerLevel = level
+			end
+		end
+	end
+	self.frame:PostUpdateTextures(PlayerLevel)
+end
+
+UnitFramePlayerHUD.OnEvent = function(self, event, ...)
+	local arg1, arg2 = ...
+	if ((event == "CVAR_UPDATE") and (arg1 == "DISPLAY_PERSONAL_RESOURCE")) then 
+
+		-- Disable cast element if personal resource display is enabled. 
+		-- We follow the event returns here instead of querying the cvar.
+		if (arg2 == "0") then 
+			self.frame:EnableElement("Cast")
+		elseif (arg2 == "1") then 
+			self.frame:DisableElement("Cast")
+		end
+	elseif (event == "VARIABLES_LOADED") then 
+
+		-- Disable cast element if personal resource display is enabled
+		if (GetCVarBool("nameplateShowSelf")) then 
+			self.frame:DisableElement("Cast")
+		else
+			self.frame:EnableElement("Cast")
+		end
+	end 
+end
+
+UnitFramePlayerHUD.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFramePlayerHUD]", true)
+	self.frame = self:SpawnUnitFrame("player", "UICenter", function(frame, unit, id, _, ...)
+		return UnitStyles.StylePlayerHUDFrame(frame, unit, id, self.layout, ...)
+	end)
+
+	-- Disable cast element if personal resource display is enabled
+	if (GetCVarBool("nameplateShowSelf")) then 
+		self.frame:DisableElement("Cast")
+	else 
+		self.frame:EnableElement("Cast")
+	end
+end 
+
+UnitFramePlayerHUD.OnEnable = function(self)
+	self:RegisterEvent("CVAR_UPDATE", "OnEvent")
+	self:RegisterEvent("VARIABLES_LOADED", "OnEvent")
+end
+
+-----------------------------------------------------------
+-- Target
+-----------------------------------------------------------
+UnitFrameTarget.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameTarget]", true)
+	self.frame = self:SpawnUnitFrame("target", "UICenter", function(frame, unit, id, _, ...)
+		return UnitStyles.StyleTargetFrame(frame, unit, id, self.layout, ...)
+	end)
+end 
+
+UnitFrameTarget.OnEnable = function(self)
+	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
+end
+
+UnitFrameTarget.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_TARGET_CHANGED") then
+		if UnitExists("target") then
+			-- Play a fitting sound depending on what kind of target we gained
+			if UnitIsEnemy("target", "player") then
+				self:PlaySoundKitID(SOUNDKIT.IG_CREATURE_AGGRO_SELECT, "SFX")
+			elseif UnitIsFriend("player", "target") then
+				self:PlaySoundKitID(SOUNDKIT.IG_CHARACTER_NPC_SELECT, "SFX")
+			else
+				self:PlaySoundKitID(SOUNDKIT.IG_CREATURE_NEUTRAL_SELECT, "SFX")
+			end
+			self.frame:PostUpdateTextures()
+		else
+			-- Play a sound indicating we lost our target
+			self:PlaySoundKitID(SOUNDKIT.INTERFACE_SOUND_LOST_TARGET_UNIT, "SFX")
+		end
+	end
+end
+
+-----------------------------------------------------------
+-- Focus
+-----------------------------------------------------------
+UnitFrameFocus.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameFocus]", true)
+	self.frame = self:SpawnUnitFrame("focus", "UICenter", function(frame, unit, id, _, ...)
+		return UnitStyles.StyleFocusFrame(frame, unit, id, self.layout, ...)
+	end)
+end 
+
+-----------------------------------------------------------
+-- Pet
+-----------------------------------------------------------
+UnitFramePet.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFramePet]", true)
+	self.frame = self:SpawnUnitFrame("pet", "UICenter", function(frame, unit, id, _, ...)
+		return UnitStyles.StylePetFrame(frame, unit, id, self.layout, ...)
+	end)
+end 
+
+-----------------------------------------------------------
+-- Target of Target
+-----------------------------------------------------------
+UnitFrameToT.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameToT]", true)
+	self.frame = self:SpawnUnitFrame("targettarget", "UICenter", function(frame, unit, id, _, ...)
+		return UnitStyles.StyleToTFrame(frame, unit, id, self.layout, ...)
+	end)
+end 
+
+-----------------------------------------------------------
+-- Arena Enemy Frames
+-----------------------------------------------------------
+UnitFrameArena.OnInit = function(self)
+
+	-- Default settings
+	local defaults = {
+		enableArenaFrames = true
+	}
+
+	self.db = self:NewConfig("UnitFrameArena", defaults, "global")
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameArena]", true)
+
+	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame:SetAttribute("_onattributechanged", SECURE.Arena_OnAttribute)
+	if self.db.enableArenaFrames then 
+		RegisterAttributeDriver(self.frame, "state-vis", "[@arena1,exists]show;hide")
+	else 
+		RegisterAttributeDriver(self.frame, "state-vis", "hide")
+	end 
+
+	local style = function(frame, unit, id, _, ...)
+		return UnitStyles.StyleArenaFrames(frame, unit, id, self.layout, ...)
+	end
+	for i = 1,5 do 
+		self.frame[tostring(i)] = self:SpawnUnitFrame("arena"..i, self.frame, style)
+	end 
+
+	-- Create a secure proxy updater for the menu system
+	CreateSecureCallbackFrame(self, self.frame, self.db, SECURE.Arena_SecureCallback:format(visDriver))
+end 
+
+-----------------------------------------------------------
+-- Boss
+-----------------------------------------------------------
+UnitFrameBoss.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameBoss]", true)
+	self.frame = {}
+
+	local style = function(frame, unit, id, _, ...)
+		return UnitStyles.StyleBossFrames(frame, unit, id, self.layout, ...)
+	end
+	for i = 1,5 do 
+		self.frame[tostring(i)] = self:SpawnUnitFrame("boss"..i, "UICenter", style)
+	end 
+end 
+
+-----------------------------------------------------------
+-- Party
+-----------------------------------------------------------
+UnitFrameParty.OnInit = function(self)
+	local dev -- = true
+
+	-- Default settings
+	local defaults = {
+		enablePartyFrames = true
+	}
+
+	self.db = self:NewConfig("UnitFrameParty", defaults, "global")
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameParty]")
+
+	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame:SetAttribute("_onattributechanged", SECURE.Party_OnAttribute)
+
+	-- Hide it in raids of 6 or more players 
+	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
+	local visDriver = dev and "[@player,exists]show;hide" or "[@raid6,exists]hide;[group]show;hide"
+	if self.db.enablePartyFrames then 
+		RegisterAttributeDriver(self.frame, "state-vis", visDriver)
+	else 
+		RegisterAttributeDriver(self.frame, "state-vis", "hide")
+	end 
+
+	local style = function(frame, unit, id, _, ...)
+		return UnitStyles.StylePartyFrames(frame, unit, id, self.layout, ...)
+	end
+	for i = 1,4 do 
+		self.frame[tostring(i)] = self:SpawnUnitFrame(dev and "player" or "party"..i, self.frame, Style)
+	end 
+
+	-- Create a secure proxy updater for the menu system
+	CreateSecureCallbackFrame(self, self.frame, self.db, SECURE.Party_SecureCallback:format(visDriver))
+end 
+
+-----------------------------------------------------------
+-- Raid
+-----------------------------------------------------------
+UnitFrameRaid.OnInit = function(self)
+	local dev --= true
+	local defaults = {
+		enableRaidFrames = true
+	}
+
+	self.db = self:NewConfig("UnitFrameRaid", defaults, "global")
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameRaid]")
+
+	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame:Place(unpack(self.layout.Place))
+	self.frame:SetSize(1,1)
+	self.frame:Execute(SECURE.Raid_FrameTable_Create)
+	self.frame:SetAttribute("_onattributechanged", SECURE.Raid_OnAttribute:format(
+		self.layout.GroupSizeNormal, 
+		self.layout.GrowthXNormal,
+		self.layout.GrowthYNormal,
+		self.layout.GroupGrowthXNormal,
+		self.layout.GroupGrowthYNormal,
+		self.layout.GroupColsNormal,
+		self.layout.GroupRowsNormal,
+		self.layout.GroupAnchorNormal, 
+		self.layout.GroupSizeEpic,
+		self.layout.GrowthXEpic,
+		self.layout.GrowthYEpic,
+		self.layout.GroupGrowthXEpic,
+		self.layout.GroupGrowthYEpic,
+		self.layout.GroupColsEpic,
+		self.layout.GroupRowsEpic,
+		self.layout.GroupAnchorEpic
+	))
+
+	-- Kill off the blizzard frames and leader tools
+	-- *todo: make this a user choice
+	if (not self.db.allowBlizzard) then 
+		self:DisableUIWidget("UnitFrameRaid") 
+	end
+
+	-- Only show it in raids of 6 or more players 
+	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
+	local visDriver = dev and "[@player,exists]show;hide" or "[@raid6,exists]show;hide"
+	RegisterAttributeDriver(self.frame, "state-vis", self.db.enableRaidFrames and visDriver or "hide")
+
+	local style = function(frame, unit, id, _, ...)
+		return UnitStyles.StyleRaidFrames(frame, unit, id, self.layout, ...)
+	end
+	for i = 1,40 do 
+		local frame = self:SpawnUnitFrame(dev and "player" or "raid"..i, self.frame, style)
+		self.frame[tostring(i)] = frame
+		self.frame:SetFrameRef("CurrentFrame", frame)
+		self.frame:Execute(SECURE.Raid_FrameTable_InsertCurrentFrame)
+	end 
+
+	-- Register the layout driver
+	RegisterAttributeDriver(self.frame, "state-layout", dev and "[@target,exists]epic;normal" or "[@raid26,exists]epic;normal")
+
+	-- Create a secure proxy updater for the menu system
+	CreateSecureCallbackFrame(self, self.frame, self.db, SECURE.Raid_SecureCallback:format(visDriver))
+end 
+

@@ -357,7 +357,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [NamePlates]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[NamePlates]")
 end
 
 Module.OnInit = function(self)

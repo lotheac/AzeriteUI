@@ -141,7 +141,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardObjectivesTracker]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[BlizzardObjectivesTracker]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 end
 

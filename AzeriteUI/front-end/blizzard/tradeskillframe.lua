@@ -313,7 +313,7 @@ end
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [ActionBarMain]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[ActionBarMain]")
 end
 
 Module.OnInit = function(self)

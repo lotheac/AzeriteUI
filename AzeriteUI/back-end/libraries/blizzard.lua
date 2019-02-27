@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 18)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 19)
 if (not LibBlizzard) then 
 	return
 end
@@ -544,6 +544,20 @@ UIWidgets["UnitFrameParty"] = function(self)
 	--		killUnitFrame(_G["CompactPartyFrameMember" .. i])
 	--	end	
 	--end)
+end
+
+UIWidgets["UnitFrameRaid"] = function(self)
+	-- dropdowns cause taint through the blizz compact unit frames, so we disable them
+	-- http://www.wowinterface.com/forums/showpost.php?p=261589&postcount=5
+	if _G.CompactUnitFrameProfiles then
+		_G.CompactUnitFrameProfiles:UnregisterAllEvents()
+	end
+
+	if _G.CompactRaidFrameManager and (_G.CompactRaidFrameManager:GetParent() ~= UIHider) then
+		_G.CompactRaidFrameManager:SetParent(UIHider)
+	end
+
+	_G.UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
 end
 
 UIWidgets["UnitFrameArena"] = function(self)

@@ -867,7 +867,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Core]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[Core]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 	self:CreateMenuTable()
 end

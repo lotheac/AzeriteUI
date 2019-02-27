@@ -694,7 +694,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [GroupTools]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[GroupTools]")
 end 
 
 Module.OnInit = function(self)

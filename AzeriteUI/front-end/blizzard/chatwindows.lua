@@ -718,7 +718,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardChatFrames]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[BlizzardChatFrames]")
 end
 
 Module.OnInit = function(self)

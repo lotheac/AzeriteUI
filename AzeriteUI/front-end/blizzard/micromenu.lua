@@ -439,8 +439,8 @@ end
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardMicroMenu]")
-	CoreLayout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Core]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[BlizzardMicroMenu]")
+	CoreLayout = CogWheel("LibDB"):GetDatabase(PREFIX..":[Core]")
 end
 
 Module.OnInit = function(self)

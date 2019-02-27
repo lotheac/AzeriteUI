@@ -376,7 +376,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [BlizzardTimers]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[BlizzardTimers]")
 end 
 
 Module.OnInit = function(self)

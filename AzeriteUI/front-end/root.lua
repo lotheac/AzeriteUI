@@ -22,7 +22,7 @@ local LoadAddOn = _G.LoadAddOn
 local ReloadUI = _G.ReloadUI
 local SetActionBarToggles = _G.SetActionBarToggles
 
-local L, Layout, PREFIX
+local L, Layout
 
 local Minimap_ZoomInClick = function()
 	if MinimapZoomIn:IsEnabled() then 
@@ -68,13 +68,12 @@ Core.SwitchTo = function(self, editBox, ...)
 end 
 
 Core.PreInit = function(self)
-	PREFIX = ADDON
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Core]")
-	L = CogWheel("LibLocale"):GetLocale(PREFIX)
+	Layout = CogWheel("LibDB"):GetDatabase(self:GetPrefix()..":[Core]")
+	L = CogWheel("LibLocale"):GetLocale(self:GetPrefix())
 end
 
 Core.GetPrefix = function(self)
-	return PREFIX
+	return ADDON
 end
 
 Core.OnInit = function(self)

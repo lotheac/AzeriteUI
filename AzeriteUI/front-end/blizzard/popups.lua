@@ -54,7 +54,7 @@ Module.OnEvent = function(self, event, ...)
 end 
 
 Module.PreInit = function(self)
-	Layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..": Layout [BlizzardPopupStyling]")
+	Layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[BlizzardPopupStyling]")
 end 
 
 Module.OnInit = function(self)

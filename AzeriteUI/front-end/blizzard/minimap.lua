@@ -1349,7 +1349,7 @@ end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..": Layout [Minimap]")
+	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[Minimap]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
 end 
 
