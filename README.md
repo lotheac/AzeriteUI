@@ -25,7 +25,7 @@ You can't. This is as much UX as UI, meaning the interface is designed around a 
 * Patreon: [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui)  
 * PayPal: [www.paypal.me/AzeriteUI](https://www.paypal.me/azeriteui)  
 
-## **Follow AzeriteUI:**  
+## **Follow Azerite Team:**  
 * Discord: [discord.gg/MUSfWXd](https://discord.gg/MUSfWXd)  
 * Twitter: [@AzeriteUI](https://twitter.com/azeriteui)  
 * Instagram: [@AzeriteUI](https://instagram.com/azeriteui/)  
