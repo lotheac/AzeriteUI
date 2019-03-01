@@ -1335,6 +1335,8 @@ Module.OnEvent = function(self, event, ...)
 
 	if (event == "PLAYER_REGEN_ENABLED") then 
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
+		self:UpdateMinimapSize()
+		return 
 	end
 
 	if (event == "PLAYER_ENTERING_WORLD") or (event == "VARIABLES_LOADED") then 
