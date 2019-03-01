@@ -697,7 +697,7 @@ Module.SetUpMinimap = function(self)
 	-- Frame
 	----------------------------------------------------
 	-- This is needed to initialize the map to 
-	-- the most recent version of the libarary.
+	-- the most recent version of the library.
 	-- All other calls will fail without it.
 	self:SyncMinimap() 
 
