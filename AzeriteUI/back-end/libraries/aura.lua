@@ -161,11 +161,12 @@ for target in pairs(LibAura.embeds) do
 end
 
 
---------------------------------------------------------------
+--------------------------------------------------------------------------
 -- InfoFlags
--- The flags in this DB should only describe properties
--- of the auras, and not user choices related to visibility
---------------------------------------------------------------
+-- The flags in this DB should only describe 
+-- generic properties of the auras like type of spell, 
+-- and not user choices related to visibility like who the caster is. 
+--------------------------------------------------------------------------
 
 local IsPlayerSpell 	= tonumber("0000000000000000000000000000000000000000000000000000000000000001", 2) 
 local IsRacialSpell 	= tonumber("0000000000000000000000000000000000000000000000000000000000000010", 2) 
