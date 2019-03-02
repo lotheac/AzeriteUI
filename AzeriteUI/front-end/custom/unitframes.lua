@@ -1809,6 +1809,93 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 		self.UnitStatus.PostUpdate = Layout.UnitStatusPostUpdate
 	end 
 
+	-- Auras
+	-----------------------------------------------------------
+	if Layout.UseAuras then 
+		local auras = content:CreateFrame("Frame")
+		auras:Place(unpack(Layout.AuraFramePlace))
+		auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
+		auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
+		auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons
+		auras.growthX = Layout.AuraGrowthX -- auras grow to the left
+		auras.growthY = Layout.AuraGrowthY -- rows grow downwards (we just have a single row, though)
+		auras.maxVisible = Layout.AuraMax -- when set will limit the number of buttons regardless of space available
+		auras.maxBuffs = Layout.AuraMaxBuffs -- maximum number of visible buffs
+		auras.maxDebuffs = Layout.AuraMaxDebuffs -- maximum number of visible debuffs
+		auras.debuffsFirst = Layout.AuraDebuffsFirst -- show debuffs before buffs
+		auras.showCooldownSpiral = Layout.ShowAuraCooldownSpirals -- don't show the spiral as a timer
+		auras.showCooldownTime = Layout.ShowAuraCooldownTime -- show timer numbers
+		auras.auraFilter = Layout.AuraFilter -- general aura filter, only used if the below aren't here
+		auras.buffFilter = Layout.AuraBuffFilter -- buff specific filter passed to blizzard API calls
+		auras.debuffFilter = Layout.AuraDebuffFilter -- debuff specific filter passed to blizzard API calls
+		auras.AuraFilter = Layout.AuraFilterFunc -- general aura filter function, called when the below aren't there
+		auras.BuffFilter = Layout.BuffFilterFunc -- buff specific filter function
+		auras.DebuffFilter = Layout.DebuffFilterFunc -- debuff specific filter function
+		auras.tooltipDefaultPosition = Layout.AuraTooltipDefaultPosition
+		auras.tooltipPoint = Layout.AuraTooltipPoint
+		auras.tooltipAnchor = Layout.AuraTooltipAnchor
+		auras.tooltipRelPoint = Layout.AuraTooltipRelPoint
+		auras.tooltipOffsetX = Layout.AuraTooltipOffsetX
+		auras.tooltipOffsetY = Layout.AuraTooltipOffsetY
+			
+		self.Auras = auras
+		self.Auras.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
+
+	if Layout.UseBuffs then 
+		local buffs = content:CreateFrame("Frame")
+		buffs:Place(unpack(Layout.BuffFramePlace))
+		buffs:SetSize(unpack(Layout.BuffFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		buffs.auraSize = Layout.BuffSize -- size of the aura. assuming squares. 
+		buffs.spacingH = Layout.BuffSpaceH -- horizontal/column spacing between buttons
+		buffs.spacingV = Layout.BuffSpaceV -- vertical/row spacing between aura buttons
+		buffs.growthX = Layout.BuffGrowthX -- auras grow to the left
+		buffs.growthY = Layout.BuffGrowthY -- rows grow downwards (we just have a single row, though)
+		buffs.maxVisible = Layout.BuffMax -- when set will limit the number of buttons regardless of space available
+		buffs.showCooldownSpiral = Layout.ShowBuffCooldownSpirals -- don't show the spiral as a timer
+		buffs.showCooldownTime = Layout.ShowBuffCooldownTime -- show timer numbers
+		buffs.debuffFilter = Layout.BuffFilter -- general aura filter, only used if the below aren't here
+		buffs.BuffFilter = Layout.BuffFilterFunc -- general aura filter function, called when the below aren't there
+		buffs.tooltipDefaultPosition = Layout.BuffTooltipDefaultPosition
+		buffs.tooltipPoint = Layout.BuffTooltipPoint
+		buffs.tooltipAnchor = Layout.BuffTooltipAnchor
+		buffs.tooltipRelPoint = Layout.BuffTooltipRelPoint
+		buffs.tooltipOffsetX = Layout.BuffTooltipOffsetX
+		buffs.tooltipOffsetY = Layout.BuffTooltipOffsetY
+			
+		self.Buffs = buffs
+		self.Buffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Buffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 
+
+	if Layout.UseDebuffs then 
+		local debuffs = content:CreateFrame("Frame")
+		debuffs:Place(unpack(Layout.DebuffFramePlace))
+		debuffs:SetSize(unpack(Layout.DebuffFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		debuffs.auraSize = Layout.DebuffSize -- size of the aura. assuming squares. 
+		debuffs.spacingH = Layout.DebuffSpaceH -- horizontal/column spacing between buttons
+		debuffs.spacingV = Layout.DebuffSpaceV -- vertical/row spacing between aura buttons
+		debuffs.growthX = Layout.DebuffGrowthX -- auras grow to the left
+		debuffs.growthY = Layout.DebuffGrowthY -- rows grow downwards (we just have a single row, though)
+		debuffs.maxVisible = Layout.DebuffMax -- when set will limit the number of buttons regardless of space available
+		debuffs.showCooldownSpiral = Layout.ShowDebuffCooldownSpirals -- don't show the spiral as a timer
+		debuffs.showCooldownTime = Layout.ShowDebuffCooldownTime -- show timer numbers
+		debuffs.debuffFilter = Layout.DebuffFilter -- general aura filter, only used if the below aren't here
+		debuffs.DebuffFilter = Layout.DebuffFilterFunc -- general aura filter function, called when the below aren't there
+		debuffs.tooltipDefaultPosition = Layout.DebuffTooltipDefaultPosition
+		debuffs.tooltipPoint = Layout.DebuffTooltipPoint
+		debuffs.tooltipAnchor = Layout.DebuffTooltipAnchor
+		debuffs.tooltipRelPoint = Layout.DebuffTooltipRelPoint
+		debuffs.tooltipOffsetX = Layout.DebuffTooltipOffsetX
+		debuffs.tooltipOffsetY = Layout.DebuffTooltipOffsetY
+			
+		self.Debuffs = debuffs
+		self.Debuffs.PostCreateButton = PostCreateAuraButton -- post creation styling
+		self.Debuffs.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
+	end 	
+
 	-- Texts
 	-----------------------------------------------------------
 	-- Unit Name

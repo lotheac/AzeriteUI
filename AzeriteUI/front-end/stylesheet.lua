@@ -3781,6 +3781,51 @@ local UnitFrameParty = setmetatable({
 			PortraitForegroundDrawLayer = { "BACKGROUND", 0 },
 			PortraitForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] }, 
 
+	UseAuras = true, 
+		AuraFrameSize = { 30*3 + 2*5, 30*2 + 5  }, 
+		AuraFramePlace = { "BOTTOM", 0, -(30*2 + 5 + 16) },
+		AuraSize = 30, 
+		AuraSpaceH = 4, 
+		AuraSpaceV = 4, 
+		AuraGrowthX = "RIGHT", 
+		AuraGrowthY = "DOWN", 
+		AuraMax = 6, 
+		AuraMaxBuffs = nil, 
+		AuraMaxDebuffs = nil, 
+		AuraDebuffsFirst = false, 
+		ShowAuraCooldownSpirals = false, 
+		ShowAuraCooldownTime = true, 
+		AuraFilter = nil, 
+		AuraBuffFilter = "PLAYER HELPFUL", 
+		AuraDebuffFilter = "PLAYER HARMFUL", 
+		AuraFilterFunc = Auras:GetFilterFunc("nameplate"), 
+		BuffFilterFunc = Auras:GetFilterFunc("nameplate"), 
+		DebuffFilterFunc = nil, 
+		AuraDisableMouse = true, -- don't allow mouse input here
+		AuraTooltipDefaultPosition = nil, 
+		AuraTooltipPoint = "BOTTOMLEFT", 
+		AuraTooltipAnchor = nil, 
+		AuraTooltipRelPoint = "TOPLEFT", 
+		AuraTooltipOffsetX = -8, 
+		AuraTooltipOffsetY = -16,
+
+		AuraIconPlace = { "CENTER", 0, 0 },
+		AuraIconSize = { 30 - 6, 30 - 6 },
+		AuraIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
+		AuraCountPlace = { "BOTTOMRIGHT", 9, -6 },
+		AuraCountFont = GetFont(12, true),
+		AuraCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+		AuraTimePlace = { "TOPLEFT", -6, 6 },
+		AuraTimeFont = GetFont(11, true),
+		AuraBorderFramePlace = { "CENTER", 0, 0 }, 
+		AuraBorderFrameSize = { 30 + 10, 30 + 10 },
+		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 12 },
+		AuraBorderBackdropColor = { 0, 0, 0, 0 },
+		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
+
+		--PostUpdateAura = NamePlates_Auras_PostUpdate,
+	
+	
 }, { __index = Template_TinyFrame })
 
 -- Raid
