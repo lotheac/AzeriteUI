@@ -863,6 +863,10 @@ local BlizzardChatFrames = {
 	DefaultChatFrameSize = { 499, 176 }, -- 519, 196
 	DefaultClampRectInsets = { -54, -54, -310, -330 },
 
+	AlternateChatFramePlace = { "TOPLEFT", 85, -64 },
+	AlternateChatFrameSize = { 499, 176 }, -- 519, 196
+	AlternateClampRectInsets = { -54, -54, -310, -330 },
+
 	ChatFadeTime = 5, 
 	ChatVisibleTime = 15, 
 	ChatIndentedWordWrap = false, 
@@ -3556,8 +3560,13 @@ local UnitFrameParty = setmetatable({
 
 	Size = { 130, 130 }, -- Add room for portraits
 	Place = { "TOPLEFT", "UICenter", "TOPLEFT", 50, -42 }, -- Position of the initial frame
+		GroupAnchor = "TOPLEFT", 
 		GrowthX = 130, -- Horizontal growth per new unit
 		GrowthY = 0, -- Vertical growth per new unit
+	AlternatePlace = { "BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 56, 360 + 60 }, -- Position of the healermode frame
+		AlternateGroupAnchor = "BOTTOMLEFT", 
+		AlternateGrowthX = 140, -- Horizontal growth per new unit
+		AlternateGrowthY = 0, -- Vertical growth per new unit
 
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = true, -- color disconnected units
@@ -3779,23 +3788,30 @@ local UnitFrameRaid = setmetatable({
 
 	Size = Constant.RaidFrame, 
 	Place = { "TOPLEFT", "UICenter", "TOPLEFT", 64, -42 }, -- Position of the initial frame
+	AlternatePlace = { "BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 64, 360 }, -- Position of the initial frame
 		GroupSizeNormal = 5,
 		GrowthXNormal = 0, -- Horizontal growth per new unit within a group
 		GrowthYNormal = -38 - 4, -- Vertical growth per new unit within a group
+		GrowthYNormalHealerMode = -(-38 - 4), -- Vertical growth per new unit within a group
 		GroupGrowthXNormal = 110, 
 		GroupGrowthYNormal = -(38 + 8)*5 - 10,
+		GroupGrowthYNormalHealerMode = -(-(38 + 8)*5 - 10),
 		GroupColsNormal = 5, 
 		GroupRowsNormal = 1, 
 		GroupAnchorNormal = "TOPLEFT", 
+		GroupAnchorNormalHealerMode = "BOTTOMLEFT", 
 
 		GroupSizeEpic = 8,
 		GrowthXEpic = 0, 
 		GrowthYEpic = -38 - 4,
+		GrowthYEpicHealerMode = -(-38 - 4),
 		GroupGrowthXEpic = 110, 
 		GroupGrowthYEpic = -(38 + 8)*8 - 10,
+		GroupGrowthYEpicHealerMode = -(-(38 + 8)*8 - 10),
 		GroupColsEpic = 5, 
 		GroupRowsEpic = 1, 
 		GroupAnchorEpic = "TOPLEFT", 
+		GroupAnchorEpicHealerMode = "BOTTOMLEFT", 
 
 	HealthSize = Constant.RaidBar, 
 		HealthBackdropSize = { 140 *.94, 90 *.94 },

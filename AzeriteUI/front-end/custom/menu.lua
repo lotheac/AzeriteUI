@@ -188,6 +188,12 @@ local secureSnippets = {
 
 		elseif (updateType == "TOGGLE_MODE") then 
 
+			-- Fire a secure settings update on whatever this setting is attached to
+			local proxyUpdater = self:GetFrameRef("proxyUpdater"); 
+			if proxyUpdater then 
+				proxyUpdater:SetAttribute("change-"..optionName, self:GetAttribute("optionValue")); 
+			end 
+
 			-- Bypass all secure menthods and run it in pure lua
 			self:CallMethod("ToggleMode"); 
 
@@ -322,6 +328,7 @@ Window.ParseOptionsTable = function(self, tbl, parentLevel)
 		button.enabledTitle = data.enabledTitle
 		button.disabledTitle = data.disabledTitle
 		button.proxyModule = data.proxyModule
+		button.useCore = data.useCore
 		button.modeName = data.modeName
 		if data.isSlave then 
 			button:SetAsSlave(data.slaveDB, data.slaveKey)
@@ -408,7 +415,7 @@ Button.OnMouseUp = function(self)
 end 
 
 Button.ToggleMode = function(self)
-	local Module = self.proxyModule and Core:GetModule(self.proxyModule, true)
+	local Module = self.proxyModule and Core:GetModule(self.proxyModule, true) or self.useCore and Core
 	if Module and Module.OnModeToggle then 
 		Module:OnModeToggle(self.modeName)
 		self:Update()
@@ -431,7 +438,7 @@ Button.Update = function(self)
 			return Layout.MenuButton_PostUpdate(self, self.updateType, db, option)
 
 		elseif (self.updateType == "TOGGLE_MODE") then
-			local Module = self.proxyModule and Core:GetModule(self.proxyModule, true)
+			local Module = self.proxyModule and Core:GetModule(self.proxyModule, true) or self.useCore and Core
 			if Module then 
 				return Layout.MenuButton_PostUpdate(self, self.updateType, nil, Module:IsModeEnabled(self.modeName))
 			end 
@@ -638,6 +645,8 @@ Module.PostUpdateOptions = function(self, event, ...)
 
 				if option.proxyModule then 
 					option:SetFrameRef("proxyUpdater", Core:GetModule(option.proxyModule):GetSecureUpdater())
+				elseif option.useCore then 
+					option:SetFrameRef("proxyUpdater", Core:GetSecureUpdater())
 				end 
 
 				option:SetAttribute("optionValue", value)
@@ -649,10 +658,26 @@ Module.PostUpdateOptions = function(self, event, ...)
 
 				if option.proxyModule then 
 					option:SetFrameRef("proxyUpdater", Core:GetModule(option.proxyModule):GetSecureUpdater())
+				elseif option.useCore then 
+					option:SetFrameRef("proxyUpdater", Core:GetSecureUpdater())
 				end 
 
 				option:SetAttribute("optionValue", value)
 				option:Update()
+			elseif (option.updateType == "TOGGLE_MODE") then
+				local proxyUpdater
+				if option.proxyModule then 
+					local Module = Core:GetModule(option.proxyModule)
+					if Module and Module.GetSecureUpdater then 
+						proxyUpdater = Core:GetModule(option.proxyModule):GetSecureUpdater()
+					else 
+					end 
+				elseif option.useCore then 
+					proxyUpdater = Core:GetSecureUpdater()
+				end 
+				if proxyUpdater then 
+					option:SetFrameRef("proxyUpdater", proxyUpdater)
+				end
 			end 
 			if (option.isSlave) then 
 				local attributeName = "DB_"..option.slaveDB.."_"..option.slaveKey
@@ -812,7 +837,7 @@ Module.CreateMenuTable = function(self)
 		})
 	end 
 
-	-- HUD elements
+	-- Blizzard HUD elements
 	table_insert(MenuTable,	{
 		title = L["HUD"], type = nil, hasWindow = true, 
 		buttons = {
@@ -862,6 +887,15 @@ Module.CreateMenuTable = function(self)
 			}
 		})
 	end 
+
+	-- Healer Mode
+	table_insert(MenuTable, {
+		enabledTitle = L["Healer Mode: %s"]:format(L["Enabled"]),
+		disabledTitle = L["Healer Mode: %s"]:format(L["Disabled"]),
+		type = "TOGGLE_VALUE", 
+		configDB = "Core", configKey = "enableHealerMode", 
+		proxyModule = nil, useCore = true, modeName = "HealerMode"
+	})
 	
 end
 
@@ -869,10 +903,11 @@ Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[Core]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	self:CreateMenuTable()
+	--self:CreateMenuTable()
 end
 
 Module.OnInit = function(self)
+	self:CreateMenuTable() -- can we do it here?
 	self:AddOptionsToMenuWindow()
 end 
 

@@ -90,6 +90,16 @@ local _,PlayerLevel = UnitLevel("player")
 -- Secure Snippets
 -----------------------------------------------------------
 local SECURE = {
+
+	-- Called on the group headers
+	FrameTable_Create = [=[ 
+		Frames = table.new(); 
+	]=],
+	FrameTable_InsertCurrentFrame = [=[ 
+		local frame = self:GetFrameRef("CurrentFrame"); 
+		table.insert(Frames, frame); 
+	]=],
+
 	Arena_OnAttribute = [=[
 		if (name == "state-vis") then
 			if (value == "show") then 
@@ -109,7 +119,7 @@ local SECURE = {
 		end 
 		if (name == "change-enablearenaframes") then 
 			self:SetAttribute("enableArenaFrames", value); 
-			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
+			local visibilityFrame = self:GetFrameRef("GroupHeader");
 			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
 			if value then 
 				RegisterAttributeDriver(visibilityFrame, "state-vis", "[@arena1,exists]show;hide"); 
@@ -119,6 +129,7 @@ local SECURE = {
 		end 
 	]=],
 
+	-- Called on the party group header
 	Party_OnAttribute = [=[
 		if (name == "state-vis") then
 			if (value == "show") then 
@@ -132,29 +143,63 @@ local SECURE = {
 			end 
 		end
 	]=], 
+
+	-- Called on the party callback frame
 	Party_SecureCallback = [=[
 		if name then 
 			name = string.lower(name); 
 		end 
 		if (name == "change-enablepartyframes") then 
 			self:SetAttribute("enablePartyFrames", value); 
-			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
+			local visibilityFrame = self:GetFrameRef("GroupHeader");
 			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
 			if value then 
 				RegisterAttributeDriver(visibilityFrame, "state-vis", "%s"); 
 			else 
 				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
 			end 
+		elseif (name == "change-enablehealermode") then 
+
+			local GroupHeader = self:GetFrameRef("GroupHeader"); 
+
+			-- set flag for healer mode 
+			GroupHeader:SetAttribute("inHealerMode", value); 
+
+			-- Update the layout 
+			GroupHeader:RunAttribute("sortFrames"); 
 		end 
 	]=],
 
-	Raid_FrameTable_Create = [=[ 
-		Frames = table.new(); 
+	-- Called on the party frame group header
+	Party_SortFrames = [=[
+		local inHealerMode = self:GetAttribute("inHealerMode"); 
+
+		local anchorPoint; 
+		local anchorFrame; 
+		local growthX; 
+		local growthY; 
+
+		if (not inHealerMode) then 
+			anchorPoint = "%s"; 
+			anchorFrame = self; 
+			growthX = %d;
+			growthY = %d; 
+		else
+			anchorPoint = "%s"; 
+			anchorFrame = self:GetFrameRef("HealerModeAnchor"); 
+			growthX = %d;
+			growthY = %d; 
+		end
+
+		-- Iterate the frames
+		for id,frame in ipairs(Frames) do 
+			frame:ClearAllPoints(); 
+			frame:SetPoint(anchorPoint, anchorFrame, anchorPoint, growthX*(id-1), growthY*(id-1)); 
+		end 
+
 	]=],
-	Raid_FrameTable_InsertCurrentFrame = [=[ 
-		local frame = self:GetFrameRef("CurrentFrame"); 
-		table.insert(Frames, frame); 
-	]=],
+
+	-- Called on the raid frame group header
 	Raid_OnAttribute = [=[
 		if (name == "state-vis") then
 			if (value == "show") then 
@@ -166,80 +211,120 @@ local SECURE = {
 					self:Hide(); 
 				end 
 			end 
+
 		elseif (name == "state-layout") then
 			local groupLayout = self:GetAttribute("groupLayout"); 
-			if (groupLayout ~= value) or true then 
-
-				local colSize; 
-				local growthX;
-				local growthY;
-				local groupGrowthX;
-				local groupGrowthY;
-				local groupCols;
-				local groupRows;
-				local groupAnchor;
-
-				if (value == "normal") then 
-					colSize = %d;
-					growthX = %d;
-					growthY = %d;
-					groupGrowthX = %d;
-					groupGrowthY = %d;
-					groupCols = %d;
-					groupRows = %d;
-					groupAnchor = "%s";
-
-				elseif (value == "epic") then 
-					colSize = %d;
-					growthX = %d;
-					growthY = %d;
-					groupGrowthX = %d;
-					groupGrowthY = %d;
-					groupCols = %d;
-					groupRows = %d;
-					groupAnchor = "%s";
-				end
-
-				-- This should never happen: it does!
-				if not colSize then 
-					return 
-				end 
-
-				-- Iterate the frames
-				for id,frame in ipairs(Frames) do 
-
-					local groupID = floor((id-1)/colSize) + 1; 
-					local groupX = mod(groupID-1,groupCols) * groupGrowthX; 
-					local groupY = floor((groupID-1)/groupCols) * groupGrowthY; 
-
-					local modID = mod(id-1,colSize) + 1;
-					local unitX = growthX*(modID-1) + groupX;
-					local unitY = growthY*(modID-1) + groupY;
-
-					frame:ClearAllPoints(); 
-					frame:SetPoint(groupAnchor, self, groupAnchor, unitX, unitY); 
-				end 
+			if (groupLayout ~= value) then 
 
 				-- Store the new layout setting
 				self:SetAttribute("groupLayout", value);
+
+				-- Update the layout 
+				self:RunAttribute("sortFrames"); 
 			end 
 		end
 	]=],
+
+	-- Called on the secure updater 
 	Raid_SecureCallback = [=[
 		if name then 
 			name = string.lower(name); 
 		end 
 		if (name == "change-enableraidframes") then 
 			self:SetAttribute("enableRaidFrames", value); 
-			local visibilityFrame = self:GetFrameRef("VisibilityFrame");
+			local visibilityFrame = self:GetFrameRef("GroupHeader");
 			UnregisterAttributeDriver(visibilityFrame, "state-vis"); 
 			if value then 
 				RegisterAttributeDriver(visibilityFrame, "state-vis", "%s"); 
 			else 
 				RegisterAttributeDriver(visibilityFrame, "state-vis", "hide"); 
 			end 
+		elseif (name == "change-enablehealermode") then 
+
+			local GroupHeader = self:GetFrameRef("GroupHeader"); 
+
+			-- set flag for healer mode 
+			GroupHeader:SetAttribute("inHealerMode", value); 
+
+			-- Update the layout 
+			GroupHeader:RunAttribute("sortFrames"); 
 		end 
-		
+	]=], 
+
+	-- Called on the raid frame group header
+	Raid_SortFrames = [=[
+		local groupLayout = self:GetAttribute("groupLayout"); 
+		local inHealerMode = self:GetAttribute("inHealerMode"); 
+
+		local anchor; 
+		local colSize; 
+		local growthX;
+		local growthY;
+		local growthYHealerMode;
+		local groupGrowthX;
+		local groupGrowthY; 
+		local groupGrowthYHealerMode; 
+		local groupCols;
+		local groupRows;
+		local groupAnchor; 
+		local groupAnchorHealerMode; 
+
+		if (groupLayout == "normal") then 
+			colSize = %d;
+			growthX = %d;
+			growthY = %d;
+			growthYHealerMode = %d;
+			groupGrowthX = %d;
+			groupGrowthY = %d;
+			groupGrowthYHealerMode = %d;
+			groupCols = %d;
+			groupRows = %d;
+			groupAnchor = "%s";
+			groupAnchorHealerMode = "%s"; 
+
+		elseif (groupLayout == "epic") then 
+			colSize = %d;
+			growthX = %d;
+			growthY = %d;
+			growthYHealerMode = %d;
+			groupGrowthX = %d;
+			groupGrowthY = %d;
+			groupGrowthYHealerMode = %d;
+			groupCols = %d;
+			groupRows = %d;
+			groupAnchor = "%s";
+			groupAnchorHealerMode = "%s"; 
+		end
+
+		-- This should never happen: it does!
+		if (not colSize) then 
+			return 
+		end 
+
+		if inHealerMode then 
+			anchor = self:GetFrameRef("HealerModeAnchor"); 
+			growthY = growthYHealerMode; 
+			groupAnchor = groupAnchorHealerMode; 
+			groupGrowthY = groupGrowthYHealerMode;
+		else
+			anchor = self; 
+		end
+
+		-- Iterate the frames
+		for id,frame in ipairs(Frames) do 
+
+			local groupID = floor((id-1)/colSize) + 1; 
+			local groupX = mod(groupID-1,groupCols) * groupGrowthX; 
+			local groupY = floor((groupID-1)/groupCols) * groupGrowthY; 
+
+			local modID = mod(id-1,colSize) + 1;
+			local unitX = growthX*(modID-1) + groupX;
+			local unitY = growthY*(modID-1) + groupY;
+
+			frame:ClearAllPoints(); 
+			frame:SetPoint(groupAnchor, anchor, groupAnchor, unitX, unitY); 
+		end 
+
 	]=]
 }
 
@@ -266,12 +351,12 @@ local CreateSecureCallbackFrame = function(module, header, db, script)
 	local callbackFrame = module:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 
 	-- Attach the module's visibility frame to the proxy
-	callbackFrame:SetFrameRef("VisibilityFrame", header)
+	callbackFrame:SetFrameRef("GroupHeader", header)
 
 	-- Register module db with the secure proxy
 	if db then 
 		for key,value in pairs(db) do 
-		callbackFrame:SetAttribute(key,value)
+			callbackFrame:SetAttribute(key,value)
 		end 
 	end
 
@@ -977,12 +1062,8 @@ end
 -----------------------------------------------------------
 -- Templates
 -----------------------------------------------------------
-local StyleSmallFrame = function(self, unit, id, Layout, ...)
-
-	-- Frame
-	-----------------------------------------------------------
-	self:SetSize(unpack(Layout.Size)) 
-
+-- Boss, Arena
+local positionHeaderFrame = function(self, unit, id, Layout)
 	-- Todo: iterate on this for a grid layout
 	local id = tonumber(id)
 	if id then 
@@ -999,11 +1080,24 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 				place[#place + 1] = growthY
 			end 
 		end 
-
 		self:Place(unpack(place))
 	else 
 		self:Place(unpack(Layout.Place)) 
 	end
+end
+
+-- Boss, Arena, Pet, Focus, ToT
+local StyleSmallFrame = function(self, unit, id, Layout, ...)
+
+	-- Frame
+	-----------------------------------------------------------
+	self:SetSize(unpack(Layout.Size)) 
+
+	if (unit:match("^arena(%d+)")) or (unit:match("^boss(%d+)")) then 
+		positionHeaderFrame(self, unit, id, Layout)
+	else
+		self:Place(unpack(Layout.Place)) 
+	end 
 
 	if Layout.FrameLevel then 
 		self:SetFrameLevel(self:GetFrameLevel() + Layout.FrameLevel)
@@ -1398,59 +1492,12 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 
 end
 
-local StyleTinyFrame = function(self, unit, id, Layout, ...)
+-- Party
+local StylePartyFrame = function(self, unit, id, Layout, ...)
 
 	-- Frame
 	-----------------------------------------------------------
 	self:SetSize(unpack(Layout.Size)) 
-
-	-- Todo: iterate on this for a grid layout
-	local id = tonumber(id)
-	if id then 
-
-		-- Array to calculate the position of this specific frame
-		local place = { unpack(Layout.Place) }
-
-		-- Growth internally in groups
-		local growthX = Layout.GrowthX
-		local growthY = Layout.GrowthY
-
-		if Layout.GroupSize then 
-			-- Group layouts
-			local groupGrowthX = Layout.GroupGrowthX
-			local groupGrowthY = Layout.GroupGrowthY
-			local groupSize = Layout.GroupSize
-			local groupCols = Layout.GroupCols
-			local groupRows = Layout.GroupRows
-
-			local groupID = math_floor((id-1)/groupSize) + 1
-			local groupX = ((groupID-1)%groupCols) * groupGrowthX
-			local groupY = math_floor((groupID-1)/groupCols) * groupGrowthY
-
-			local modID = (id-1)%groupSize + 1
-
-			if (type(place[#place]) == "number") then 
-				place[#place - 1] = place[#place - 1] + growthX*(modID-1) + groupX
-				place[#place] = place[#place] + growthY*(modID-1) + groupY
-			else 
-				place[#place + 1] = growthX + groupX
-				place[#place + 1] = growthY + groupY
-			end 
-		else 
-			if (type(place[#place]) == "number") then 
-				place[#place - 1] = place[#place - 1] + growthX*(id-1)
-				place[#place] = place[#place] + growthY*(id-1)
-			else 
-				place[#place + 1] = growthX
-				place[#place + 1] = growthY
-			end 
-		end 
-
-
-		self:Place(unpack(place))
-	else 
-		self:Place(unpack(Layout.Place)) 
-	end
 
 	if Layout.FrameLevel then 
 		self:SetFrameLevel(self:GetFrameLevel() + Layout.FrameLevel)
@@ -1868,6 +1915,7 @@ local StyleTinyFrame = function(self, unit, id, Layout, ...)
 
 end
 
+-- Raid
 local StyleRaidFrame = function(self, unit, id, Layout, ...)
 
 	-- Frame
@@ -3964,7 +4012,7 @@ UnitStyles.StylePartyFrames = function(self, unit, id, Layout, ...)
 		fakePartyId = fakePartyId + 1
 		id = fakePartyId
 	end 
-	return StyleTinyFrame(self, unit, id, Layout, ...)
+	return StylePartyFrame(self, unit, id, Layout, ...)
 end
 
 UnitStyles.StyleRaidFrames = function(self, unit, id, Layout, ...)
@@ -4181,6 +4229,24 @@ UnitFrameParty.OnInit = function(self)
 	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameParty]")
 
 	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame:SetSize(unpack(self.layout.Size))
+	self.frame:Place(unpack(self.layout.Place))
+	
+	self.frame.healerAnchor = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame.healerAnchor:SetSize(unpack(self.layout.Size))
+	self.frame.healerAnchor:Place(unpack(self.layout.AlternatePlace)) 
+	self.frame:SetFrameRef("HealerModeAnchor", self.frame.healerAnchor)
+
+	self.frame:Execute(SECURE.FrameTable_Create)
+	self.frame:SetAttribute("inHealerMode", self:GetConfig("Core").enableHealerMode)
+	self.frame:SetAttribute("sortFrames", SECURE.Party_SortFrames:format(
+		self.layout.GroupAnchor, 
+		self.layout.GrowthX, 
+		self.layout.GrowthY, 
+		self.layout.AlternateGroupAnchor, 
+		self.layout.AlternateGrowthX, 
+		self.layout.AlternateGrowthY 
+	))
 	self.frame:SetAttribute("_onattributechanged", SECURE.Party_OnAttribute)
 
 	-- Hide it in raids of 6 or more players 
@@ -4195,12 +4261,21 @@ UnitFrameParty.OnInit = function(self)
 	local style = function(frame, unit, id, _, ...)
 		return UnitStyles.StylePartyFrames(frame, unit, id, self.layout, ...)
 	end
+
 	for i = 1,4 do 
-		self.frame[tostring(i)] = self:SpawnUnitFrame(dev and "player" or "party"..i, self.frame, Style)
+		local frame = self:SpawnUnitFrame(dev and "player" or "party"..i, self.frame, style)
+		self.frame[tostring(i)] = frame
+		self.frame:SetFrameRef("CurrentFrame", frame)
+		self.frame:Execute(SECURE.FrameTable_InsertCurrentFrame)
 	end 
+
+	self.frame:Execute(self.frame:GetAttribute("sortFrames"))
 
 	-- Create a secure proxy updater for the menu system
 	CreateSecureCallbackFrame(self, self.frame, self.db, SECURE.Party_SecureCallback:format(visDriver))
+
+	-- Reference the group header with the sorting method
+	--self:GetSecureUpdater():SetFrameRef("GroupHeader", self.frame)
 end 
 
 -----------------------------------------------------------
@@ -4216,27 +4291,40 @@ UnitFrameRaid.OnInit = function(self)
 	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[UnitFrameRaid]")
 
 	self.frame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
-	self.frame:Place(unpack(self.layout.Place))
 	self.frame:SetSize(1,1)
-	self.frame:Execute(SECURE.Raid_FrameTable_Create)
-	self.frame:SetAttribute("_onattributechanged", SECURE.Raid_OnAttribute:format(
+	self.frame:Place(unpack(self.layout.Place)) 
+	self.frame.healerAnchor = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	self.frame.healerAnchor:SetSize(1,1)
+	self.frame.healerAnchor:Place(unpack(self.layout.AlternatePlace)) 
+	self.frame:SetFrameRef("HealerModeAnchor", self.frame.healerAnchor)
+	self.frame:Execute(SECURE.FrameTable_Create)
+	self.frame:SetAttribute("inHealerMode", self:GetConfig("Core").enableHealerMode)
+	self.frame:SetAttribute("sortFrames", SECURE.Raid_SortFrames:format(
 		self.layout.GroupSizeNormal, 
 		self.layout.GrowthXNormal,
 		self.layout.GrowthYNormal,
+		self.layout.GrowthYNormalHealerMode,
 		self.layout.GroupGrowthXNormal,
 		self.layout.GroupGrowthYNormal,
+		self.layout.GroupGrowthYNormalHealerMode,
 		self.layout.GroupColsNormal,
 		self.layout.GroupRowsNormal,
 		self.layout.GroupAnchorNormal, 
+		self.layout.GroupAnchorNormalHealerMode, 
+
 		self.layout.GroupSizeEpic,
 		self.layout.GrowthXEpic,
 		self.layout.GrowthYEpic,
+		self.layout.GrowthYEpicHealerMode,
 		self.layout.GroupGrowthXEpic,
 		self.layout.GroupGrowthYEpic,
+		self.layout.GroupGrowthYEpicHealerMode,
 		self.layout.GroupColsEpic,
 		self.layout.GroupRowsEpic,
-		self.layout.GroupAnchorEpic
+		self.layout.GroupAnchorEpic,
+		self.layout.GroupAnchorEpicHealerMode
 	))
+	self.frame:SetAttribute("_onattributechanged", SECURE.Raid_OnAttribute)
 
 	-- Kill off the blizzard frames and leader tools
 	-- *todo: make this a user choice
@@ -4256,7 +4344,7 @@ UnitFrameRaid.OnInit = function(self)
 		local frame = self:SpawnUnitFrame(dev and "player" or "raid"..i, self.frame, style)
 		self.frame[tostring(i)] = frame
 		self.frame:SetFrameRef("CurrentFrame", frame)
-		self.frame:Execute(SECURE.Raid_FrameTable_InsertCurrentFrame)
+		self.frame:Execute(SECURE.FrameTable_InsertCurrentFrame)
 	end 
 
 	-- Register the layout driver
@@ -4264,5 +4352,8 @@ UnitFrameRaid.OnInit = function(self)
 
 	-- Create a secure proxy updater for the menu system
 	CreateSecureCallbackFrame(self, self.frame, self.db, SECURE.Raid_SecureCallback:format(visDriver))
+
+	-- Reference the group header with the sorting method
+	--self:GetSecureUpdater():SetFrameRef("GroupHeader", self.frame)
 end 
 

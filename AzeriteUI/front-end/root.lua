@@ -1,7 +1,7 @@
 local ADDON = ...
 
 -- Wooh! 
-local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibEvent", "LibBlizzard", "LibFrame", "LibSlash", "LibMenu")
+local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibEvent", "LibBlizzard", "LibFrame", "LibSlash")
 
 -- Tell the back-end what addon to look for before 
 -- initializing this module and all its submodules. 
@@ -22,7 +22,34 @@ local LoadAddOn = _G.LoadAddOn
 local ReloadUI = _G.ReloadUI
 local SetActionBarToggles = _G.SetActionBarToggles
 
-local L, Layout
+local defaults = {
+	enableHealerMode = false
+}
+
+local SECURE = {
+	HealerMode_SecureCallback = [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enablehealermode") then 
+			self:SetAttribute("enableHealerMode", value); 
+
+			-- secure callbacks 
+			local extraProxy; 
+			local id = 0; 
+			repeat
+				id = id + 1
+				extraProxy = self:GetFrameRef("ExtraProxy"..id)
+				if extraProxy then 
+					extraProxy:SetAttribute(name, value); 
+				end
+			until (not extraProxy) 
+
+			-- Lua callbacks
+			self:CallMethod("OnModeToggle"); 
+		end 
+	]=]
+}
 
 local Minimap_ZoomInClick = function()
 	if MinimapZoomIn:IsEnabled() then 
@@ -67,19 +94,66 @@ Core.SwitchTo = function(self, editBox, ...)
 	end  
 end 
 
-Core.PreInit = function(self)
-	Layout = CogWheel("LibDB"):GetDatabase(self:GetPrefix()..":[Core]")
-	L = CogWheel("LibLocale"):GetLocale(self:GetPrefix())
+Core.IsModeEnabled = function(self, modeName)
+	if (modeName == "HealerMode") then 
+		return self.db.enableHealerMode 
+	end
 end
 
 Core.GetPrefix = function(self)
 	return ADDON
 end
 
+Core.GetSecureUpdater = function(self)
+	if (not self.proxyUpdater) then 
+
+		-- Create a secure proxy frame for the menu system
+		local callbackFrame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+
+		-- Lua callback to proxy the setting to the chat window module
+		callbackFrame.OnModeToggle = function(callbackFrame)
+			local ChatWindows = self:GetModule("ChatWindows", true)
+			if (ChatWindows and ChatWindows.OnModeToggle) then 
+				ChatWindows:OnModeToggle("HealerMode")
+			end
+		end
+
+		-- Register module db with the secure proxy
+		if db then 
+			for key,value in pairs(db) do 
+				callbackFrame:SetAttribute(key,value)
+			end 
+		end
+
+		-- Now that attributes have been defined, attach the onattribute script
+		callbackFrame:SetAttribute("_onattributechanged", SECURE.HealerMode_SecureCallback)
+
+		self.proxyUpdater = callbackFrame
+	end
+
+	-- Return the proxy updater to the module
+	return self.proxyUpdater
+end
+
+Core.UpdateSecureUpdater = function(self)
+	local proxyUpdater = self:GetSecureUpdater()
+
+	local count = 0
+	for i,moduleName in ipairs({ "UnitFrameParty", "UnitFrameRaid" }) do 
+		local module = self:GetModule(moduleName)
+		if module then 
+			count = count + 1
+			proxyUpdater:SetFrameRef("ExtraProxy"..count, module:GetSecureUpdater())
+		end
+	end
+end
+
 Core.OnInit = function(self)
+	self.db = self:NewConfig("Core", defaults, "global")
+	self.layout = CogWheel("LibDB"):GetDatabase(self:GetPrefix()..":[Core]")
 
 	-- Hide the entire UI from the start
-	if Layout.FadeInUI then 
+	if self.layout.FadeInUI then 
 		self:GetFrame("UICenter"):SetAlpha(0)
 	end
 
@@ -90,14 +164,16 @@ Core.OnInit = function(self)
 		EnableAddOn(v)
 		LoadAddOn(v)
 	end
-	
+
+	-- Force-initialize the secure callback system for the menu
+	self:GetSecureUpdater()
 end 
 
 Core.OnEnable = function(self)
 
 	-- Disable most of the BlizzardUI, to give room for our own!
 	------------------------------------------------------------------------------------
-	for widget, state in pairs(Layout.DisableUIWidgets) do 
+	for widget, state in pairs(self.layout.DisableUIWidgets) do 
 		if state then 
 			self:DisableUIWidget(widget)
 		end 
@@ -107,7 +183,7 @@ Core.OnEnable = function(self)
 	-- Disable complete interface options menu pages we don't need
 	------------------------------------------------------------------------------------
 	local updateBarToggles
-	for id,page in pairs(Layout.DisableUIMenuPages) do 
+	for id,page in pairs(self.layout.DisableUIMenuPages) do 
 		if (page.ID == 5) or (page.Name == "InterfaceOptionsActionBarsPanel") then 
 			updateBarToggles = true 
 		end 
@@ -129,10 +205,10 @@ Core.OnEnable = function(self)
 
 	-- Add chat command to fast switch to other UIs 
 	------------------------------------------------------------------------------------
-	if Layout.UseEasySwitch then 
+	if self.layout.UseEasySwitch then 
 		local counter = 0
 		local easySwitch = { Addons = {}, Cmd = {} }
-		for addon,list in pairs(Layout.EasySwitch) do 
+		for addon,list in pairs(self.layout.EasySwitch) do 
 			if self:IsAddOnAvailable(addon) then 
 				counter = counter + 1
 				easySwitch.Addons[addon] = list
@@ -149,31 +225,27 @@ Core.OnEnable = function(self)
 		end 
 	end 
 
-	if Layout.FadeInUI or Layout.ShowWelcomeMessage then 
+	if self.layout.FadeInUI or self.layout.ShowWelcomeMessage then 
 		self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
-		if Layout.FadeInUI then 
+		if self.layout.FadeInUI then 
 			self:RegisterEvent("PLAYER_LEAVING_WORLD", "OnEvent")
 		end
 	end 
 
-	-- Add an options menu for the modules to hook into 
-	------------------------------------------------------------------------------------
-	if Layout.UseMenu then 
-		local menu = self:CreateOptionsMenu(ADDON)
-		self.menu = menu
-	end 
+	-- Make sure frame references to secure frames are in place
+	self:UpdateSecureUpdater()
 end 
 
 Core.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
-		if Layout.FadeInUI then 
+		if self.layout.FadeInUI then 
 			self.frame = self.frame or CreateFrame("Frame")
 			self.frame.alpha = 0
 			self.frame.elapsed = 0
 			self.frame.totalDelay = 0
 			self.frame.totalElapsed = 0
-			self.frame.fadeDuration = Layout.FadeInSpeed or 1.5
-			self.frame.delayDuration = Layout.FadeInDelay or 1.5
+			self.frame.fadeDuration = self.layout.FadeInSpeed or 1.5
+			self.frame.delayDuration = self.layout.FadeInDelay or 1.5
 			self.frame:SetScript("OnUpdate", function(self, elapsed) 
 				self.elapsed = self.elapsed + elapsed
 				if (self.elapsed < 1/60) then 
@@ -205,7 +277,7 @@ Core.OnEvent = function(self, event, ...)
 			end)
 		end
 	elseif (event == "PLAYER_LEAVING_WORLD") then
-		if Layout.FadeInUI then 
+		if self.layout.FadeInUI then 
 			if self.frame then 
 				self.frame:SetScript("OnUpdate", nil)
 				self.alpha = 0

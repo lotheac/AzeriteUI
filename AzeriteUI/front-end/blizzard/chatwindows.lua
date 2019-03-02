@@ -616,6 +616,7 @@ Module.SetUpMainFrames = function(self)
 	local frame = self:CreateFrame("Frame", nil, "UICenter")
 	frame:SetPoint(unpack(Layout.DefaultChatFramePlace))
 	frame:SetSize(unpack(Layout.DefaultChatFrameSize))
+	self.frame = frame
 
 	self:HandleAllChatWindows()
 	self:SetChatWindowAsSlaveTo(ChatFrame1, frame)
@@ -623,7 +624,6 @@ Module.SetUpMainFrames = function(self)
 	FCF_SetWindowColor(ChatFrame1, 0, 0, 0, 0)
 	FCF_SetWindowAlpha(ChatFrame1, 0, 1)
 	FCF_UpdateButtonSide(ChatFrame1)
-
 end 
 
 Module.SetUpButton = function(self, button, texture)
@@ -707,6 +707,26 @@ Module.SetUpMainButtons = function(self)
 	end 
 end 
 
+Module.UpdateChatDockPosition = function(self)
+	local frame = self.frame 
+	if frame then 
+		local coreDB = self:GetConfig("Core")
+		if (coreDB and coreDB.enableHealerMode) then 
+			frame:ClearAllPoints()
+			frame:SetPoint(unpack(Layout.AlternateChatFramePlace))
+		else 
+			frame:ClearAllPoints()
+			frame:SetPoint(unpack(Layout.DefaultChatFramePlace))
+		end
+	end
+end
+
+Module.OnModeToggle = function(self, modeName)
+	if (modeName == "HealerMode") then 
+		self:UpdateChatDockPosition()
+	end
+end
+
 Module.OnEvent = function(self, event, ...)
 	self:UpdateMainWindowButtonDisplay()
 
@@ -727,6 +747,7 @@ Module.OnInit = function(self)
 	self:SetUpMainFrames()
 	self:SetUpMainButtons()
 	self:UpdateChatWindowScales()
+	self:UpdateChatDockPosition()
 end 
 
 Module.OnEnable = function(self)
