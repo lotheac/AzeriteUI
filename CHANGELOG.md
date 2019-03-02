@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.112-Alpha] 2019-03-02
+## [1.2.113-Alpha] 2019-03-02
 ### Added
 - Healer Mode! This mode found on top of the menu changes the layout of group frames and chat windows with a single click, bringing all friendly frames together and hopefully will make it a bit easier for healers in the future! This is one of many feature improvements we are working on, and more will be added during the course of the 1.2-Alpha. 
 - Added your own friendly auras to the party frames. This is not intended as a full aura display, but rather as a way for healers to easier be able to track shields, HoTs, things like that. A prioritized debuff display is also planned and will be added later in the 1.2-Alpha, but it is not part of the standard aura display beneath their frames, as this is currently only meant to track healing. 
