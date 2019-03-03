@@ -17,7 +17,7 @@ Module.OnInit = function(self)
 end 
 
 Module.OnEnable = function(self)
-	self:EnableBubbleStyling(true)
+	self:EnableBubbleStyling()
 	self:SetBubblePostCreateFunc(PostCreateBubble)
 	self:SetBubblePostCreateFunc(PostUpdateBubble)
 end 
