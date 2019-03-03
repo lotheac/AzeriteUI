@@ -1,4 +1,4 @@
-local LibHook = CogWheel:Set("LibHook", 3)
+local LibHook = CogWheel:Set("LibHook", 4)
 if (not LibHook) then	
 	return
 end
@@ -40,7 +40,7 @@ end
 LibHook.ClearHook = function(self, frame, handler, hook, uniqueID)
 	check(frame, 1, "table")
 	check(handler, 2, "string")
-	check(hook, 3, "function")
+	check(hook, 3, "function", "string")
 
 	if (not Hooks[frame]) or (not Hooks[frame][handler]) then 
 		return 

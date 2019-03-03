@@ -1,4 +1,4 @@
-local LibSecureHook = CogWheel:Set("LibSecureHook", 5)
+local LibSecureHook = CogWheel:Set("LibSecureHook", 6)
 if (not LibSecureHook) then	
 	return
 end
@@ -44,7 +44,7 @@ LibSecureHook.ClearSecureHook = function(self, ...)
 		local global, hook = ...
 
 		check(global, 1, "string")
-		check(hook, 2, "function")
+		check(hook, 2, "function", "string")
 
 		local ref = _G[global]
 		local hookList = SecureHooks[ref]
@@ -63,7 +63,7 @@ LibSecureHook.ClearSecureHook = function(self, ...)
 
 		check(global, 1, "table")
 		check(method, 2, "string")
-		check(hook, 3, "function")
+		check(hook, 3, "function", "string")
 
 		local ref = global[method]
 		if (not ref) then 
