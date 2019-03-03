@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.114-Beta] 2019-03-03
+- Let's call this version a beta, as the Healer Mode feature appear to be working as intended. 
+
 ## [1.2.114-Alpha] 2019-03-03
 ### Changed
 - Reduced number of buffs on party frames from 6 to 3, as this is only a tool meant to show the player's own beneficial shields and HoTs on the party. We are adding a special debuff display for boss auras and dispellable debuffs, and some special player abilities like Atonement and a few others we're still working out. 
