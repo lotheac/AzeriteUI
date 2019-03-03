@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 44)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 45)
 if (not LibSecureButton) then	
 	return
 end
@@ -1146,16 +1146,18 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	]=])
 
 	-- Add a page driver layer, basically a fake bar for the current button
+	-- 
 	-- *Note that the functions meant to check for the various types of bars
 	--  sometimes will return 'false' directly after a page change, when they should be 'true'. 
 	--  No idea as to why this randomly happens, but the macro driver at least responds correctly, 
 	--  and the bar index can still be retrieved correctly, so for now we just skip the checks. 
-	
-	-- HasVehicleActionBar()
-	-- HasOverrideActionBar()
-	-- HasTempShapeshiftActionBar()
-	-- HasBonusActionBar()
-
+	-- 
+	-- Affected functions, which we choose to avoid/work around here: 
+	-- 		HasVehicleActionBar()
+	-- 		HasOverrideActionBar()
+	-- 		HasTempShapeshiftActionBar()
+	-- 		HasBonusActionBar()
+	-- 
 	local page = visibility:CreateFrame("Frame", nil, "SecureHandlerAttributeTemplate")
 	page.id = barID
 	page:SetID(barID) 
@@ -1300,7 +1302,6 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 
 	local driver 
 	if (barID == 1) then 
-		--driver = "[vehicleui][overridebar][possessbar][shapeshift]possess; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
 		driver = "[vehicleui]vehicle; [overridebar]override; [possessbar]possess; [shapeshift]shapeshift; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
 
 		local _, playerClass = UnitClass("player")
