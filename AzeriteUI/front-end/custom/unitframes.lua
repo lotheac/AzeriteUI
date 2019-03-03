@@ -4369,7 +4369,7 @@ end
 -- Raid
 -----------------------------------------------------------
 UnitFrameRaid.OnInit = function(self)
-	local dev --= true
+	local dev -- = true
 	local defaults = {
 		enableRaidFrames = true
 	}
