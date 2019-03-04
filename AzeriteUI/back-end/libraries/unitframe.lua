@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 54)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 55)
 if (not LibUnitFrame) then	
 	return
 end
@@ -40,6 +40,7 @@ local FriendsDropDown = _G.FriendsDropDown
 local ShowBossFrameWhenUninteractable = _G.ShowBossFrameWhenUninteractable
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 local UnitExists = _G.UnitExists
+local UnitGUID = _G.UnitGUID
 
 -- Library Registries
 LibUnitFrame.embeds = LibUnitFrame.embeds or {} -- who embeds this?
@@ -328,6 +329,20 @@ UnitFrame.OverrideAllElements = function(self, event, ...)
 	return self:UpdateAllElements(event, ...)
 end
 
+-- Special method that only updates the elements if the GUID has changed. 
+-- Intention is to avoid performance drops from people coming and going in PuG raids. 
+UnitFrame.OverrideAllElementsOnChangedGUID = function(self, event, ...)
+	local unit = self.unit
+	if (not unit) or (not (UnitExists(unit) or ShowBossFrameWhenUninteractable(unit))) then 
+		return 
+	end
+	local currentGUID = UnitGUID(unit)
+	if (self.unitGUID ~= currentGUID) then 
+		self.unitGUID = currentGUID
+		return self:UpdateAllElements(event, ...)
+	end
+end
+
 local UpdatePet = function(self, event, unit)
 	local petUnit
 	if (unit == "target") then
@@ -431,7 +446,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 
 	elseif (unit:match("^raid(%d+)")) then 
 		frame.unitGroup = "raid"
-		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
+		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElementsOnChangedGUID, true)
 		frame:RegisterEvent("UNIT_PET", UpdatePet)
 
 		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)

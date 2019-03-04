@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 15)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 16)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -136,6 +136,7 @@ WidgetFrame.OnUnitChanged = function(self, unit)
 	if (self.unit ~= unit) then
 		self.unit = unit
 		self.id = tonumber(string_match(unit, "^.-(%d+)"))
+		self.unitGUID = nil -- really?
 
 		-- Update all unit events
 		for event in pairs(unitEvents) do 
