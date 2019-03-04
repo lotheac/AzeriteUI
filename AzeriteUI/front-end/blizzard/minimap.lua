@@ -714,6 +714,17 @@ Module.SetUpMinimap = function(self)
 	-- Using tested versions from DiabolicUI, which makes the map IMO much more readable. 
 	self:SetMinimapBlobAlpha(unpack(Layout.BlobAlpha)) 
 
+	if Layout.UseBlipTextures then 
+		for patch,path in pairs(Layout.BlipTextures) do 
+			self:SetMinimapBlips(path, patch)
+		end
+	end
+
+	if Layout.BlipScale then 
+		self:SetMinimapScale(Layout.BlipScale)
+	end
+
+
 	-- Minimap Buttons
 	----------------------------------------------------
 	-- We don't want them, simple as that.

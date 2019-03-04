@@ -1199,7 +1199,13 @@ local Minimap = {
 	Size = { 213, 213 }, 
 	Place = { "BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -58, 59 }, 
 	MaskTexture = GetMedia("minimap_mask_circle_transparent"),
-	BlobAlpha = { 0, 127, 0, 0 }, -- blobInside, blobOutside, ringOutside, ringInside 
+	BlobAlpha = { 0, 96, 0, 0 }, -- blobInside, blobOutside, ringOutside, ringInside 
+
+	UseBlipTextures = true, 
+		BlipScale = 1.15, 
+		BlipTextures = {
+			["8.1.0"] = GetMedia("Blip-Nandini-New")
+		},
 
 	-- Allow addon minimap buttons
 	-- *note that enabling this isn't recommended as most addons don't handle buttons properly, 
@@ -1349,6 +1355,7 @@ local Minimap = {
 		GroupFinderEyeTexture = GetMedia("group-finder-eye-green"),
 		GroupFinderEyeColor = { .90, .95, 1 }, 
 		GroupFinderQueueStatusPlace = { "BOTTOMRIGHT", _G.QueueStatusMinimapButton, "TOPLEFT", 0, 0 }
+		
 }
 
 -- NamePlates
