@@ -1,5 +1,5 @@
-local Version = 28 -- This library's version 
-local MapVersion = 28 -- Minimap library version the minimap created by this is compatible with
+local Version = 30 -- This library's version 
+local MapVersion = 30 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -79,6 +79,7 @@ LibMinimap.buttonBag:Hide() -- icons aren't hidden without this /doh
 LibMinimap.baggedButtonsChecked = LibMinimap.baggedButtonsChecked or {} -- buttons already checked
 LibMinimap.baggedButtonsHidden = LibMinimap.baggedButtonsHidden or {} -- buttons we have hidden 
 LibMinimap.baggedButtonsIgnored = LibMinimap.baggedButtonsIgnored or {} -- buttons we're ignoring
+LibMinimap.minimapScale = LibMinimap.minimapScale or 1 -- current minimap scale
 LibMinimap.numBaggedButtons = LibMinimap.numBaggedButtons or 0 -- current count of hidden buttons
 
 -- Button bag icon list imported from GUI4's last updated list from Feb 1st 2018.
@@ -165,6 +166,8 @@ local RegisterEvent = ElementHandler_MT.__index.RegisterEvent
 local RegisterUnitEvent = ElementHandler_MT.__index.RegisterUnitEvent
 local UnregisterEvent = ElementHandler_MT.__index.UnregisterEvent
 local UnregisterAllEvents = ElementHandler_MT.__index.UnregisterAllEvents
+local SetScale = ElementHandler_MT.__index.UnregisterAllEvents
+local SetSize = ElementHandler_MT.__index.UnregisterAllEvents
 
 local IsMessageRegistered = LibMinimap.IsMessageRegistered
 local RegisterMessage = LibMinimap.RegisterMessage
@@ -629,9 +632,38 @@ end
 
 LibMinimap.SetMinimapSize = function(self, ...)
 	self:SyncMinimap(true)
+
+	-- Set the scaffold size
 	Private.MapHolder:SetSize(...)
+
+	-- The following elements rely on but aren't slave to the holder size, 
+	-- and thus we need to manually update them after any size changes. 
 	LibMinimap:UpdateCompass()
+	LibMinimap:SetMinimapScale()	
 end 
+
+LibMinimap.SetMinimapScale = function(self, scale)
+	check(scale, 1, "number", "nil")
+
+	self:SyncMinimap(true)
+
+	-- Set or retrieve the current minimap scale.
+	if scale then 
+		LibMinimap.minimapScale = scale 
+	else
+		scale = LibMinimap.minimapScale
+	end
+
+	-- Retrieve the scaffold size
+	local width, height = Private.MapHolder:GetSize()
+
+	-- Scale and size the minimap content accordingly.
+	local SetScale = getMetaMethod("SetScale")
+	local SetSize = getMetaMethod("SetSize")
+
+	SetScale(Private.MapContent, scale)
+	SetSize(Private.MapContent, width/scale, height/scale)
+end
 
 LibMinimap.SetMinimapPosition = function(self, ...)
 	return self:SyncMinimap(true) and Private.MapHolder:Place(...)
@@ -1206,6 +1238,7 @@ local embedMethods = {
 	SetMinimapMaskTexture = true, 
 	SetMinimapPosition = true, 
 	SetMinimapQuestBlobAlpha = true, 
+	SetMinimapScale = true, 
 	SetMinimapSize = true, 
 	SetMinimapTaskBlobAlpha = true, 
 	SyncMinimap = true, 
