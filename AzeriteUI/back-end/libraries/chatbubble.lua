@@ -1,4 +1,4 @@
-local LibChatBubble = CogWheel:Set("LibChatBubble", 11)
+local LibChatBubble = CogWheel:Set("LibChatBubble", 12)
 if (not LibChatBubble) then	
 	return
 end
@@ -247,7 +247,7 @@ LibChatBubble.InitBubble = function(self, bubble)
 	-- Only disable the Blizzard bubble outside of instances, 
 	-- and only when any cinematics aren't playing. 
 	local _, instanceType = IsInInstance()
-	if ((instanceType == "none") and (not MovieFrame:IsShown()) and (not CinematicFrame:IsShown())) then
+	if ((instanceType == "none") and (not MovieFrame:IsShown()) and (not CinematicFrame:IsShown()) and UIParent:IsShown()) then
 		LibChatBubble:DisableBlizzard(bubble)
 	end
 
@@ -272,7 +272,7 @@ end
 
 LibChatBubble.UpdateBubbleVisibility = function(self, forceCVar)
 	local _, instanceType = IsInInstance()
-	if ((instanceType == "none") and (not MovieFrame:IsShown()) and (not CinematicFrame:IsShown())) then 
+	if ((instanceType == "none") and (not MovieFrame:IsShown()) and (not CinematicFrame:IsShown()) and UIParent:IsShown()) then 
 
 		-- Start our updater, this will show our bubbles.
 		bubbleUpdater:SetScript("OnUpdate", OnUpdate)
@@ -323,6 +323,8 @@ LibChatBubble.OnEvent = function(self, event, ...)
 		if (instanceType == "none") then
 			SetCVar("chatBubbles", 1)
 
+			self:SetHook(UIParent, "OnHide", "UpdateBubbleVisibility")
+			self:SetHook(UIParent, "OnShow", "UpdateBubbleVisibility")
 			self:SetHook(CinematicFrame, "OnHide", "UpdateBubbleVisibility")
 			self:SetHook(CinematicFrame, "OnShow", "UpdateBubbleVisibility")
 			self:SetHook(MovieFrame, "OnHide", "UpdateBubbleVisibility")
@@ -331,6 +333,8 @@ LibChatBubble.OnEvent = function(self, event, ...)
 		else
 			SetCVar("chatBubbles", 0)
 
+			self:ClearHook(UIParent, "OnHide", "UpdateBubbleVisibility")
+			self:ClearHook(UIParent, "OnShow", "UpdateBubbleVisibility")
 			self:ClearHook(CinematicFrame, "OnHide", "UpdateBubbleVisibility")
 			self:ClearHook(CinematicFrame, "OnShow", "UpdateBubbleVisibility")
 			self:ClearHook(MovieFrame, "OnHide", "UpdateBubbleVisibility")
