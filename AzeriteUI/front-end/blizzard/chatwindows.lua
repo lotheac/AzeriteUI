@@ -6,6 +6,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
+Module:SetIncompatible("Prat-3.0")
+
 local Layout
 
 -- Lua API
@@ -940,6 +942,12 @@ Module.UpdateChatDockPosition = function(self)
 			frame:SetPoint(unpack(Layout.DefaultChatFramePlace))
 		end
 	end
+end
+
+Module.UpdateBNToastPosition = function(self)
+	local toastFrame = BNToastFrame
+	local point, anchor, rpoint, x, y
+	
 end
 
 Module.OnModeToggle = function(self, modeName)

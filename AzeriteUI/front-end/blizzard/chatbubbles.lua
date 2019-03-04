@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("ChatBubbles", "LibEvent", "LibChatBubble")
+Module:SetIncompatible("Prat-3.0")
 
 local PostCreateBubble = function(bubble)
 end
