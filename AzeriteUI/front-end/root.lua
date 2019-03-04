@@ -107,25 +107,29 @@ end
 Core.GetSecureUpdater = function(self)
 	if (not self.proxyUpdater) then 
 
-		-- Create a secure proxy frame for the menu system
+		-- Create a secure proxy frame for the menu system. 
 		local callbackFrame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 
-		-- Lua callback to proxy the setting to the chat window module
+		-- Lua callback to proxy the setting to the chat window module. 
 		callbackFrame.OnModeToggle = function(callbackFrame)
-			local ChatWindows = self:GetModule("ChatWindows", true)
-			if (ChatWindows and ChatWindows.OnModeToggle) then 
-				ChatWindows:OnModeToggle("HealerMode")
-			end
+			for i,moduleName in ipairs({ "ChatWindows" }) do 
+				local module = self:GetModule(moduleName, true)
+				if module and not (module:IsIncompatible() or module:DependencyFailed()) then 
+					if (module.OnModeToggle) then 
+						module:OnModeToggle("HealerMode")
+					end
+				end
+			end 
 		end
 
-		-- Register module db with the secure proxy
+		-- Register module db with the secure proxy.
 		if db then 
 			for key,value in pairs(db) do 
 				callbackFrame:SetAttribute(key,value)
 			end 
 		end
 
-		-- Now that attributes have been defined, attach the onattribute script
+		-- Now that attributes have been defined, attach the onattribute script.
 		callbackFrame:SetAttribute("_onattributechanged", SECURE.HealerMode_SecureCallback)
 
 		self.proxyUpdater = callbackFrame
@@ -139,11 +143,14 @@ Core.UpdateSecureUpdater = function(self)
 	local proxyUpdater = self:GetSecureUpdater()
 
 	local count = 0
-	for i,moduleName in ipairs({ "UnitFrameParty", "UnitFrameRaid" }) do 
-		local module = self:GetModule(moduleName)
+	for i,moduleName in ipairs({ "UnitFrameParty", "UnitFrameRaid", "GroupTools" }) do 
+		local module = self:GetModule(moduleName, true)
 		if module then 
 			count = count + 1
-			proxyUpdater:SetFrameRef("ExtraProxy"..count, module:GetSecureUpdater())
+			local secureUpdater = module.GetSecureUpdater and module:GetSecureUpdater()
+			if secureUpdater then 
+				proxyUpdater:SetFrameRef("ExtraProxy"..count, secureUpdater)
+			end
 		end
 	end
 end
