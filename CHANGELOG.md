@@ -4,8 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.114-Beta] 2019-03-03
-- Let's call this version a beta, as the Healer Mode feature appear to be working as intended. 
+## [1.2.115-Alpha] 2019-03-04
+### Added
+- Added full Prat3.0 support. When Prat3.0 is enabled, neither our chat windows nor our chat bubbles module will be loaded. Nor will any automation regarding bubble visibility in and out of instances or any chat window placement when toggling Healer Mode be active. Meaning you'll manually have to deal with any issues that arise by yourself, we can't offer support for situations where external user configurated addons are in control. 
+- Added prettier minimap blip icons. 
+
+### Changed
+- The Group Finder Eye's tooltip should now be styled in the same manner as most tooltips. 
+- The main chat frame is no longer movable. 
+- Blizzard chat bubbles should be visible when the interface is hidden with the keybind (Alt+Z by default) to do so. 
 
 ## [1.2.114-Alpha] 2019-03-03
 ### Changed
