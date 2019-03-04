@@ -127,11 +127,12 @@ local blizzardTips = {
 	"WorldMapCompareTooltip3",
 	"ReputationParagonTooltip",
 	"StoryTooltip",
-	"EmbeddedItemTooltip"
+	"EmbeddedItemTooltip",
+	"QueueStatusFrame" 
 } 
 
 -- Textures in the combat pet tooltips
-local blizzardPetTextures = { 
+local borderedFrameTextures = { 
 	"BorderTopLeft", 
 	"BorderTopRight", 
 	"BorderBottomRight", 
@@ -2366,14 +2367,17 @@ LibTooltip.GetTooltip = function(self, name)
 	return TooltipsByName[name]
 end 
 
-LibTooltip.KillBlizzardTooltipPetTextures = function(self, tooltip)
-	if (tooltip and tooltip.SetTexture) then 
-		for _,texName in ipairs(blizzardPetTextures) do
-			if tooltip[texName] then
-				tooltip[texName]:SetTexture(nil)
-			end
+LibTooltip.KillBlizzardBorderedFrameTextures = function(self, tooltip)
+	if (not tooltip) then 
+		return 
+	end
+	local texture
+	for _,texName in ipairs(borderedFrameTextures) do
+		texture = tooltip[texName]
+		if (texture and texture.SetTexture) then 
+			texture:SetTexture(nil)
 		end
-	end 
+	end
 end
 
 LibTooltip.KillBlizzardTooltipBackdrop = function(self, tooltip)
@@ -2500,7 +2504,7 @@ local embedMethods = {
 	SetBlizzardTooltipBackdropBorderColor = true, 
 	SetBlizzardTooltipBackdropOffsets = true, 
 	KillBlizzardTooltipBackdrop = true, 
-	KillBlizzardTooltipPetTextures = true,
+	KillBlizzardBorderedFrameTextures = true,
 	GetAllBlizzardTooltips = true, 
 	ForAllTooltips = true,
 	ForAllBlizzardTooltips = true,
