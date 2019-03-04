@@ -277,7 +277,7 @@ end
 
 Module.OnEnable = function(self)
 	for tooltip in self:GetAllBlizzardTooltips() do 
-		self:KillBlizzardTooltipPetTextures(tooltip)
+		self:KillBlizzardBorderedFrameTextures(tooltip)
 		self:KillBlizzardTooltipBackdrop(tooltip)
 		self:SetBlizzardTooltipBackdrop(tooltip, Layout.TooltipBackdrop)
 		self:SetBlizzardTooltipBackdropColor(tooltip, unpack(Layout.TooltipBackdropColor))
