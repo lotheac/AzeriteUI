@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 46)
+local LibTooltip = CogWheel:Set("LibTooltip", 47)
 if (not LibTooltip) then	
 	return
 end
@@ -121,7 +121,7 @@ local blizzardTips = {
 	"ShoppingTooltip1",
 	"ShoppingTooltip2",
 	"ShoppingTooltip3",
-	"WorldMapTooltip",
+	"WorldMapTooltip", -- Deprecated in 8.1.5
 	"WorldMapCompareTooltip1",
 	"WorldMapCompareTooltip2",
 	"WorldMapCompareTooltip3",
