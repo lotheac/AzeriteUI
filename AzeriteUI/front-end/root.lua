@@ -46,7 +46,8 @@ local SECURE = {
 			until (not extraProxy) 
 
 			-- Lua callbacks
-			self:CallMethod("OnModeToggle"); 
+			-- *Note that we're not actually listing is as a mode in the menu. 
+			self:CallMethod("OnModeToggle", "healerMode"); 
 		end 
 	]=]
 }
@@ -94,14 +95,28 @@ Core.SwitchTo = function(self, editBox, ...)
 	end  
 end 
 
+-- Not actually called by the menu, since we're not
+-- listing our healerMode as a mode, just a toggleValue. 
+-- We do however use our standard mode API so for other modules 
+-- to be able to easily query if this fake mode is enabled. 
 Core.IsModeEnabled = function(self, modeName)
-	if (modeName == "HealerMode") then 
+	if (modeName == "healerMode") then 
 		return self.db.enableHealerMode 
+	end
+end
+
+Core.OnModeToggle = function(self, modeName)
+	if (modeName == "healerMode") then 
+		-- Gratz, we did nothing! 
 	end
 end
 
 Core.GetPrefix = function(self)
 	return ADDON
+end
+
+Core.GetCreditsWindow = function(self)
+
 end
 
 Core.GetSecureUpdater = function(self)
