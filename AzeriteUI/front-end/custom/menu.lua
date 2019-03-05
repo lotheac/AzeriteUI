@@ -188,12 +188,6 @@ local secureSnippets = {
 
 		elseif (updateType == "TOGGLE_MODE") then 
 
-			-- Fire a secure settings update on whatever this setting is attached to
-			local proxyUpdater = self:GetFrameRef("proxyUpdater"); 
-			if proxyUpdater then 
-				proxyUpdater:SetAttribute("change-"..optionName, self:GetAttribute("optionValue")); 
-			end 
-
 			-- Bypass all secure menthods and run it in pure lua
 			self:CallMethod("ToggleMode"); 
 
