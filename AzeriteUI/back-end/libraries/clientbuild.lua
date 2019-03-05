@@ -1,4 +1,4 @@
-local LibClientBuild = CogWheel:Set("LibClientBuild", 23)
+local LibClientBuild = CogWheel:Set("LibClientBuild", 24)
 if (not LibClientBuild) then
 	return
 end
@@ -189,17 +189,18 @@ local builds = {
 		["7.3.2"] 	= 25549, -- 25326
 		["7.3.5"] 	= 25860, -- latest: 26972
 
-	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, -- live: 29297
+	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, -- live: 29600 - March 5th, 2019
 		["8.0.1"] 	= 27101, 
-		["8.1.0"] 	= 29297, -- Feb 5th 2019
+		["8.1.0"] 	= 29297, -- Feb 5th, 2019 
+		["8.1.5"] 	= 29558  -- Feb 27th, 2019
 
 }
 
--- *this requires both the build number to be high enough 
---  and that the patch version matches what is listed here.
--- 		Example: 
--- 		["Battle for Azeroth"] = "8.0.1", ["BfA"] = "8.0.1", ["8.0.1"] = "8.0.1"
+-- This should only be required when a PTR patch's build 
+-- is lower than the lower retail patch's build!
+-- Example: ["BfA"] = "8.0.1", ["8.0.1"] = "8.0.1"
 local patchExceptions = {
+	["8.1.5"] = "8.1.5"
 }
 
 for version, build in pairs(builds) do
@@ -211,8 +212,9 @@ for version, build in pairs(builds) do
 end
 
 -- Return the build number for a given patch.
+-- Return current build if the given patch is the current. EXPERIMENTAL! 
 LibClientBuild.GetBuildForPatch = function(self, version)
-	return builds[version]
+	return (clientPatch == version) and clientBuild or builds[version]
 end 
 
 -- Return the current WoW client build
