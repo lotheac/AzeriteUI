@@ -99,6 +99,7 @@ L["Auras: %s"] = true
 L["Explorer Mode"] = true
 L["Player Fading: %s"] = true
 L["Tracker Fading: %s"] = true
+L["Button Lock: %s"] = true
 L["Healer Mode: %s"] = true 
 
 -- Various Button Tooltips

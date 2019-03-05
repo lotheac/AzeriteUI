@@ -760,7 +760,7 @@ Module.CreateMenuTable = function(self)
 					disabledTitle = L["Cast on Down: %s"]:format(L["Disabled"]),
 					type = "TOGGLE_VALUE", hasWindow = false, 
 					configDB = "ActionBars", configKey = "castOnDown", 
-					proxyModule = "ActionBarMain", 
+					proxyModule = "ActionBarMain"
 				}
 			}
 		}
@@ -773,6 +773,13 @@ Module.CreateMenuTable = function(self)
 				proxyModule = "Bindings", modeName = "bindMode"
 			})
 		end 
+		table_insert(ActionBarMenu.buttons, {
+			enabledTitle = L["Button Lock: %s"]:format(L["Enabled"]),
+			disabledTitle = L["Button Lock: %s"]:format(L["Disabled"]),
+			type = "TOGGLE_VALUE", hasWindow = false, 
+			configDB = "ActionBars", configKey = "buttonLock", 
+			proxyModule = "ActionBarMain"
+		})
 		table_insert(MenuTable, ActionBarMenu)
 	end
 

@@ -93,6 +93,7 @@ local secureSnippets = {
 		self:CallMethod("UpdateFadeAnchors"); 
 	
 	]=],
+
 	attributeChanged = [=[
 		-- 'name' appears to be turned to lowercase by the restricted environment(?), 
 		-- but we're doing it manually anyway, just to avoid problems. 
@@ -131,7 +132,13 @@ local secureSnippets = {
 		elseif (name == "change-castondown") then 
 			self:SetAttribute("castOnDown", value and true or false); 
 			self:CallMethod("UpdateCastOnDown"); 
+		elseif (name == "change-buttonlock") then 
+			self:SetAttribute("buttonLock", value and true or false); 
 
+			-- change all button attributes
+			for id, button in ipairs(Buttons) do 
+				button:SetAttribute("buttonLock", value);
+			end
 		end 
 
 	]=]
@@ -141,6 +148,9 @@ local secureSnippets = {
 -- *Note that changing these have no effect in-game, 
 --  as they are only defaults, not current ones. 
 local defaults = {
+
+	-- unlock buttons
+	buttonLock = true, 
 
 	-- Valid range is 0 to 17. anything outside will be limited to this range. 
 	extraButtonsCount = 5, -- default this to a full standard bar, just to make it slightly easier for people
@@ -171,6 +181,7 @@ local defaults = {
 local deprecated = {
 	buttonsPrimary = 1, 
 	buttonsComplimentary = 1, 
+	editMode = true, 
 	enableComplimentary = false, 
 	enableStance = false, 
 	enablePet = false, 
@@ -688,12 +699,17 @@ Module.SpawnButtons = function(self)
 		proxy:SetFrameRef("Pager"..id2, buttons[id2]:GetPager())
 	end 
 
-	-- Hide buttons beyond our current maximum visible
 	for id,button in ipairs(buttons) do 
+		-- Apply saved buttonLock setting
+		button:SetAttribute("buttonLock", db.buttonLock)
+
+		-- Reference all buttons in our menu callback frame
 		proxy:Execute(([=[
 			table.insert(Buttons, self:GetFrameRef("Button"..%d)); 
 			table.insert(Pagers, self:GetFrameRef("Pager"..%d)); 
 		]=]):format(id, id))
+
+		-- Hide buttons beyond our current maximum visible
 		if (hover[button] and (id > db.extraButtonsCount + 7)) then 
 			button:GetPager():Hide()
 		end 
