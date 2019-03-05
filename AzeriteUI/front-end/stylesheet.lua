@@ -114,6 +114,24 @@ local Core_MenuButton_PostCreate = function(self, text, ...)
 	pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
 	self.PushedBackdrop = pushed
 
+	local arrowUp = self:CreateTexture()
+	arrowUp:Hide()
+	arrowUp:SetDrawLayer("OVERLAY")
+	arrowUp:SetSize(20,20)
+	arrowUp:SetTexture([[Interface\BUTTONS\Arrow-Down-Disabled]])
+	arrowUp:SetTexCoord(0,1,1,1,0,0,1,0) 
+	arrowUp:SetPoint("LEFT", 0, 0)
+	self.ArrowUp = arrowUp
+
+	local arrowDown = self:CreateTexture()
+	arrowDown:Hide()
+	arrowDown:SetDrawLayer("OVERLAY")
+	arrowDown:SetSize(20,20)
+	arrowDown:SetTexture([[Interface\BUTTONS\Arrow-Down-Down]])
+	arrowDown:SetTexCoord(0,1,1,1,0,0,1,0) 
+	arrowDown:SetPoint("LEFT", 2, -1)
+	self.ArrowDown = arrowDown
+
 	return self
 end
 
@@ -126,6 +144,8 @@ local Core_MenuButton_Layers_PostUpdate = function(self)
 	show:SetAlpha(1)
 
 	if isPushed then
+		self.ArrowDown:SetShown(self.hasWindow)
+		self.ArrowUp:Hide()
 		self.Msg:SetPoint("CENTER", 0, -2)
 		if self:IsMouseOver() then
 			show:SetVertexColor(1, 1, 1)
@@ -135,6 +155,8 @@ local Core_MenuButton_Layers_PostUpdate = function(self)
 			show:SetVertexColor(.75, .75, .75)
 		end
 	else
+		self.ArrowDown:Hide()
+		self.ArrowUp:SetShown(self.hasWindow)
 		self.Msg:SetPoint("CENTER", 0, 0)
 		if self:IsMouseOver() then
 			show:SetVertexColor(1, 1, 1)

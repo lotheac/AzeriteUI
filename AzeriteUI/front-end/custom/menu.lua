@@ -330,6 +330,7 @@ Window.ParseOptionsTable = function(self, tbl, parentLevel)
 		button.proxyModule = data.proxyModule
 		button.useCore = data.useCore
 		button.modeName = data.modeName
+		button.hasWindow = data.hasWindow
 		if data.isSlave then 
 			button:SetAsSlave(data.slaveDB, data.slaveKey)
 		end 
