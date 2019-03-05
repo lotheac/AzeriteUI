@@ -53,20 +53,21 @@ end
 -- Module Updates
 ------------------------------------------------
 local Core_Window_CreateBorder = function(self)
+	local mod = 1 -- .75
 	local border = self:CreateFrame("Frame")
 	border:SetFrameLevel(self:GetFrameLevel()-1)
-	border:SetPoint("TOPLEFT", -23*.75, 23*.75)
-	border:SetPoint("BOTTOMRIGHT", 23*.75, -23*.75)
+	border:SetPoint("TOPLEFT", -6, 8)
+	border:SetPoint("BOTTOMRIGHT", 6, -8)
 	border:SetBackdrop({
 		bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
-		edgeFile = GetMedia("tooltip_border"),
-		edgeSize = 32*.75, 
+		edgeFile = GetMedia("tooltip_border_blizzcompatible"),
+		edgeSize = 32, 
 		tile = false, 
 		insets = { 
-			top = 23*.75, 
-			bottom = 23*.75, 
-			left = 23*.75, 
-			right = 23*.75 
+			top = 9, 
+			bottom = 9, 
+			left = 9, 
+			right = 9 
 		}
 	})
 	border:SetBackdropBorderColor(1, 1, 1, 1)
@@ -118,9 +119,10 @@ local Core_MenuButton_PostCreate = function(self, text, ...)
 	arrowUp:Hide()
 	arrowUp:SetDrawLayer("OVERLAY")
 	arrowUp:SetSize(20,20)
-	arrowUp:SetTexture([[Interface\BUTTONS\Arrow-Down-Disabled]])
+	arrowUp:SetTexture([[Interface\BUTTONS\Arrow-Down-Down]])
+	arrowUp:SetDesaturated(true)
 	arrowUp:SetTexCoord(0,1,1,1,0,0,1,0) 
-	arrowUp:SetPoint("LEFT", 0, 0)
+	arrowUp:SetPoint("LEFT", 2, 1)
 	self.ArrowUp = arrowUp
 
 	local arrowDown = self:CreateTexture()
@@ -687,7 +689,7 @@ local Core = {
 		
 	UseMenu = true, 
 		MenuPlace = { "BOTTOMRIGHT", -41, 32 },
-		MenuSize = { 320, 70 }, 
+		MenuSize = { 320 -10, 70 }, 
 
 		MenuToggleButtonSize = { 48, 48 }, 
 		MenuToggleButtonPlace = { "BOTTOMRIGHT", -4, 4 }, 
@@ -1038,7 +1040,8 @@ local BlizzardMicroMenu = {
 	MenuButtonTitleColor = { Colors.title[1], Colors.title[2], Colors.title[3] },
 	MenuButtonNormalColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3] }, 
 	MenuButton_PostCreate = BlizzardMicroMenu_Button_PostCreate,
-	MenuButton_PostUpdate = BlizzardMicroMenu_Button_PostUpdate, 	
+	MenuButton_PostUpdate = BlizzardMicroMenu_Button_PostUpdate, 
+	MenuWindow_CreateBorder = Core_Window_CreateBorder
 }
 
 -- Blizzard Objectives Tracker

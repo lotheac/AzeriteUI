@@ -238,16 +238,9 @@ Module.GetConfigWindow = function(self)
 		configWindow:SetScript("OnShow", ConfigWindow_OnShow)
 		configWindow:SetScript("OnHide", ConfigWindow_OnHide)
 
-		-- Create our own custom border.
-		-- Using our new thick tooltip border, just scaled down slightly.
-		--local sizeMod2 = 1
-		local border = configWindow:CreateFrame("Frame")
-		border:SetFrameLevel(5)
-		border:SetPoint("TOPLEFT", -23 *sizeMod, 23 *sizeMod)
-		border:SetPoint("BOTTOMRIGHT", 23 *sizeMod, -23 *sizeMod)
-		border:SetBackdrop(Layout.ConfigWindowBackdrop)
-		border:SetBackdropBorderColor(1, 1, 1, 1)
-		border:SetBackdropColor(.05, .05, .05, .85)
+		if Layout.MenuWindow_CreateBorder then 
+			Layout.MenuWindow_CreateBorder(configWindow)
+		end
 		
 		self.ConfigWindow = configWindow
 	end 
