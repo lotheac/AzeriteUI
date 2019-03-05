@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.116-Alpha] 2019-03-05
+### Added 
+- Added an action button lock setting to the config menu. When this setting is unchecked, spells can be freely moved or removed from the action buttons without holding the Alt+Ctrl+Shift modifier combination. 
+
 ## [1.2.115-Alpha] 2019-03-04
 ### Added
 - Added full Prat3.0 support. When Prat3.0 is enabled, neither our chat windows nor our chat bubbles module will be loaded. Nor will any automation regarding bubble visibility in and out of instances or any chat window placement when toggling Healer Mode be active. Meaning you'll manually have to deal with any issues that arise by yourself, we can't offer support for situations where external user configurated addons are in control. 
