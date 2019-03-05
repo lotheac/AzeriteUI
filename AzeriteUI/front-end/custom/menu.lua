@@ -898,14 +898,13 @@ Module.CreateMenuTable = function(self)
 		configDB = "Core", configKey = "enableHealerMode", 
 		proxyModule = nil, useCore = true, modeName = "HealerMode"
 	})
-	
+
 end
 
 Module.PreInit = function(self)
 	local PREFIX = Core:GetPrefix()
 	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[Core]")
 	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	--self:CreateMenuTable()
 end
 
 Module.OnInit = function(self)
