@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 45)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 46)
 if (not LibSecureButton) then	
 	return
 end
@@ -1221,6 +1221,7 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	button:SetAttribute("checkfocuscast", true)
 	button:SetAttribute("useparent-unit", true)
 	button:SetAttribute("useparent-actionpage", true)
+	button:SetAttribute("buttonLock", true)
 	button.id = buttonID
 	button.action = 0
 
@@ -1270,8 +1271,9 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 			return
 		end
 		local id = self:GetID(); 
+		local buttonLock = self:GetAttribute("buttonLock"); 
 		local action = (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
-		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
+		if action and ( (not buttonLock) or (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) ) then
 			return "action", action
 		end
 	]])
@@ -1292,10 +1294,12 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 		if ((not kind) or (not value)) then 
 			return false 
 		end
+		local button = self:GetFrameRef("Button"); 
+		local buttonLock = button and button:GetAttribute("buttonLock"); 
 		local actionpage = self:GetAttribute("actionpage"); 
 		local id = self:GetID(); 
 		local action = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
-		if action and (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown()) then
+		if action and ((not buttonLock) or (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown())) then
 			return "action", action
 		end 
 	]])
