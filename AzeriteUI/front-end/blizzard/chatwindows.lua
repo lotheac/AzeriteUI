@@ -947,7 +947,7 @@ end
 Module.UpdateBNToastPosition = function(self)
 	local toastFrame = BNToastFrame
 	local point, anchor, rpoint, x, y
-	
+	-- re-anchor based on chat frame's vertical position
 end
 
 Module.OnModeToggle = function(self, modeName)

@@ -521,6 +521,19 @@ ClassPower.Runes = setmetatable({
 		local color = self.colors.power[powerType]
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.max or max
+
+		--[[
+		
+        Hide when: 
+        - Out of combat and fully charged
+        - Out of combat and targeting friendly NPC 
+
+        Tone down when: 
+        - Out of combat but still charging
+        - No target selected but still charging or in combat 
+		
+		]]
+
 		if (element.hideWhenNoTarget and (not UnitExists("target"))) then
 			for i = 1, maxDisplayed do
 				local point = element[i]
