@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added prettier minimap blip icons. 
 
 ### Changed
-- The Group Finder Eye's tooltip should now be styled in the same manner as most tooltips. 
-- The main chat frame is no longer movable. 
+- Trying some experimental changes to raid frame updating
+- The main chat frame is no longer movable when using AzeriteUI's chat windows module. Prat users are not affected by this. 
 - Blizzard chat bubbles should be visible when the interface is hidden with the keybind (Alt+Z by default) to do so. 
+- The Group Finder Eye's tooltip should now be styled in the same manner as most tooltips. 
 
 ## [1.2.114-Alpha] 2019-03-03
 ### Changed
