@@ -724,7 +724,6 @@ Module.SetUpMinimap = function(self)
 		self:SetMinimapScale(Layout.BlipScale)
 	end
 
-
 	-- Minimap Buttons
 	----------------------------------------------------
 	-- We don't want them, simple as that.
