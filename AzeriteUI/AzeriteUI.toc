@@ -3,7 +3,7 @@
 ## Title: |cff7284abAzerite|r|cffffffffUI|r
 ## Author: Daniel Troko, Lars Norberg
 ## Notes: Custom user graphical interface.|n|nDesign by Daniel Troko.|nCode by Lars Norberg.|n|n|cff4488ffPayPal|r|cffffffff:|r |n|cffffffffwww.paypal.me/AzeriteUI|r|n|n|cff4488ffPatreon|r|cffffffff:|r |n|cffffffffwww.patreon.com/AzeriteUI|r
-## Version: 1.2-Alpha
+## Version: 1.2(Alpha)
 ## DefaultState: Enabled
 ## SavedVariables: AzeriteUI_DB
 ## OptionalDeps: Clique
@@ -21,8 +21,10 @@
 ## X-YouTube: https://www.youtube.com/azeriteui
 ## X-License: Custom
 
+# Unique global addon font objects
 FontStyles.xml
 
+# Addon libraries, the main engine of it all
 back-end\wheel.lua
 back-end\libraries\clientbuild.lua
 back-end\libraries\locale.lua
@@ -61,6 +63,7 @@ back-end\libraries\minimap.lua
 back-end\libraries\nameplates.lua
 back-end\libraries\taint.lua 
 
+# Library plugins
 back-end\plugins\generic_artifactpower.lua
 back-end\plugins\generic_clock.lua
 back-end\plugins\generic_coordinates.lua
@@ -103,6 +106,7 @@ back-end\plugins\unit_targethighlight.lua
 back-end\plugins\unit_totem.lua
 back-end\plugins\unit_threat.lua
 
+# Addon localization
 locale\enUS.lua
 locale\esES.lua
 locale\esMX.lua
@@ -115,6 +119,8 @@ locale\ruRU.lua
 locale\zhCN.lua
 locale\zhTW.lua
 
+# Addon specific data tables 
+# meant to be replaced by library functionality. 
 front-end\deprecated\auralist.lua
 front-end\deprecated\aura_cc.lua
 front-end\deprecated\aura_class.lua
@@ -122,8 +128,12 @@ front-end\deprecated\aura_dungeon.lua
 front-end\deprecated\aura_food.lua
 front-end\deprecated\aura_filters.lua
 
+# Addon specific data tables. 
 front-end\private.lua
 front-end\stylesheet.lua
+
+# Main addon module, 
+# all others are children of this one. 
 front-end\root.lua
 
 front-end\blizzard\chatbubbles.lua
@@ -140,10 +150,25 @@ front-end\blizzard\tooltips.lua
 front-end\blizzard\tradeskillframe.lua
 
 front-end\custom\actionbars.lua
+front-end\custom\bindings.lua
+front-end\custom\chatfilters.lua
+front-end\custom\explorer.lua
+front-end\custom\grouptools.lua
+front-end\custom\menu.lua
 front-end\custom\nameplates.lua
 front-end\custom\tooltips.lua
 front-end\custom\unitframes.lua
-front-end\custom\grouptools.lua
-front-end\custom\bindings.lua
-front-end\custom\explorer.lua
-front-end\custom\menu.lua
+
+# Module loading order shouldn't matter, 
+# just keeping the old ones here as reference 
+# until I'm sure everything is working as planned. 
+
+#front-end\custom\actionbars.lua
+#front-end\custom\chatfilters.lua
+#front-end\custom\nameplates.lua
+#front-end\custom\tooltips.lua
+#front-end\custom\unitframes.lua
+#front-end\custom\grouptools.lua
+#front-end\custom\bindings.lua
+#front-end\custom\explorer.lua
+#front-end\custom\menu.lua
