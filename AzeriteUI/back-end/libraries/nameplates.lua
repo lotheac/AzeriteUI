@@ -1100,7 +1100,7 @@ LibNamePlate.ForAllEmbeds = function(self, method, ...)
 					target[method](target, ...)
 				end
 			else
-				func(target, ...)
+				method(target, ...)
 			end
 		end 
 	end 
