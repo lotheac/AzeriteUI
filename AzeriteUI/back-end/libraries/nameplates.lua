@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 25)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 26)
 if (not LibNamePlate) then	
 	return
 end
@@ -412,36 +412,7 @@ NamePlate.OnHide = function(self)
 	end
 end
 
-NamePlate.HandleBaseFrame = function(self, baseFrame)
-	local unitframe = baseFrame.UnitFrame
-	if unitframe then
-		unitframe:Hide()
-		unitframe:HookScript("OnShow", function(unitframe) unitframe:Hide() end) 
-	end
-	self.baseFrame = baseFrame
-end
-
-NamePlate.HookScripts = function(self, baseFrame)
-	baseFrame:HookScript("OnHide", function(baseFrame) self:OnHide() end)
-end
-
--- Create the sizer frame that handles nameplate positioning
--- *Blizzard changed nameplate format and also anchoring points in Legion,
---  so naturally we're using a different function for this too. Speed!
-NamePlate.CreateSizer = function(self, baseFrame)
-	local sizer = self:CreateFrame()
-	sizer.plate = self
-	sizer:SetPoint("BOTTOMLEFT", WorldFrame, "BOTTOMLEFT", 0, 0)
-	sizer:SetPoint("TOPRIGHT", baseFrame, "CENTER", 0, 0)
-	sizer:SetScript("OnSizeChanged", function(self, width, height)
-		local plate = self.plate
-		plate:Hide()
-		plate:SetPoint("TOP", WorldFrame, "BOTTOMLEFT", width, height)
-		plate:Show()
-	end)
-end
-
-local OnNamePlateEvent = function(frame, event, ...)
+NamePlate.OnEvent = function(frame, event, ...)
 	if (frame:IsVisible() and callbacks[frame] and callbacks[frame][event]) then 
 		local events = callbacks[frame][event]
 		local isUnitEvent = unitEvents[event]
@@ -692,14 +663,36 @@ LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
 	plate.targetAlpha = 0
 	plate.currentAlpha = 0
 	plate.colors = Colors
+	plate.baseFrame = baseFrame
 	plate:Hide()
 	plate:SetFrameStrata("BACKGROUND")
 	plate:SetAlpha(plate.currentAlpha)
 	plate:SetFrameLevel(plate.frameLevel)
 	plate:SetScale(LibNamePlate.SCALE)
-	plate:HandleBaseFrame(baseFrame) -- hide and reference the baseFrame and original blizzard objects
-	plate:CreateSizer(baseFrame) -- create the sizer that positions the nameplate
-	plate:HookScripts(baseFrame) -- let baseframe hiding trigger plate fade-out
+
+	-- Make sure the visible part of the Blizzard frame remains hidden
+	local unitframe = baseFrame.UnitFrame
+	if unitframe then
+		unitframe:Hide()
+		unitframe:HookScript("OnShow", function(unitframe) unitframe:Hide() end) 
+	end
+
+	-- Create the sizer frame that handles nameplate positioning
+	-- *Blizzard changed nameplate format and also anchoring points in Legion,
+	--  so naturally we're using a different function for this too. Speed!
+	local sizer = plate:CreateFrame()
+	sizer.plate = plate
+	sizer:SetPoint("BOTTOMLEFT", WorldFrame, "BOTTOMLEFT", 0, 0)
+	sizer:SetPoint("TOPRIGHT", baseFrame, "CENTER", 0, 0)
+	sizer:SetScript("OnSizeChanged", function(sizer, width, height)
+		local plate = sizer.plate
+		plate:Hide() -- hiding when moving is still faster
+		plate:SetPoint("TOP", WorldFrame, "BOTTOMLEFT", width, height)
+		plate:Show()
+	end)
+
+	-- Make sure our nameplate fades out when the blizzard one is hidden.
+	baseFrame:HookScript("OnHide", function(baseFrame) plate:OnHide() end)
 
 	-- Since constantly updating frame levels can cause quite the performance drop, 
 	-- we're just giving each frame a set frame level when they spawn. 
@@ -711,10 +704,13 @@ LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
 		FRAMELEVEL_CURRENT = FRAMELEVEL_MIN
 	end
 
+	-- Store the plate in our registry
 	allPlates[baseFrame] = plate
 
-	plate:SetScript("OnEvent", OnNamePlateEvent)
+	-- Enable the plate's event handler
+	plate:SetScript("OnEvent", plate.OnEvent)
 
+	-- Let modules do their thing
 	self:ForAllEmbeds("PostCreateNamePlate", plate, baseFrame)
 
 	return plate
