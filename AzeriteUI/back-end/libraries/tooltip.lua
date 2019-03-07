@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 47)
+local LibTooltip = CogWheel:Set("LibTooltip", 48)
 if (not LibTooltip) then	
 	return
 end
@@ -2520,7 +2520,7 @@ LibTooltip.ForAllEmbeds = function(self, method, ...)
 					target[method](target, ...)
 				end
 			else
-				func(target, ...)
+				method(target, ...)
 			end
 		end 
 	end 
