@@ -1025,7 +1025,6 @@ LibNamePlate.Enable = function(self)
 	self.enabled = true
 end 
 
--- TODO: Move to back-end(?)
 LibNamePlate.KillClassClutter = function(self)
 	for _,object in pairs({
 		ClassNameplateBarFrame, 
