@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.117-Alpha] 2019-03-08
+### Added
+- Added a 10 second throttle for chat messages in most channels. This is mostly to avoid a group of mobs instantly filling your entire chat history with the exact same message, but could also be considered helpful to remove needless spam from certain public chats. 
+
+### Changed
+- GroupTools will now move along with the group frames and main chat window when Healer Mode is toggled. 
+- The Battle.Net toast window will now move along with the group frames and main chat window when Healer Mode is toggled. 
+- Redid the Death Knight Rune opacity and display logic, to work around a few bugs and have it occur more often than other player resources, as the current Rune system really is more like an extra energy bar than anything else. 
+
 ## [1.2.116-Alpha] 2019-03-05
 ### Added 
 - Added an action button lock setting to the config menu. When this setting is unchecked, spells can be freely moved or removed from the action buttons without holding the Alt+Ctrl+Shift modifier combination. 
