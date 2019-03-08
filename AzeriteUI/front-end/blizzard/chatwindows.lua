@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibChatWindow")
+local Module = Core:NewModule("ChatWindows", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibHook", "LibSecureHook", "LibChatWindow")
 Module:SetIncompatible("Prat-3.0")
 
 local Layout
@@ -605,6 +605,49 @@ Module.SetUpScrollScripts = function(self)
 
 end 
 
+Module.UpdateBNToastFramePosition = function(self)
+	if (self.lockBNFrame) then 
+		return 
+	end
+	self.lockBNFrame = true 
+
+	-- Retrieve frames and sizes
+	local anchorFrame = self.BNAnchorFrame
+	local toastFrame = _G.BNToastFrame
+	local width, height = _G.UIParent:GetSize()
+	local left = anchorFrame:GetLeft()
+	local right = width - anchorFrame:GetRight()
+	local bottom = anchorFrame:GetBottom() 
+	local top = height - anchorFrame:GetTop()
+
+	-- Figure out the anchors 
+	local point = ((bottom < top) and "BOTTOM" or "TOP") .. ((left < right) and "LEFT" or "RIGHT") 
+	local rPoint = ((bottom < top) and "TOP" or "BOTTOM") .. ((left < right) and "LEFT" or "RIGHT") 
+	local offsetY = (bottom < top) and 16 or -(16 + 30) -- TODO: adjust for super large edit boxes
+
+	-- Position the toast frame
+	toastFrame:ClearAllPoints()
+	toastFrame:SetPoint(point, anchorFrame, rPoint, 0, offsetY)
+
+	self.lockBNFrame = nil
+end
+
+Module.SetUPBNToastFrame = function(self)
+	if self.BNAnchorFrame then 
+		return 
+	end 
+
+	local anchorFrame = CreateFrame("Frame")
+	anchorFrame:Hide()
+	anchorFrame:SetAllPoints(self.frame)
+
+	self:SetHook(BNToastFrame, "OnShow", "UpdateBNToastFramePosition")
+	self:SetSecureHook(BNToastFrame, "SetPoint", "UpdateBNToastFramePosition")
+	self:SetSecureHook(self.frame, "SetPoint", "UpdateBNToastFramePosition")
+
+	self.BNAnchorFrame = anchorFrame
+end
+
 Module.SetUpMainFrameDropDown = function(self)
 
 	local function FCFOptionsDropDown_Initialize(dropDown)
@@ -847,6 +890,8 @@ Module.SetUpMainFrames = function(self)
 
 	-- We lock the main frame by replacing the dropdown
 	self:SetUpMainFrameDropDown()
+
+	-- 
 end 
 
 Module.SetUpButton = function(self, button, texture)
@@ -970,6 +1015,7 @@ Module.OnInit = function(self)
 	self:SetUpScrollScripts()
 	self:SetUpMainFrames()
 	self:SetUpMainButtons()
+	self:SetUPBNToastFrame()
 	self:UpdateChatWindowScales()
 	self:UpdateChatDockPosition()
 end 
