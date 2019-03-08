@@ -36,6 +36,6 @@ For more buttons, right-click the cogwheel icon in the bottom right corner of th
 * Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
 
 ## **Official Supporters:**  
-* **CosmicJenova, Jennifer Graff, Kjartan Kirchhof, Elexys, Jan Terje Hellemsbakken, Mel Brannon**  
+* **Jennifer Graff, Kjartan Kirchhof, Elexys, Jan Terje Hellemsbakken, Mel Brannon**  
 
 _Visit [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui) to become an Official Supporter!_
