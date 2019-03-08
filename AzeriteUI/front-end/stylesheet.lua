@@ -2407,6 +2407,7 @@ local UnitFramePlayerHUD = {
 		ClassPowerHideWhenNoTarget = true, 
 		ClassPowerAlphaWhenEmpty = .5, 
 		ClassPowerAlphaWhenOutOfCombat = 1,
+		ClassPowerAlphaWhenOutOfCombatRunes = .5, 
 		ClassPowerReverseSides = false, 
 		ClassPowerRuneSortOrder = "ASC",
 
