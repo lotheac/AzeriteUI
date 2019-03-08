@@ -1123,10 +1123,12 @@ local GroupTools = {
 	Colors = Colors,
 
 	MenuPlace = { "TOPLEFT", "UICenter", "TOPLEFT", 22, -42 },
+	MenuAlternatePlace = { "BOTTOMLEFT", "UICenter", "BOTTOMLEFT", 22, 350 },
 	MenuSize = { 300*.75 +30, 410 }, 
 
 	MenuToggleButtonSize = { 48, 48 }, 
 	MenuToggleButtonPlace = { "TOPLEFT", "UICenter", "TOPLEFT", -18, -40 }, 
+	MenuToggleButtonAlternatePlace = { "BOTTOMLEFT", "UICenter", "BOTTOMLEFT", -18, 348 }, 
 	MenuToggleButtonIcon = GetMedia("raidtoolsbutton"), 
 	MenuToggleButtonIconPlace = { "CENTER", 0, 0 }, 
 	MenuToggleButtonIconSize = { 64*.75, 128*.75 }, 

@@ -4370,7 +4370,7 @@ end
 -- Raid
 -----------------------------------------------------------
 UnitFrameRaid.OnInit = function(self)
-	local dev -- = true
+	local dev --= true
 	local defaults = {
 		enableRaidFrames = true
 	}
@@ -4440,8 +4440,5 @@ UnitFrameRaid.OnInit = function(self)
 
 	-- Create a secure proxy updater for the menu system
 	CreateSecureCallbackFrame(self, self.frame, self.db, SECURE.Raid_SecureCallback:format(visDriver))
-
-	-- Reference the group header with the sorting method
-	--self:GetSecureUpdater():SetFrameRef("GroupHeader", self.frame)
 end 
 

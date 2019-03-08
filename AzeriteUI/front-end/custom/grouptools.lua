@@ -6,7 +6,6 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("GroupTools", "PLUGIN", "LibEvent", "LibDB", "LibFader", "LibFrame", "LibSound")
-local Layout
 
 -- Lua API
 local _G = _G
@@ -49,9 +48,43 @@ local READY_CHECK = _G.READY_CHECK
 local ROLE_POLL = _G.ROLE_POLL
 local TANK = _G.TANK
 
+local DEV --= true
+
+-- Secure Snippets
+local SECURE = {
+	HealerMode_SecureCallback = [=[
+		if name then 
+			name = string.lower(name); 
+		end 
+		if (name == "change-enablehealermode") then 
+			self:SetAttribute("enableHealerMode", value); 
+
+			local window = self:GetFrameRef("Window"); 
+			if window then 
+				local anchor = value and self:GetFrameRef("WindowAnchorHealer") or self:GetFrameRef("WindowAnchor"); 
+				local point, _, rpoint = anchor:GetPoint(); 
+				if (point and anchor and rpoint) then 
+					window:ClearAllPoints(); 
+					window:SetPoint(point, anchor, rpoint, 0, 0); 
+				end
+			end
+
+			local button = self:GetFrameRef("ToggleButton"); 
+			if button then 
+				local anchor = value and self:GetFrameRef("ButtonAnchorHealer") or self:GetFrameRef("ButtonAnchor"); 
+				local point, _, rpoint = anchor:GetPoint(); 
+				if (point and anchor and rpoint) then 
+					button:ClearAllPoints(); 
+					button:SetPoint(point, anchor, rpoint, 0, 0); 
+				end
+			end
+		end
+	]=]
+}
+
 local hasLeaderTools = function()
 	local inInstance, instanceType = IsInInstance()
-	return (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (IsInGroup() and (not IsInRaid()))) 
+	return DEV or (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (IsInGroup() and (not IsInRaid()))) 
 		and (instanceType ~= "pvp" and instanceType ~= "arena")
 end
 
@@ -222,7 +255,7 @@ Module.UpdateCounts = function(self)
 		end
 	end	
 
-	if Layout.UseMemberCount then 
+	if self.layout.UseMemberCount then 
 		local label = IsInRaid() and RAID_MEMBERS or PARTY_MEMBERS
 		if (dead > 0) then
 			self.GroupMemberCount:SetFormattedText("%s: |cffffffff%s|r/|cffffffff%s|r", label, alive, alive + dead)
@@ -231,7 +264,7 @@ Module.UpdateCounts = function(self)
 		end
 	end 
 
-	if Layout.UseRoleCount then 
+	if self.layout.UseRoleCount then 
 		for role,msg in pairs(self.RoleCount) do 
 			count = counts[role]
 			if (count.dead > 0) then 
@@ -293,7 +326,8 @@ Module.ToggleLeaderTools = function(self)
 	self.queueLeaderToolsToggle = false
 end
 
-Module.CreateTools = function(self)
+Module.CreateLeaderTools = function(self)
+	local enableHealerMode = self:GetConfig("Core").enableHealerMode
 
 	-- visibility handler assuring it's hidden when solo
 	self.visibility = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
@@ -310,15 +344,14 @@ Module.CreateTools = function(self)
 			end 
 		end
 	]=])
-	RegisterAttributeDriver(self.visibility, "state-vis", "[group]show;hide")
-	--RegisterAttributeDriver(self.visibility, "state-vis", "show")
+	RegisterAttributeDriver(self.visibility, "state-vis", DEV and "show" or "[group]show;hide")
 
 	-- toggle button
 	local toggleButton = self.visibility:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate")
 	toggleButton:SetFrameStrata("DIALOG")
 	toggleButton:SetFrameLevel(50)
-	toggleButton:SetSize(unpack(Layout.MenuToggleButtonSize))
-	toggleButton:Place(unpack(Layout.MenuToggleButtonPlace))
+	toggleButton:SetSize(unpack(self.layout.MenuToggleButtonSize))
+	--toggleButton:Place(unpack(self.layout.MenuToggleButtonPlace))
 	toggleButton:RegisterForClicks("AnyUp")
 	--toggleButton:SetScript("OnEnter", Toggle.OnEnter)
 	--toggleButton:SetScript("OnLeave", Toggle.OnLeave) 
@@ -345,21 +378,21 @@ Module.CreateTools = function(self)
 	]])
 
 	toggleButton.Icon = toggleButton:CreateTexture()
-	toggleButton.Icon:SetTexture(Layout.MenuToggleButtonIcon)
-	toggleButton.Icon:SetSize(unpack(Layout.MenuToggleButtonIconSize))
-	toggleButton.Icon:SetPoint(unpack(Layout.MenuToggleButtonIconPlace))
-	toggleButton.Icon:SetVertexColor(unpack(Layout.MenuToggleButtonIconColor))
-	--toggleButton:Hide()
+	toggleButton.Icon:SetTexture(self.layout.MenuToggleButtonIcon)
+	toggleButton.Icon:SetSize(unpack(self.layout.MenuToggleButtonIconSize))
+	toggleButton.Icon:SetPoint(unpack(self.layout.MenuToggleButtonIconPlace))
+	toggleButton.Icon:SetVertexColor(unpack(self.layout.MenuToggleButtonIconColor))
 	self.ToggleButton = toggleButton
 
 	-- Group Tools Frame
 	local frame = self.visibility:CreateFrame("Frame", nil, "SecureHandlerAttributeTemplate")
-	frame:Place(unpack(Layout.MenuPlace))
-	frame:SetSize(unpack(Layout.MenuSize))
+	frame:Hide()
+	--frame:Place(unpack(self.layout.MenuPlace))
+	frame:SetSize(unpack(self.layout.MenuSize))
 	frame:EnableMouse(true)
 	frame:SetFrameStrata("DIALOG")
 	frame:SetFrameLevel(10)
-	frame:Hide()
+	self.Window = frame
 
 	toggleButton:HookScript("OnClick", function()
 		if frame:IsShown() then 
@@ -369,22 +402,53 @@ Module.CreateTools = function(self)
 		end  
 	end)
 
-	if Layout.MenuWindow_CreateBorder then 
-		frame.Border = Layout.MenuWindow_CreateBorder(frame)
-	end 
+	local callbackFrame = self:GetSecureUpdater()
 
+	local frameAnchor = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	frameAnchor:SetSize(1,1)
+	frameAnchor:Place(unpack(self.layout.MenuPlace))
+
+	local frameAnchorAlternate = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	frameAnchorAlternate:SetSize(1,1)
+	frameAnchorAlternate:Place(unpack(self.layout.MenuAlternatePlace)) 
+
+	local buttoAnchor = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	buttoAnchor:SetSize(1,1)
+	buttoAnchor:Place(unpack(self.layout.MenuToggleButtonPlace)) 
+
+	local buttoAnchorAlternate = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	buttoAnchorAlternate:SetSize(1,1)
+	buttoAnchorAlternate:Place(unpack(self.layout.MenuToggleButtonAlternatePlace)) 
+
+	-- Reference all secure frames
 	frame:SetFrameRef("Button", toggleButton)
 	toggleButton:SetFrameRef("Window", frame)
+	callbackFrame:SetFrameRef("WindowAnchor", frameAnchor)
+	callbackFrame:SetFrameRef("WindowAnchorHealer", frameAnchorAlternate)
+	callbackFrame:SetFrameRef("ButtonAnchor", buttoAnchor)
+	callbackFrame:SetFrameRef("ButtonAnchorHealer", buttoAnchorAlternate)
 
-	self.Window = frame
+	-- Attach the module's menu window to the proxy
+	callbackFrame:SetFrameRef("Window", self.Window)
 
-	if Layout.UseMemberCount then 
+	-- Attach the module's menu window toggle button to the proxy
+	callbackFrame:SetFrameRef("ToggleButton", self.ToggleButton)
+
+	-- Fake a menu update and hopefully move the thing. 
+	-- We need to do this since the frame references didn't exist when the menu did it at startup. 
+	callbackFrame:SetAttribute("change-enablehealermode", enableHealerMode)
+
+	if self.layout.MenuWindow_CreateBorder then 
+		frame.Border = self.layout.MenuWindow_CreateBorder(frame)
+	end 
+
+	if self.layout.UseMemberCount then 
 		local count = frame:CreateFontString()
-		count:SetPoint(unpack(Layout.MemberCountNumberPlace))
-		count:SetFontObject(Layout.MemberCountNumberFont)
-		count:SetJustifyH(Layout.MemberCountNumberJustifyH)
-		count:SetJustifyV(Layout.MemberCountNumberJustifyV)
-		count:SetTextColor(unpack(Layout.MemberCountNumberColor))
+		count:SetPoint(unpack(self.layout.MemberCountNumberPlace))
+		count:SetFontObject(self.layout.MemberCountNumberFont)
+		count:SetJustifyH(self.layout.MemberCountNumberJustifyH)
+		count:SetJustifyV(self.layout.MemberCountNumberJustifyV)
+		count:SetTextColor(unpack(self.layout.MemberCountNumberColor))
 		count:SetIndentedWordWrap(false)
 		count:SetWordWrap(false)
 		count:SetNonSpaceWrap(false)
@@ -392,16 +456,16 @@ Module.CreateTools = function(self)
 
 	end 
 
-	if Layout.UseRoleCount then 
+	if self.layout.UseRoleCount then 
 
 		self.RoleCount = {}
 
 		local tank = frame:CreateFontString()
-		tank:SetPoint(unpack(Layout.RoleCountTankPlace))
-		tank:SetFontObject(Layout.RoleCountTankFont)
+		tank:SetPoint(unpack(self.layout.RoleCountTankPlace))
+		tank:SetFontObject(self.layout.RoleCountTankFont)
 		tank:SetJustifyH("CENTER")
 		tank:SetJustifyV("MIDDLE")
-		tank:SetTextColor(unpack(Layout.RoleCountTankColor))
+		tank:SetTextColor(unpack(self.layout.RoleCountTankColor))
 		tank:SetIndentedWordWrap(false)
 		tank:SetWordWrap(false)
 		tank:SetNonSpaceWrap(false)
@@ -409,17 +473,17 @@ Module.CreateTools = function(self)
 		self.RoleCount.TANK = tank
 
 		local tankIcon = frame:CreateTexture()
-		tankIcon:SetPoint(unpack(Layout.RoleCountTankTexturePlace))
-		tankIcon:SetSize(unpack(Layout.RoleCountTankTextureSize))
-		tankIcon:SetTexture(Layout.RoleCountTankTexture)
+		tankIcon:SetPoint(unpack(self.layout.RoleCountTankTexturePlace))
+		tankIcon:SetSize(unpack(self.layout.RoleCountTankTextureSize))
+		tankIcon:SetTexture(self.layout.RoleCountTankTexture)
 		self.RoleCount.TANK.Icon = tankIcon
 
 		local healer = frame:CreateFontString()
-		healer:SetPoint(unpack(Layout.RoleCountHealerPlace))
-		healer:SetFontObject(Layout.RoleCountHealerFont)
+		healer:SetPoint(unpack(self.layout.RoleCountHealerPlace))
+		healer:SetFontObject(self.layout.RoleCountHealerFont)
 		healer:SetJustifyH("CENTER")
 		healer:SetJustifyV("MIDDLE")
-		healer:SetTextColor(unpack(Layout.RoleCountHealerColor))
+		healer:SetTextColor(unpack(self.layout.RoleCountHealerColor))
 		healer:SetIndentedWordWrap(false)
 		healer:SetWordWrap(false)
 		healer:SetNonSpaceWrap(false)
@@ -427,17 +491,17 @@ Module.CreateTools = function(self)
 		self.RoleCount.HEALER = healer
 
 		local healerIcon = frame:CreateTexture()
-		healerIcon:SetPoint(unpack(Layout.RoleCountHealerTexturePlace))
-		healerIcon:SetSize(unpack(Layout.RoleCountHealerTextureSize))
-		healerIcon:SetTexture(Layout.RoleCountHealerTexture)
+		healerIcon:SetPoint(unpack(self.layout.RoleCountHealerTexturePlace))
+		healerIcon:SetSize(unpack(self.layout.RoleCountHealerTextureSize))
+		healerIcon:SetTexture(self.layout.RoleCountHealerTexture)
 		self.RoleCount.HEALER.Icon = healerIcon
 
 		local dps = frame:CreateFontString()
-		dps:SetPoint(unpack(Layout.RoleCountDPSPlace))
-		dps:SetFontObject(Layout.RoleCountDPSFont)
+		dps:SetPoint(unpack(self.layout.RoleCountDPSPlace))
+		dps:SetFontObject(self.layout.RoleCountDPSFont)
 		dps:SetJustifyH("CENTER")
 		dps:SetJustifyV("MIDDLE")
-		dps:SetTextColor(unpack(Layout.RoleCountDPSColor))
+		dps:SetTextColor(unpack(self.layout.RoleCountDPSColor))
 		dps:SetIndentedWordWrap(false)
 		dps:SetWordWrap(false)
 		dps:SetNonSpaceWrap(false)
@@ -445,9 +509,9 @@ Module.CreateTools = function(self)
 		self.RoleCount.DAMAGER = dps
 
 		local dpsIcon = frame:CreateTexture()
-		dpsIcon:SetPoint(unpack(Layout.RoleCountDPSTexturePlace))
-		dpsIcon:SetSize(unpack(Layout.RoleCountDPSTextureSize))
-		dpsIcon:SetTexture(Layout.RoleCountDPSTexture)
+		dpsIcon:SetPoint(unpack(self.layout.RoleCountDPSTexturePlace))
+		dpsIcon:SetSize(unpack(self.layout.RoleCountDPSTextureSize))
+		dpsIcon:SetTexture(self.layout.RoleCountDPSTexture)
 		self.RoleCount.DAMAGER.Icon = dpsIcon
 
 		-- Role Counts
@@ -464,7 +528,7 @@ Module.CreateTools = function(self)
 
 	end 
 
-	if Layout.UseRaidTargetIcons then 
+	if self.layout.UseRaidTargetIcons then 
 		self.RaidIcons = {}
 
 		for id = 1,8 do 
@@ -476,13 +540,13 @@ Module.CreateTools = function(self)
 			button:SetScript("OnMouseUp", onMarkerUp)
 			button:SetScript("OnEnter", onMarkerEnter) 
 			button:SetScript("OnLeave", onMarkerLeave)
-			button:SetSize(unpack(Layout.RaidTargetIconsSize))
-			button:SetPoint(unpack(Layout["RaidTargetIcon"..id.."Place"]))
+			button:SetSize(unpack(self.layout.RaidTargetIconsSize))
+			button:SetPoint(unpack(self.layout["RaidTargetIcon"..id.."Place"]))
 
 			local icon = button:CreateTexture()
-			icon:SetSize(unpack(Layout.RaidTargetIconsSize))
+			icon:SetSize(unpack(self.layout.RaidTargetIconsSize))
 			icon:SetPoint("CENTER", 0, 0)
-			icon:SetTexture(Layout.RaidRoleRaidTargetTexture)
+			icon:SetTexture(self.layout.RaidRoleRaidTargetTexture)
 
 			SetRaidTargetIconTexture(icon, id)
 
@@ -493,11 +557,11 @@ Module.CreateTools = function(self)
 
 	end 
 
-	if Layout.UseRolePollButton then 
+	if self.layout.UseRolePollButton then 
 
 		local button = frame:CreateFrame("Button")
-		button:Place(unpack(Layout.RolePollButtonPlace))
-		button:SetSize(unpack(Layout.RolePollButtonSize))
+		button:Place(unpack(self.layout.RolePollButtonPlace))
+		button:SetSize(unpack(self.layout.RolePollButtonSize))
 		button:SetScript("OnClick", onRollPollClick)
 		button:SetScript("OnMouseDown", onButtonDown)
 		button:SetScript("OnMouseUp", onButtonUp)
@@ -506,10 +570,10 @@ Module.CreateTools = function(self)
 
 		local msg = button:CreateFontString()
 		msg:SetPoint("CENTER", 0, 0)
-		msg:SetFontObject(Layout.RolePollButtonTextFont)
-		msg:SetTextColor(unpack(Layout.RolePollButtonTextColor))
-		msg:SetShadowOffset(unpack(Layout.RolePollButtonTextShadowOffset))
-		msg:SetShadowColor(unpack(Layout.RolePollButtonTextShadowColor))
+		msg:SetFontObject(self.layout.RolePollButtonTextFont)
+		msg:SetTextColor(unpack(self.layout.RolePollButtonTextColor))
+		msg:SetShadowOffset(unpack(self.layout.RolePollButtonTextShadowOffset))
+		msg:SetShadowColor(unpack(self.layout.RolePollButtonTextShadowColor))
 		msg:SetJustifyH("CENTER")
 		msg:SetJustifyV("MIDDLE")
 		msg:SetIndentedWordWrap(false)
@@ -520,20 +584,20 @@ Module.CreateTools = function(self)
 	
 		local bg = button:CreateTexture()
 		bg:SetDrawLayer("ARTWORK")
-		bg:SetTexture(Layout.RolePollButtonTextureNormal)
+		bg:SetTexture(self.layout.RolePollButtonTextureNormal)
 		bg:SetVertexColor(.9, .9, .9)
-		bg:SetSize(unpack(Layout.RolePollButtonTextureSize))
+		bg:SetSize(unpack(self.layout.RolePollButtonTextureSize))
 		bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
 		button.Bg = bg
 
 		self.RolePollButton = button
 	end 
 
-	if Layout.UseReadyCheckButton then 
+	if self.layout.UseReadyCheckButton then 
 
 		local button = frame:CreateFrame("Button")
-		button:Place(unpack(Layout.ReadyCheckButtonPlace))
-		button:SetSize(unpack(Layout.ReadyCheckButtonSize))
+		button:Place(unpack(self.layout.ReadyCheckButtonPlace))
+		button:SetSize(unpack(self.layout.ReadyCheckButtonSize))
 		button:SetScript("OnClick", onReadyCheckClick)
 		button:SetScript("OnMouseDown", onButtonDown)
 		button:SetScript("OnMouseUp", onButtonUp)
@@ -542,10 +606,10 @@ Module.CreateTools = function(self)
 
 		local msg = button:CreateFontString()
 		msg:SetPoint("CENTER", 0, 0)
-		msg:SetFontObject(Layout.ReadyCheckButtonTextFont)
-		msg:SetTextColor(unpack(Layout.ReadyCheckButtonTextColor))
-		msg:SetShadowOffset(unpack(Layout.ReadyCheckButtonTextShadowOffset))
-		msg:SetShadowColor(unpack(Layout.ReadyCheckButtonTextShadowColor))
+		msg:SetFontObject(self.layout.ReadyCheckButtonTextFont)
+		msg:SetTextColor(unpack(self.layout.ReadyCheckButtonTextColor))
+		msg:SetShadowOffset(unpack(self.layout.ReadyCheckButtonTextShadowOffset))
+		msg:SetShadowColor(unpack(self.layout.ReadyCheckButtonTextShadowColor))
 		msg:SetJustifyH("CENTER")
 		msg:SetJustifyV("MIDDLE")
 		msg:SetIndentedWordWrap(false)
@@ -556,24 +620,24 @@ Module.CreateTools = function(self)
 	
 		local bg = button:CreateTexture()
 		bg:SetDrawLayer("ARTWORK")
-		bg:SetTexture(Layout.ReadyCheckButtonTextureNormal)
+		bg:SetTexture(self.layout.ReadyCheckButtonTextureNormal)
 		bg:SetVertexColor(.9, .9, .9)
-		bg:SetSize(unpack(Layout.ReadyCheckButtonTextureSize))
+		bg:SetSize(unpack(self.layout.ReadyCheckButtonTextureSize))
 		bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
 		button.Bg = bg
 
 		self.ReadyCheckButton = button
 	end 
 
-	if Layout.UseWorldMarkerFlag then 
+	if self.layout.UseWorldMarkerFlag then 
 		local button = frame:CreateFrame("Frame")
-		button:Place(unpack(Layout.WorldMarkerFlagPlace))
-		button:SetSize(unpack(Layout.WorldMarkerFlagSize))
+		button:Place(unpack(self.layout.WorldMarkerFlagPlace))
+		button:SetSize(unpack(self.layout.WorldMarkerFlagSize))
 
 		local backdrop = button:CreateTexture()
-		backdrop:SetSize(unpack(Layout.WorldMarkerFlagBackdropSize))
+		backdrop:SetSize(unpack(self.layout.WorldMarkerFlagBackdropSize))
 		backdrop:SetPoint("CENTER", 0, 0)
-		backdrop:SetTexture(Layout.WorldMarkerFlagBackdropTexture)
+		backdrop:SetTexture(self.layout.WorldMarkerFlagBackdropTexture)
 		button.Bg = backdrop
 
 		local content = _G.CompactRaidFrameManagerDisplayFrameLeaderOptionsRaidWorldMarkerButton
@@ -589,7 +653,7 @@ Module.CreateTools = function(self)
 		content.MiddleMiddle:SetAlpha(0)
 		content:SetHighlightTexture("")
 		content:SetDisabledTexture("")
-		content:SetSize(unpack(Layout.WorldMarkerFlagContentSize))
+		content:SetSize(unpack(self.layout.WorldMarkerFlagContentSize))
 		content:ClearAllPoints()
 		content:SetPoint("CENTER", 0, 0)
 		
@@ -606,10 +670,10 @@ Module.CreateTools = function(self)
 
 	end 
 
-	if Layout.UseConvertButton then 
+	if self.layout.UseConvertButton then 
 		local button = frame:CreateFrame("CheckButton")
-		button:Place(unpack(Layout.ConvertButtonPlace))
-		button:SetSize(unpack(Layout.ConvertButtonSize))
+		button:Place(unpack(self.layout.ConvertButtonPlace))
+		button:SetSize(unpack(self.layout.ConvertButtonSize))
 		button:SetScript("OnClick", onConvertClick)
 		button:SetScript("OnMouseDown", onButtonDown)
 		button:SetScript("OnMouseUp", onButtonUp)
@@ -618,10 +682,10 @@ Module.CreateTools = function(self)
 
 		local msg = button:CreateFontString()
 		msg:SetPoint("CENTER", 0, 0)
-		msg:SetFontObject(Layout.ConvertButtonTextFont)
-		msg:SetTextColor(unpack(Layout.ConvertButtonTextColor))
-		msg:SetShadowOffset(unpack(Layout.ConvertButtonTextShadowOffset))
-		msg:SetShadowColor(unpack(Layout.ConvertButtonTextShadowColor))
+		msg:SetFontObject(self.layout.ConvertButtonTextFont)
+		msg:SetTextColor(unpack(self.layout.ConvertButtonTextColor))
+		msg:SetShadowOffset(unpack(self.layout.ConvertButtonTextShadowOffset))
+		msg:SetShadowColor(unpack(self.layout.ConvertButtonTextShadowColor))
 		msg:SetJustifyH("CENTER")
 		msg:SetJustifyV("MIDDLE")
 		msg:SetIndentedWordWrap(false)
@@ -632,9 +696,9 @@ Module.CreateTools = function(self)
 	
 		local bg = button:CreateTexture()
 		bg:SetDrawLayer("ARTWORK")
-		bg:SetTexture(Layout.ConvertButtonTextureNormal)
+		bg:SetTexture(self.layout.ConvertButtonTextureNormal)
 		bg:SetVertexColor(.9, .9, .9)
-		bg:SetSize(unpack(Layout.ConvertButtonTextureSize))
+		bg:SetSize(unpack(self.layout.ConvertButtonTextureSize))
 		bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
 		button.Bg = bg
 
@@ -650,6 +714,22 @@ Module.CreateTools = function(self)
 	self:RegisterEvent("RAID_TARGET_UPDATE", "OnEvent")
 	self:RegisterEvent("UNIT_FLAGS", "OnEvent")
 	self:UpdateAll()
+end
+
+Module.GetSecureUpdater = function(self)
+	if (not self.proxyUpdater) then 
+
+		-- Create a secure proxy frame for the menu system. 
+		local callbackFrame = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
+	
+		-- Now that attributes have been defined, attach the onattribute script.
+		callbackFrame:SetAttribute("_onattributechanged", SECURE.HealerMode_SecureCallback)
+
+		self.proxyUpdater = callbackFrame
+	end
+
+	-- Return the proxy updater to the module
+	return self.proxyUpdater
 end
 
 Module.OnEvent = function(self, event, ...)
@@ -678,7 +758,7 @@ Module.OnEvent = function(self, event, ...)
 	elseif (event == "ADDON_LOADED") then
 		if ((...) == "Blizzard_CompactRaidFrames") then
 			self:UnregisterEvent("ADDON_LOADED", "OnEvent")
-			self:CreateTools()
+			self:CreateLeaderTools()
 		end
 
 	elseif event == "PLAYER_REGEN_DISABLED" then
@@ -692,17 +772,13 @@ Module.OnEvent = function(self, event, ...)
 	end
 end 
 
-Module.PreInit = function(self)
-	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[GroupTools]")
-end 
-
 Module.OnInit = function(self)
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[GroupTools]")
 end 
 
 Module.OnEnable = function(self)
 	if IsAddOnLoaded("Blizzard_CompactRaidFrames") then 
-		self:CreateTools()
+		self:CreateLeaderTools()
 	else 
 		self:RegisterEvent("ADDON_LOADED", "OnEvent")
 	end 
