@@ -3231,6 +3231,7 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 		-- Alpha modifier when not engaged in combat
 		-- This is applied on top of the inactive modifier above
 		classPower.alphaNoCombat = Layout.ClassPowerAlphaWhenOutOfCombat
+		classPower.alphaNoCombatRunes = Layout.ClassPowerAlphaWhenOutOfCombatRunes
 
 		-- Set to true to flip the classPower horizontally
 		-- Intended to be used alongside actioncam
