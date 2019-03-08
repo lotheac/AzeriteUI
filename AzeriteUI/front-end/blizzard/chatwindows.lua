@@ -942,6 +942,7 @@ Module.UpdateChatDockPosition = function(self)
 			frame:SetPoint(unpack(Layout.DefaultChatFramePlace))
 		end
 	end
+
 end
 
 Module.UpdateBNToastPosition = function(self)
@@ -953,6 +954,7 @@ end
 Module.OnModeToggle = function(self, modeName)
 	if (modeName == "HealerMode") then 
 		self:UpdateChatDockPosition()
+		self:UpdateBNToastPosition()
 	end
 end
 
@@ -977,6 +979,7 @@ Module.OnInit = function(self)
 	self:SetUpMainButtons()
 	self:UpdateChatWindowScales()
 	self:UpdateChatDockPosition()
+	self:UpdateBNToastPosition()
 end 
 
 Module.OnEnable = function(self)
