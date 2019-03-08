@@ -945,16 +945,9 @@ Module.UpdateChatDockPosition = function(self)
 
 end
 
-Module.UpdateBNToastPosition = function(self)
-	local toastFrame = BNToastFrame
-	local point, anchor, rpoint, x, y
-	-- re-anchor based on chat frame's vertical position
-end
-
 Module.OnModeToggle = function(self, modeName)
 	if (modeName == "HealerMode") then 
 		self:UpdateChatDockPosition()
-		self:UpdateBNToastPosition()
 	end
 end
 
@@ -979,7 +972,6 @@ Module.OnInit = function(self)
 	self:SetUpMainButtons()
 	self:UpdateChatWindowScales()
 	self:UpdateChatDockPosition()
-	self:UpdateBNToastPosition()
 end 
 
 Module.OnEnable = function(self)
