@@ -31,10 +31,12 @@ local Enum = _G.Enum
 local GetComboPoints = _G.GetComboPoints
 local GetRuneCooldown = _G.GetRuneCooldown
 local GetSpecialization = _G.GetSpecialization
+--local InCombatLockdown = _G.InCombatLockdown
 local IsPlayerSpell = _G.IsPlayerSpell
 local UnitAffectingCombat = _G.UnitAffectingCombat
 local UnitCanAttack = _G.UnitCanAttack
 local UnitHasVehiclePlayerFrameUI = _G.UnitHasVehiclePlayerFrameUI
+local UnitIsFriend = _G.UnitIsFriend
 local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local UnitPowerDisplayMod = _G.UnitPowerDisplayMod
@@ -101,7 +103,7 @@ local Generic = setmetatable({
 			element[i]:Hide()
 		end 
 
-		if (element.alphaNoCombat) then 
+		if (element.alphaNoCombat) or (element.alphaNoCombatRunes) then 
 			self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)
 			self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
 		end 
@@ -522,49 +524,42 @@ ClassPower.Runes = setmetatable({
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.max or max
 
-		--[[
-		
-        Hide when: 
-        - Out of combat and fully charged
-        - Out of combat and targeting friendly NPC 
+		-- Ready ones fully opaque, charging ones toned down, everything even more without a hostile target
+		if (UnitAffectingCombat("player") or UnitAffectingCombat("pet")) then 
+			local chargingAlpha = element.alphaEmpty or .5
+			local fullAlpha = 1
+			for i = 1, maxDisplayed do
+				local point = element[i]
+				point:SetStatusBarColor(r, g, b)
+				point:SetAlpha(i > min and chargingAlpha or fullAlpha)
+				if point.bg then 
+					point.bg:SetVertexColor(r*1/3, g*1/3, b*1/3)
+				end 
+			end
 
-        Tone down when: 
-        - Out of combat but still charging
-        - No target selected but still charging or in combat 
-		
-		]]
+		-- All are toned down, charging/empty ones even more
+		elseif (min < maxDisplayed) or (UnitExists("target") and not UnitIsFriend("player", "target")) then 
+			local chargingAlpha = (element.alphaEmpty or .5)*(element.alphaNoCombatRunes or element.alphaNoCombat or .5)
+			local fullAlpha = element.alphaNoCombatRunes or element.alphaNoCombat or .5
+			for i = 1, maxDisplayed do
+				local point = element[i]
+				point:SetStatusBarColor(r, g, b)
+				point:SetAlpha(i > min and chargingAlpha or fullAlpha)
+				if point.bg then 
+					point.bg:SetVertexColor(r*1/3, g*1/3, b*1/3)
+				end 
+			end
 
-		if (element.hideWhenNoTarget and (not UnitExists("target"))) then
+		-- Hidden
+		else
 			for i = 1, maxDisplayed do
 				local point = element[i]
 				if point then
+					point:SetStatusBarColor(r, g, b)
 					point:SetAlpha(0)
 				end 
 			end 
-		else 
-			for i = 1, maxDisplayed do
-				local point = element[i]
-				if element.alphaNoCombat then 
-					point:SetStatusBarColor(r, g, b)
-					if point.bg then 
-						point.bg:SetVertexColor(r*1/3, g*1/3, b*1/3)
-					end 
-					local alpha = UnitAffectingCombat(unit) and 1 or element.alphaNoCombat
-					if (i > min) and (element.alphaEmpty) then
-						point:SetAlpha(element.alphaEmpty * alpha)
-					else 
-						point:SetAlpha(alpha)
-					end 
-				else 
-					point:SetStatusBarColor(r, g, b, 1)
-					if element.alphaEmpty then 
-						point:SetAlpha(min > i and element.alphaEmpty or 1)
-					else 
-						point:SetAlpha(1)
-					end 
-				end 
-			end
-		end 
+		end
 	end
 }, Generic_MT)
 
@@ -965,5 +960,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 20)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 21)
 end 
