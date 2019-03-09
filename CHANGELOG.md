@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.118-Alpha] 2019-03-09
+### Added
+- Added a debug console which will be loaded but hidden by default. You can toggle the console visibility or fully unload it through the addon menu. I recommend leaving it loaded, but disabled. Then if you encounter actionbars that won't change when entering a vehicle, or other behavior that doesn't fully make sense, just enable it, take a screenshot and show us on discord, bitbucket or twitter! For the time being it only tracks actionbar paging changes (entering vehicles, switching druid forms, possessing somebody, etc) and missing locale entries. We'll be adding more if other problem areas should arise. As a rule of thumb though, we won't ever debug anything that doesn't at some point need debugging. And any fully fixed areas will have its debug code removed. 
+
+### Changed
+- The player frame aura filter will now show auras being cast by the player, pet or vehicle regardless of duration while controlling a vehicle. You can now see your style stacks when doing the horse riding World Quest in other words. 
+- The back-end master visibility frame which every single custom object in the interface belongs to will now be hidden at startup and between reloads to halt all update timers and generally just speed up the process. 
+
 ## [1.2.117-Alpha] 2019-03-08
 ### Added
 - Added a 10 second throttle for chat messages in most channels. This is mostly to avoid a group of mobs instantly filling your entire chat history with the exact same message, but could also be considered helpful to remove needless spam from certain public chats. 
