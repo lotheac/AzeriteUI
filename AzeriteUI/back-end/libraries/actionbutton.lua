@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 46)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 48)
 if (not LibSecureButton) then	
 	return
 end
@@ -13,9 +13,9 @@ local LibSound = CogWheel("LibSound")
 assert(LibSound, "LibSecureButton requires LibSound to be loaded.")
 
 local LibTooltip = CogWheel("LibTooltip")
-assert(LibTooltip, "LibChatWindow requires LibTooltip to be loaded.")
+assert(LibTooltip, "LibSecureButton requires LibTooltip to be loaded.")
 
--- Embed event functionality into this
+-- Embed functionality into this
 LibEvent:Embed(LibSecureButton)
 LibFrame:Embed(LibSecureButton)
 LibSound:Embed(LibSecureButton)
