@@ -325,13 +325,23 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		plate.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 		plate.Auras.PostUpdate = Layout.PostUpdateAura
 
-		--[[
-		local devHelp = auras:CreateTexture()
-		devHelp:SetColorTexture(0,0,0,.25)
-		devHelp:SetAllPoints()
-		devHelp:SetDrawLayer("BACKGROUND")
-		devHelp:Hide()
-		]]--
+		local owner = self:GetOwner()
+		if owner.db and owner.db.loadDebugConsole then 
+			local debugFrame = owner:GetDebugFrame()
+			if debugFrame then 
+				-- Need to figure out if the aura misalignment 
+				-- is the aura layout method in the back-end, 
+				-- or the aura element itself bein misplaced. 
+				local devHelp = auras:CreateTexture()
+				devHelp:SetColorTexture(0,0,0,.25)
+				devHelp:SetAllPoints()
+				devHelp:SetDrawLayer("BACKGROUND")
+				devHelp:SetShown(debugFrame:IsShown())
+
+				debugFrame:HookScript("OnShow", function() devHelp:Show() end)
+				debugFrame:HookScript("OnHide", function() devHelp:Hide() end)
+			end 
+		end 
 
 		if (not db.enableAuras) then 
 			plate:DisableElement("Auras")
