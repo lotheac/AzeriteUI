@@ -1297,7 +1297,14 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 	-- Target Highlighting
 	-----------------------------------------------------------
 	if Layout.UseTargetHighlight then
-		local targetHighlight = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self) :CreateTexture()
+
+		-- Add an extra frame to break away from alpha changes
+		local owner = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self)
+		local targetHighlightFrame = CreateFrame("Frame", nil, owner)
+		targetHighlightFrame:SetAllPoints()
+		targetHighlightFrame:SetIgnoreParentAlpha(true)
+
+		local targetHighlight = targetHighlightFrame:CreateTexture()
 		targetHighlight:SetDrawLayer(unpack(Layout.TargetHighlightDrawLayer))
 		targetHighlight:SetSize(unpack(Layout.TargetHighlightSize))
 		targetHighlight:SetPoint(unpack(Layout.TargetHighlightPlace))
@@ -1986,7 +1993,14 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 	-- Target Highlighting
 	-----------------------------------------------------------
 	if Layout.UseTargetHighlight then
-		local targetHighlight = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self) :CreateTexture()
+
+		-- Add an extra frame to break away from alpha changes
+		local owner = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self)
+		local targetHighlightFrame = CreateFrame("Frame", nil, owner)
+		targetHighlightFrame:SetAllPoints()
+		targetHighlightFrame:SetIgnoreParentAlpha(true)
+	
+		local targetHighlight = targetHighlightFrame:CreateTexture()
 		targetHighlight:SetDrawLayer(unpack(Layout.TargetHighlightDrawLayer))
 		targetHighlight:SetSize(unpack(Layout.TargetHighlightSize))
 		targetHighlight:SetPoint(unpack(Layout.TargetHighlightPlace))
@@ -2300,7 +2314,14 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	-- Target Highlighting
 	-----------------------------------------------------------
 	if Layout.UseTargetHighlight then
-		local targetHighlight = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self) :CreateTexture()
+
+		-- Add an extra frame to break away from alpha changes
+		local owner = (Layout.TargetHighlightParent and self[Layout.TargetHighlightParent] or self)
+		local targetHighlightFrame = CreateFrame("Frame", nil, owner)
+		targetHighlightFrame:SetAllPoints()
+		targetHighlightFrame:SetIgnoreParentAlpha(true)
+
+		local targetHighlight = targetHighlightFrame:CreateTexture()
 		targetHighlight:SetDrawLayer(unpack(Layout.TargetHighlightDrawLayer))
 		targetHighlight:SetSize(unpack(Layout.TargetHighlightSize))
 		targetHighlight:SetPoint(unpack(Layout.TargetHighlightPlace))
