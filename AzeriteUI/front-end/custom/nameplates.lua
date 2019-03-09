@@ -338,6 +338,8 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 				devHelp:SetDrawLayer("BACKGROUND")
 				devHelp:SetShown(debugFrame:IsShown())
 
+				-- Should make a better system for these hooks, 
+				-- because I hate exposing the debugFrame to the outside world. 
 				debugFrame:HookScript("OnShow", function() devHelp:Show() end)
 				debugFrame:HookScript("OnHide", function() devHelp:Hide() end)
 			end 
