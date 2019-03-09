@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 44)
+local LibFrame = CogWheel:Set("LibFrame", 45)
 if (not LibFrame) then	
 	return
 end
@@ -33,6 +33,7 @@ local type = type
 -- WoW API
 local CreateFrame = _G.CreateFrame
 local InCombatLockdown = _G.InCombatLockdown
+local IsLoggedIn = _G.IsLoggedIn
 
 -- WoW Objects
 local UIParent = _G.UIParent
@@ -54,6 +55,12 @@ else
 	LibFrame.frame:SetParent(LibFrame.frameParent) 
 	UnregisterAttributeDriver(LibFrame.frame, "state-visibility")
 end 
+
+-- Hide the master visibility frame if we haven't yet reached login. 
+-- This might improve addon loading time. 
+if (not IsLoggedIn()) and (not InCombatLockdown()) then 
+	LibFrame.frameParent:Hide()
+end
 
 local SetDisplaySize 
 if false then 
@@ -350,12 +357,29 @@ LibFrame.OnEvent = function(self, event, ...)
 	self:UpdateDisplaySize()
 end
 
+LibFrame.OnReload = function(self, event, ...)
+	if (event == "PLAYER_LEAVING_WORLD") then 
+		if (not InCombatLockdown()) then 
+			VisibilityFrame:Hide()
+		end
+	elseif (event == "PLAYER_ENTERING_WORLD") then 
+		if (not VisibilityFrame:IsShown()) then 
+			VisibilityFrame:Show()
+		end
+	end
+end
+
 LibFrame.Enable = function(self)
 
 	-- Get rid of old events from previous handlers, 
 	-- if this library for some reason was overwritten 
 	-- by a more recent version from a load on demand addon. 
 	self:UnregisterAllEvents()
+
+	-- Hide the visibility frame when reloading
+	-- The idea is to just stop all running OnUpdate handlers
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnReload")
+	self:RegisterEvent("PLAYER_LEAVING_WORLD", "OnReload")
 
 	-- New system only needs to capture changes and events
 	-- affecting display size or the cinematic frame visibility.
