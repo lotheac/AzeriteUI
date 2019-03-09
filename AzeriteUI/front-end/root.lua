@@ -11,6 +11,13 @@ Core:SetAddon(ADDON)
 -- *it's important that we're doing this here, before any module configs are created.
 Core:RegisterSavedVariablesGlobal(ADDON.."_DB")
 
+-- Can't have both us and these
+Core:SetIncompatible("DiabolicUI")
+Core:SetIncompatible("GoldpawUI")
+Core:SetIncompatible("KkthnxUI")
+Core:SetIncompatible("Tukui")
+Core:SetIncompatible("ElvUI")
+
 -- Lua API
 local _G = _G
 local ipairs = ipairs
