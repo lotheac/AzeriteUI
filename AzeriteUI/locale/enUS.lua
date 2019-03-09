@@ -12,6 +12,11 @@ L["<Left-Click>"] = true
 L["<Middle-Click>"] = true
 L["<Right-Click>"] = true
 
+-- Core Messages
+--------------------------------------------
+L["Debug Mode is active."] = true
+L["Type /debug to toggle console visibility!"] = true
+
 -- Clock & Time Settings
 --------------------------------------------
 L["New Event!"] = true
@@ -70,9 +75,16 @@ L["%s to toggle Options Menu."] = "%s to toggle "..ADDON.." Options Menu."
 L["%s to toggle your Bags."] = true
 
 -- Config Menu
+L["Debug Mode"] = true 
+L["Debug Console: %s"] = true 
+L["Load Console"] = true
+L["Unload Console"] = true
+L["Reload UI"] = true
+
 L["ActionBars"] = true
 L["Bind Mode: %s"] = true
 L["Cast on Down: %s"] = true
+L["Button Lock: %s"] = true
 L["More Buttons"] = true
 L["No Extra Buttons"] = true
 L["+%d Buttons"] = true
@@ -91,15 +103,18 @@ L["UnitFrames"] = true
 L["Party Frames: %s"] = true
 L["Raid Frames: %s"] = true
 L["PvP Frames: %s"] = true
+
 L["HUD"] = true
 L["Alerts: %s"] = true
 L["TalkingHead: %s"] = true
+
 L["NamePlates"] = true
 L["Auras: %s"] = true
+
 L["Explorer Mode"] = true
 L["Player Fading: %s"] = true
 L["Tracker Fading: %s"] = true
-L["Button Lock: %s"] = true
+
 L["Healer Mode: %s"] = true 
 
 -- Various Button Tooltips

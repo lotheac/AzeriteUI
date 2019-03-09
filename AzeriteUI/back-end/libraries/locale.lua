@@ -1,4 +1,4 @@
-local LibLocale = CogWheel:Set("LibLocale", 2)
+local LibLocale = CogWheel:Set("LibLocale", 3)
 if (not LibLocale) then	
 	return
 end
@@ -49,6 +49,21 @@ end
 local read = {
 	__index = function(tbl, key)
 		rawset(tbl, key, key)
+
+		local LibModule = CogWheel("LibModule")
+		if LibModule and LibModule.AddDebugMessage then 
+
+			local name = "XXX"
+			for module,moduleTbl in pairs(LibLocale.modules) do 
+				if moduleTbl == tbl then 
+					name = module 
+					break 
+					--(getmetatable(moduleTbl) == read) and moduleTbl or setmetatable(LibLocale.modules[module], read)
+				end
+			end 
+			LibModule:AddDebugMessageFormatted(("The locale '%s' is missing an entry for the key '%s'."):format(name, key))
+		end
+
 		return key
 	end
 }

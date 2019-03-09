@@ -696,6 +696,44 @@ end
 Module.CreateMenuTable = function(self)
 	MenuTable = {}
 
+	-- Debug Mode
+	local DebugMenu = {
+		title = L["Debug Mode"], type = nil, hasWindow = true, 
+		buttons = {}
+	}
+	if self:GetOwner():IsDebugModeEnabled() then 
+		table_insert(DebugMenu.buttons, {
+			enabledTitle = L["Debug Console: %s"]:format(L["Enabled"]),
+			disabledTitle = L["Debug Console: %s"]:format(L["Disabled"]),
+			type = "TOGGLE_VALUE", 
+			configDB = "Core", configKey = "enableDebugConsole", 
+			proxyModule = nil, useCore = true
+		})
+		table_insert(DebugMenu.buttons, {
+			enabledTitle = L["Unload Console"],
+			disabledTitle = L["Unload Console"],
+			type = "TOGGLE_MODE", hasWindow = false, 
+			configDB = "Core", modeName = "unloadConsole", 
+			proxyModule = nil, useCore = true
+		})
+	else
+		table_insert(DebugMenu.buttons, {
+			enabledTitle = L["Load Console"],
+			disabledTitle = L["Load Console"],
+			type = "TOGGLE_MODE", hasWindow = false, 
+			configDB = "Core", modeName = "loadConsole", 
+			proxyModule = nil, useCore = true
+		})
+	end
+	table_insert(DebugMenu.buttons, {
+		enabledTitle = L["Reload UI"],
+		disabledTitle = L["Reload UI"],
+		type = "TOGGLE_MODE", hasWindow = false, 
+		configDB = "Core", modeName = "reloadUI", 
+		proxyModule = nil, useCore = true
+	})
+	table_insert(MenuTable, DebugMenu)
+	
 	-- Actionbars 
 	local ActionBarMain = Core:GetModule("ActionBarMain", true)
 	if ActionBarMain and not (ActionBarMain:IsIncompatible() or ActionBarMain:DependencyFailed()) then 

@@ -14,6 +14,7 @@ Core:RegisterSavedVariablesGlobal(ADDON.."_DB")
 -- Lua API
 local _G = _G
 local ipairs = ipairs
+local string_find = string.find
 
 -- WoW API
 local DisableAddOn = _G.DisableAddOn
@@ -22,8 +23,21 @@ local LoadAddOn = _G.LoadAddOn
 local ReloadUI = _G.ReloadUI
 local SetActionBarToggles = _G.SetActionBarToggles
 
+-- Addon localization
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
+
+-- Addon defaults
 local defaults = {
-	enableHealerMode = false
+	-- Enables a layout switch targeted towards healers
+	enableHealerMode = false,
+
+	-- Loads all child modules with debug functionality, 
+	-- doesn't actually load any consoles. 
+	loadDebugConsole = true, 	
+
+	-- Enable console visibility. 
+	-- Requires the above to be true. 
+	enableDebugConsole = false  
 }
 
 local SECURE = {
@@ -48,6 +62,10 @@ local SECURE = {
 			-- Lua callbacks
 			-- *Note that we're not actually listing is as a mode in the menu. 
 			self:CallMethod("OnModeToggle", "healerMode"); 
+
+		elseif (name == "change-enabledebugconsole") then 
+			self:SetAttribute("enableDebugConsole", value); 
+			self:CallMethod("UpdateDebugConsole"); 
 		end 
 	]=]
 }
@@ -108,15 +126,20 @@ end
 Core.OnModeToggle = function(self, modeName)
 	if (modeName == "healerMode") then 
 		-- Gratz, we did nothing! 
+
+	elseif (modeName == "loadConsole") then 
+		self:EnableDebugConsole()
+
+	elseif (modeName == "unloadConsole") then 
+		self:DisableDebugConsole()
+
+	elseif (modeName == "reloadUI") then 
+		ReloadUI()
 	end
 end
 
 Core.GetPrefix = function(self)
 	return ADDON
-end
-
-Core.GetCreditsWindow = function(self)
-
 end
 
 Core.GetSecureUpdater = function(self)
@@ -135,6 +158,10 @@ Core.GetSecureUpdater = function(self)
 					end
 				end
 			end 
+		end
+
+		callbackFrame.UpdateDebugConsole = function(callbackFrame)
+			self:UpdateDebugConsole()
 		end
 
 		-- Register module db with the secure proxy.
@@ -170,6 +197,39 @@ Core.UpdateSecureUpdater = function(self)
 	end
 end
 
+Core.UpdateDebugConsole = function(self)
+	if self.db.enableDebugConsole then 
+		self:ShowDebugFrame()
+	else
+		self:HideDebugFrame()
+	end
+end
+
+Core.EnableDebugConsole = function(self)
+	--EnableAddOn(ADDON .. "_Debug", true)
+	self.db.loadDebugConsole = true
+	ReloadUI()
+end
+
+Core.DisableDebugConsole = function(self)
+	--DisableAddOn(ADDON .. "_Debug", true)
+	self.db.loadDebugConsole = false
+	ReloadUI()
+end
+
+-- We could add this into the back-end, leaving it here for now, though. 
+-- It's not like this addon actually serves any other purpose. 
+Core.OnChatCommand = function(self, editBox, msg)
+	if (msg == "enable") or (msg == "on") then 
+		self.db.enableDebugConsole = true
+	elseif (msg == "disable") or (msg == "off") then 
+		self.db.enableDebugConsole = false
+	else
+		self.db.enableDebugConsole = not self.db.enableDebugConsole
+	end
+	self:UpdateDebugConsole()
+end
+
 Core.OnInit = function(self)
 	self.db = self:NewConfig("Core", defaults, "global")
 	self.layout = CogWheel("LibDB"):GetDatabase(self:GetPrefix()..":[Core]")
@@ -189,6 +249,40 @@ Core.OnInit = function(self)
 
 	-- Force-initialize the secure callback system for the menu
 	self:GetSecureUpdater()
+
+	-- Fire a startup message into the console, if the debug addon is enabled.
+	if self.db.loadDebugConsole then 
+
+		-- Set the flag to tell the back-end we're in debug mode
+		self:EnableDebugMode()
+
+		-- Register a chat command for those that want to macro this
+		self:RegisterChatCommand("debug", "OnChatCommand")
+	
+		-- Update initial console visibility
+		self:UpdateDebugConsole()
+
+		-- Just make sure we don't format anything localized with embedded color coding
+		for id,msg in ipairs({ L["Debug Mode is active."], L["Type /debug to toggle console visibility!"] }) do
+			if string_find(msg, "|c") then 
+				self:AddDebugMessage(msg)
+			else 
+				self:AddDebugMessageFormatted(msg)
+			end
+		end
+
+		-- Add in a chat command to quickly unload the console
+		self:RegisterChatCommand("disableconsole", "DisableDebugConsole")
+
+	else
+		-- Set the flag to tell the back-end we're in normal mode. 
+		-- This isn't actually needed, since the back-end don't store settings. 
+		-- Just leaving it here for weird semantic reasons that really don't make sense. 
+		self:DisableDebugMode()
+
+		-- Add in a chat command to quickly load the console
+		self:RegisterChatCommand("enableconsole", "EnableDebugConsole")
+	end
 end 
 
 Core.OnEnable = function(self)

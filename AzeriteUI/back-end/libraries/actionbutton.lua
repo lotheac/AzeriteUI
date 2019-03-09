@@ -90,6 +90,103 @@ local BUTTON_NAME_TEMPLATE_FULL = "%sActionButton%d"
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 
+local SECURE = {
+	Page_OnAttributeChanged = [=[ 
+		if (name == "state-page") then 
+			local page; 
+			if (value == "vehicle") 
+			or (value == "override")
+			or (value == "shapeshift")
+			or (value == "possess")
+			or (value == "11") then 
+				if (value == "vehicle") then 
+					page = GetVehicleBarIndex(); -- 12
+				elseif (value == "override") then 
+					page = GetOverrideBarIndex(); -- 14
+				elseif (value == "shapeshift") then 
+					page = GetTempShapeshiftBarIndex(); -- 13
+				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then  
+					page = GetBonusBarIndex(); 
+				else 
+					page = 12; 
+				end 
+			end 
+
+			if page then 
+				value = page; 
+			end 
+
+			self:SetAttribute("state", value);
+
+			local button = self:GetFrameRef("Button"); 
+			local buttonPage = button:GetAttribute("actionpage"); 
+			local id = button:GetID(); 
+			local actionpage = tonumber(value); 
+			local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+
+			button:SetAttribute("actionpage", actionpage or 0); 
+			button:SetAttribute("action", slot); 
+			button:CallMethod("UpdateAction"); 
+		end 
+	]=], 
+	Page_OnAttributeChanged_Debug = [=[ 
+		if (name == "state-page") then 
+			local page; 
+			if (value == "vehicle") 
+			or (value == "override")
+			or (value == "shapeshift")
+			or (value == "possess")
+			or (value == "11") then 
+				if (value == "vehicle") then 
+					page = GetVehicleBarIndex(); -- 12
+				elseif (value == "override") then 
+					page = GetOverrideBarIndex(); -- 14
+				elseif (value == "shapeshift") then 
+					page = GetTempShapeshiftBarIndex(); -- 13
+				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then  
+					page = GetBonusBarIndex(); 
+				else 
+					page = 12; 
+				end 
+			end 
+
+			local driverResult; 
+			if page then 
+				driverResult = value;
+				value = page; 
+			end 
+
+			self:SetAttribute("state", value);
+
+			local button = self:GetFrameRef("Button"); 
+			local buttonPage = button:GetAttribute("actionpage"); 
+			local id = button:GetID(); 
+			local actionpage = tonumber(value); 
+			local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
+
+			button:SetAttribute("actionpage", actionpage or 0); 
+			button:SetAttribute("action", slot); 
+			button:CallMethod("UpdateAction"); 
+
+			-- Debugging the weird results
+			-- *only showing bar 1, button 1
+			if self:GetID() == 1 and id == 1 then
+				if driverResult then 
+					local page = tonumber(driverResult); 
+					if page then 
+						self:CallMethod("AddDebugMessage", "ActionButton driver attempted to change page to: " ..driverResult.. " - Page changed by environment to: " .. value); 
+					else 
+						self:CallMethod("AddDebugMessage", "ActionButton driver reported the state: " ..driverResult.. " - Page changed by environment to: " .. value); 
+					end
+				elseif value then 
+					self:CallMethod("AddDebugMessage", "ActionButton driver changed page to: " ..value); 
+				end
+			end
+		end 
+	]=]
+
+}
+
 -- Utility Functions
 ----------------------------------------------------
 -- Syntax check 
@@ -1157,48 +1254,31 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	-- 		HasOverrideActionBar()
 	-- 		HasTempShapeshiftActionBar()
 	-- 		HasBonusActionBar()
-	-- 
+
+	-- Need to figure these out on button creation, 
+	-- as we're not interested in the library owner's name, 
+	-- but rather the addon name of the module calling this method. 
+	local DEBUG_ENABLED
+	if self.GetAddon then 
+		local addon = self:GetAddon() 
+		if addon then 
+			-- We're making the addon naming scheme a rule here?
+			-- Seems clunky, but for the time being it'll have to do. 
+			-- Eventually we'll find a better way of implementing this. 
+			if self:GetOwner():IsDebugModeEnabled() then 
+				DEBUG_ENABLED = true 
+			end
+			--if CogWheel("LibModule"):IsAddOnEnabled((addon or "").."_Debug") then 
+			--	DEBUG_ENABLED = true 
+			--end
+		end
+	end
+
 	local page = visibility:CreateFrame("Frame", nil, "SecureHandlerAttributeTemplate")
 	page.id = barID
+	page.AddDebugMessage = DEBUG_ENABLED and self.AddDebugMessageFormatted or nil
 	page:SetID(barID) 
-	page:SetAttribute("_onattributechanged", [=[ 
-		if (name == "state-page") then 
-			local page; 
-			if (value == "vehicle") 
-			or (value == "override")
-			or (value == "shapeshift")
-			or (value == "possess")
-			or (value == "11") then 
-				if (value == "vehicle") then 
-					page = GetVehicleBarIndex(); 
-				elseif (value == "override") then 
-					page = GetOverrideBarIndex(); 
-				elseif (value == "shapeshift") then 
-					page = GetTempShapeshiftBarIndex(); 
-				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then  
-					page = GetBonusBarIndex(); 
-				else 
-					page = 12; 
-				end 
-			end 
-
-			if page then 
-				value = page; 
-			end 
-
-			self:SetAttribute("state", value);
-
-			local button = self:GetFrameRef("Button"); 
-			local buttonPage = button:GetAttribute("actionpage"); 
-			local id = button:GetID(); 
-			local actionpage = tonumber(value); 
-			local slot = actionpage and (actionpage > 1) and ((actionpage - 1)*12 + id) or id; 
-
-			button:SetAttribute("actionpage", actionpage or 0); 
-			button:SetAttribute("action", slot); 
-			button:CallMethod("UpdateAction"); 
-		end 
-	]=])
+	page:SetAttribute("_onattributechanged", DEBUG_ENABLED and SECURE.Page_OnAttributeChanged_Debug or SECURE.Page_OnAttributeChanged)
 	
 	local button = setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT)
 
