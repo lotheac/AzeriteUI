@@ -246,7 +246,6 @@ local formatCooldownTime = function(time)
 	end	
 end
 
-
 -- Updates
 ----------------------------------------------------
 local OnUpdate = function(self, elapsed)
@@ -445,7 +444,6 @@ local SetCooldown = function(cooldown, start, duration, enable, forceShowDrawEdg
 	end
 end
 
-
 -- ActionButton Template
 ----------------------------------------------------
 local ActionButton = LibSecureButton:CreateFrame("CheckButton")
@@ -457,7 +455,6 @@ local RegisterEvent = ActionButton_MT.__index.RegisterEvent
 local RegisterUnitEvent = ActionButton_MT.__index.RegisterUnitEvent
 local UnregisterEvent = ActionButton_MT.__index.UnregisterEvent
 local UnregisterAllEvents = ActionButton_MT.__index.UnregisterAllEvents
-
 
 -- Event Handling
 ----------------------------------------------------
@@ -513,7 +510,6 @@ ActionButton.UnregisterAllEvents = function(self)
 	end
 	UnregisterAllEvents(self)
 end
-
 
 -- Button Updates
 ----------------------------------------------------
@@ -813,7 +809,6 @@ ActionButton.UpdateUsable = function(self)
 	end
 end 
 
-
 -- Getters
 ----------------------------------------------------
 ActionButton.GetAction = function(self)
@@ -859,7 +854,6 @@ ActionButton.GetTooltip = function(self)
 	return LibSecureButton:GetActionButtonTooltip()
 end
 
-
 -- Isers
 ----------------------------------------------------
 ActionButton.IsFlyoutShown = function(self)
@@ -884,7 +878,6 @@ ActionButton.IsInRange = function(self)
 
 	return val
 end
-
 
 -- Script Handlers
 ----------------------------------------------------
@@ -1004,7 +997,6 @@ end
 
 ActionButton.PostClick = function(self) 
 end
-
 
 -- Library API
 ----------------------------------------------------
@@ -1199,7 +1191,6 @@ LibSecureButton.CreateFlyoutArrow = function(self, button)
 	button.FlyoutBorder = button:CreateTexture()
 	button.FlyoutBorderShadow = button:CreateTexture()
 end 
-
 
 -- Public API
 ----------------------------------------------------
