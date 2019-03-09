@@ -90,6 +90,11 @@ filters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon, co
 	if (isBossDebuff or (unitCaster == "vehicle")) then
 		return true
 
+	-- Attempting to show vehicle or possessed unit's buffs 
+	-- *This fixes style multipliers now showing in the BFA horse riding
+	elseif UnitHasVehicleUI("player") and (isCastByPlayer or unitCaster == "pet" or unitCaster == "vehicle") then 
+		return true 
+
 	elseif InCombatLockdown() then 
 
 		-- Iterate filtered auras first
