@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 27)
+local LibModule = CogWheel:Set("LibModule", 28)
 if (not LibModule) then	
 	return
 end
@@ -517,6 +517,10 @@ local ModuleProtoType = {
 
 	IsDebugModeEnabled = function(self)
 		return self._debugModeEnabled
+	end,
+
+	GetDebugFrame = function(self)
+		return debugFrame
 	end
 
 }
