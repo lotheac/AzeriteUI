@@ -430,10 +430,19 @@ ActionButton.PostCreate = function(self, ...)
 	self.Icon:ClearAllPoints()
 	self.Icon:SetPoint(unpack(Layout.IconPlace))
 
-	if Layout.IconTexCoord then 
-		self.Icon:SetTexCoord(unpack(Layout.IconTexCoord))
-	elseif Layout.MaskTexture then 
+	-- If SetTexture hasn't been called, the mask and probably texcoords won't stick. 
+	-- This started happening in build 8.1.0.29600 (March 5th, 2019), or at least that's when I noticed.
+	-- Does not appear to be related to whether GetTexture() has a return value or not. 
+	self.Icon:SetTexture("") 
+
+	-- In case the above starts failing, we'll use this, 
+	-- and just removed it after the texture has been set up. 
+	--self.Icon:SetTexture("Interface\\Icons\\Ability_pvp_gladiatormedallion")
+
+	if Layout.MaskTexture then 
 		self.Icon:SetMask(Layout.MaskTexture)
+	elseif Layout.IconTexCoord then 
+		self.Icon:SetTexCoord(unpack(Layout.IconTexCoord))
 	else 
 		self.Icon:SetTexCoord(0, 1, 0, 1)
 	end 
@@ -754,7 +763,7 @@ Module.SpawnButtons = function(self)
 			end 
 			self.elapsed = .05
 		end 
-	end)
+	end) 
 	hoverFrame:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "ACTIONBAR_SHOWGRID") then 
 			self.forced = true
