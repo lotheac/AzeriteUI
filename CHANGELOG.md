@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.120-Alpha] 2019-03-11
+### Fixed
+- Fix actionbutton mask textures not being applied properly since WoW client build 29600(March 5th, 2019). This looked especially bad when buttons faded in and out, as the square shape of the original icons would shine through the border. Thank you Blizz, we really do love your undocumented changes. 
+
 ## [1.2.119-Alpha] 2019-03-11
 ### Added
 - Added a prioritized single aura display for raid- and party frames. This displays boss debuffs, dispellable magic, curses, diseases and poisons when the player has a class and spec that can dispel them, as well as a few select other auras like Priest Atonement. 
