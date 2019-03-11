@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.119-Alpha] 2019-03-11
+### Added
+- Added a prioritized single aura display for raid- and party frames. This displays boss debuffs, dispellable magic, curses, diseases and poisons when the player has a class and spec that can dispel them, as well as a few select other auras like Priest Atonement. 
+
+### Fixed
+- Attempting to work around the nameplate aura misalignment issue. The cause of the issue hasn't been fully verified, only theorized, so this fix can be considered the same. I will pay attention to the issue if it arises again after this build. Full details can be found in the git commit or code comments. 
+
 ## [1.2.118-Alpha] 2019-03-09
 ### Added
 - Added a debug console which will be loaded but hidden by default. You can toggle the console visibility or fully unload it through the addon menu. I recommend leaving it loaded, but disabled. Then if you encounter actionbars that won't change when entering a vehicle, or other behavior that doesn't fully make sense, just enable it, take a screenshot and show us on discord, bitbucket or twitter! For the time being it only tracks actionbar paging changes (entering vehicles, switching druid forms, possessing somebody, etc) and missing locale entries. We'll be adding more if other problem areas should arise. As a rule of thumb though, we won't ever debug anything that doesn't at some point need debugging. And any fully fixed areas will have its debug code removed. 
