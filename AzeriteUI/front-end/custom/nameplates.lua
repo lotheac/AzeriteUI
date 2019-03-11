@@ -325,6 +325,10 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		plate.Auras.PostUpdateButton = PostUpdateAuraButton -- post updates when something changes (even timers)
 		plate.Auras.PostUpdate = Layout.PostUpdateAura
 
+		-- Aura misalignment debugging. 
+		-- We proved that it's the entire element, not the aura sorting that's wrong, 
+		-- so we're disabling this thing here for now. Don't need 40 invisible backdrops. 
+		--[[--
 		local owner = self:GetOwner()
 		if owner.db and owner.db.loadDebugConsole then 
 			local debugFrame = owner:GetDebugFrame()
@@ -344,6 +348,7 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 				debugFrame:HookScript("OnHide", function() devHelp:Hide() end)
 			end 
 		end 
+		--]]--
 
 		if (not db.enableAuras) then 
 			plate:DisableElement("Auras")
@@ -360,6 +365,7 @@ Module.PostUpdateSettings = function(self)
 		if db.enableAuras then 
 			plate:EnableElement("Auras")
 			plate.Auras:ForceUpdate()
+			plate.RaidTarget:ForceUpdate()
 		else 
 			plate:DisableElement("Auras")
 			plate.RaidTarget:ForceUpdate()
