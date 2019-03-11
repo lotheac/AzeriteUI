@@ -3626,7 +3626,7 @@ local UnitFrameParty = setmetatable({
 			local self = element._owner
 
 			local rc = self.ReadyCheck
-			local rd = self.RaidDebuff
+			local rd = self.GroupAura
 			local rz = self.ResurrectIndicator
 			local hv = self.Health.Value
 
@@ -3649,7 +3649,7 @@ local UnitFrameParty = setmetatable({
 			local self = element._owner
 
 			local rc = self.ReadyCheck
-			local rd = self.RaidDebuff
+			local rd = self.GroupAura
 			local us = self.UnitStatus
 			local hv = self.Health.Value
 
@@ -3682,7 +3682,7 @@ local UnitFrameParty = setmetatable({
 		ReadyCheckPostUpdate = function(element, unit, status) 
 			local self = element._owner
 
-			local rd = self.RaidDebuff
+			local rd = self.GroupAura
 			local rz = self.ResurrectIndicator
 			local us = self.UnitStatus
 			local hv = self.Health.Value
@@ -3717,8 +3717,32 @@ local UnitFrameParty = setmetatable({
 			end 
 		end,
 
-	UseRaidDebuff = true, -- Prio #1
-		RaidDebuffPostUpdate = function(element, unit)
+	UseGroupAura = true, -- Prio #1
+		GroupAuraSize = { 36, 36 },
+		GroupAuraPlace = { "BOTTOM", 0, Constant.TinyBar[2]/2 - 36/2 -1 }, 
+		GroupAuraButtonIconPlace = { "CENTER", 0, 0 },
+		GroupAuraButtonIconSize = { 36 - 6, 36 - 6 },
+		GroupAuraButtonIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
+		GroupAuraButtonCountPlace = { "BOTTOMRIGHT", 9, -6 },
+		GroupAuraButtonCountFont = GetFont(12, true),
+		GroupAuraButtonCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+		GroupAuraButtonTimePlace = { "CENTER", 0, 0 },
+		GroupAuraButtonTimeFont = GetFont(11, true),
+		GroupAuraButtonTimeColor = { 250/255, 250/255, 250/255, .85 },
+		GroupAuraButtonBorderFramePlace = { "CENTER", 0, 0 }, 
+		GroupAuraButtonBorderFrameSize = { 36 + 16, 36 + 16 },
+		GroupAuraButtonBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 16 },
+		GroupAuraButtonBorderBackdropColor = { 0, 0, 0, 0 },
+		GroupAuraButtonBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
+		GroupAuraButtonDisableMouse = false, 
+		GroupAuraTooltipDefaultPosition = nil, 
+		--GroupAuraTooltipPoint = "BOTTOMLEFT", 
+		--GroupAuraTooltipAnchor = nil, 
+		--GroupAuraTooltipRelPoint = "TOPLEFT", 
+		--GroupAuraTooltipOffsetX = -8, 
+		--GroupAuraTooltipOffsetY = -16,
+
+		GroupAuraPostUpdate = function(element, unit)
 			local self = element._owner 
 
 			local rz = self.ResurrectIndicator
@@ -3838,11 +3862,11 @@ local UnitFrameParty = setmetatable({
 		DebuffFilterFunc = nil, 
 		AuraDisableMouse = true, -- don't allow mouse input here
 		AuraTooltipDefaultPosition = nil, 
-		AuraTooltipPoint = "BOTTOMLEFT", 
-		AuraTooltipAnchor = nil, 
-		AuraTooltipRelPoint = "TOPLEFT", 
-		AuraTooltipOffsetX = -8, 
-		AuraTooltipOffsetY = -16,
+		--AuraTooltipPoint = "BOTTOMLEFT", 
+		--AuraTooltipAnchor = nil, 
+		--AuraTooltipRelPoint = "TOPLEFT", 
+		--AuraTooltipOffsetX = -8, 
+		--AuraTooltipOffsetY = -16,
 
 		AuraIconPlace = { "CENTER", 0, 0 },
 		AuraIconSize = { 30 - 6, 30 - 6 },
@@ -3862,6 +3886,19 @@ local UnitFrameParty = setmetatable({
 	
 	
 }, { __index = Template_TinyFrame })
+
+-- Use a metatable to dynamically create the colors
+local spellTypeColor = setmetatable({
+	["Custom"] = { 1, .9294, .7607 }, -- same color I used for "unknown" zone names (instances, bgs, contested zones on pve realms)
+--	["none"] = { 0, 0, 0 }
+}, { __index = function(tbl,key)
+		local v = DebuffTypeColor[key]
+		if v then
+			tbl[key] = { v.r, v.g, v.b }
+			return tbl[key]
+		end
+	end
+})
 
 -- Raid
 local UnitFrameRaid = setmetatable({
@@ -3930,7 +3967,7 @@ local UnitFrameRaid = setmetatable({
 			local self = element._owner
 
 			local rc = self.ReadyCheck
-			local rd = self.RaidDebuff
+			local rd = self.GroupAura
 			local rz = self.ResurrectIndicator
 
 			if element:IsShown() then 
@@ -3988,7 +4025,7 @@ local UnitFrameRaid = setmetatable({
 			local self = element._owner
 
 			local rc = self.ReadyCheck
-			local rd = self.RaidDebuff
+			local rd = self.GroupAura
 			local us = self.UnitStatus
 
 			if element:IsShown() then 
@@ -4015,7 +4052,7 @@ local UnitFrameRaid = setmetatable({
 		ReadyCheckPostUpdate = function(element, unit, status) 
 			local self = element._owner
 
-			local rd = self.RaidDebuff
+			local rd = self.GroupAura
 			local rz = self.ResurrectIndicator
 			local us = self.UnitStatus
 
@@ -4047,8 +4084,32 @@ local UnitFrameRaid = setmetatable({
 		RaidRoleDrawLayer = { "ARTWORK", 3 },
 		RaidRoleRaidTargetTexture = GetMedia("raid_target_icons_small"),
 
-	UseRaidDebuff = true, -- Prio #1
-		RaidDebuffPostUpdate = function(element, unit)
+	UseGroupAura = true, -- Prio #1
+		GroupAuraSize = { 24, 24 },
+		GroupAuraPlace = { "BOTTOM", 0, Constant.TinyBar[2]/2 - 24/2 -(1 + 2) }, 
+		GroupAuraButtonIconPlace = { "CENTER", 0, 0 },
+		GroupAuraButtonIconSize = { 24 - 6, 24 - 6 },
+		GroupAuraButtonIconTexCoord = { 5/64, 59/64, 5/64, 59/64 }, -- aura icon tex coords
+		GroupAuraButtonCountPlace = { "BOTTOMRIGHT", 9, -6 },
+		GroupAuraButtonCountFont = GetFont(12, true),
+		GroupAuraButtonCountColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .85 },
+		GroupAuraButtonTimePlace = { "CENTER", 0, 0 },
+		GroupAuraButtonTimeFont = GetFont(11, true),
+		GroupAuraButtonTimeColor = { 250/255, 250/255, 250/255, .85 },
+		GroupAuraButtonBorderFramePlace = { "CENTER", 0, 0 }, 
+		GroupAuraButtonBorderFrameSize = { 24 + 12, 24 + 12 },
+		GroupAuraButtonBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 12 },
+		GroupAuraButtonBorderBackdropColor = { 0, 0, 0, 0 },
+		GroupAuraButtonBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
+		GroupAuraButtonDisableMouse = false, 
+		GroupAuraTooltipDefaultPosition = nil, 
+		--GroupAuraTooltipPoint = "BOTTOMLEFT", 
+		--GroupAuraTooltipAnchor = nil, 
+		--GroupAuraTooltipRelPoint = "TOPLEFT", 
+		--GroupAuraTooltipOffsetX = -8, 
+		--GroupAuraTooltipOffsetY = -16,
+
+		GroupAuraPostUpdate = function(element, unit)
 			local self = element._owner 
 
 			local rz = self.ResurrectIndicator
@@ -4060,6 +4121,19 @@ local UnitFrameRaid = setmetatable({
 				rc:Hide()
 				rz:Hide()
 				us:Hide()
+
+				-- Colorize the border
+				if (element.filter == "HARMFUL") then 
+					local color = element.debuffType and spellTypeColor[element.debuffType]
+					if color then 
+						element.Border:SetBackdropBorderColor(color[1], color[2], color[3])
+					else
+						element.Border:SetBackdropBorderColor(Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3)
+					end
+				else
+					element.Border:SetBackdropBorderColor(Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3)
+				end
+		
 			else 
 				-- Display lower priority elements as needed 
 				if rc.status then 

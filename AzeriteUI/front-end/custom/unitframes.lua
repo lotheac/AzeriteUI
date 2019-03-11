@@ -82,6 +82,10 @@ local S_AFK = _G.AFK
 local S_DEAD = _G.DEAD
 local S_PLAYER_OFFLINE = _G.PLAYER_OFFLINE
 
+-- WoW Textures
+local EDGE_NORMAL_TEXTURE = [[Interface\Cooldown\edge]]
+local BLING_TEXTURE = [[Interface\Cooldown\star4]]
+
 -- Player data
 local _,PlayerClass = UnitClass("player")
 local _,PlayerLevel = UnitLevel("player")
@@ -1122,12 +1126,12 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 	-- frame to contain bars, icons, etc
 	local content = self:CreateFrame("Frame")
 	content:SetAllPoints()
-	content:SetFrameLevel(self:GetFrameLevel() + 5)
+	content:SetFrameLevel(self:GetFrameLevel() + 10)
 
 	-- frame to contain art overlays, texts, etc
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 20)
 
 	-- Border
 	-----------------------------------------------------------	
@@ -1530,12 +1534,12 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 	-- frame to contain bars, icons, etc
 	local content = self:CreateFrame("Frame")
 	content:SetAllPoints()
-	content:SetFrameLevel(self:GetFrameLevel() + 5)
+	content:SetFrameLevel(self:GetFrameLevel() + 10)
 
 	-- frame to contain art overlays, texts, etc
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 20)
 
 
 	-- Border
@@ -1711,6 +1715,80 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 		self.Cast.PostUpdate = Layout.CastBarPostUpdate
 	end 
 
+	-- Group Debuff
+	-----------------------------------------------------------
+	if Layout.UseGroupAura then 
+		local groupAura = overlay:CreateFrame("Button")
+		groupAura:SetFrameLevel(overlay:GetFrameLevel() - 4)
+		groupAura:SetPoint(unpack(Layout.GroupAuraPlace))
+		groupAura:SetSize(unpack(Layout.GroupAuraSize))
+		groupAura.disableMouse = Layout.GroupAuraButtonDisableMouse
+		groupAura.tooltipDefaultPosition = Layout.GroupAuraTooltipDefaultPosition
+		groupAura.tooltipPoint = Layout.GroupAuraTooltipPoint
+		groupAura.tooltipAnchor = Layout.GroupAuraTooltipAnchor
+		groupAura.tooltipRelPoint = Layout.GroupAuraTooltipRelPoint
+		groupAura.tooltipOffsetX = Layout.GroupAuraTooltipOffsetX
+		groupAura.tooltipOffsetY = Layout.GroupAuraTooltipOffsetY
+
+		local icon = groupAura:CreateTexture()
+		icon:SetPoint(unpack(Layout.GroupAuraButtonIconPlace))
+		icon:SetSize(unpack(Layout.GroupAuraButtonIconSize))
+		icon:SetTexCoord(unpack(Layout.GroupAuraButtonIconTexCoord))
+		icon:SetDrawLayer("ARTWORK", 1)
+		groupAura.Icon = icon
+
+		-- Frame to contain art overlays, texts, etc
+		local overlay = groupAura:CreateFrame("Frame")
+		overlay:SetFrameLevel(groupAura:GetFrameLevel() + 3)
+		overlay:SetAllPoints(groupAura)
+		groupAura.Overlay = overlay
+
+		-- Cooldown frame
+		local cooldown = groupAura:CreateFrame("Cooldown", nil, groupAura, "CooldownFrameTemplate")
+		cooldown:Hide()
+		cooldown:SetAllPoints(groupAura)
+		cooldown:SetFrameLevel(groupAura:GetFrameLevel() + 1)
+		cooldown:SetReverse(false)
+		cooldown:SetSwipeColor(0, 0, 0, .75)
+		cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) 
+		cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+		cooldown:SetDrawSwipe(true)
+		cooldown:SetDrawBling(true)
+		cooldown:SetDrawEdge(false)
+		cooldown:SetHideCountdownNumbers(true) 
+		groupAura.Cooldown = cooldown
+
+		local time = overlay:CreateFontString()
+		time:SetDrawLayer("ARTWORK", 1)
+		time:SetPoint(unpack(Layout.GroupAuraButtonTimePlace))
+		time:SetFontObject(Layout.GroupAuraButtonTimeFont)
+		time:SetJustifyH("CENTER")
+		time:SetJustifyV("MIDDLE")
+		time:SetTextColor(unpack(Layout.GroupAuraButtonTimeColor))
+		groupAura.Time = time
+	
+		local count = overlay:CreateFontString()
+		count:SetDrawLayer("OVERLAY", 1)
+		count:SetPoint(unpack(Layout.GroupAuraButtonCountPlace))
+		count:SetFontObject(Layout.GroupAuraButtonCountFont)
+		count:SetJustifyH("CENTER")
+		count:SetJustifyV("MIDDLE")
+		count:SetTextColor(unpack(Layout.GroupAuraButtonCountColor))
+		groupAura.Count = count
+	
+		local border = groupAura:CreateFrame("Frame")
+		border:SetFrameLevel(groupAura:GetFrameLevel() + 2)
+		border:SetPoint(unpack(Layout.GroupAuraButtonBorderFramePlace))
+		border:SetSize(unpack(Layout.GroupAuraButtonBorderFrameSize))
+		border:SetBackdrop(Layout.GroupAuraButtonBorderBackdrop)
+		border:SetBackdropColor(unpack(Layout.GroupAuraButtonBorderBackdropColor))
+		border:SetBackdropBorderColor(unpack(Layout.GroupAuraButtonBorderBackdropBorderColor))
+		groupAura.Border = border 
+
+		self.GroupAura = groupAura
+		self.GroupAura.PostUpdate = Layout.GroupAuraPostUpdate
+	end 
+
 	-- Group Role
 	-----------------------------------------------------------
 	if Layout.UseGroupRole then 
@@ -1783,13 +1861,6 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 		readyCheck:SetDrawLayer(unpack(Layout.ReadyCheckDrawLayer))
 		self.ReadyCheck = readyCheck
 		self.ReadyCheck.PostUpdate = Layout.ReadyCheckPostUpdate
-	end 
-
-	-- Raid Debuff
-	-----------------------------------------------------------
-	if Layout.UseRaidDebuff then 
-		local raidDebuff = overlay:CreateFrame("Button")
-		self.RaidDebuff = raidDebuff
 	end 
 
 	-- Unit Status
@@ -2048,12 +2119,12 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	-- frame to contain bars, icons, etc
 	local content = self:CreateFrame("Frame")
 	content:SetAllPoints()
-	content:SetFrameLevel(self:GetFrameLevel() + 5)
+	content:SetFrameLevel(self:GetFrameLevel() + 10)
 
 	-- frame to contain art overlays, texts, etc
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 20)
 
 
 	-- Border
@@ -2229,6 +2300,80 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		self.Cast.PostUpdate = Layout.CastBarPostUpdate
 	end 
 
+	-- Group Debuff
+	-----------------------------------------------------------
+	if Layout.UseGroupAura then 
+		local groupAura = overlay:CreateFrame("Button")
+		groupAura:SetFrameLevel(overlay:GetFrameLevel() - 4)
+		groupAura:SetPoint(unpack(Layout.GroupAuraPlace))
+		groupAura:SetSize(unpack(Layout.GroupAuraSize))
+		groupAura.disableMouse = Layout.GroupAuraButtonDisableMouse
+		groupAura.tooltipDefaultPosition = Layout.GroupAuraTooltipDefaultPosition
+		groupAura.tooltipPoint = Layout.GroupAuraTooltipPoint
+		groupAura.tooltipAnchor = Layout.GroupAuraTooltipAnchor
+		groupAura.tooltipRelPoint = Layout.GroupAuraTooltipRelPoint
+		groupAura.tooltipOffsetX = Layout.GroupAuraTooltipOffsetX
+		groupAura.tooltipOffsetY = Layout.GroupAuraTooltipOffsetY
+
+		local icon = groupAura:CreateTexture()
+		icon:SetPoint(unpack(Layout.GroupAuraButtonIconPlace))
+		icon:SetSize(unpack(Layout.GroupAuraButtonIconSize))
+		icon:SetTexCoord(unpack(Layout.GroupAuraButtonIconTexCoord))
+		icon:SetDrawLayer("ARTWORK", 1)
+		groupAura.Icon = icon
+
+		-- Frame to contain art overlays, texts, etc
+		local overlay = groupAura:CreateFrame("Frame")
+		overlay:SetFrameLevel(groupAura:GetFrameLevel() + 3)
+		overlay:SetAllPoints(groupAura)
+		groupAura.Overlay = overlay
+
+		-- Cooldown frame
+		local cooldown = groupAura:CreateFrame("Cooldown", nil, groupAura, "CooldownFrameTemplate")
+		cooldown:Hide()
+		cooldown:SetAllPoints(groupAura)
+		cooldown:SetFrameLevel(groupAura:GetFrameLevel() + 1)
+		cooldown:SetReverse(false)
+		cooldown:SetSwipeColor(0, 0, 0, .75)
+		cooldown:SetBlingTexture(BLING_TEXTURE, .3, .6, 1, .75) 
+		cooldown:SetEdgeTexture(EDGE_NORMAL_TEXTURE)
+		cooldown:SetDrawSwipe(true)
+		cooldown:SetDrawBling(true)
+		cooldown:SetDrawEdge(false)
+		cooldown:SetHideCountdownNumbers(true) 
+		groupAura.Cooldown = cooldown
+		
+		local time = overlay:CreateFontString()
+		time:SetDrawLayer("ARTWORK", 1)
+		time:SetPoint(unpack(Layout.GroupAuraButtonTimePlace))
+		time:SetFontObject(Layout.GroupAuraButtonTimeFont)
+		time:SetJustifyH("CENTER")
+		time:SetJustifyV("MIDDLE")
+		time:SetTextColor(unpack(Layout.GroupAuraButtonTimeColor))
+		groupAura.Time = time
+	
+		local count = overlay:CreateFontString()
+		count:SetDrawLayer("OVERLAY", 1)
+		count:SetPoint(unpack(Layout.GroupAuraButtonCountPlace))
+		count:SetFontObject(Layout.GroupAuraButtonCountFont)
+		count:SetJustifyH("CENTER")
+		count:SetJustifyV("MIDDLE")
+		count:SetTextColor(unpack(Layout.GroupAuraButtonCountColor))
+		groupAura.Count = count
+	
+		local border = groupAura:CreateFrame("Frame")
+		border:SetFrameLevel(groupAura:GetFrameLevel() + 2)
+		border:SetPoint(unpack(Layout.GroupAuraButtonBorderFramePlace))
+		border:SetSize(unpack(Layout.GroupAuraButtonBorderFrameSize))
+		border:SetBackdrop(Layout.GroupAuraButtonBorderBackdrop)
+		border:SetBackdropColor(unpack(Layout.GroupAuraButtonBorderBackdropColor))
+		border:SetBackdropBorderColor(unpack(Layout.GroupAuraButtonBorderBackdropBorderColor))
+		groupAura.Border = border 
+
+		self.GroupAura = groupAura
+		self.GroupAura.PostUpdate = Layout.GroupAuraPostUpdate
+	end 
+
 	-- Group Role
 	-----------------------------------------------------------
 	if Layout.UseGroupRole then 
@@ -2296,13 +2441,6 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		readyCheck:SetDrawLayer(unpack(Layout.ReadyCheckDrawLayer))
 		self.ReadyCheck = readyCheck
 		self.ReadyCheck.PostUpdate = Layout.ReadyCheckPostUpdate
-	end 
-
-	-- Raid Debuff
-	-----------------------------------------------------------
-	if Layout.UseRaidDebuff then 
-		local raidDebuff = overlay:CreateFrame("Button")
-		self.RaidDebuff = raidDebuff
 	end 
 
 	-- Range
@@ -2510,12 +2648,12 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 	-- frame to contain bars, icons, etc
 	local content = self:CreateFrame("Frame")
 	content:SetAllPoints()
-	content:SetFrameLevel(self:GetFrameLevel() + 5)
+	content:SetFrameLevel(self:GetFrameLevel() + 10)
 
 	-- frame to contain art overlays, texts, etc
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 20)
 
 	-- Border
 	-----------------------------------------------------------	
@@ -3130,12 +3268,12 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 	-- frame to contain bars, icons, etc
 	local content = self:CreateFrame("Frame")
 	content:SetAllPoints()
-	content:SetFrameLevel(self:GetFrameLevel() + 5)
+	content:SetFrameLevel(self:GetFrameLevel() + 10)
 
 	-- frame to contain art overlays, texts, etc
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 20)
 
 
 	-- Cast Bar
@@ -3380,12 +3518,12 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 	-- frame to contain bars, icons, etc
 	local content = self:CreateFrame("Frame")
 	content:SetAllPoints()
-	content:SetFrameLevel(self:GetFrameLevel() + 5)
+	content:SetFrameLevel(self:GetFrameLevel() + 10)
 
 	-- frame to contain art overlays, texts, etc
 	local overlay = self:CreateFrame("Frame")
 	overlay:SetAllPoints()
-	overlay:SetFrameLevel(self:GetFrameLevel() + 10)
+	overlay:SetFrameLevel(self:GetFrameLevel() + 20)
 
 	-- Border
 	if Layout.UseBorderBackdrop then 
@@ -4327,7 +4465,7 @@ end
 -- Party
 -----------------------------------------------------------
 UnitFrameParty.OnInit = function(self)
-	local dev -- = true
+	local dev --= true
 
 	-- Default settings
 	local defaults = {
@@ -4373,7 +4511,11 @@ UnitFrameParty.OnInit = function(self)
 
 	for i = 1,4 do 
 		local frame = self:SpawnUnitFrame(dev and "player" or "party"..i, self.frame, style)
+
+		-- Reference the frame in Lua
 		self.frame[tostring(i)] = frame
+
+		-- Reference the frame in the secure environment
 		self.frame:SetFrameRef("CurrentFrame", frame)
 		self.frame:Execute(SECURE.FrameTable_InsertCurrentFrame)
 	end 
