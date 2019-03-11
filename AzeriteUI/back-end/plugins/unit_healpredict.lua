@@ -1,9 +1,7 @@
-
 -- Lua API
 local _G = _G
 
 -- WoW API
-local UnitIsUnit = _G.UnitIsUnit
 
 local Update = function(self, event, unit, ...)
 	if (not unit) or (unit ~= self.unit) then 
@@ -65,5 +63,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("HealPredict", Enable, Disable, Proxy, 1)
+	Lib:RegisterElement("HealPredict", Enable, Disable, Proxy, 2)
 end 
