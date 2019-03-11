@@ -1490,7 +1490,15 @@ local NamePlates = {
 
 	UseAuras = true, 
 		AuraFrameSize = { 30*3 + 2*5, 30*2 + 5  }, 
-		AuraFramePlace = { "TOP", 0, 30*2+5 + 10 },
+		--AuraFramePlace = { "TOP", 0, 30*2+5 + 10 },
+
+		-- Try to work around the problem with misaligned auras by changing the anchor? 
+		-- I can't seem to find any position but the initial, so it might be that they're 
+		-- anchored before the frame has a real size and the anchor just "sticks"...? 
+		-- Weirdness. Can't reproduce it consistantly, which backs up that theory. 
+		-- So for now I'll just attempt to work around it, see if it goes away!
+		AuraFramePlace = { "TOPLEFT", (80 - 30*3 + 2*5)/2, 30*2+5 + 10 },
+
 		AuraSize = 30, 
 		AuraSpaceH = 4, 
 		AuraSpaceV = 4, 
@@ -3881,9 +3889,6 @@ local UnitFrameParty = setmetatable({
 		AuraBorderBackdrop = { edgeFile = GetMedia("aura_border"), edgeSize = 12 },
 		AuraBorderBackdropColor = { 0, 0, 0, 0 },
 		AuraBorderBackdropBorderColor = { Colors.ui.stone[1] *.3, Colors.ui.stone[2] *.3, Colors.ui.stone[3] *.3 },
-
-		--PostUpdateAura = NamePlates_Auras_PostUpdate,
-	
 	
 }, { __index = Template_TinyFrame })
 
