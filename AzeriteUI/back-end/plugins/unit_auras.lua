@@ -16,7 +16,6 @@ local table_wipe = table.wipe
 local CancelUnitBuff = _G.CancelUnitBuff
 local GetTime = _G.GetTime
 local InCombatLockdown = _G.InCombatLockdown
-local UnitAura = _G.UnitAura
 local UnitBuff = _G.UnitBuff
 local UnitDebuff = _G.UnitDebuff
 local UnitExists = _G.UnitExists
@@ -299,6 +298,9 @@ local CreateAuraButton = function(element)
 	button.Count = count
 
 	-- Borrow the unitframe tooltip
+	-- *Note that this method is created after element initialization, 
+	-- so we should probably use a smarter callback here. 
+	-- For now this is "safe", though, since auras won't be parsed this early anyway. 
 	button.GetTooltip = element._owner.GetTooltip
 
 	-- Run user post creation method
@@ -796,5 +798,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 34)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 35)
 end 
