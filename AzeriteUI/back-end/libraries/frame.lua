@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 45)
+local LibFrame = CogWheel:Set("LibFrame", 47)
 if (not LibFrame) then	
 	return
 end
@@ -62,73 +62,66 @@ if (not IsLoggedIn()) and (not InCombatLockdown()) then
 	LibFrame.frameParent:Hide()
 end
 
-local SetDisplaySize 
-if false then 
+local SetDisplaySize = function(self)
 
-	SetDisplaySize = function(self)
+	--Retrieve UIParent size
+	local width, height = UIParent:GetSize()
+	width = (width + .5) - (width + .5)%1
+	height = (height + .5) - (height + .5)%1
 
-		-- Retrieve WorldFrame size
-		local width, height = WorldFrame:GetSize()
+	-- Set the size and take scale into consideration
+	local precision = 1e5
+	--local uiScale = UIParent:GetEffectiveScale()
+	--uiScale = ((uiScale*precision + .5) - (uiScale*precision + .5)%1)/precision
 
-		-- Round to nearest integer, 
-		-- as blizz values tend to be inaccurate.
-		width = (width + .5) - width%1
-		height = (height + .5) - height%1
+	local scale = height/1080
 
-		-- Set the size and take scale into consideration
-		local scale = 768/1080
-		local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
-		local displayHeight = height/scale
-		
-		LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
-		LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
-		LibFrame.frame:ClearAllPoints()
-		LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
-		LibFrame.frame:SetScale(scale)
-		LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
-	end 
+	local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
+	local displayHeight = height/scale
+	local displayRatio = displayWidth/displayHeight
 
-else 
+	-- Implement this later when we've create an API for it.
+	if false then 
 
-	SetDisplaySize = function(self)
+		-- Higher ratio means a narrower screen.
+		local desiredRatioMin = LibFrame.DesiredRatioMin or 4/3 -- 16/10 
+		local desiredRatioMax = LibFrame.DesiredRatioMax or 16/10 -- 16/9
 
-		-- Retrieve WorldFrame size
-		-- Round to nearest integer, 
-		-- as blizz values tend to be inaccurate.
-		local wWidth, wHeight = WorldFrame:GetSize()
-		wWidth = (wWidth + .5) - wWidth%1
-		wHeight = (wHeight + .5) - wHeight%1
+		--local deviation = precision/scale
+		local deviation = (((displayRatio*precision + .5) - (displayRatio*precision + .5)%1)/precision) - displayRatio
 
-		--Retrieve UIParent size
-		local width, height = UIParent:GetSize()
-		width = (width + .5) - width%1
-		height = (height + .5) - height%1
+		-- if the goal range exists, figure out which one to use. 
+		local min = ((desiredRatioMin - deviation) <= displayRatio) and ((desiredRatioMin + deviation) >= displayRatio)
+		local max = ((desiredRatioMax - deviation) <= displayRatio) and ((desiredRatioMax + deviation) >= displayRatio)
 
-		-- Set the size and take scale into consideration
-		local precision = 1e5
-		local uiScale = UIParent:GetEffectiveScale()
-		uiScale = ((uiScale*precision + .5) - (uiScale*precision + .5)%1)/precision
+		--print("Minratio, maxratio, deviation", desiredRatioMin, desiredRatioMax, deviation)
 
-		local wScale = 768/1080
-		wScale = ((uiScale*precision + .5) - (uiScale*precision + .5)%1)/precision
+		-- The desired ratio is within the bounds of the screen size, apply it!
+		if min then
+			displayWidth = (displayHeight*desiredRatioMin +.5) - (displayHeight*desiredRatioMin +.5)%1
+			--print("Going with Minratio, it's a fit!")
+		elseif max then 
+			displayWidth = (displayHeight*desiredRatioMax +.5) - (displayHeight*desiredRatioMax +.5)%1
+			--print("Going with Maxratio, it's a fit!")
+		else
+			if displayRatio > desiredRatioMax then
+				displayWidth = (displayHeight*desiredRatioMax +.5) - (displayHeight*desiredRatioMax +.5)%1
+				--print("Going with Maxratio, as it's closest to our goal")
+			elseif displayRatio > desiredRatioMin then 
+				displayWidth = (displayHeight*desiredRatioMin +.5) - (displayHeight*desiredRatioMin +.5)%1
+				--print("Going with Minratio, as it's closest to our goal")
+			end
+		end
+	end
 
-		local scale = height/1080
-
-		local displayWidth = (((width/height) >= (16/10)*3) and width/3 or width)/scale
-		local displayHeight = height/scale
-		
-		LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
-		LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
-		LibFrame.frame:ClearAllPoints()
-		LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
-		LibFrame.frame:SetScale(scale)
-		LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
-	end 
-
-end
-
+	LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
+	LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
+	LibFrame.frame:ClearAllPoints()
+	LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
+	LibFrame.frame:SetScale(scale)
+	LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
+end 
 SetDisplaySize(LibFrame)
-
 
 -- Keep it and all its children hidden during pet battles. 
 RegisterAttributeDriver(LibFrame.frame, "state-visibility", "[petbattle] hide; show")
@@ -165,10 +158,8 @@ local blizzSetSize = FrameMethods.SetSize
 local blizzSetWidth = FrameMethods.SetWidth
 local blizzSetHeight = FrameMethods.SetHeight
 
-
 -- Utility Functions
 -----------------------------------------------------------------
-
 -- Translate keywords to frame handles used for anchoring.
 local parseAnchor = function(anchor)
 	return anchor and (keyWords[anchor] and keyWords[anchor]() or _G[anchor] and _G[anchor] or anchor) or KEYWORD_DEFAULT and keyWords[KEYWORD_DEFAULT]() or WorldFrame
@@ -189,10 +180,8 @@ local embed = function(target, source)
 	return target
 end
 
-
 -- Frame Template
 -----------------------------------------------------------------
-
 local frameWidgetPrototype = {
 
 	-- Position a widget, and accept keywords as anchors
@@ -283,7 +272,6 @@ framePrototype = {
 
 -- Embed custom frame widget methods in the main frame prototype too 
 embed(framePrototype, frameWidgetPrototype)
-
 
 -- Allow more methods to be added to our frame objects. 
 -- This will cascade down through all LibFrames, so use with caution!
