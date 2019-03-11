@@ -158,17 +158,3 @@ front-end\custom\menu.lua
 front-end\custom\nameplates.lua
 front-end\custom\tooltips.lua
 front-end\custom\unitframes.lua
-
-# Module loading order shouldn't matter, 
-# just keeping the old ones here as reference 
-# until I'm sure everything is working as planned. 
-
-#front-end\custom\actionbars.lua
-#front-end\custom\chatfilters.lua
-#front-end\custom\nameplates.lua
-#front-end\custom\tooltips.lua
-#front-end\custom\unitframes.lua
-#front-end\custom\grouptools.lua
-#front-end\custom\bindings.lua
-#front-end\custom\explorer.lua
-#front-end\custom\menu.lua
