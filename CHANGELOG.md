@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.122-Alpha] 2019-03-12
+### Changed
+- Actionbutton actions will now be prevented if the three modifier keys are held down, allowing us to drag all spells away from the buttons even with cast on down enabled. This does not fix the issue when cast on down is enabled and button lock is off, as there isn't really any way for us to separate between mouse clicks and keybinds. But at least holding the modifiers will guarantee success now.
+
 ## [1.2.121-Alpha] 2019-03-12
 ### Added 
 - Added heal predictions and heal absorbs for the player and target unit frames. 
