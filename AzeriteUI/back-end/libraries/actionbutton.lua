@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 48)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 49)
 if (not LibSecureButton) then	
 	return
 end
@@ -329,6 +329,7 @@ local Update = function(self, event, ...)
 	elseif (event == "PLAYER_REGEN_ENABLED") then 
 		if self.queuedForMacroUpdate then 
 			self:UpdateAutoCastMacro()
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", Update)
 			self.queuedForMacroUpdate = nil
 		end 
 
@@ -574,6 +575,7 @@ end
 ActionButton.UpdateAutoCastMacro = function(self)
 	if InCombatLockdown() then 
 		self.queuedForMacroUpdate = true
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", Update)
 		return 
 	end
 	local name = IsAutoCastPetAction(self.buttonAction) and GetSpellInfo(self:GetSpellID())
@@ -901,7 +903,7 @@ ActionButton.OnEnable = function(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", Update)
 	self:RegisterEvent("PLAYER_LEAVE_COMBAT", Update)
 	self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
-	self:RegisterEvent("PLAYER_REGEN_ENABLED", Update)
+	--self:RegisterEvent("PLAYER_REGEN_ENABLED", Update)
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", Update)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
 	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
@@ -939,7 +941,7 @@ ActionButton.OnDisable = function(self)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD", Update)
 	self:UnregisterEvent("PLAYER_LEAVE_COMBAT", Update)
 	self:UnregisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
-	self:UnregisterEvent("PLAYER_REGEN_ENABLED", Update)
+	--self:UnregisterEvent("PLAYER_REGEN_ENABLED", Update)
 	self:UnregisterEvent("PLAYER_TARGET_CHANGED", Update)
 	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
 	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
@@ -1272,6 +1274,7 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	page:SetAttribute("_onattributechanged", DEBUG_ENABLED and SECURE.Page_OnAttributeChanged_Debug or SECURE.Page_OnAttributeChanged)
 	
 	local button = setmetatable(page:CreateFrame("CheckButton", name, "SecureActionButtonTemplate"), ActionButton_MT)
+	button:SetFrameStrata("LOW")
 
 	LibSecureButton:CreateButtonLayers(button)
 	LibSecureButton:CreateButtonOverlay(button)
@@ -1282,9 +1285,16 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	LibSecureButton:CreateButtonAutoCast(button)
 	LibSecureButton:CreateFlyoutArrow(button)
 
-	button:SetFrameStrata("LOW")
 	button:RegisterForDrag("LeftButton", "RightButton")
 	button:RegisterForClicks("AnyUp")
+
+	-- This allows drag functionality, but stops the casting, 
+	-- thus allowing us to drag spells even with cast on down, wohoo! 
+	-- Doesn't currently appear to be a way to make this work without the modifier, though, 
+	-- since the override bindings we use work by sending mouse events to the listeners, 
+	-- meaning there's no way to separate keys and mouse buttons. 
+	button:SetAttribute("alt-ctrl-shift-type*", "stop")
+
 	button:SetID(buttonID)
 	button:SetAttribute("type", "action")
 	button:SetAttribute("flyoutDirection", "UP")
@@ -1298,6 +1308,7 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 
 	button._owner = visibility
 	button._pager = page
+
 
 	button:SetScript("OnEnter", ActionButton.OnEnter)
 	button:SetScript("OnLeave", ActionButton.OnLeave)
@@ -1349,17 +1360,19 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 		end
 	]])
 
+	-- When a spell is dragged from a button
+	-- *This never fires when cast on down is enabled. ARGH! 
 	page:WrapScript(button, "OnDragStart", [[
 		return self:RunAttribute("OnDragStart")
 	]])
-
+	-- Bartender says: 
 	-- Wrap twice, because the post-script is not run when the pre-script causes a pickup (doh)
 	-- we also need some phony message, or it won't work =/
 	page:WrapScript(button, "OnDragStart", [[
 		return "message", "update"
 	]])
 
-	-- when a spell is dropped onto the buttons
+	-- When a spell is dropped onto a button
 	page:WrapScript(button, "OnReceiveDrag", [[
 		local kind, value, subtype, extra = ...
 		if ((not kind) or (not value)) then 
@@ -1373,6 +1386,9 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 		if action and ((not buttonLock) or (IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown())) then
 			return "action", action
 		end 
+	]])
+	page:WrapScript(button, "OnReceiveDrag", [[
+		return "message", "update"
 	]])
 
 	local driver 
@@ -1610,9 +1626,9 @@ LibSecureButton.UpdateActionButtonBindings = function(self)
 			-- get a key for the action
 			local key = select(keyNumber, GetBindingKey(bindingAction)) 
 			if (key and (key ~= "")) then
-
 				-- this is why we need named buttons
-				SetOverrideBindingClick(pager, false, key, button:GetName()) -- assign the key to our own button
+				-- SetOverrideBindingClick(owner, isPriority, "key", "buttonName"[, "mouseClick"]);
+				SetOverrideBindingClick(pager, false, key, button:GetName(), "CLICK: LeftButton") -- assign the key to our own button
 			end	
 		end
 	end 
