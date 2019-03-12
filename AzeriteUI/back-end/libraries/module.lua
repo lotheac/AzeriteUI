@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 28)
+local LibModule = CogWheel:Set("LibModule", 29)
 if (not LibModule) then	
 	return
 end
@@ -7,11 +7,15 @@ end
 local LibClientBuild = CogWheel("LibClientBuild")
 assert(LibClientBuild, "LibModule requires LibClientBuild to be loaded.")
 
+local LibMessage = CogWheel("LibMessage")
+assert(LibMessage, "LibModule requires LibMessage to be loaded.")
+
 local LibEvent = CogWheel("LibEvent")
 assert(LibEvent, "LibModule requires LibEvent to be loaded.")
 
 -- Embed event functionality into this
 LibEvent:Embed(LibModule)
+LibMessage:Embed(LibModule)
 
 -- Lua API
 local _G = _G
@@ -38,6 +42,7 @@ local GetAddOnInfo = _G.GetAddOnInfo
 local GetNumAddOns = _G.GetNumAddOns
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local IsLoggedIn = _G.IsLoggedIn
+local IsShiftKeyDown = _G.IsShiftKeyDown
 local UnitName = _G.UnitName
 
 -- Library registries
@@ -79,22 +84,27 @@ do
 	local lines = 8
 	local lineHeight = 1.25
 	local padding = 10
+	local barSize = 2
+	local spacing = padding + barSize + padding
+	local frameHeight = size*lineHeight*lines + padding*2
 
 	debugFrame:Hide()
 	debugFrame:SetFrameStrata("FULLSCREEN_DIALOG")
 	debugFrame:ClearAllPoints()
 	debugFrame:SetPoint("TOP", 0, -padding)
-	debugFrame:SetPoint("LEFT", padding, 0)
-	debugFrame:SetPoint("RIGHT", -padding, 0)
+	debugFrame:SetPoint("LEFT", spacing, 0)
+	debugFrame:SetPoint("RIGHT", -spacing, 0)
 	debugFrame:SetFading(false)
 	debugFrame:SetIndentedWordWrap(true)
 	debugFrame:SetFontObject(font)
 	debugFrame:SetMaxLines(128)
-	debugFrame:SetHeight(size*lineHeight*lines + padding*2 )
+	debugFrame:SetHeight(frameHeight)
 	debugFrame:SetSpacing(math_ceil(size*lineHeight - size))
 	debugFrame:SetJustifyH("LEFT")
 	debugFrame:SetJustifyV("TOP")
 	debugFrame:SetTextColor(.1,.7,.1)
+	debugFrame:EnableMouse(true)
+	debugFrame:EnableMouseWheel(true)
 
 	local backdrop = debugFrame.backdrop or debugFrame:CreateTexture()
 	backdrop:SetPoint("TOP", _G.UIParent, "TOP")
@@ -105,35 +115,71 @@ do
 	backdrop:SetColorTexture(0, 0, 0, .5)
 	debugFrame.backdrop = backdrop 
 
-	debugFrame:EnableMouse(true)
-	debugFrame:SetScript("OnEnter", function(self) 
-		local bottom = self:GetBottom()
-		if (bottom > padding + 1) then 
-			debugFrame:ClearAllPoints()
-			debugFrame:SetPoint("BOTTOM", 0, padding)
-			debugFrame:SetPoint("LEFT", padding, 0)
-			debugFrame:SetPoint("RIGHT", -padding, 0)
+	local barBackdrop = debugFrame.barBackdrop or debugFrame:CreateTexture()
+	barBackdrop:SetDrawLayer("BORDER", 0)
+	barBackdrop:SetPoint("TOPLEFT", backdrop, "TOPLEFT", padding, -padding)
+	barBackdrop:SetPoint("BOTTOMLEFT", backdrop, "BOTTOMLEFT", padding, padding)
+	barBackdrop:SetWidth(barSize)
+	barBackdrop:SetColorTexture(0, 0, 0, .5)
+	debugFrame.barBackdrop = barBackdrop
 
-			backdrop:ClearAllPoints()
-			backdrop:SetPoint("BOTTOM", _G.UIParent, "BOTTOM")
-			backdrop:SetPoint("LEFT", _G.UIParent, "LEFT")
-			backdrop:SetPoint("RIGHT", _G.UIParent, "RIGHT")
-			backdrop:SetPoint("TOP", 0, padding)
-		
-		else 
-			debugFrame:ClearAllPoints()
-			debugFrame:SetPoint("TOP", 0, -padding)
-			debugFrame:SetPoint("LEFT", padding, 0)
-			debugFrame:SetPoint("RIGHT", -padding, 0)
+	local barThumb = debugFrame.barThumb or debugFrame:CreateTexture()
+	barThumb:SetDrawLayer("BORDER", 1)
+	barThumb:SetWidth(barSize)
+	barThumb:SetColorTexture(.7, .8, .7, 1)
+	barThumb:SetHeight(frameHeight / 2)
+	barThumb:SetPoint("BOTTOMLEFT", barBackdrop, "BOTTOMLEFT", 0, 0)
+	debugFrame.barThumb = barThumb
 
-			backdrop:ClearAllPoints()
-			backdrop:SetPoint("TOP", _G.UIParent, "TOP")
-			backdrop:SetPoint("LEFT", _G.UIParent, "LEFT")
-			backdrop:SetPoint("RIGHT", _G.UIParent, "RIGHT")
-			backdrop:SetPoint("BOTTOM", 0, -padding)
+	debugFrame:SetScript("OnMouseWheel", function(self, delta)
+		if (delta < 0) then
+			if IsShiftKeyDown() then
+				self:ScrollToBottom()
+			elseif (not self:AtBottom()) then 
+				self:ScrollDown()
+			end
+		elseif (delta > 0) then
+			if IsShiftKeyDown() then
+				self:ScrollToTop()
+			elseif (not self:AtTop()) then 
+				self:ScrollUp()
+			end
 		end
+		self.barThumb:SetPoint("BOTTOMLEFT", barBackdrop, "BOTTOMLEFT", 0, (self:GetScrollOffset()/self:GetMaxScrollRange() * (frameHeight/2)))
 	end)
 
+	debugFrame:SetScript("OnMouseUp", function(self, button)
+		if (button == "LeftButton") then 
+			if (self:GetBottom() > padding + 1) then 
+				debugFrame:ClearAllPoints()
+				debugFrame:SetPoint("BOTTOM", 0, padding)
+				debugFrame:SetPoint("LEFT", spacing, 0)
+				debugFrame:SetPoint("RIGHT", -spacing, 0)
+
+				backdrop:ClearAllPoints()
+				backdrop:SetPoint("BOTTOM", _G.UIParent, "BOTTOM")
+				backdrop:SetPoint("LEFT", _G.UIParent, "LEFT")
+				backdrop:SetPoint("RIGHT", _G.UIParent, "RIGHT")
+				backdrop:SetPoint("TOP", 0, padding)
+			
+			else 
+				debugFrame:ClearAllPoints()
+				debugFrame:SetPoint("TOP", 0, -padding)
+				debugFrame:SetPoint("LEFT", spacing, 0)
+				debugFrame:SetPoint("RIGHT", -spacing, 0)
+
+				backdrop:ClearAllPoints()
+				backdrop:SetPoint("TOP", _G.UIParent, "TOP")
+				backdrop:SetPoint("LEFT", _G.UIParent, "LEFT")
+				backdrop:SetPoint("RIGHT", _G.UIParent, "RIGHT")
+				backdrop:SetPoint("BOTTOM", 0, -padding)
+			end
+
+		elseif (button == "RightButton") then 
+			debugFrame:Hide()
+			LibModule:SendMessage("CG_DEBUG_FRAME_CLOSED")
+		end	
+	end)
 
 end
 
