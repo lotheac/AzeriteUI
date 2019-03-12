@@ -633,6 +633,82 @@ local Tooltip_PostCreate = function(tooltip)
 	tooltip.PostUpdateStatusBar = Tooltip_StatusBar_PostUpdate
 end
 
+local HealPredict_UpdateTexture = function(element, healthPreview, change, startPoint, endPoint)
+	if (element.orientation == "RIGHT") then 
+		local min,max = healthPreview:GetMinMaxValues()
+		local value = healthPreview:GetValue() / max
+
+		if (change > 0) then 
+			element.Texture:ClearAllPoints()
+			element.Texture:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+			element.Texture:SetSize(change*element.width, element.height)
+			element.Texture:SetTexCoord(value, value + change, 0, 1)
+			element.Texture:SetVertexColor(0, .7, 0, .25)
+			element:Show()
+		elseif (change < 0) then 
+			element.Texture:ClearAllPoints()
+			element.Texture:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+			element.Texture:SetSize((-change)*element.width, element.height)
+			element.Texture:SetTexCoord(value + change, value, 0, 1)
+			element.Texture:SetVertexColor(.5, 0, 0, .75)
+			element:Show()
+		else 
+			element:Hide()
+		end 
+
+	elseif (element.orientation == "LEFT") then 
+		local min,max = healthPreview:GetMinMaxValues()
+		local value = healthPreview:GetValue() / max
+
+		if (change > 0) then 
+			element.Texture:ClearAllPoints()
+			element.Texture:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
+			element.Texture:SetSize(change*element.width, element.height)
+			element.Texture:SetTexCoord(value + change, value, 0, 1)
+			element.Texture:SetVertexColor(0, .7, 0, .25)
+			element:Show()
+		elseif (change < 0) then
+			element.Texture:ClearAllPoints()
+			element.Texture:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
+			element.Texture:SetSize((-change)*element.width, element.height)
+			element.Texture:SetTexCoord(value, value + change, 0, 1)
+			element.Texture:SetVertexColor(.5, 0, 0, .75)
+			element:Show()
+		else 
+			element:Hide()
+		end 
+	end 
+end
+
+local HealPredict_OnTexCoordChanged = function(element, left, right, top, bottom)
+	local self = element._owner 
+	if not self then 
+		return 
+	end 
+
+	local element = self.HealPredict
+	if not element:IsShown() then 
+		return 
+	end 
+
+	local change = element.change
+	local startPoint = element.startPoint
+	local endPoint = element.endPoint
+
+	if not change or not startPoint or not endPoint then 
+		return element:Hide()
+	end 
+
+	HealPredict_UpdateTexture(element, element._owner.Health.Preview, change, startPoint, endPoint)
+end
+
+local HealPredict_OverrideUpdate = function(element, unit, change, startPoint, endPoint)
+	HealPredict_UpdateTexture(element, element._owner.Health.Preview, change, startPoint, endPoint)
+	element.change = change
+	element.startPoint = startPoint
+	element.endPoint = endPoint
+end
+
 ------------------------------------------------
 -- Module Stylesheets
 ------------------------------------------------
@@ -1757,6 +1833,10 @@ local Template_SmallFrame = {
 	end,
 
 	HealthBarPostUpdate = function(health, unit)
+		local unit = health.unit
+		if not unit then 
+			return 
+		end 
 		local isCasting = UnitCastingInfo(unit) or UnitChannelInfo(unit)
 		health.Value:SetShown(not isCasting)
 		health._owner.Cast.Name:SetShown(isCasting)
@@ -1982,14 +2062,15 @@ local UnitFramePlayer = {
 		},
 		HealthBarSetFlippedHorizontally = false, 
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
-		HealthSmoothingFrequency = .2, -- speed of the smoothing method
+		HealthSmoothingFrequency = 3, -- .2, -- speed of the smoothing method
 		HealthColorTapped = false, -- color tap denied units 
 		HealthColorDisconnected = false, -- color disconnected units
 		HealthColorClass = false, -- color players by class 
 		HealthColorReaction = false, -- color NPCs by their reaction standing with us
 		HealthColorHealth = true, -- color anything else in the default health color
 		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
-	
+
+
 	UseHealthBackdrop = true,
 		HealthBackdropPlace = { "CENTER", 1, -.5 },
 		HealthBackdropSize = { 716, 188 },
@@ -2003,11 +2084,19 @@ local UnitFramePlayer = {
 		HealthValueFont = GetFont(18, true),
 		HealthValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
+	UseHealPredict = true, 
+		HealPredictPlace = { "BOTTOMLEFT", 0, 0 }, -- relative to the health bar, not the frame! 
+		HealPredictSize = nil, 
+		HealPredictFrequentUpdates = true, 
+		HealPredictOrientation = "RIGHT", 
+		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
+
 	UseAbsorbBar = true,
 		AbsorbBarPlace = { "BOTTOMLEFT", 27, 27 },
 		AbsorbBarSize = nil,
 		AbsorbBarOrientation = "LEFT",
-		AbsorbBarColor = { 1, 1, 1, .25 },
+		AbsorbBarColor = { 1, 1, 1, .35 },
 		AbsorbBarSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -2274,6 +2363,8 @@ local UnitFramePlayer = {
 		SeasonedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		SeasonedAbsorbSize = { 385, 40 },
 		SeasonedAbsorbTexture = GetMedia("hp_cap_bar"),
+		SeasonedHealPredictSize = { 385, 40 },
+		SeasonedHealPredictTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastSize = { 385, 40 },
 		SeasonedCastTexture = GetMedia("hp_cap_bar_highlight"),
 		SeasonedManaOrbTexture = GetMedia("orb_case_hi"),
@@ -2298,6 +2389,8 @@ local UnitFramePlayer = {
 		HardenedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		HardenedAbsorbSize = { 385, 37 },
 		HardenedAbsorbTexture = GetMedia("hp_lowmid_bar"),
+		HardenedHealPredictSize = { 385, 37 },
+		HardenedHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastSize = { 385, 37 },
 		HardenedCastTexture = GetMedia("hp_lowmid_bar"),
 		HardenedManaOrbTexture = GetMedia("orb_case_hi"),
@@ -2321,6 +2414,8 @@ local UnitFramePlayer = {
 		NovicePowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		NoviceAbsorbSize = { 385, 37 },
 		NoviceAbsorbTexture = GetMedia("hp_lowmid_bar"),
+		NoviceHealPredictSize = { 385, 37 },
+		NoviceHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastSize = { 385, 37 },
 		NoviceCastTexture = GetMedia("hp_lowmid_bar"),
 		NoviceManaOrbTexture = GetMedia("orb_case_low"),
@@ -2826,7 +2921,7 @@ local UnitFrameTarget = {
 	Size = { 439, 93 },
 	HitRectInsets = { 0, -80, -30, 0 }, 
 	
-	HealthPlace = { "BOTTOMLEFT", 27, 27 },
+	HealthPlace = { "TOPRIGHT", 27, 27 },
 		HealthSize = nil, 
 		HealthType = "StatusBar", -- health type
 		HealthBarTexture = nil, -- only called when non-progressive frames are used
@@ -2852,7 +2947,15 @@ local UnitFrameTarget = {
 			HealthThreatHideSolo = false, 
 		HealthColorHealth = false, -- color anything else in the default health color
 		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
-	
+
+	UseHealPredict = true, 
+		HealPredictPlace = { "TOPRIGHT", 0, 0 }, -- relative to the health bar, not the frame! 
+		HealPredictSize = nil, 
+		HealPredictFrequentUpdates = true, 
+		HealPredictOrientation = "LEFT", 
+		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
+
 	UseHealthBackdrop = true,
 		HealthBackdropPlace = { "CENTER", 1, -.5 },
 		HealthBackdropSize = { 716, 188 },
@@ -2876,11 +2979,11 @@ local UnitFrameTarget = {
 		HealthPercentColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
 	UseAbsorbBar = true,
-		AbsorbBarPlace = { "BOTTOMLEFT", 27, 27 },
+		AbsorbBarPlace = { "TOPRIGHT", 27, 27 },
 		AbsorbBarSize = nil,
 		AbsorbBarOrientation = "RIGHT",
 		AbsorbBarSetFlippedHorizontally = true, 
-		AbsorbBarColor = { 1, 1, 1, .25 },
+		AbsorbBarColor = { 1, 1, 1, .35 },
 		AbsorbBarSparkMap = {
 			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
 			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
@@ -3184,6 +3287,7 @@ local UnitFrameTarget = {
 		UseProgressiveThreat = true, 
 		UseProgressivePortrait = true, 
 		UseProgressiveAbsorbBar = true, 
+		UseProgressiveHealPredict = true, 
 
 		BossHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		BossHealthSize = { 533, 40 },
@@ -3217,6 +3321,8 @@ local UnitFrameTarget = {
 		BossPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		BossAbsorbSize = { 533, 40 },
 		BossAbsorbTexture = GetMedia("hp_boss_bar"),
+		BossHealPredictSize = { 533, 40 },
+		BossHealPredictTexture = GetMedia("hp_boss_bar"),
 		BossCastPlace = { "TOPRIGHT", -27, -27 }, 
 		BossCastSize = { 533, 40 },
 		BossCastTexture = GetMedia("hp_boss_bar"),
@@ -3264,6 +3370,8 @@ local UnitFrameTarget = {
 		SeasonedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		SeasonedAbsorbSize = { 385, 40 },
 		SeasonedAbsorbTexture = GetMedia("hp_cap_bar"),
+		SeasonedHealPredictSize = { 385, 40 },
+		SeasonedHealPredictTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastPlace = { "TOPRIGHT", -27, -27 }, 
 		SeasonedCastSize = { 385, 40 },
 		SeasonedCastTexture = GetMedia("hp_cap_bar"),
@@ -3305,6 +3413,8 @@ local UnitFrameTarget = {
 		HardenedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
 		HardenedAbsorbSize = { 385, 37 },
 		HardenedAbsorbTexture = GetMedia("hp_lowmid_bar"),
+		HardenedHealPredictSize = { 385, 37 },
+		HardenedHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastPlace = { "TOPRIGHT", -27, -27 }, 
 		HardenedCastSize = { 385, 37 },
 		HardenedCastTexture = GetMedia("hp_lowmid_bar"),
@@ -3345,6 +3455,8 @@ local UnitFrameTarget = {
 		NovicePowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		NoviceAbsorbSize = { 385, 37 },
 		NoviceAbsorbTexture = GetMedia("hp_lowmid_bar"),
+		NoviceHealPredictSize = { 385, 37 },
+		NoviceHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastPlace = { "TOPRIGHT", -27, -27 }, 
 		NoviceCastSize = { 385, 37 },
 		NoviceCastTexture = GetMedia("hp_lowmid_bar"),
@@ -3391,6 +3503,8 @@ local UnitFrameTarget = {
 		CritterPowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
 		CritterAbsorbSize = { 40, 36 },
 		CritterAbsorbTexture = GetMedia("hp_critter_bar"),
+		CritterHealPredictSize = { 40, 36 },
+		CritterHealPredictTexture = GetMedia("hp_critter_bar"),
 		CritterCastPlace = { "TOPRIGHT", -24, -24 },
 		CritterCastSize = { 40, 36 },
 		CritterCastTexture = GetMedia("hp_critter_bar"),
@@ -3445,6 +3559,11 @@ local UnitFrameTarget = {
 	end,
 
 	HealthBarPostUpdate = function(health, unit)
+		local unit = health.unit 
+		if not unit then 
+			return 
+		end 
+
 		local absorb = health._owner.Absorb
 		local cast = health._owner.Cast
 
