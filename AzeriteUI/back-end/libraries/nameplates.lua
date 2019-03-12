@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 26)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 27)
 if (not LibNamePlate) then	
 	return
 end
@@ -839,8 +839,10 @@ LibNamePlate.OnEvent = function(self, event, ...)
 
 	elseif (event == "PLAYER_TARGET_CHANGED") then
 		for baseFrame, plate in pairs(allPlates) do
-			plate:UpdateAlpha()
-			plate:UpdateFrameLevel()
+			if plate:IsShown() then 
+				plate:UpdateAlpha()
+				plate:UpdateFrameLevel()
+			end
 		end	
 		
 	elseif (event == "VARIABLES_LOADED") then
@@ -864,7 +866,7 @@ LibNamePlate.OnEvent = function(self, event, ...)
 	elseif (event == "PLAYER_REGEN_DISABLED") then 
 		IN_COMBAT = true
 		for baseFrame, plate in pairs(allPlates) do
-			if plate then
+			if plate and plate:IsShown() then
 				plate:UpdateAlpha()
 			end
 		end
@@ -872,7 +874,7 @@ LibNamePlate.OnEvent = function(self, event, ...)
 	elseif (event == "PLAYER_REGEN_ENABLED") then 
 		IN_COMBAT = false 
 		for baseFrame, plate in pairs(allPlates) do
-			if plate then
+			if plate and plate:IsShown() then
 				plate:UpdateAlpha()
 			end
 		end
