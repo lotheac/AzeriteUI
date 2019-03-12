@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 43)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 45)
 if (not LibStatusBar) then	
 	return
 end
@@ -47,7 +47,6 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
-
 ----------------------------------------------------------------
 -- Statusbar template
 ----------------------------------------------------------------
@@ -88,6 +87,12 @@ local SetTexCoord = function(self, ...)
 
 	-- Calculate the new area and apply it with the real blizzard method
 	blizzardSetTexCoord(self, displayedLeft, displayedRight, displayedTop, displayedBottom)
+
+	-- Allow modules to hook into this
+	local onTexCoordChanged = Bars[self].OnTexCoordChanged
+	if onTexCoordChanged then 
+		onTexCoordChanged(self, displayedLeft, displayedRight, displayedTop, displayedBottom)
+	end
 end 
 
 -- Will move this into the main update function later, 
@@ -376,7 +381,9 @@ local Update = function(self, elapsed)
 end
 
 local smoothingMinValue = .3 -- if a value is lower than this, we won't smoothe
-local smoothingFrequency = .5 -- time for the smooth transition to complete
+local smoothingFrequency = .5 -- default duration of smooth transitions 
+local smartSmoothingDownFrequency = .15 -- duration of smooth reductions in smart mode
+local smartSmoothingUpFrequency = .75 -- duration of smooth increases in smart mode
 local smoothingLimit = 1/60 -- max updates per second
 
 local OnUpdate = function(self, elapsed)
@@ -397,11 +404,22 @@ local OnUpdate = function(self, elapsed)
 			-- The fraction of the total bar this total animation should cover  
 			local animsize = (data.barValue - data.smoothingInitialValue)/(data.barMax - data.barMin) 
 
+			local smartSpeed
+			if data.useSmartSoothing then 
+				if data.barValue > data.barDisplayValue then 
+					smartSpeed = smartSmoothingUpFrequency
+				elseif data.barValue < data.barDisplayValue then 
+					smartSpeed = smartSmoothingDownFrequency
+				end 
+			end 
+
+			local smoothSpeed = smartSpeed or data.smoothingFrequency or smoothingFrequency
+
 			-- Points per second on average for the whole bar
-			local pps = (data.barMax - data.barMin)/(data.smoothingFrequency or smoothingFrequency)
+			local pps = (data.barMax - data.barMin)/smoothSpeed
 
 			-- Position in time relative to the length of the animation, scaled from 0 to 1
-			local position = (GetTime() - data.smoothingStart)/(data.smoothingFrequency or smoothingFrequency) 
+			local position = (GetTime() - data.smoothingStart)/smoothSpeed 
 			if (position < 1) then 
 				-- The change needed when using average speed
 				local average = pps * animsize * data.elapsed -- can and should be negative
@@ -486,6 +504,10 @@ StatusBar.SetSmoothingMode = function(self, mode)
 	end 
 end 
 
+StatusBar.SetSmartSmoothing = function(self, useSmartSoothing)
+	Bars[self].useSmartSoothing = useSmartSoothing
+end
+
 StatusBar.DisableSmoothing = function(self, disableSmoothing)
 	Bars[self].disableSmoothing = disableSmoothing
 end
@@ -518,6 +540,7 @@ StatusBar.SetValue = function(self, value, overrideSmoothing)
 		if (not data.scaffold:GetScript("OnUpdate")) then
 			data.scaffold:SetScript("OnUpdate", OnUpdate)
 		end
+		return 
 	end
 	Update(self)
 end
@@ -645,7 +668,9 @@ StatusBar.SetScript = function(self, ...)
 	local scriptHandler, func = ... 
 	if (scriptHandler == "OnUpdate") then 
 		Bars[self].OnUpdate = func 
-	else 
+	elseif (scriptHandler == "OnTexCoordChanged") then 
+		Bars[self].OnTexCoordChanged = func
+	else
 		Bars[self].scaffold:SetScript(...)
 	end 
 end
@@ -745,6 +770,10 @@ end
 
 StatusBar.GetValue = function(self)
 	return Bars[self].barValue
+end
+
+StatusBar.GetDisplayValue = function(self)
+	return Bars[self].barDisplayValue
 end
 
 StatusBar.GetMinMaxValues = function(self)
