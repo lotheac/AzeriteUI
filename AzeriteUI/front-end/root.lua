@@ -1,7 +1,7 @@
 local ADDON = ...
 
 -- Wooh! 
-local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibEvent", "LibBlizzard", "LibFrame", "LibSlash")
+local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibMessage", "LibEvent", "LibBlizzard", "LibFrame", "LibSlash")
 
 -- Tell the back-end what addon to look for before 
 -- initializing this module and all its submodules. 
@@ -71,7 +71,7 @@ local SECURE = {
 			self:CallMethod("OnModeToggle", "healerMode"); 
 
 		elseif (name == "change-enabledebugconsole") then 
-			self:SetAttribute("enableDebugConsole", value); 
+			--self:SetAttribute("enableDebugConsole", value); 
 			self:CallMethod("UpdateDebugConsole"); 
 		end 
 	]=]
@@ -120,25 +120,35 @@ Core.SwitchTo = function(self, editBox, ...)
 	end  
 end 
 
--- Not actually called by the menu, since we're not
--- listing our healerMode as a mode, just a toggleValue. 
--- We do however use our standard mode API so for other modules 
--- to be able to easily query if this fake mode is enabled. 
 Core.IsModeEnabled = function(self, modeName)
+	-- Not actually called by the menu, since we're not
+	-- listing our healerMode as a mode, just a toggleValue. 
+	-- We do however use our standard mode API so for other modules 
+	-- to be able to easily query if this fake mode is enabled. 
 	if (modeName == "healerMode") then 
 		return self.db.enableHealerMode 
+
+	-- This one IS a mode. 
+	elseif (modeName == "enableDebugConsole") then
+		return self.db.enableDebugConsole -- self:GetDebugFrame():IsShown()
 	end
 end
 
 Core.OnModeToggle = function(self, modeName)
 	if (modeName == "healerMode") then 
 		-- Gratz, we did nothing! 
+		-- This fake mode isn't changed by Lua, as it needs to move secure frames. 
+		-- We might add in Lua callbacks later though, and those will be called from here. 
 
 	elseif (modeName == "loadConsole") then 
-		self:EnableDebugConsole()
+		self:LoadDebugConsole()
 
 	elseif (modeName == "unloadConsole") then 
-		self:DisableDebugConsole()
+		self:UnloadDebugConsole()
+
+	elseif (modeName == "enableDebugConsole") then 
+		self.db.enableDebugConsole = not self.db.enableDebugConsole
+		self:UpdateDebugConsole()
 
 	elseif (modeName == "reloadUI") then 
 		ReloadUI()
@@ -212,13 +222,13 @@ Core.UpdateDebugConsole = function(self)
 	end
 end
 
-Core.EnableDebugConsole = function(self)
+Core.LoadDebugConsole = function(self)
 	--EnableAddOn(ADDON .. "_Debug", true)
 	self.db.loadDebugConsole = true
 	ReloadUI()
 end
 
-Core.DisableDebugConsole = function(self)
+Core.UnloadDebugConsole = function(self)
 	--DisableAddOn(ADDON .. "_Debug", true)
 	self.db.loadDebugConsole = false
 	ReloadUI()
@@ -279,7 +289,7 @@ Core.OnInit = function(self)
 		end
 
 		-- Add in a chat command to quickly unload the console
-		self:RegisterChatCommand("disableconsole", "DisableDebugConsole")
+		self:RegisterChatCommand("disableconsole", "UnloadDebugConsole")
 
 	else
 		-- Set the flag to tell the back-end we're in normal mode. 
@@ -288,7 +298,7 @@ Core.OnInit = function(self)
 		self:DisableDebugMode()
 
 		-- Add in a chat command to quickly load the console
-		self:RegisterChatCommand("enableconsole", "EnableDebugConsole")
+		self:RegisterChatCommand("enableconsole", "LoadDebugConsole")
 	end
 end 
 
@@ -357,6 +367,9 @@ Core.OnEnable = function(self)
 
 	-- Make sure frame references to secure frames are in place
 	self:UpdateSecureUpdater()
+
+	-- Listen for when the user closes the debugframe directly
+	self:RegisterMessage("CG_DEBUG_FRAME_CLOSED", "OnEvent")
 end 
 
 Core.OnEvent = function(self, event, ...)
@@ -411,6 +424,11 @@ Core.OnEvent = function(self, event, ...)
 			end
 			self:GetFrame("UICenter"):SetAlpha(0)
 		end
+	elseif (event == "CG_DEBUG_FRAME_CLOSED") then 
+		-- This fires from the module back-end when 
+		-- the debug console was manually closed by the user.
+		-- We need to update our saved setting here.
+		self.db.enableDebugConsole = false
 	end 
 end 
 

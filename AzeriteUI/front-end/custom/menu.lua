@@ -705,8 +705,11 @@ Module.CreateMenuTable = function(self)
 		table_insert(DebugMenu.buttons, {
 			enabledTitle = L["Debug Console: %s"]:format(L["Enabled"]),
 			disabledTitle = L["Debug Console: %s"]:format(L["Disabled"]),
-			type = "TOGGLE_VALUE", 
-			configDB = "Core", configKey = "enableDebugConsole", 
+			--type = "TOGGLE_VALUE", 
+			--configDB = "Core", configKey = "enableDebugConsole", 
+			--proxyModule = nil, useCore = true
+			type = "TOGGLE_MODE", hasWindow = false, 
+			configDB = "Core", modeName = "enableDebugConsole", 
 			proxyModule = nil, useCore = true
 		})
 		table_insert(DebugMenu.buttons, {
