@@ -136,10 +136,12 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 	if color then 
 		r, g, b = color[1], color[2], color[3]
 	end 
-	if (not r) then 
+	if (element.colorHealth) and (not r) then 
 		r, g, b = self.colors.health[1], self.colors.health[2], self.colors.health[3]
 	end
-	element:SetStatusBarColor(r, g, b)
+	if (r) then 
+		element:SetStatusBarColor(r, g, b)
+	end 
 	if element.PostUpdateColor then 
 		element:PostUpdateColor(unit, min, max, disconnected, dead, tapped)
 	end 
@@ -174,10 +176,26 @@ local Update = function(self, event, unit)
 	element:UpdateColor(unit, min, max, disconnected, dead, tapped)
 	element:UpdateValue(unit, min, max, disconnected, dead, tapped)
 
+	local elementPreview = self.Health.Preview
+	if elementPreview then 
+		elementPreview:SetMinMaxValues(0, max, true)
+		elementPreview:SetValue(min, true)
+		elementPreview:UpdateColor(unit, min, max, disconnected, dead, tapped)
+		elementPreview:UpdateValue(unit, min, max, disconnected, dead, tapped)
+
+		if (not elementPreview:IsShown()) then 
+			elementPreview:Show()
+		end
+
+		if elementPreview.PostUpdate then
+			elementPreview:PostUpdate(unit, min, max, disconnected, dead, tapped)
+		end	
+	end 
+
 	if (not element:IsShown()) then 
 		element:Show()
 	end
-			
+
 	if element.PostUpdate then
 		return element:PostUpdate(unit, min, max, disconnected, dead, tapped)
 	end	
@@ -193,8 +211,11 @@ end
 
 local Enable = function(self)
 	local element = self.Health
+	local elementPreview = element and element.Preview
+
 	if element then
 
+		element.unit = self.unit
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 
@@ -209,6 +230,14 @@ local Enable = function(self)
 
 		element.UpdateColor = UpdateColor
 		element.UpdateValue = UpdateValue
+
+		if elementPreview then 
+			elementPreview._owner = self
+			elementPreview.ForceUpdate = ForceUpdate
+
+			elementPreview.UpdateColor = UpdateColor
+			elementPreview.UpdateValue = UpdateValue
+		end 
 
 		return true
 	end
@@ -227,5 +256,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 15)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 18)
 end 
