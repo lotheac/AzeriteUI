@@ -161,7 +161,7 @@ Core.GetSecureUpdater = function(self)
 				local module = self:GetModule(moduleName, true)
 				if module and not (module:IsIncompatible() or module:DependencyFailed()) then 
 					if (module.OnModeToggle) then 
-						module:OnModeToggle("HealerMode")
+						module:OnModeToggle("healerMode")
 					end
 				end
 			end 

@@ -934,7 +934,7 @@ Module.CreateMenuTable = function(self)
 		disabledTitle = L["Healer Mode: %s"]:format(L["Disabled"]),
 		type = "TOGGLE_VALUE", 
 		configDB = "Core", configKey = "enableHealerMode", 
-		proxyModule = nil, useCore = true, modeName = "HealerMode"
+		proxyModule = nil, useCore = true, modeName = "healerMode"
 	})
 
 end

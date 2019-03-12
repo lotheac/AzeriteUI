@@ -991,7 +991,7 @@ Module.UpdateChatDockPosition = function(self)
 end
 
 Module.OnModeToggle = function(self, modeName)
-	if (modeName == "HealerMode") then 
+	if (modeName == "healerMode") then 
 		self:UpdateChatDockPosition()
 	end
 end
