@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.121-Alpha] 2019-03-12
+### Added 
+- Added heal predictions and heal absorbs for the player and target unit frames. 
+- Added a health preview layer for the player and target unit frames, which shows gained health instantly, while the "real" bar smoothly moves up towards it. 
+
+### Changed
+- The debug console now requires a left-click to switch sides of the screen, and a right-click will close the console. The mousewheel has also been enabled for this frame, and you can now scroll through the debug output with it, or go directly to the top or bottom by holding down Shift while using the wheel. 
+- Did a whole lot of small corrections to target frame bar elements. Turns out a rectangle has different sizes depending on what corner you begin in. Or at least according to the WoW API. Trippy. 
+- Changed the player and target unit frame health bar smoothing. It now fills up rather slowly, but show reductions almost instantly. 
+
 ## [1.2.120-Alpha] 2019-03-11
 ### Fixed
 - Fix actionbutton mask textures not being applied properly since WoW client build 29600(March 5th, 2019). This looked especially bad when buttons faded in and out, as the square shape of the original icons would shine through the border. Thank you Blizz, we really do love your undocumented changes. Hire us already. 
