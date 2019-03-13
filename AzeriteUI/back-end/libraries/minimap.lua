@@ -1,5 +1,5 @@
-local Version = 30 -- This library's version 
-local MapVersion = 30 -- Minimap library version the minimap created by this is compatible with
+local Version = 31 -- This library's version 
+local MapVersion = 31 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -679,7 +679,7 @@ LibMinimap.SetMinimapBlips = function(self, path, patchMin, patchMax)
 	local buildMax = LibMinimap:GetBuildForPatch(patchMax or patchMin)
 
 	-- Only apply the blips if the match the given client interval
-	if (build >= buildMin) and (build <= buildMax) then 
+	if (buildMin and buildMax) and (build >= buildMin) and (build <= buildMax) then 
 		return self:SyncMinimap(true) and Private.MapContent:SetBlipTexture(path)
 	end 
 end 
