@@ -503,6 +503,15 @@ end
 
 local NamePlates_Auras_PostUpdate = function(element, unit, visible)
 	local self = element._owner
+	if (not self) then 
+		return 
+	end 
+
+	-- The aura frame misalignment continues, 
+	-- so we might have to re-anchor it to the frame on post updates. 
+	element:ClearAllPoints()
+	element:Place(unpack(self.layout.AuraFramePlace))
+
 	local raidTarget = self.RaidTarget
 	if raidTarget then 
 		raidTarget:ClearAllPoints()
