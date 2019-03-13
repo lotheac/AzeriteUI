@@ -244,8 +244,8 @@ local Enable = function(self)
 end
 
 local Disable = function(self)
-	local Health = self.Health
-	if Health then 
+	local element = self.Health
+	if element then 
 		self:UnregisterEvent("UNIT_HEALTH_FREQUENT", Proxy)
 		self:UnregisterEvent("UNIT_HEALTH", Proxy)
 		self:UnregisterEvent("UNIT_MAXHEALTH", Proxy)
