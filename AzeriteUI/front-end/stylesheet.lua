@@ -1307,7 +1307,11 @@ local Minimap = {
 	UseBlipTextures = true, 
 		BlipScale = 1.15, 
 		BlipTextures = {
-			["8.1.0"] = GetMedia("Blip-Nandini-New")
+			["8.1.0"] = GetMedia("Blip-Nandini-New-810"),
+			["8.1.5"] = GetMedia("Blip-Nandini-New-815"),
+
+			-- Blizzard Fallback
+			["8.2.0"] = [[Interface\MiniMap\ObjectIconsAtlas]]
 		},
 
 	-- Allow addon minimap buttons
@@ -1950,7 +1954,7 @@ local Template_TinyFrame = {
 		},
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
 		HealthSmoothingFrequency = .2, -- speed of the smoothing method
-		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
+		HealthFrequentUpdates = false, -- listen to frequent health events for more accurate updates
 
 		UseHealthBackdrop = true,
 			HealthBackdropPlace = { "CENTER", 1, -2 },
@@ -3608,6 +3612,7 @@ local UnitFrameToT = setmetatable({
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
+	HealthFrequentUpdates = true, 
 	HealthColorTapped = true, -- color tap denied units 
 	HealthColorDisconnected = true, -- color disconnected units
 	HealthColorClass = true, -- color players by class 
@@ -3624,6 +3629,7 @@ local UnitFrameToT = setmetatable({
 local UnitFramePet = setmetatable({
 	Place = { "LEFT", "UICenter", "BOTTOMLEFT", 362, 125 },
 
+	HealthFrequentUpdates = true, 
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = false, -- color disconnected units
 	HealthColorClass = false, -- color players by class 
@@ -3649,6 +3655,7 @@ local UnitFrameFocus = setmetatable({
 	BuffFilterFunc = Auras:GetFilterFunc("focus"), 
 	DebuffFilterFunc = Auras:GetFilterFunc("focus"), 
 
+	HealthFrequentUpdates = true, 
 	HealthColorTapped = true, -- color tap denied units 
 	HealthColorDisconnected = true, -- color disconnected units
 	HealthColorClass = true, -- color players by class 
