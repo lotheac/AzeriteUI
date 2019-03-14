@@ -160,7 +160,7 @@ local Performance_OnLeave = function(self)
 end 
 
 -- This is the XP and AP tooltip (and rep/honor later on) 
-local Toggle_UpdateTooltip = function(self)
+local Toggle_UpdateTooltip = function(toggle)
 
 	local tooltip = Module:GetMinimapTooltip()
 
@@ -169,7 +169,7 @@ local Toggle_UpdateTooltip = function(self)
 	local hasAP = FindActiveAzeriteItem()
 
 	local NC = "|r"
-	local colors = self._owner.colors 
+	local colors = toggle._owner.colors 
 	local rt, gt, bt = unpack(colors.title)
 	local r, g, b = unpack(colors.normal)
 	local rh, gh, bh = unpack(colors.highlight)
@@ -184,7 +184,7 @@ local Toggle_UpdateTooltip = function(self)
 	local restedLeft, restedTimeLeft
 
 	if hasXP or hasAP or hasRep then 
-		tooltip:SetDefaultAnchor(self)
+		tooltip:SetDefaultAnchor(toggle)
 		tooltip:SetMaximumWidth(360)
 	end
 
@@ -313,7 +313,7 @@ local Toggle_UpdateTooltip = function(self)
 	end 
 
 	-- Only adding the sticky toggle to the toggle button for now, not the frame.
-	if MouseIsOver(self) then 
+	if MouseIsOver(toggle) then 
 		tooltip:AddLine(" ")
 		if Module.db.stickyBars then 
 			tooltip:AddLine(L["%s to disable sticky bars."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
@@ -325,119 +325,233 @@ local Toggle_UpdateTooltip = function(self)
 	tooltip:Show()
 end 
 
-local Toggle_OnUpdate = function(self, elapsed)
+local Toggle_OnUpdate = function(toggle, elapsed)
 
-	self.fadeDelay = self.fadeDelay - elapsed
-	if (self.fadeDelay > 0) then 
-		return
+	if toggle.fadeDelay > 0 then 
+		local fadeDelay = toggle.fadeDelay - elapsed
+		if fadeDelay > 0 then 
+			toggle.fadeDelay = fadeDelay
+			return 
+		else 
+			toggle.fadeDelay = 0
+			toggle.timeFading = 0
+		end 
 	end 
 
-	self.Frame:SetAlpha(1 - self.timeFading / self.fadeDuration)
+	toggle.timeFading = toggle.timeFading + elapsed
 
-	if (self.timeFading >= self.fadeDuration) then 
-		self.Frame:Hide()
-		self.fadeDelay = nil
-		self.fadeDuration = nil
-		self.timeFading = nil
-		self:SetScript("OnUpdate", nil)
-
-		-- In case it got stuck, which happens
-		Module:GetMinimapTooltip():Hide()
-
-		return 
-	end 
-
-	self.timeFading = self.timeFading + elapsed
-end 
-
-local Toggle_UpdateFrame = function(self)
-	local frame = self.Frame
-
-	local db = Module.db
-	if ((db.stickyBars or self.isMouseOver or frame.isMouseOver) and (not frame:IsShown())) then 
-
-		-- Kill off any hide countdowns
-		self:SetScript("OnUpdate", nil)
-		self.fadeDelay = nil
-		self.fadeDuration = nil
-		self.timeFading = nil
-
-		if (not frame:IsShown()) then 
-			frame:SetAlpha(1)
-			frame:Show()
+	if toggle.fadeDirection == "OUT" then 
+		local alpha = 1 - (toggle.timeFading / toggle.fadeDuration)
+		if alpha > 0 then 
+			toggle.Frame:SetAlpha(alpha)
+		else 
+			toggle:SetScript("OnUpdate", nil)
+			toggle.Frame:Hide()
+			toggle.Frame:SetAlpha(0)
+			toggle.fading = nil 
+			toggle.fadeDirection = nil
+			toggle.fadeDuration = 0
+			toggle.timeFading = 0
 		end 
 
-	elseif ((not db.stickyBars) and ((not frame.isMouseOver) or (not self.isMouseOver)) and frame:IsShown()) then 
-
-		-- Initiate hide countdown
-		self.fadeDelay = .5
-		self.fadeDuration = .25
-		self.timeFading = 0
-		self:SetScript("OnUpdate", Toggle_OnUpdate)
+	elseif toggle.fadeDirection == "IN" then 
+		local alpha = toggle.timeFading / toggle.fadeDuration
+		if alpha < 1 then 
+			toggle.Frame:SetAlpha(alpha)
+		else 
+			toggle:SetScript("OnUpdate", nil)
+			toggle.Frame:SetAlpha(1)
+			toggle.fading = nil
+			toggle.fadeDirection = nil
+			toggle.fadeDuration = 0
+			toggle.timeFading = 0
+		end 
 	end 
+
+end 
+
+-- This method is called upon entering or leaving 
+-- either the toggle button, the visible ring frame, 
+-- or by clicking the toggle button. 
+-- Its purpose should be to decide ring frame visibility. 
+local Toggle_UpdateFrame = function(toggle)
+	local db = Module.db
+	local frame = toggle.Frame
+	local frameIsShown = frame:IsShown()
+
+	-- If sticky bars is enabled, we should only fade in, and keep it there, 
+	-- and then just remove the whole update handler until the sticky setting is changed. 
+	if db.stickyBars then 
+
+		-- if the frame isn't shown, 
+		-- reset the alpha and initiate fade-in
+		if (not frameIsShown) then 
+			frame:SetAlpha(0)
+			frame:Show()
+
+			toggle.fadeDirection = "IN"
+			toggle.fadeDelay = 0
+			toggle.fadeDuration = .25
+			toggle.timeFading = 0
+			toggle.fading = true
+
+			if not toggle:GetScript("OnUpdate") then 
+				toggle:SetScript("OnUpdate", Toggle_OnUpdate)
+			end
+	
+		-- If it is shown, we should probably just keep going. 
+		-- This is probably just called because the user moved 
+		-- between the toggle button and the frame. 
+		else 
+
+
+		end
+
+	-- Move towards full visibility if we're over the toggle or the visible frame
+	elseif toggle.isMouseOver or frame.isMouseOver then 
+
+		-- If we entered while fading, it's most likely a fade-out that needs to be reversed.
+		if toggle.fading then 
+			if toggle.fadeDirection == "OUT" then 
+				toggle.fadeDirection = "IN"
+				toggle.fadeDuration = .25
+				toggle.fadeDelay = 0
+				toggle.timeFading = 0
+
+				if not toggle:GetScript("OnUpdate") then 
+					toggle:SetScript("OnUpdate", Toggle_OnUpdate)
+				end
+			else 
+				-- Can't see this happening?
+			end 
+
+		-- If it's not fading it's either because it's hidden, at full alpha,  
+		-- or because sticky bars just got disabled and it's still fully visible. 
+		else 
+			if frameIsShown then 
+				-- Sticky bars? 
+			else 
+				frame:SetAlpha(0)
+				frame:Show()
+				toggle.fadeDirection = "IN"
+				toggle.fadeDuration = .25
+				toggle.fadeDelay = 0
+				toggle.timeFading = 0
+				toggle.fading = true
+
+				if not toggle:GetScript("OnUpdate") then 
+					toggle:SetScript("OnUpdate", Toggle_OnUpdate)
+				end
+			end 
+		end  
+
+
+	-- We're not above the toggle or a visible frame, 
+	-- so we should initiate a fade-out. 
+	else 
+
+		-- if the frame is visible, this should be a fade-out.
+		if frameIsShown then 
+
+			toggle.fadeDirection = "OUT"
+
+			-- Only initiate the fade delay if the frame previously was fully shown,
+			-- do not start a delay if we moved back into a fading frame then out again 
+			-- before it could reach its full alpha, or the frame will appear to be "stuck"
+			-- in a semi-transparent state for a few seconds. Ewwww. 
+			if toggle.fading then 
+				toggle.fadeDelay = 0
+				toggle.fadeDuration = (.25 - (toggle.timeFading or 0))
+				toggle.timeFading = toggle.timeFading or 0
+			else 
+				toggle.fadeDelay = .5
+				toggle.fadeDuration = .25
+				toggle.timeFading = 0
+				toggle.fading = true
+			end 
+
+			if not toggle:GetScript("OnUpdate") then 
+				toggle:SetScript("OnUpdate", Toggle_OnUpdate)
+			end
+	
+		end
+	end
 end
 
-local Toggle_OnMouseUp = function(self, button)
+local Toggle_OnMouseUp = function(toggle, button)
 	local db = Module.db
 	db.stickyBars = not db.stickyBars
 
-	Toggle_UpdateFrame(self)
+	Toggle_UpdateFrame(toggle)
 
-	if self.UpdateTooltip then 
-		self:UpdateTooltip()
+	if toggle.UpdateTooltip then 
+		toggle:UpdateTooltip()
 	end 
 
 	if Module.db.stickyBars then 
-		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars enabled."].."|r")
+		print(toggle._owner.colors.title.colorCode..L["Sticky Minimap bars enabled."].."|r")
 	else
-		print(self._owner.colors.title.colorCode..L["Sticky Minimap bars disabled."].."|r")
+		print(toggle._owner.colors.title.colorCode..L["Sticky Minimap bars disabled."].."|r")
 	end 	
 end
 
-local Toggle_OnEnter = function(self)
-	self.UpdateTooltip = Toggle_UpdateTooltip
-	self.isMouseOver = true
+local Toggle_OnEnter = function(toggle)
+	toggle.UpdateTooltip = Toggle_UpdateTooltip
+	toggle.isMouseOver = true
 
-	Toggle_UpdateFrame(self)
+	Toggle_UpdateFrame(toggle)
 
-	self:UpdateTooltip()
+	toggle:UpdateTooltip()
 end
 
-local Toggle_OnLeave = function(self)
+local Toggle_OnLeave = function(toggle)
 	local db = Module.db
 
-	self.isMouseOver = nil
-	self.UpdateTooltip = nil
+	toggle.isMouseOver = nil
+	toggle.UpdateTooltip = nil
 
-	Toggle_UpdateFrame(self)
+	-- Update this to avoid a flicker or delay 
+	-- when moving directly from the toggle button to the ringframe.  
+	toggle.Frame.isMouseOver = MouseIsOver(toggle.Frame)
+
+	Toggle_UpdateFrame(toggle)
 	
-	if (not MouseIsOver(self.Frame)) then 
+	if (not toggle.Frame.isMouseOver) then 
 		Module:GetMinimapTooltip():Hide()
 	end 
 end
 
-local RingFrame_UpdateTooltip = function(self)
-	Toggle_UpdateTooltip(self._owner)
+local RingFrame_UpdateTooltip = function(frame)
+	local toggle = frame._owner
+
+	Toggle_UpdateTooltip(toggle)
 end 
 
-local RingFrame_OnEnter = function(self)
-	self.UpdateTooltip = RingFrame_UpdateTooltip
-	self.isMouseOver = true
+local RingFrame_OnEnter = function(frame)
+	local toggle = frame._owner
 
-	Toggle_UpdateFrame(self._owner)
+	frame.UpdateTooltip = RingFrame_UpdateTooltip
+	frame.isMouseOver = true
 
-	self:UpdateTooltip()
+	Toggle_UpdateFrame(toggle)
+
+	frame:UpdateTooltip()
 end
 
-local RingFrame_OnLeave = function(self)
+local RingFrame_OnLeave = function(frame)
 	local db = Module.db
+	local toggle = frame._owner
 
-	self.isMouseOver = nil
-	self.UpdateTooltip = nil
+	frame.isMouseOver = nil
+	frame.UpdateTooltip = nil
 
-	Toggle_UpdateFrame(self._owner)
+	-- Update this to avoid a flicker or delay 
+	-- when moving directly from the ringframe to the toggle button.  
+	toggle.isMouseOver = MouseIsOver(toggle)
+
+	Toggle_UpdateFrame(toggle)
 	
-	if (not MouseIsOver(self._owner)) then 
+	if (not toggle.isMouseOver) then 
 		Module:GetMinimapTooltip():Hide()
 	end 
 end
