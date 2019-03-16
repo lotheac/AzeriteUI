@@ -234,6 +234,40 @@ Core.UnloadDebugConsole = function(self)
 	ReloadUI()
 end
 
+Core.ApplyExperimentalFeatures = function(self)
+
+	-- Attempt to hook the bar bar to the bags
+	local MicroBagBar = _G.MicroButtonAndBagsBar and _G.MicroButtonAndBagsBar.MicroBagBar
+	if MicroBagBar then 
+
+		-- Retrieve the first slot button and the backpack
+		local firstSlot = _G.CharacterBag0Slot
+		local backpack = _G.ContainerFrame1
+
+		-- These should always exist, but Blizz do have a way of changing things,
+		-- and I prefer having functionality not be applied in a future update 
+		-- rather than having the UI break from nil bugs. 
+		if firstSlot and backpack then 
+			firstSlot:ClearAllPoints()
+			firstSlot:SetPoint("TOPRIGHT", backpack, "BOTTOMRIGHT", -6, 0)
+
+			local strata = backpack:GetFrameStrata()
+			local level = backpack:GetFrameLevel()
+
+			for i = 0,3 do 
+				-- Always check for existence, 
+				-- because nothing is ever guaranteed. 
+				local slot = _G["CharacterBag"..i.."Slot"]
+				if slot then 
+					slot:SetParent(backpack)
+					slot:SetFrameStrata(strata)
+					slot:SetFrameLevel(level)
+				end 
+			end 
+		end 
+	end
+end
+
 -- We could add this into the back-end, leaving it here for now, though. 
 -- It's not like this addon actually serves any other purpose. 
 Core.OnChatCommand = function(self, editBox, msg)
@@ -332,6 +366,10 @@ Core.OnEnable = function(self)
 	if updateBarToggles then 
 		SetActionBarToggles(nil, nil, nil, nil, nil)
 	end
+
+	-- Experimental stuff we move to relevant modules once done
+	------------------------------------------------------------------------------------
+	self:ApplyExperimentalFeatures()
 
 	-- Add chat command to fast switch to other UIs 
 	------------------------------------------------------------------------------------
