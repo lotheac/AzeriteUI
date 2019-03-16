@@ -311,7 +311,6 @@ Core.OnEnable = function(self)
 			self:DisableUIWidget(widget)
 		end 
 	end 
-	
 
 	-- Disable complete interface options menu pages we don't need
 	------------------------------------------------------------------------------------
@@ -322,11 +321,9 @@ Core.OnEnable = function(self)
 		end 
 		self:DisableUIMenuPage(page.ID, page.Name)
 	end 
-	
 
 	-- Working around Blizzard bugs and issues I've discovered
 	------------------------------------------------------------------------------------
-
 	-- In theory this shouldn't have any effect since we're not using the Blizzard bars. 
 	-- But by removing the menu panels above we're preventing the blizzard UI from calling it, 
 	-- and for some reason it is required to be called at least once, 
@@ -358,6 +355,8 @@ Core.OnEnable = function(self)
 		end 
 	end 
 
+	-- Apply startup smoothness and sweetness
+	------------------------------------------------------------------------------------
 	if self.layout.FadeInUI or self.layout.ShowWelcomeMessage then 
 		self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 		if self.layout.FadeInUI then 
@@ -365,10 +364,12 @@ Core.OnEnable = function(self)
 		end
 	end 
 
-	-- Make sure frame references to secure frames are in place
+	-- Make sure frame references to secure frames are in place for the menu
+	------------------------------------------------------------------------------------
 	self:UpdateSecureUpdater()
 
 	-- Listen for when the user closes the debugframe directly
+	------------------------------------------------------------------------------------
 	self:RegisterMessage("CG_DEBUG_FRAME_CLOSED", "OnEvent")
 end 
 
