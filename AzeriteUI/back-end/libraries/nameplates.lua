@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 27)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 29)
 if (not LibNamePlate) then	
 	return
 end
@@ -12,12 +12,16 @@ assert(LibEvent, "LibNamePlate requires LibEvent to be loaded.")
 local LibFrame = CogWheel("LibFrame")
 assert(LibFrame, "LibNamePlate requires LibFrame to be loaded.")
 
+local LibSecureHook = CogWheel("LibSecureHook")
+assert(LibSecureHook, "LibNamePlate requires LibSecureHook to be loaded.")
+
 local LibStatusBar = CogWheel("LibStatusBar")
 assert(LibStatusBar, "LibNamePlate requires LibStatusBar to be loaded.")
 
 -- Embed event functionality into this
 LibEvent:Embed(LibNamePlate)
 LibFrame:Embed(LibNamePlate)
+LibSecureHook:Embed(LibNamePlate)
 LibStatusBar:Embed(LibNamePlate)
 LibClientBuild:Embed(LibNamePlate)
 
@@ -142,10 +146,14 @@ local FRAMELEVEL_TRIVAL_CURRENT, FRAMELEVEL_TRIVIAL_MIN, FRAMELEVEL_TRIVIAL_MAX,
 -- Flag tracking combat state
 local IN_COMBAT = false
 
+-- Flag tracking target existence
+local HAS_TARGET = false
+
 -- Update and fading frequencies
 local THROTTLE = 1/30 -- global update limit, no elements can go above this
-local FADE_IN = 3/4 -- time in seconds to fade in
-local FADE_OUT = 1/20 -- time in seconds to fade out
+local FADE_IN = .75 -- time in seconds to fade in
+local FADE_OUT = .05 -- time in seconds to fade out
+local FADE_DOWN = .25 -- time in seconds to fade down, but not out
 
 -- Opacity Settings
 -- *From library build 25 we're keeping these local
@@ -157,7 +165,8 @@ local ALPHA = {
 		[2] = .85, 	-- For players when not having a target, also for World Bosses when not targeted
 		[3] = .7, 	-- For non-targeted players when having a target
 		[4] = .35, 	-- For non-targeted trivial mobs
-		[5] = .25 	-- For non-targeted friendly NPCs 
+		[5] = .25, 	-- For non-targeted friendly NPCs 
+		[6] = .1
 	},
 	-- Opacity while not in combat
 	NoCombat = {
@@ -166,8 +175,19 @@ local ALPHA = {
 		[2] = .7, 	-- For players when not having a target, also for World Bosses when not targeted
 		[3] = .35, 	-- For non-targeted players when having a target
 		[4] = .25, 	-- For non-targeted trivial mobs
-		[5] = .15 	-- For non-targeted friendly NPCs 
+		[5] = .15, 	-- For non-targeted friendly NPCs 
+		[6] = .1
 	}
+}
+
+-- New from build 29
+local ENFORCED_CVARS = {
+	nameplateMaxAlpha = 1, -- .9
+	nameplateMinAlpha = .4, -- .6
+	nameplateOccludedAlphaMult = .15, -- .4
+	nameplateSelectedAlpha = 1, -- 1
+	nameplateMaxAlphaDistance = 30, -- 40
+	nameplateMinAlphaDistance = 10 -- 10
 }
 
 -- Color Table Utility
@@ -271,6 +291,17 @@ local check = function(value, num, ...)
 	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
+--Return rounded number
+local round = function(num, power)
+	if (power and power > 0) then
+		local mult = 10 ^ power
+		local val = num * mult + .5
+		return (val - val%1) / mult
+	end
+	local val = num + .5
+	return val - val%1
+end
+
 -- NamePlate Template
 ----------------------------------------------------------
 local NamePlate = LibNamePlate:CreateFrame("Frame")
@@ -284,6 +315,7 @@ local RegisterUnitEvent = NamePlate_MT.__index.RegisterUnitEvent
 local UnregisterEvent = NamePlate_MT.__index.UnregisterEvent
 local UnregisterAllEvents = NamePlate_MT.__index.UnregisterAllEvents
 
+-- TODO: Cache some of this upon unit changes and show, to avoid so many function calls. 
 NamePlate.UpdateAlpha = function(self)
 	local unit = self.unit
 	if (not UnitExists(unit)) then
@@ -294,43 +326,42 @@ NamePlate.UpdateAlpha = function(self)
 		if (self.OverrideAlpha) then 
 			return self:OverrideAlpha(unit)
 		end 
-		if UnitIsUnit(unit, "player") then 
-			alphaLevel = 1 -- personal resource display
-		elseif UnitExists("target") then
-			if UnitIsUnit(unit, "target") then
-				alphaLevel = 1
-			elseif UnitIsTrivial(unit) then 
-				alphaLevel = 5
-			elseif UnitIsPlayer(unit) then
-				alphaLevel = 3
-			elseif UnitIsFriend("player", unit) then
+		if self.isTarget or self.isYou then
+			alphaLevel = 1
+		else
+			if HAS_TARGET then
+				if self.isTrivial then 
+					alphaLevel = 5
+				elseif self.isPlayer then
+					alphaLevel = 3
+				elseif self.isFriend then
+					alphaLevel = 5
+				else
+					if self.isElite or self.isRare or self.isBoss then
+						alphaLevel = 2
+					else
+						alphaLevel = 3
+					end	
+				end
+			elseif self.isTrivial then 
+				alphaLevel = 4
+			elseif self.isPlayer then
+				alphaLevel = 2
+			elseif self.isFriend then
 				alphaLevel = 5
 			else
-				local level = UnitLevel(unit)
-				local classificiation = UnitClassification(unit)
-				if (classificiation == "worldboss") or (classificiation == "rare") or (classificiation == "rareelite") or (level and level < 1) then
-					alphaLevel = 2
+				if self.isElite or self.isRare or self.isBoss then
+					alphaLevel = 1
 				else
 					alphaLevel = 3
 				end	
 			end
-		elseif UnitIsTrivial(unit) then 
-			alphaLevel = 4
-		elseif UnitIsPlayer(unit) then
-			alphaLevel = 2
-		elseif UnitIsFriend("player", unit) then
-			alphaLevel = 5
-		else
-			local level = UnitLevel(unit)
-			local classificiation = UnitClassification(unit)
-			if (classificiation == "worldboss") or (classificiation == "rare") or (classificiation == "rareelite") or (level and level < 1) then
-				alphaLevel = 1
-			else
-				alphaLevel = 2
-			end	
 		end
 	end
-	self.targetAlpha = ALPHA[IN_COMBAT and "InCombat" or "NoCombat"][alphaLevel]
+
+	-- Multiply with the blizzard alpha, to piggyback on their line of sight occluded alpha
+	self.targetAlpha = self.baseFrame:GetAlpha() * ALPHA[IN_COMBAT and "InCombat" or "NoCombat"][alphaLevel]
+
 	if (self.PostUpdateAlpha) then 
 		self:PostUpdateAlpha(unit, self.targetAlpha, alphaLevel)
 	end 
@@ -345,17 +376,13 @@ NamePlate.UpdateFrameLevel = function(self)
 		if (self.OverrideFrameLevel) then 
 			return self:OverrideFrameLevel(unit)
 		end 
-		local level = UnitLevel(unit)
-		local classificiation = UnitClassification(unit)
-		local isTarget = UnitIsUnit(unit, "target")
-		local isImportant = (classificiation == "worldboss") or (classificiation == "rare") or (classificiation == "rareelite") or (level and level < 1)
-		if isTarget then
+		if self.isTarget then
 			-- We're placing targets at an elevated frame level, 
 			-- as we want that frame visible above everything else. 
 			if self:GetFrameLevel() ~= FRAMELEVEL_TARGET then
 				self:SetFrameLevel(FRAMELEVEL_TARGET)
 			end
-		elseif isImportant then 
+		elseif self.isRare or self.isElite or self.isBoss then 
 			-- We're also elevating rares and bosses to almost the same level as our target, 
 			-- as we want these frames to stand out above all the others to make Legion rares easier to see.
 			-- Note that this doesn't actually make it easier to click, as we can't raise the secure uniframe itself, 
@@ -371,7 +398,7 @@ NamePlate.UpdateFrameLevel = function(self)
 			end
 		end
 		if (self.PostUpdateFrameLevel) then 
-			self:PostUpdateFrameLevel(unit, isTarget, isImportant)
+			self:PostUpdateFrameLevel(unit, self.isTarget, self.isRare or self.isElite or self.isBoss)
 		end 
 	end
 end
@@ -384,6 +411,19 @@ NamePlate.OnShow = function(self)
 
 	self:SetAlpha(0) -- set the actual alpha to 0
 	self.currentAlpha = 0 -- update stored alpha value
+	self.achievedAlpha = 0 -- set this as the achieved alpha
+
+	self.isYou = UnitIsUnit(unit, "player")
+	self.isTarget = UnitIsUnit(unit, "target") -- gotta update this on target changes... 
+	self.isPlayer = UnitIsPlayer(unit)
+	self.isFriend = UnitIsFriend("player", unit)
+	self.isTrivial = UnitIsTrivial(unit)
+	self.isBoss = (self.unitClassificiation == "worldboss") or (self.unitLevel and self.unitLevel < 1)
+	self.isRare = (self.unitClassificiation == "rare") or (self.unitClassificiation == "rareelite")
+	self.isElite = (self.unitClassificiation == "elite") or (self.unitClassificiation == "rareelite")
+	self.unitLevel = UnitLevel(unit)
+	self.unitClassificiation = UnitClassification(unit)
+
 	self:Show() -- make the fully transparent frame visible
 
 	-- this will trigger the fadein 
@@ -406,6 +446,17 @@ end
 
 NamePlate.OnHide = function(self)
 	visiblePlates[self] = false -- this will trigger the fadeout and hiding
+
+	self.isYou = nil
+	self.isTarget = nil
+	self.isPlayer = nil
+	self.isFriend = nil
+	self.isTrivial = nil
+	self.isBoss = nil
+	self.isRare = nil
+	self.isElite = nil
+	self.unitLevel = nil
+	self.unitClassificiation = nil
 
 	for element in pairs(elements) do
 		self:DisableElement(element, true)
@@ -662,6 +713,7 @@ LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
 	plate.frameLevel = FRAMELEVEL_CURRENT -- storing the framelevel
 	plate.targetAlpha = 0
 	plate.currentAlpha = 0
+	plate.achievedAlpha = 0
 	plate.colors = Colors
 	plate.baseFrame = baseFrame
 	plate:Hide()
@@ -797,12 +849,13 @@ LibNamePlate.UpdateNamePlateOptions = function(self)
 	self:ForAllEmbeds("PostUpdateNamePlateOptions")
 end
 
+-- TODO: Make this useful. 
 LibNamePlate.UpdateAllScales = function(self)
-	local oldScale = LibNamePlate.SCALE
-	local scale = UICenter:GetEffectiveScale()
-	if scale then
-		SCALE = scale
-	end
+	--local oldScale = LibNamePlate.SCALE
+	--local scale = UICenter:GetEffectiveScale()
+	--if scale then
+	--	SCALE = scale
+	--end
 	if (oldScale ~= LibNamePlate.SCALE) then
 		for baseFrame, plate in pairs(allPlates) do
 			if plate then
@@ -838,15 +891,17 @@ LibNamePlate.OnEvent = function(self, event, ...)
 		end
 
 	elseif (event == "PLAYER_TARGET_CHANGED") then
+		HAS_TARGET = UnitExists("target")
 		for baseFrame, plate in pairs(allPlates) do
-			if plate:IsShown() then 
+			if plate:IsShown() then
+				plate.isTarget = HAS_TARGET and plate.unit and UnitIsUnit(plate.unit, "target") 
 				plate:UpdateAlpha()
 				plate:UpdateFrameLevel()
 			end
 		end	
 		
-	elseif (event == "VARIABLES_LOADED") then
-		self:UpdateNamePlateOptions()
+	--elseif (event == "VARIABLES_LOADED") then
+		--self:UpdateNamePlateOptions()
 	
 	elseif (event == "PLAYER_ENTERING_WORLD") then
 		IN_COMBAT = InCombatLockdown() and true or false
@@ -888,6 +943,11 @@ LibNamePlate.OnEvent = function(self, event, ...)
 
 	elseif (event == "UI_SCALE_CHANGED") then
 		self:UpdateAllScales()
+
+	elseif (event == "CG_CVAR_UPDATED") then 
+		if (name and ENFORCED_CVARS[name]) then 
+			self:EnforceConsoleVars()
+		end 
 
 	elseif (event == "ADDON_LOADED") then
 		local addon = ...
@@ -945,47 +1005,51 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 	end
 
 	for plate, baseFrame in pairs(visiblePlates) do
-		if baseFrame then
+		if baseFrame and baseFrame:IsShown() then
 			plate:UpdateAlpha()
 		else
 			plate.targetAlpha = 0
 		end
+
 		if (plate.currentAlpha ~= plate.targetAlpha) then
-
-			local difference
 			if (plate.targetAlpha > plate.currentAlpha) then
-				difference = plate.targetAlpha - plate.currentAlpha
-			else
-				difference = plate.currentAlpha - plate.targetAlpha
-			end
+			
+				local step = elapsed/FADE_IN * (1/(plate.targetAlpha - plate.currentAlpha))
 
-			local step_in = elapsed/(FADE_IN * difference)
-			local step_out = elapsed/(FADE_OUT * difference)
-
-			if (plate.targetAlpha > plate.currentAlpha) then
-				if (plate.targetAlpha > plate.currentAlpha + step_in) then
-					plate.currentAlpha = plate.currentAlpha + step_in -- fade in
+				if (plate.targetAlpha > plate.currentAlpha + step) then
+					plate.currentAlpha = plate.currentAlpha + step -- fade in
 				else
 					plate.currentAlpha = plate.targetAlpha -- fading done
 				end
+
 			elseif (plate.targetAlpha < plate.currentAlpha) then
-				if (plate.targetAlpha < plate.currentAlpha - step_out) then
-					plate.currentAlpha = plate.currentAlpha - step_out -- fade out
+
+				local step = elapsed/(plate.targetAlpha == 0 and FADE_OUT or FADE_DOWN) * (1/(plate.currentAlpha - plate.targetAlpha))
+
+				if (plate.targetAlpha < plate.currentAlpha - step) then
+					plate.currentAlpha = plate.currentAlpha - step -- fade out
 				else
 					plate.currentAlpha = plate.targetAlpha -- fading done
 				end
-			else
-				plate.currentAlpha = plate.targetAlpha -- fading done
 			end
+
+			if plate.currentAlpha == plate.targetAlpha then 
+				plate.achievedAlpha = plate.targetAlpha -- store this for the next fade
+			end
+
+			-- Still appears to be some weird stutter when reaching target alpha downwards here. 
 			plate:SetAlpha(plate.currentAlpha)
 		end
 
-		if ((plate.currentAlpha == 0) and (plate.targetAlpha == 0)) then
+		if ((plate.achievedAlpha == 0) and (plate.targetAlpha == 0)) then
+
 			visiblePlates[plate] = nil
 			plate:Hide()
+
 			if plate.Health then 
 				plate.Health:SetValue(0, true)
 			end 
+
 			if plate.Cast then 
 				plate.Cast:SetValue(0, true)
 			end 
@@ -993,6 +1057,26 @@ LibNamePlate.OnUpdate = function(self, elapsed)
 	end	
 
 	self.elapsed = 0
+end 
+
+do 
+	local enforcing 
+	LibNamePlate.EnforceConsoleVars = function(self, event, ...)
+		if enforcing then 
+			return 
+		end 
+		if InCombatLockdown() then 
+			return self:RegisterEvent("PLAYER_REGEN_ENABLED", "EnforceConsoleVars")
+		end 
+		if (event == "PLAYER_REGEN_ENABLED") then 
+			self:UnregisterEvent("PLAYER_REGEN_ENABLED", "EnforceConsoleVars")
+		end
+		enforcing = true 
+		for name,value in pairs(ENFORCED_CVARS) do 
+			SetCVar(name,value)
+		end 
+		enforcing = nil 
+	end
 end 
 
 LibNamePlate.Enable = function(self)
@@ -1018,7 +1102,12 @@ LibNamePlate.Enable = function(self)
 	self:RegisterEvent("DISPLAY_SIZE_CHANGED", "OnEvent")
 	self:RegisterEvent("UI_SCALE_CHANGED", "OnEvent")
 
+	-- Kill 8.1.0 added personal resource display clutter
 	self:KillClassClutter()
+
+	-- These we will enforce 
+	self:EnforceConsoleVars()
+	self:SetSecureHook("SetCVar", "OnEvent", "CG_CVAR_UPDATED")
 
 	self.enabled = true
 end 
