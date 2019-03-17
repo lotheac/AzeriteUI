@@ -6,7 +6,6 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("NamePlates", "LibEvent", "LibNamePlate", "LibDB", "LibMenu", "LibFrame")
-local Layout
 
 Module:SetIncompatible("Kui_Nameplates")
 Module:SetIncompatible("NeatPlates")
@@ -23,11 +22,19 @@ local GetQuestGreenRange = _G.GetQuestGreenRange
 local InCombatLockdown = _G.InCombatLockdown
 local IsInInstance = _G.IsInInstance 
 local SetCVar = _G.SetCVar
+local SetNamePlateEnemyClickThrough = _G.C_NamePlate.SetNamePlateEnemyClickThrough
+local SetNamePlateFriendlyClickThrough = _G.C_NamePlate.SetNamePlateFriendlyClickThrough
+local SetNamePlateSelfClickThrough = _G.C_NamePlate.SetNamePlateSelfClickThrough
 
-local Plates = {} -- local cache of the nameplates, for easy access to some methods
+-- Local cache of the nameplates, for easy access to some methods
+local Plates = {} 
 
+-- Module defaults
 local defaults = {
-	enableAuras = false
+	enableAuras = true,
+	clickThroughEnemies = false, 
+	clickThroughFriends = false, 
+	clickThroughSelf = false
 }
 
 -----------------------------------------------------------
@@ -144,6 +151,7 @@ end
 -- Called when certain bindable blizzard settings change, 
 -- or when the VARIABLES_LOADED event fires. 
 Module.PostUpdateNamePlateOptions = function(self, isInInstace)
+	local Layout = self.layout
 
 	-- Make an extra call to the preupdate
 	self:PreUpdateNamePlateOptions()
@@ -168,6 +176,7 @@ end
 -- This is where we create our own custom elements.
 Module.PostCreateNamePlate = function(self, plate, baseFrame)
 	local db = self.db
+	local Layout = self.layout
 	
 	plate:SetSize(unpack(Layout.Size))
 	plate.colors = Layout.Colors or plate.colors
@@ -195,7 +204,6 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		health.colorReaction = Layout.HealthColorReaction
 		health.colorThreat = Layout.HealthColorThreat -- color units with threat in threat color
 		health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
-		health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
 		health.threatFeedbackUnit = Layout.HealthThreatFeedbackUnit
 		health.threatHideSolo = Layout.HealthThreatHideSolo
 		health.frequent = Layout.HealthFrequent
@@ -373,16 +381,32 @@ Module.PostUpdateSettings = function(self)
 	end
 end
 
-Module.PreInit = function(self)
-	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[NamePlates]")
+Module.UpdateCVars = function(self, event, ...)
+	if InCombatLockdown() then 
+		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "UpdateCVars")
+	end 
+	if (event == "PLAYER_REGEN_ENABLED") then 
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "UpdateCVars")
+	end 
+	local db = self.db
+	SetNamePlateEnemyClickThrough(db.clickThroughEnemies)
+	SetNamePlateFriendlyClickThrough(db.clickThroughFriends)
+	SetNamePlateSelfClickThrough(db.clickThroughSelf)
+end
+
+Module.OnEvent = function(self, event, ...)
+	if (event == "PLAYER_ENTERING_WORLD") then 
+		self:UpdateCVars()
+	end 
 end
 
 Module.OnInit = function(self)
 	self.db = self:NewConfig("NamePlates", defaults, "global")
+	self.layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[NamePlates]")
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	proxy.PostUpdateSettings = function() self:PostUpdateSettings() end
+	proxy.UpdateCVars = function() self:UpdateCVars() end
 	for key,value in pairs(self.db) do 
 		proxy:SetAttribute(key,value)
 	end 
@@ -393,6 +417,19 @@ Module.OnInit = function(self)
 		if (name == "change-enableauras") then 
 			self:SetAttribute("enableAuras", value); 
 			self:CallMethod("PostUpdateSettings"); 
+
+		elseif (name == "change-clickthroughenemies") then
+			self:SetAttribute("clickThroughEnemies", value); 
+			self:CallMethod("UpdateCVars"); 
+
+		elseif (name == "change-clickthroughfriends") then 
+			self:SetAttribute("clickThroughFriends", value); 
+			self:CallMethod("UpdateCVars"); 
+
+		elseif (name == "change-clickthroughself") then 
+			self:SetAttribute("clickThroughSelf", value); 
+			self:CallMethod("UpdateCVars"); 
+
 		end 
 	]=])
 
@@ -404,7 +441,8 @@ Module.GetSecureUpdater = function(self)
 end
 
 Module.OnEnable = function(self)
-	if Layout.UseNamePlates then
+	if self.layout.UseNamePlates then
 		self:StartNamePlateEngine()
+		self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	end
 end 

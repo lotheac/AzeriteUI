@@ -875,7 +875,34 @@ Module.CreateMenuTable = function(self)
 					type = "TOGGLE_VALUE", 
 					configDB = "NamePlates", configKey = "enableAuras", 
 					proxyModule = "NamePlates"
-				}		
+				},
+				-- Click-through settings
+				{
+					title = MAKE_UNINTERACTABLE, type = nil, hasWindow = true, 
+					buttons = {
+						{
+							enabledTitle = L["Player: %s"]:format(L["Enabled"]),
+							disabledTitle = L["Player: %s"]:format(L["Disabled"]),
+							type = "TOGGLE_VALUE", 
+							configDB = "NamePlates", configKey = "clickThroughSelf", 
+							proxyModule = "NamePlates"
+						},
+						{
+							enabledTitle = L["Enemies: %s"]:format(L["Enabled"]),
+							disabledTitle = L["Enemies: %s"]:format(L["Disabled"]),
+							type = "TOGGLE_VALUE", 
+							configDB = "NamePlates", configKey = "clickThroughEnemies", 
+							proxyModule = "NamePlates"
+						},
+						{
+							enabledTitle = L["Friends: %s"]:format(L["Enabled"]),
+							disabledTitle = L["Friends: %s"]:format(L["Disabled"]),
+							type = "TOGGLE_VALUE", 
+							configDB = "NamePlates", configKey = "clickThroughFriends", 
+							proxyModule = "NamePlates"
+						}
+					}
+				}
 			}
 		})
 	end 
