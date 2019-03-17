@@ -4,82 +4,48 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.123-Beta] 2019-03-13
-Moving this into its beta phase, as stability appears to be good and only a few elements remain to be implemented. Their back-ends have been written, so we're almost there. 
-
-### Changed
-- Updated minimap tracking blips for WoW Client Patch 8.1.5.
-
-## [1.2.122-Alpha] 2019-03-12
-### Changed
-- Actionbutton actions will now be prevented if the three modifier keys are held down, allowing us to drag all spells away from the buttons even with cast on down enabled. This does not fix the issue when cast on down is enabled and button lock is off, as there isn't really any way for us to separate between mouse clicks and keybinds. But at least holding the modifiers will guarantee success now.
-
-## [1.2.121-Alpha] 2019-03-12
-### Added 
+## [1.2.123-Release] 2019-03-17
+### Added
 - Added heal predictions and heal absorbs for the player and target unit frames. 
 - Added a health preview layer for the player and target unit frames, which shows gained health instantly, while the "real" bar smoothly moves up towards it. 
-
-### Changed
-- The debug console now requires a left-click to switch sides of the screen, and a right-click will close the console. The mousewheel has also been enabled for this frame, and you can now scroll through the debug output with it, or go directly to the top or bottom by holding down Shift while using the wheel. 
-- Did a whole lot of small corrections to target frame bar elements. Turns out a rectangle has different sizes depending on what corner you begin in. Or at least according to the WoW API. Trippy. 
-- Changed the player and target unit frame health bar smoothing. It now fills up rather slowly, but show reductions almost instantly. 
-
-## [1.2.120-Alpha] 2019-03-11
-### Fixed
-- Fix actionbutton mask textures not being applied properly since WoW client build 29600(March 5th, 2019). This looked especially bad when buttons faded in and out, as the square shape of the original icons would shine through the border. Thank you Blizz, we really do love your undocumented changes. Hire us already. 
-
-## [1.2.119-Alpha] 2019-03-11
-### Added
 - Added a prioritized single aura display for raid- and party frames. This displays boss debuffs, dispellable magic, curses, diseases and poisons when the player has a class and spec that can dispel them, as well as a few select other auras like Priest Atonement. 
-
-### Fixed
-- Attempting to work around the nameplate aura misalignment issue. The cause of the issue hasn't been fully verified, only theorized, so this fix can be considered the same. I will pay attention to the issue if it arises again after this build. Full details can be found in the git commit or code comments. 
-
-## [1.2.118-Alpha] 2019-03-09
-### Added
 - Added a debug console which will be loaded but hidden by default. You can toggle the console visibility or fully unload it through the addon menu. I recommend leaving it loaded, but disabled. Then if you encounter actionbars that won't change when entering a vehicle, or other behavior that doesn't fully make sense, just enable it, take a screenshot and show us on discord, bitbucket or twitter! For the time being it only tracks actionbar paging changes (entering vehicles, switching druid forms, possessing somebody, etc) and missing locale entries. We'll be adding more if other problem areas should arise. As a rule of thumb though, we won't ever debug anything that doesn't at some point need debugging. And any fully fixed areas will have its debug code removed. 
-
-### Changed
-- The player frame aura filter will now show auras being cast by the player, pet or vehicle regardless of duration while controlling a vehicle. You can now see your style stacks when doing the horse riding World Quest in other words. 
-- The back-end master visibility frame which every single custom object in the interface belongs to will now be hidden at startup and between reloads to halt all update timers and generally just speed up the process. 
-
-## [1.2.117-Alpha] 2019-03-08
-### Added
 - Added a 10 second throttle for chat messages in most channels. This is mostly to avoid a group of mobs instantly filling your entire chat history with the exact same message, but could also be considered helpful to remove needless spam from certain public chats. 
-
-### Changed
-- GroupTools will now move along with the group frames and main chat window when Healer Mode is toggled. 
-- The Battle.Net toast window will now move along with the group frames and main chat window when Healer Mode is toggled. 
-- Redid the Death Knight Rune opacity and display logic, to work around a few bugs and have it occur more often than other player resources, as the current Rune system really is more like an extra energy bar than anything else. 
-
-## [1.2.116-Alpha] 2019-03-05
-### Added 
 - Added an action button lock setting to the config menu. When this setting is unchecked, spells can be freely moved or removed from the action buttons without holding the Alt+Ctrl+Shift modifier combination. 
-
-## [1.2.115-Alpha] 2019-03-04
-### Added
 - Added full Prat3.0 support. When Prat3.0 is enabled, neither our chat windows nor our chat bubbles module will be loaded. Nor will any automation regarding bubble visibility in and out of instances or any chat window placement when toggling Healer Mode be active. Meaning you'll manually have to deal with any issues that arise by yourself, we can't offer support for situations where external user configurated addons are in control. 
 - Added prettier minimap blip icons. 
-
-### Changed
-- Trying some experimental changes to raid frame updating
-- The main chat frame is no longer movable when using AzeriteUI's chat windows module. Prat users are not affected by this. 
-- Blizzard chat bubbles should be visible when the interface is hidden with the keybind (Alt+Z by default) to do so. 
-- The Group Finder Eye's tooltip should now be styled in the same manner as most tooltips. 
-
-## [1.2.114-Alpha] 2019-03-03
-### Changed
-- Reduced number of buffs on party frames from 6 to 3, as this is only a tool meant to show the player's own beneficial shields and HoTs on the party. We are adding a special debuff display for boss auras and dispellable debuffs, and some special player abilities like Atonement and a few others we're still working out. 
-- Adjusted the spacing between the group areas and the player area in Healer Mode a little further. 
-- Working on some experimental changes to switch to Blizzard chat bubbles during non instanced cinematics and in-game movies. 
-
-## [1.2.113-Alpha] 2019-03-02
-### Added
 - Healer Mode! This mode found on top of the menu changes the layout of group frames and chat windows with a single click, bringing all friendly frames together and hopefully will make it a bit easier for healers in the future! This is one of many feature improvements we are working on, and more will be added during the course of the 1.2-Alpha. 
 - Added your own friendly auras to the party frames. This is not intended as a full aura display, but rather as a way for healers to easier be able to track shields, HoTs, things like that. A prioritized debuff display is also planned and will be added later in the 1.2-Alpha, but it is not part of the standard aura display beneath their frames, as this is currently only meant to track healing. 
 
 ### Changed
+- Attached Blizzard's bag slot buttons to the bottom of the main backpack frame, so bags finally can be changed easily without having to disable the UI or use separate bag addons. It's a contextual and elegant fix, according to Sottises. :) 
+- Updated the fading code and logic for the minimap xp/reputation/artifact bars, as there were some inconsistencies and weird occurrences when moving out and in again. 
+- Updated minimap tracking blips for WoW Client Patch 8.1.5.
+- Actionbutton actions will now be prevented if the three modifier keys are held down, allowing us to drag all spells away from the buttons even with cast on down enabled. This does not fix the issue when cast on down is enabled and button lock is off, as there isn't really any way for us to separate between mouse clicks and keybinds. But at least holding the modifiers will guarantee success now.
+- The debug console now requires a left-click to switch sides of the screen, and a right-click will close the console. The mousewheel has also been enabled for this frame, and you can now scroll through the debug output with it, or go directly to the top or bottom by holding down Shift while using the wheel. 
+- Did a whole lot of small corrections to target frame bar elements. Turns out a rectangle has different sizes depending on what corner you begin in. Or at least according to the WoW API. Trippy. 
+- Changed the player and target unit frame health bar smoothing. It now fills up rather slowly, but show reductions almost instantly. 
+- The player frame aura filter will now show auras being cast by the player, pet or vehicle regardless of duration while controlling a vehicle. You can now see your style stacks when doing the horse riding World Quest in other words. 
+- The back-end master visibility frame which every single custom object in the interface belongs to will now be hidden at startup and between reloads to halt all update timers and generally just speed up the process. 
+- The player frame aura filter will now show auras being cast by the player, pet or vehicle regardless of duration while controlling a vehicle. You can now see your style stacks when doing the horse riding World Quest in other words. 
+- The back-end master visibility frame which every single custom object in the interface belongs to will now be hidden at startup and between reloads to halt all update timers and generally just speed up the process. 
+- GroupTools will now move along with the group frames and main chat window when Healer Mode is toggled. 
+- The Battle.Net toast window will now move along with the group frames and main chat window when Healer Mode is toggled. 
+- Redid the Death Knight Rune opacity and display logic, to work around a few bugs and have it occur more often than other player resources, as the current Rune system really is more like an extra energy bar than anything else. 
+- Trying some experimental changes to raid frame updating with the purpose of increasing the performance. 
+- The main chat frame is no longer movable when using AzeriteUI's chat windows module. Prat users are not affected by this. 
+- Blizzard chat bubbles should be visible when the interface is hidden with the keybind (Alt+Z by default) to do so. 
+- The Group Finder Eye's tooltip should now be styled in the same manner as most tooltips. 
+- Reduced number of buffs on party frames from 6 to 3, as this is only a tool meant to show the player's own beneficial shields and HoTs on the party. We are adding a special debuff display for boss auras and dispellable debuffs, and some special player abilities like Atonement and a few others we're still working out. 
+- Adjusted the spacing between the group areas and the player area in Healer Mode a little further. 
+- Working on some experimental changes to switch to Blizzard chat bubbles during non instanced cinematics and in-game movies. 
 - Major folder and code restructuring. This is both in preparation for our next major projects as well as the upcoming WoW Classic. 
+
+### Fixed
+- Changed the order of the actionbutton paging conditionals to allow for overridebars while having a vehicleui, as this was needed to make the buttons appear in the new WoW patch 8.1.5 world quest "Cycle of Life".
+- Updated player and pet unitframe conditionals to work with the world quest "Cycle of Life".
+- Fix actionbutton mask textures not being applied properly since WoW client build 29600(March 5th, 2019). This looked especially bad when buttons faded in and out, as the square shape of the original icons would shine through the border. Thank you Blizz, we really do love your undocumented changes. Hire us already. 
+- Attempting to work around the nameplate aura misalignment issue. The cause of the issue hasn't been fully verified, only theorized, so this fix can be considered the same. Current fix is to reposition the aura container on every post update. I don't consider this case closed even if this fix works, and I'll continue to monitor the situation and tweak the fixes for performance and stability. 
 
 ## [1.1.112-Release] 2019-02-26
 ### Added
