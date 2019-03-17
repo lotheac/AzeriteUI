@@ -727,12 +727,15 @@ Module.SpawnButtons = function(self)
 	self.buttons = buttons
 	self.hover = hover
 
-	local fadeOutTime = 1/20 -- has to be fast, or layers will blend weirdly
+	local fadeOutTime = 1/5 -- has to be fast, or layers will blend weirdly
 	local hoverFrame = self:CreateFrame("Frame")
+	hoverFrame.timeLeft = 0
+	hoverFrame.elapsed = 0
 	hoverFrame:SetScript("OnUpdate", function(self, elapsed) 
-		self.elapsed = (self.elapsed or 0) - elapsed
+		self.elapsed = self.elapsed + elapsed
+		self.timeLeft = self.timeLeft - elapsed
 
-		if (self.elapsed <= 0) then
+		if (self.timeLeft <= 0) then
 			if FORCED or self.FORCED or self.always or (self.incombat and IN_COMBAT) or self.forced or self.flyout or self:IsMouseOver(0,0,0,0) then
 				if (not self.isMouseOver) then 
 					self.isMouseOver = true
@@ -749,7 +752,7 @@ Module.SpawnButtons = function(self)
 					end 
 				end 
 				if self.fadeOutTime then 
-					self.fadeOutTime = self.fadeOutTime - elapsed
+					self.fadeOutTime = self.fadeOutTime - self.elapsed
 					if (self.fadeOutTime > 0) then 
 						self.alpha = self.fadeOutTime / fadeOutTime
 					else 
@@ -761,7 +764,8 @@ Module.SpawnButtons = function(self)
 					end 
 				end 
 			end 
-			self.elapsed = .05
+			self.elapsed = 0
+			self.timeLeft = .05
 		end 
 	end) 
 	hoverFrame:SetScript("OnEvent", function(self, event, ...) 
