@@ -27,6 +27,7 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
+local GetCVarDefault = _G.GetCVarDefault
 local UnitCanAttack = _G.UnitCanAttack
 local UnitClassification = _G.UnitClassification
 local UnitExists = _G.UnitExists
@@ -1512,7 +1513,7 @@ local NamePlates = {
 		HealthColorThreat = true,
 		HealthThreatFeedbackUnit = "player",
 		HealthThreatHideSolo = false, 
-		HealthFrequent = 1/120,
+		HealthFrequent = false,
 
 	UseHealthBackdrop = true, 
 		HealthBackdropPlace = { "CENTER", 0, 0 },
@@ -1654,36 +1655,34 @@ local NamePlates = {
 		nameplateOtherTopInset = .08, -- default .08
 		nameplateLargeBottomInset = .02, -- default .15
 		nameplateOtherBottomInset = .02, -- default .1
-		
 		nameplateClassResourceTopInset = 0,
+
+		-- Nameplate scale
+		nameplateMinScale = 1, 
+		nameplateMaxScale = 1, 
+		nameplateLargerScale = 1, -- Scale modifier for large plates, used for important monsters
 		nameplateGlobalScale = 1,
 		NamePlateHorizontalScale = 1,
 		NamePlateVerticalScale = 1,
 
-		-- Scale modifier for large plates, used for important monsters
-		nameplateLargerScale = 1, -- default 1.2
+		-- Alpha defaults (these are enforced to other values by the back-end now)
+		nameplateMaxAlpha = GetCVarDefault("nameplateMaxAlpha"), 
+		nameplateMinAlphaDistance = GetCVarDefault("nameplateMinAlphaDistance"), 
+		nameplateMinAlpha = GetCVarDefault("nameplateMinAlpha"),
+		nameplateMaxAlphaDistance = GetCVarDefault("nameplateMaxAlphaDistance"),
+		nameplateOccludedAlphaMult = GetCVarDefault("nameplateOccludedAlphaMult"), 
+		nameplateSelectedAlpha = GetCVarDefault("nameplateSelectedAlpha"), 
 
-		-- The minimum scale and alpha of nameplates 
-		nameplateMinScale = 1, -- .5 default .8
-		nameplateMinAlpha = 1, -- .3, -- default .5 (leave this to the modules?)
-
-		-- The maximum scale and alpha of nameplates
-		nameplateMaxScale = 1, -- default 1
-		nameplateMaxAlpha = 1, -- 0.85, -- default 0.9
-
-		-- The minimum distance from the camera plates will reach their minimum scale and alpa
-		nameplateMinScaleDistance = 30, -- default 10
-		nameplateMinAlphaDistance = 30, -- default 10
+		-- The minimum distance from the camera plates will reach their minimum scale and alpha
+		nameplateMinScaleDistance = GetCVarDefault("nameplateMinScaleDistance"), 
 		
-		-- The maximum distance from the camera where plates will still have max scale and alpa
-		nameplateMaxScaleDistance = 10, -- default 10
-		nameplateMaxAlphaDistance = 10, -- default 10
+		-- The maximum distance from the camera where plates will still have max scale and alpha
+		nameplateMaxScaleDistance = GetCVarDefault("nameplateMaxScaleDistance"),
 
 		-- Show nameplates above heads or at the base (0 or 2,
 		nameplateOtherAtBase = 0,
 
 		-- Scale and Alpha of the selected nameplate (current target,
-		nameplateSelectedAlpha = 1, -- default 1
 		nameplateSelectedScale = 1 -- default 1
 	}
 }
