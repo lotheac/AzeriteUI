@@ -110,6 +110,9 @@ L["TalkingHead: %s"] = true
 
 L["NamePlates"] = true
 L["Auras: %s"] = true
+L["Player: %s"] = true
+L["Enemies: %s"] = true 
+L["Friends: %s"] = true
 
 L["Explorer Mode"] = true
 L["Player Fading: %s"] = true
