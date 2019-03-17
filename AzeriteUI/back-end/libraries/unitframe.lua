@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 55)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 56)
 if (not LibUnitFrame) then	
 	return
 end
@@ -409,15 +409,17 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 	local vehicleDriver, visDriver
 	if (unit == "player") then 
 		-- Should work in all cases where the unitframe is replaced. It should always be the "pet" unit.
-		vehicleDriver = "[vehicleui]pet;player"
+		--vehicleDriver = "[vehicleui]pet;player"
+		vehicleDriver = "[nooverridebar,vehicleui]pet;[overridebar,@vehicle,exists]vehicle;player"
 
 		-- Might seem stupid, but I want the player frame to disappear along with the actionbars 
 		-- when we've blown the flight master's whistle and are getting picked up.
 		visDriver = "[@player,exists][vehicleui][possessbar][overridebar][mounted]show;hide"
 
 	elseif (unit == "pet") then 
-		vehicleDriver = "[vehicleui]player;pet"
-		visDriver = "[@pet,exists][vehicleui]show;hide"
+		--vehicleDriver = "[vehicleui]player;pet"
+		vehicleDriver = "[nooverridebar,vehicleui]player;pet"
+		visDriver = "[@pet,exists][nooverridebar,vehicleui]show;hide"
 
 	elseif (unit == "target") then
 		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.OverrideAllElements, true)
