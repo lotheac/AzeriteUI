@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.123-Release] 2019-03-17
+## [1.2.123-Beta] 2019-03-17
 ### Added
 - Added heal predictions and heal absorbs for the player and target unit frames. 
 - Added a health preview layer for the player and target unit frames, which shows gained health instantly, while the "real" bar smoothly moves up towards it. 
