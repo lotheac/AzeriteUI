@@ -1,4 +1,4 @@
-local LibChatBubble = CogWheel:Set("LibChatBubble", 12)
+local LibChatBubble = CogWheel:Set("LibChatBubble", 13)
 if (not LibChatBubble) then	
 	return
 end
@@ -33,6 +33,7 @@ local CreateFrame = _G.CreateFrame
 local InCombatLockdown = _G.InCombatLockdown
 local IsInInstance = _G.IsInInstance
 local SetCVar = _G.SetCVar
+local UnitAffectingCombat = _G.UnitAffectingCombat
 
 -- Textures
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
@@ -40,6 +41,7 @@ local BUBBLE_TEXTURE = [[Interface\Tooltips\ChatBubble-Background]]
 local TOOLTIP_BORDER = [[Interface\Tooltips\UI-Tooltip-Border]]
 
 -- Bubble Data
+LibChatBubble.stylingEnabled = LibChatBubble.stylingEnabled
 LibChatBubble.embeds = LibChatBubble.embeds or {}
 LibChatBubble.messageToGUID = LibChatBubble.messageToGUID or {}
 LibChatBubble.messageToSender = LibChatBubble.messageToSender or {}
@@ -207,6 +209,7 @@ LibChatBubble.EnableBlizzard = function(self, bubble)
 	-- Restore the original text color
 	customBubble.blizzardText:SetTextColor(customBubble.blizzardColor[1], customBubble.blizzardColor[2], customBubble.blizzardColor[3], 1)
 
+	-- Restore all the original textures
 	for region, texture in pairs(customBubbles[bubble].blizzardRegions) do
 		region:SetTexture(texture)
 		region:SetAlpha(1)
@@ -270,7 +273,7 @@ LibChatBubble.SetBubblePostUpdateFunc = function(self, func)
 	LibChatBubble.PostUpdateBubbleFunc = func
 end 
 
-LibChatBubble.UpdateBubbleVisibility = function(self, forceCVar)
+LibChatBubble.UpdateBubbleVisibility = function(self)
 	local _, instanceType = IsInInstance()
 	if ((instanceType == "none") and (not MovieFrame:IsShown()) and (not CinematicFrame:IsShown()) and UIParent:IsShown()) then 
 
@@ -300,12 +303,18 @@ LibChatBubble.UpdateBubbleVisibility = function(self, forceCVar)
 end
 
 LibChatBubble.EnableBubbleStyling = function(self)
+	LibChatBubble.stylingEnabled = true
 	LibChatBubble:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	LibChatBubble:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent")
+	LibChatBubble:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	LibChatBubble:OnEvent("PLAYER_ENTERING_WORLD")
 end 
 
 LibChatBubble.DisableBubbleStyling = function(self)
+	LibChatBubble.stylingEnabled = nil
 	LibChatBubble:UnregisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	LibChatBubble:UnregisterEvent("PLAYER_REGEN_DISABLED", "OnEvent")
+	LibChatBubble:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	LibChatBubble:OnEvent("PLAYER_ENTERING_WORLD")
 end 
 
@@ -315,36 +324,48 @@ end
 
 LibChatBubble.OnEvent = function(self, event, ...)
 	if (event == "PLAYER_ENTERING_WORLD") then 
+
+		-- Don't ever do any of this while in combat. 
+		-- This should never happen, we're just being overly safe here. 
 		if InCombatLockdown() then 
 			return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 		end
 
-		local _, instanceType = IsInInstance()
-		if (instanceType == "none") then
-			SetCVar("chatBubbles", 1)
+		if self.stylingEnabled then 
+			local _, instanceType = IsInInstance()
+			if (instanceType == "none") then
+				SetCVar("chatBubbles", 1)
+			else
+				if UnitAffectingCombat("player") then 
+					SetCVar("chatBubbles", 0)
+				else 
+					SetCVar("chatBubbles", 1)
+				end 
+			end
 
-			self:SetHook(UIParent, "OnHide", "UpdateBubbleVisibility")
-			self:SetHook(UIParent, "OnShow", "UpdateBubbleVisibility")
-			self:SetHook(CinematicFrame, "OnHide", "UpdateBubbleVisibility")
-			self:SetHook(CinematicFrame, "OnShow", "UpdateBubbleVisibility")
-			self:SetHook(MovieFrame, "OnHide", "UpdateBubbleVisibility")
-			self:SetHook(MovieFrame, "OnShow", "UpdateBubbleVisibility")
-	
+			self:SetHook(UIParent, "OnHide", "UpdateBubbleVisibility", "CG_UIPARENT_ONHIDE_BUBBLEUPDATE")
+			self:SetHook(UIParent, "OnShow", "UpdateBubbleVisibility", "CG_UIPARENT_ONSHOW_BUBBLEUPDATE")
+			self:SetHook(CinematicFrame, "OnHide", "UpdateBubbleVisibility", "CG_CINEMATICFRAME_ONHIDE_BUBBLEUPDATE")
+			self:SetHook(CinematicFrame, "OnShow", "UpdateBubbleVisibility", "CG_CINEMATICFRAME_ONSHOW_BUBBLEUPDATE")
+			self:SetHook(MovieFrame, "OnHide", "UpdateBubbleVisibility", "CG_MOVIEFRAME_ONHIDE_BUBBLEUPDATE")
+			self:SetHook(MovieFrame, "OnShow", "UpdateBubbleVisibility", "CG_MOVIEFRAME_ONSHOW_BUBBLEUPDATE")
 		else
-			SetCVar("chatBubbles", 0)
-
-			self:ClearHook(UIParent, "OnHide", "UpdateBubbleVisibility")
-			self:ClearHook(UIParent, "OnShow", "UpdateBubbleVisibility")
-			self:ClearHook(CinematicFrame, "OnHide", "UpdateBubbleVisibility")
-			self:ClearHook(CinematicFrame, "OnShow", "UpdateBubbleVisibility")
-			self:ClearHook(MovieFrame, "OnHide", "UpdateBubbleVisibility")
-			self:ClearHook(MovieFrame, "OnShow", "UpdateBubbleVisibility")
-		end
+			self:ClearHook(UIParent, "OnHide", "UpdateBubbleVisibility", "CG_UIPARENT_ONHIDE_BUBBLEUPDATE")
+			self:ClearHook(UIParent, "OnShow", "UpdateBubbleVisibility", "CG_UIPARENT_ONSHOW_BUBBLEUPDATE")
+			self:ClearHook(CinematicFrame, "OnHide", "UpdateBubbleVisibility", "CG_CINEMATICFRAME_ONHIDE_BUBBLEUPDATE")
+			self:ClearHook(CinematicFrame, "OnShow", "UpdateBubbleVisibility", "CG_CINEMATICFRAME_ONSHOW_BUBBLEUPDATE")
+			self:ClearHook(MovieFrame, "OnHide", "UpdateBubbleVisibility", "CG_MOVIEFRAME_ONHIDE_BUBBLEUPDATE")
+			self:ClearHook(MovieFrame, "OnShow", "UpdateBubbleVisibility", "CG_MOVIEFRAME_ONSHOW_BUBBLEUPDATE")
+		end 
 
 		self:UpdateBubbleVisibility()
 
 	elseif (event == "PLAYER_REGEN_ENABLED") then 
 		return self:OnEvent("PLAYER_ENTERING_WORLD")
+
+	elseif (event == "PLAYER_REGEN_DISABLED") then 
+		return self:OnEvent("PLAYER_ENTERING_WORLD")
+
 	end
 end 
 
