@@ -792,7 +792,10 @@ Update = function(self, event, unit, ...)
 	end 
 
 	-- Post update element colors, allow modules to override
-	(element.OverrideColor or element.UpdateColor) (element, unit, min, max, powerType)
+	local updateColor = element.OverrideColor or element.UpdateColor
+	if updateColor then 
+		updateColor(element, unit, min, max, powerType)
+	end 
 
 	if (not element:IsShown()) then 
 		element:Show()
@@ -960,5 +963,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 21)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 22)
 end 
