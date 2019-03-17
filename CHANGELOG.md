@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.124-Beta] 2019-03-17
+## [1.2.125-Beta] 2019-03-17
 ### Added
+- Added non-interactive (click-through) options for friendly and hostile nameplates, as well as the personal resource display. 
 - Added heal predictions and heal absorbs for the player and target unit frames. 
 - Added a health preview layer for the player and target unit frames, which shows gained health instantly, while the "real" bar smoothly moves up towards it. 
 - Added a prioritized single aura display for raid- and party frames. This displays boss debuffs, dispellable magic, curses, diseases and poisons when the player has a class and spec that can dispel them, as well as a few select other auras like Priest Atonement. 
@@ -18,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added your own friendly auras to the party frames. This is not intended as a full aura display, but rather as a way for healers to easier be able to track shields, HoTs, things like that. A prioritized debuff display is also planned and will be added later in the 1.2-Alpha, but it is not part of the standard aura display beneath their frames, as this is currently only meant to track healing. 
 
 ### Changed
+- Update actionbutton fading logic to be smoother and feel more responsive. 
+- Updated the nameplate opacity logic to be smoother, smarter, and tone down units that aren't in your line of sight. 
+- Hide chat bubbles while engaged in combat inside an instance, but allow them to remain visible otherwise to support cut scenes and similar.
 - Attached Blizzard's bag slot buttons to the bottom of the main backpack frame, so bags finally can be changed easily without having to disable the UI or use separate bag addons. It's a contextual and elegant fix, according to Sottises. :) 
 - Updated the fading code and logic for the minimap xp/reputation/artifact bars, as there were some inconsistencies and weird occurrences when moving out and in again. 
 - Updated minimap tracking blips for WoW Client Patch 8.1.5.
