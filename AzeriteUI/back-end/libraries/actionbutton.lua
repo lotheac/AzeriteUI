@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 49)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 50)
 if (not LibSecureButton) then	
 	return
 end
@@ -53,7 +53,10 @@ local GetActionTexture = _G.GetActionTexture
 local GetBindingKey = _G.GetBindingKey 
 local GetCursorInfo = _G.GetCursorInfo
 local GetMacroSpell = _G.GetMacroSpell
+local GetOverrideBarIndex = _G.GetOverrideBarIndex
+local GetTempShapeshiftBarIndex = _G.GetTempShapeshiftBarIndex
 local GetTime = _G.GetTime
+local GetVehicleBarIndex = _G.GetVehicleBarIndex
 local HasAction = _G.HasAction
 local IsActionInRange = _G.IsActionInRange
 local IsAutoCastPetAction = _G.C_ActionBar.IsAutoCastPetAction
@@ -91,26 +94,25 @@ local BUTTON_NAME_TEMPLATE_FULL = "%sActionButton%d"
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 
 local SECURE = {
-	Page_OnAttributeChanged = [=[ 
+	Page_OnAttributeChanged = ([=[ 
 		if (name == "state-page") then 
 			local page; 
-			if (value == "vehicle") 
-			or (value == "override")
-			or (value == "shapeshift")
-			or (value == "possess")
-			or (value == "11") then 
-				if (value == "vehicle") then 
-					page = GetVehicleBarIndex(); -- 12
-				elseif (value == "override") then 
-					page = GetOverrideBarIndex(); -- 14
-				elseif (value == "shapeshift") then 
-					page = GetTempShapeshiftBarIndex(); -- 13
-				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then  
+
+			if (value == "overridebar") then 
+				page = %d; 
+			elseif (value == "possessbar") then 
+				page = %d; 
+			elseif (value == "shapeshift") then 
+				page = %d; 
+			elseif (value == "vehicleui") then 
+				page = %d; 
+			elseif (value == "11") then 
+				if HasBonusActionBar() and (GetActionBarPage() == 1) then  
 					page = GetBonusBarIndex(); 
 				else 
 					page = 12; 
 				end 
-			end 
+			end
 
 			if page then 
 				value = page; 
@@ -128,27 +130,26 @@ local SECURE = {
 			button:SetAttribute("action", slot); 
 			button:CallMethod("UpdateAction"); 
 		end 
-	]=], 
-	Page_OnAttributeChanged_Debug = [=[ 
+	]=]):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex()), 
+	Page_OnAttributeChanged_Debug = ([=[ 
 		if (name == "state-page") then 
 			local page; 
-			if (value == "vehicle") 
-			or (value == "override")
-			or (value == "shapeshift")
-			or (value == "possess")
-			or (value == "11") then 
-				if (value == "vehicle") then 
-					page = GetVehicleBarIndex(); -- 12
-				elseif (value == "override") then 
-					page = GetOverrideBarIndex(); -- 14
-				elseif (value == "shapeshift") then 
-					page = GetTempShapeshiftBarIndex(); -- 13
-				elseif HasBonusActionBar() and (GetActionBarPage() == 1) then  
+
+			if (value == "overridebar") then 
+				page = %d; 
+			elseif (value == "possessbar") then 
+				page = %d; 
+			elseif (value == "shapeshift") then 
+				page = %d; 
+			elseif (value == "vehicleui") then 
+				page = %d; 
+			elseif (value == "11") then 
+				if HasBonusActionBar() and (GetActionBarPage() == 1) then  
 					page = GetBonusBarIndex(); 
 				else 
 					page = 12; 
 				end 
-			end 
+			end
 
 			local driverResult; 
 			if page then 
@@ -183,7 +184,7 @@ local SECURE = {
 				end
 			end
 		end 
-	]=]
+	]=]):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex())
 
 }
 
@@ -1393,7 +1394,11 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 
 	local driver 
 	if (barID == 1) then 
-		driver = "[vehicleui]vehicle; [overridebar]override; [possessbar]possess; [shapeshift]shapeshift; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"
+
+		-- Moving vehicles farther back in the queue, as some overridebars like the ones 
+		-- found in the new 8.1.5 world quest "Cycle of Life" returns positive for both vehicleui and overridebar. 
+		driver = ("[overridebar]%d; [possessbar]%d; [shapeshift]%d; [vehicleui]%d; [form,noform] 0; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex())
+--		driver = ("[overridebar]%d; [possessbar]%d; [shapeshift]%d; [vehicleui]%d; [form,noform] 0; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex())
 
 		local _, playerClass = UnitClass("player")
 		if (playerClass == "DRUID") then
@@ -1411,14 +1416,15 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 		elseif (playerClass == "WARRIOR") then
 			driver = driver .. "; [bonusbar:1] 7; [bonusbar:2] 8" 
 		end
-		driver = driver .. "; [form] 1; 1"
+		--driver = driver .. "; [form] 1; 1"
+		driver = driver .. "; 1"
 	else 
 		driver = tostring(barID)
 	end 
 
 	local visibilityDriver
 	if (barID == 1) then 
-		visibilityDriver = "[@player,exists][vehicleui][overridebar][possessbar][shapeshift]show;hide"
+		visibilityDriver = "[@player,exists][overridebar][possessbar][shapeshift][vehicleui]show;hide"
 	else 
 		visibilityDriver = "[overridebar][possessbar][shapeshift][vehicleui][@player,noexists]hide;show"
 	end 
