@@ -37,7 +37,7 @@ local UnitFrameRaid = Core:NewModule("UnitFrameRaid", "LibDB", "LibFrame", "LibU
 UnitFrameArena:SetIncompatible("sArena")
 UnitFrameArena:SetIncompatible("Gladius")
 UnitFrameArena:SetIncompatible("GladiusEx")
-UnitFramePlayerHUD:SetIncompatible("SimpleClassPower")
+--UnitFramePlayerHUD:SetIncompatible("SimpleClassPower")
 
 -- Keep these local
 local UnitStyles = {} 

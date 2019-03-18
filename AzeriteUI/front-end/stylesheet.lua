@@ -2516,7 +2516,7 @@ local UnitFramePlayerHUD = {
 				}
 			},
 
-	UseClassPower = true, 
+	UseClassPower = not CogWheel("LibModule"):IsAddOnEnabled("SimpleClassPower"), 
 		ClassPowerPlace = { "CENTER", "UICenter", "CENTER", 0, 0 }, 
 		ClassPowerSize = { 2,2 }, 
 		ClassPowerHideWhenUnattackable = true, 
