@@ -79,13 +79,8 @@ local STAGGER_RED_INDEX = _G.STAGGER_RED_INDEX or 3
 -- Sourced from FrameXML/TargetFrame.lua
 local MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS or 5
 
--- WoW Client Constants
-local ENGINE_801 = LibClientBuild:IsBuild("8.0.1")
-local ENGINE_735 = LibClientBuild:IsBuild("7.3.5")
-
 -- Class specific info
 local _, PLAYERCLASS = UnitClass("player")
-
 
 -- Declare core function names so we don't 
 -- have to worry about the order we put them in.
@@ -847,26 +842,28 @@ local UpdatePowerType = function(self, event, unit, ...)
 	local newType 
 	if (element.hasPossessBar or element.hasOverrideBar) or (element.inVehicle and (not element.hasVehicleUI)) then 
 		newType = "None"
-	elseif (element.hasVehicleUI) then 
+	elseif (element.hasVehicleUI) and (not element.ignoreComboPoints) then 
 		newType = "ComboPoints"
-	elseif (PLAYERCLASS == "DEATHKNIGHT") then 
+	elseif (PLAYERCLASS == "DEATHKNIGHT") and (not element.ignoreRunes) then 
 		newType = "Runes"
-	elseif (PLAYERCLASS == "DRUID") then 
+	elseif (PLAYERCLASS == "DRUID") and (not element.ignoreComboPoints) then 
 		newType = "ComboPoints"
-	elseif (PLAYERCLASS == "MAGE") and (spec == SPEC_MAGE_ARCANE) then 
+	elseif (PLAYERCLASS == "MAGE") and (spec == SPEC_MAGE_ARCANE) and (not element.ignoreArcaneCharges) then 
 		newType = "ArcaneCharges"
-	elseif (PLAYERCLASS == "MONK") and (spec == SPEC_MONK_WINDWALKER) then 
+	elseif (PLAYERCLASS == "MONK") and (spec == SPEC_MONK_WINDWALKER) and (not element.ignoreChi)then 
 		newType = "Chi"
-	elseif (PLAYERCLASS == "MONK") and (spec == SPEC_MONK_BREWMASTER) then 
+	elseif (PLAYERCLASS == "MONK") and (spec == SPEC_MONK_BREWMASTER) and (not element.ignoreStagger)then 
 		newType = "Stagger"
-	elseif ((PLAYERCLASS == "PALADIN") and (spec == SPEC_PALADIN_RETRIBUTION) and (level >= PALADINPOWERBAR_SHOW_LEVEL)) then
+	elseif ((PLAYERCLASS == "PALADIN") and (spec == SPEC_PALADIN_RETRIBUTION) and (level >= PALADINPOWERBAR_SHOW_LEVEL)) and (not element.ignoreHolyPower)then
 		newType = "HolyPower"
-	elseif (PLAYERCLASS == "ROGUE") then 
+	elseif (PLAYERCLASS == "ROGUE") and (not element.ignoreComboPoints) then 
 		newType = "ComboPoints"
-	elseif ((PLAYERCLASS == "WARLOCK") and (level >= SHARDBAR_SHOW_LEVEL)) then 
+	elseif ((PLAYERCLASS == "WARLOCK") and (level >= SHARDBAR_SHOW_LEVEL)) and (not element.ignoreSoulShards) then 
 		newType = "SoulShards"
-	else 
+	elseif (not element.ignoreComboPoints) then 
 		newType = "ComboPoints"
+	else 
+		newType = "None"
 	end 
 
 	local currentType = element._currentType
@@ -963,5 +960,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 22)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 24)
 end 
