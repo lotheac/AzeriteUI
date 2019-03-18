@@ -1,4 +1,4 @@
-## The MIT License (MIT)
+## Custom License
 
 Copyright (c) 2018 Daniel Troconis, Lars Norberg
 
