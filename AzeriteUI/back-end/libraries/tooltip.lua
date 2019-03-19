@@ -164,7 +164,7 @@ local fakeBackdropBorderColor = { .3, .3, .3, 1 }
 ---------------------------------------------------------
 -- Syntax check 
 local check = function(value, num, ...)
-	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
+	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
 	for i = 1,select("#", ...) do
 		if type(value) == select(i, ...) then 
 			return 
@@ -172,7 +172,7 @@ local check = function(value, num, ...)
 	end
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
-	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
+	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
 -- Prefix and camel case a word (e.g. 'name' >> 'prefixName' )
@@ -302,13 +302,13 @@ local DAY, HOUR, MINUTE = 86400, 3600, 60
 -- Time formatting
 local formatTime = function(time)
 	if time > DAY then -- more than a day
-		return "%d%s %d%s", time/DAY - time/DAY%1, "d", time%DAY/HOUR, "h"
+		return "%.0f%s %.0f%s", time/DAY - time/DAY%1, "d", time%DAY/HOUR, "h"
 	elseif time > HOUR then -- more than an hour
-		return "%d%s %d%s", time/HOUR - time/HOUR%1, "h", time%HOUR - time%HOUR%1 , "m"
+		return "%.0f%s %.0f%s", time/HOUR - time/HOUR%1, "h", time%HOUR - time%HOUR%1 , "m"
 	elseif time > MINUTE then -- more than a minute
-		return "%d%s %d%s", time/MINUTE - time/MINUTE%1, "m", time%MINUTE - time%1  , "s"
+		return "%.0f%s %.0f%s", time/MINUTE - time/MINUTE%1, "m", time%MINUTE - time%1  , "s"
 	elseif time > 5 then -- more than 5 seconds
-		return "%d%s", time - time%1, "s"
+		return "%.0f%s", time - time%1, "s"
 	elseif time > 0 then
 		return "%.1f%s", time, "s"
 	else

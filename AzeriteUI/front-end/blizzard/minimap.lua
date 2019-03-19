@@ -53,7 +53,7 @@ local shortXPString = "%s%%"
 local longXPString = "%s / %s"
 local fullXPString = "%s / %s (%s)"
 local restedString = " (%s%% %s)"
-local shortLevelString = "%s %d"
+local shortLevelString = "%s %.0f"
 local LEVEL = UnitLevel("player")
 local maxRested = select(2, UnitRace("player")) == "Pandaren" and 3 or 1.5
 
@@ -69,9 +69,9 @@ end
 
 local getTimeStrings = function(h, m, suffix, useStandardTime, abbreviateSuffix)
 	if useStandardTime then 
-		return "%d:%02d |cff888888%s|r", h, m, abbreviateSuffix and string_match(suffix, "^.") or suffix
+		return "%.0f:%02.0f |cff888888%s|r", h, m, abbreviateSuffix and string_match(suffix, "^.") or suffix
 	else 
-		return "%02d:%02d", h, m
+		return "%02.0f:%02.0f", h, m
 	end 
 end 
 
@@ -118,11 +118,11 @@ local Clock_OverrideValue = function(element, h, m, suffix)
 end 
 
 local FrameRate_OverrideValue = function(element, fps)
-	element:SetFormattedText("|cff888888%d %s|r", math_floor(fps), string_upper(string_match(FPS_ABBR, "^.")))
+	element:SetFormattedText("|cff888888%.0f %s|r", math_floor(fps), string_upper(string_match(FPS_ABBR, "^.")))
 end 
 
 local Latency_OverrideValue = function(element, home, world)
-	element:SetFormattedText("|cff888888%s|r %d - |cff888888%s|r %d", string_upper(string_match(HOME, "^.")), math_floor(home), string_upper(string_match(WORLD, "^.")), math_floor(world))
+	element:SetFormattedText("|cff888888%s|r %.0f - |cff888888%s|r %.0f", string_upper(string_match(HOME, "^.")), math_floor(home), string_upper(string_match(WORLD, "^.")), math_floor(world))
 end 
 
 local Performance_UpdateTooltip = function(self)
@@ -141,10 +141,10 @@ local Performance_UpdateTooltip = function(self)
 	tooltip:SetMaximumWidth(360)
 	tooltip:AddLine(L["Network Stats"], rt, gt, bt)
 	tooltip:AddLine(" ")
-	tooltip:AddDoubleLine(L["World latency:"], ("%d|cff888888%s|r"):format(math_floor(latencyWorld), MILLISECONDS_ABBR), rh, gh, bh, r, g, b)
+	tooltip:AddDoubleLine(L["World latency:"], ("%.0f|cff888888%s|r"):format(math_floor(latencyWorld), MILLISECONDS_ABBR), rh, gh, bh, r, g, b)
 	tooltip:AddLine(L["This is the latency of the world server, and affects casting, crafting, interaction with other players and NPCs. This is the value that decides how delayed your combat actions are."], rg, gg, bg, true)
 	tooltip:AddLine(" ")
-	tooltip:AddDoubleLine(L["Home latency:"], ("%d|cff888888%s|r"):format(math_floor(latencyHome), MILLISECONDS_ABBR), rh, gh, bh, r, g, b)
+	tooltip:AddDoubleLine(L["Home latency:"], ("%.0f|cff888888%s|r"):format(math_floor(latencyHome), MILLISECONDS_ABBR), rh, gh, bh, r, g, b)
 	tooltip:AddLine(L["This is the latency of the home server, which affects things like chat, guild chat, the auction house and some other non-combat related things."], rg, gg, bg, true)
 	tooltip:Show()
 end 
@@ -713,7 +713,7 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 			local percValue = math_floor(min/max*100)
 			if (percValue > 0) then 
 				-- removing the percentage sign
-				percent:SetFormattedText("%d", percValue)
+				percent:SetFormattedText("%.0f", percValue)
 			else 
 				percent:SetText("xp") -- no localization for this
 			end 
@@ -756,7 +756,7 @@ local Rep_OverrideValue = function(element, current, min, max, factionName, stan
 			local percValue = math_floor((current - min)/(max - min)*100)
 			if (percValue > 0) then 
 				-- removing the percentage sign
-				percent:SetFormattedText("%d", percValue)
+				percent:SetFormattedText("%.0f", percValue)
 			else 
 				percent:SetText("rp") 
 			end 
@@ -786,7 +786,7 @@ local AP_OverrideValue = function(element, min, max, level)
 			local percValue = math_floor(min/max*100)
 			if (percValue > 0) then 
 				-- removing the percentage sign
-				percent:SetFormattedText("%d", percValue)
+				percent:SetFormattedText("%.0f", percValue)
 			else 
 				percent:SetText("ap") 
 			end 

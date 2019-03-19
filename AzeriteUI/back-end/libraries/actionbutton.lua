@@ -88,7 +88,7 @@ local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 
 -- Generic format strings for our button names
 local BUTTON_NAME_TEMPLATE_SIMPLE = "%sActionButton"
-local BUTTON_NAME_TEMPLATE_FULL = "%sActionButton%d"
+local BUTTON_NAME_TEMPLATE_FULL = "%sActionButton%.0f"
 
 -- Time constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
@@ -99,13 +99,13 @@ local SECURE = {
 			local page; 
 
 			if (value == "overridebar") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "possessbar") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "shapeshift") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "vehicleui") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "11") then 
 				if HasBonusActionBar() and (GetActionBarPage() == 1) then  
 					page = GetBonusBarIndex(); 
@@ -136,13 +136,13 @@ local SECURE = {
 			local page; 
 
 			if (value == "overridebar") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "possessbar") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "shapeshift") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "vehicleui") then 
-				page = %d; 
+				page = %.0f; 
 			elseif (value == "11") then 
 				if HasBonusActionBar() and (GetActionBarPage() == 1) then  
 					page = GetBonusBarIndex(); 
@@ -192,7 +192,7 @@ local SECURE = {
 ----------------------------------------------------
 -- Syntax check 
 local check = function(value, num, ...)
-	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
+	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
 	for i = 1,select("#", ...) do
 		if type(value) == select(i, ...) then 
 			return 
@@ -200,7 +200,7 @@ local check = function(value, num, ...)
 	end
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
-	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
+	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
 local nameHelper = function(self, id)
@@ -229,19 +229,19 @@ end
 local formatCooldownTime = function(time)
 	if time > DAY then -- more than a day
 		time = time + DAY/2
-		return "%d%s", time/DAY - time/DAY%1, "d"
+		return "%.0f%s", time/DAY - time/DAY%1, "d"
 	elseif time > HOUR then -- more than an hour
 		time = time + HOUR/2
-		return "%d%s", time/HOUR - time/HOUR%1, "h"
+		return "%.0f%s", time/HOUR - time/HOUR%1, "h"
 	elseif time > MINUTE then -- more than a minute
 		time = time + MINUTE/2
-		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
+		return "%.0f%s", time/MINUTE - time/MINUTE%1, "m"
 	elseif time > 10 then -- more than 10 seconds
-		return "%d", time - time%1
+		return "%.0f", time - time%1
 	elseif time >= 1 then -- more than 5 seconds
-		return "|cffff8800%d|r", time - time%1
+		return "|cffff8800%.0f|r", time - time%1
 	elseif time > 0 then
-		return "|cffff0000%d|r", time*10 - time*10%1
+		return "|cffff0000%.0f|r", time*10 - time*10%1
 	else
 		return ""
 	end	
@@ -1397,8 +1397,7 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 
 		-- Moving vehicles farther back in the queue, as some overridebars like the ones 
 		-- found in the new 8.1.5 world quest "Cycle of Life" returns positive for both vehicleui and overridebar. 
-		driver = ("[overridebar]%d; [possessbar]%d; [shapeshift]%d; [vehicleui]%d; [form,noform] 0; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex())
---		driver = ("[overridebar]%d; [possessbar]%d; [shapeshift]%d; [vehicleui]%d; [form,noform] 0; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex())
+		driver = ("[overridebar]%.0f; [possessbar]%.0f; [shapeshift]%.0f; [vehicleui]%.0f; [form,noform] 0; [bar:2]2; [bar:3]3; [bar:4]4; [bar:5]5; [bar:6]6"):format(GetOverrideBarIndex(), GetVehicleBarIndex(), GetTempShapeshiftBarIndex(), GetVehicleBarIndex())
 
 		local _, playerClass = UnitClass("player")
 		if (playerClass == "DRUID") then
@@ -1542,7 +1541,7 @@ LibSecureButton.GetActionBarControllerPetBattle = function(self)
 			if (name == "state-petbattle") then
 				if (value == "petbattle") then
 					for i = 1,6 do
-						local our_button, blizz_button = ("CLICK ]]..name..[[%d:LeftButton"):format(i), ("ACTIONBUTTON%d"):format(i)
+						local our_button, blizz_button = ("CLICK ]]..name..[[%.0f:LeftButton"):format(i), ("ACTIONBUTTON%.0f"):format(i)
 
 						-- Grab the keybinds from our own primary action bar,
 						-- and assign them to the default blizzard bar. 
@@ -1585,8 +1584,8 @@ end
 -- Modules should call this at UPDATE_BINDINGS and the first PLAYER_ENTERING_WORLD
 LibSecureButton.UpdateActionButtonBindings = function(self)
 
-	-- "BONUSACTIONBUTTON%d" -- pet bar
-	-- "SHAPESHIFTBUTTON%d" -- stance bar
+	-- "BONUSACTIONBUTTON%.0f" -- pet bar
+	-- "SHAPESHIFTBUTTON%.0f" -- stance bar
 
 	local mainBarUsed
 	local petBattleUsed, vehicleUsed
@@ -1605,22 +1604,22 @@ LibSecureButton.UpdateActionButtonBindings = function(self)
 		-- figure out the binding action
 		local bindingAction
 		if (barID == 1) then 
-			bindingAction = ("ACTIONBUTTON%d"):format(buttonID)
+			bindingAction = ("ACTIONBUTTON%.0f"):format(buttonID)
 
 			-- We've used the main bar, and need to update the controllers
 			mainBarUsed = true
 
 		elseif (barID == BOTTOMLEFT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR1BUTTON%d"):format(buttonID)
+			bindingAction = ("MULTIACTIONBAR1BUTTON%.0f"):format(buttonID)
 
 		elseif (barID == BOTTOMRIGHT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR2BUTTON%d"):format(buttonID)
+			bindingAction = ("MULTIACTIONBAR2BUTTON%.0f"):format(buttonID)
 
 		elseif (barID == RIGHT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR3BUTTON%d"):format(buttonID)
+			bindingAction = ("MULTIACTIONBAR3BUTTON%.0f"):format(buttonID)
 
 		elseif (barID == LEFT_ACTIONBAR_PAGE) then 
-			bindingAction = ("MULTIACTIONBAR4BUTTON%d"):format(buttonID)
+			bindingAction = ("MULTIACTIONBAR4BUTTON%.0f"):format(buttonID)
 		end 
 
 		-- store the binding action name on the button

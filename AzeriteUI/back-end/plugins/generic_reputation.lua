@@ -51,7 +51,7 @@ local UpdateValue = function(element, current, min, max, factionName, standingID
 	local barValue = current - min
 	if value.showPercent then 
 		if (barMax > 0) then 
-			value:SetFormattedText("%d%%", barValue/barMax*100)
+			value:SetFormattedText("%.0f%%", barValue/barMax*100)
 		else 
 			value:SetText(MAXIMUM)
 		end 
@@ -67,7 +67,7 @@ local UpdateValue = function(element, current, min, max, factionName, standingID
 	local percent = value.Percent
 	if percent then 
 		if (barMax > 0) then 
-			percent:SetFormattedText("%d%%", barValue/barMax*100)
+			percent:SetFormattedText("%.0f%%", barValue/barMax*100)
 		else 
 			percent:SetText(MAXIMUM)
 		end 

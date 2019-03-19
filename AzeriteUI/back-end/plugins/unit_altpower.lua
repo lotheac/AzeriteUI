@@ -88,9 +88,9 @@ local UpdateValue = function(element, unit, current, min, max)
 		else
 			if value.showPercent then
 				if value.showMaximum then
-					value:SetFormattedText("%s / %s - %d%%", short(current), short(max), math_floor(current/max * 100))
+					value:SetFormattedText("%s / %s - %.0f%%", short(current), short(max), math_floor(current/max * 100))
 				else
-					value:SetFormattedText("%s / %d%%", short(current), math_floor(current/max * 100))
+					value:SetFormattedText("%s / %.0f%%", short(current), math_floor(current/max * 100))
 				end
 			else
 				if value.showMaximum then

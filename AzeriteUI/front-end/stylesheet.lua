@@ -586,9 +586,9 @@ end
 -- Will expand on this later to tailer all tooltips to our needs.  
 local Tooltip_StatusBar_PostUpdate = function(tooltip, bar, value, min, max)
 	if (bar.barType == "health") then 
-		if (value >= 1e8) then 			bar.Value:SetFormattedText("%dm", value/1e6) 		-- 100m, 1000m, 2300m, etc
+		if (value >= 1e8) then 			bar.Value:SetFormattedText("%.0fm", value/1e6) 		-- 100m, 1000m, 2300m, etc
 		elseif (value >= 1e6) then 		bar.Value:SetFormattedText("%.1fm", value/1e6) 		-- 1.0m - 99.9m 
-		elseif (value >= 1e5) then 		bar.Value:SetFormattedText("%dk", value/1e3) 		-- 100k - 999k
+		elseif (value >= 1e5) then 		bar.Value:SetFormattedText("%.0fk", value/1e3) 		-- 100k - 999k
 		elseif (value >= 1e3) then 		bar.Value:SetFormattedText("%.1fk", value/1e3) 		-- 1.0k - 99.9k
 		elseif (value > 0) then 		bar.Value:SetText(tostring(math_floor(value))) 		-- 1 - 999
 		else 							bar.Value:SetText("")
@@ -2199,7 +2199,7 @@ local UnitFramePlayer = {
 			if (min == 0) or (max == 0) or (min == max) then
 				element:SetText("")
 			else
-				element:SetFormattedText("%d", math_floor(min/max * 100))
+				element:SetFormattedText("%.0f", math_floor(min/max * 100))
 			end 
 		end,
 
@@ -2539,6 +2539,7 @@ local UnitFramePlayerHUD = {
 
 			point:SetOrientation("UP") -- set the bars to grow from bottom to top.
 			point:SetSparkTexture(GetMedia("blank")) -- this will be too tricky to rotate and map
+			
 		end,
 
 		ClassPowerPostUpdate = function(element, unit, min, max, newMax, powerType)
@@ -3061,7 +3062,7 @@ local UnitFrameTarget = {
 				if (min == 0 or max == 0) and (not value.showAtZero) then
 					value:SetText("")
 				else
-					value:SetFormattedText("%d", math_floor(min/max * 100))
+					value:SetFormattedText("%.0f", math_floor(min/max * 100))
 				end 
 			end,
 			PowerValuePlace = { "CENTER", 0, -5 },

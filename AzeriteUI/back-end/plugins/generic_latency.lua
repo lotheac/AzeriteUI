@@ -11,7 +11,7 @@ local UpdateValue = function(element, home, world)
 		return element:OverrideValue(home, world)
 	end
 	if element:IsObjectType("FontString") then 
-		element:SetFormattedText("%d%s - %d%s", math_floor(home), MILLISECONDS_ABBR, math_floor(world), MILLISECONDS_ABBR)
+		element:SetFormattedText("%.0f%s - %.0f%s", math_floor(home), MILLISECONDS_ABBR, math_floor(world), MILLISECONDS_ABBR)
 	end 
 end 
 

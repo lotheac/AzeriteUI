@@ -15,7 +15,7 @@ local UpdateValue = function(element, h, m, suffix)
 	end 
 	if (element:IsObjectType("FontString")) then 
 		if element.useStandardTime then 
-			element:SetFormattedText("%d:%02d %s", h, m, suffix)
+			element:SetFormattedText("%.0f:%02d %s", h, m, suffix)
 		else 
 			element:SetFormattedText("%02d:%02d", h, m)
 		end 

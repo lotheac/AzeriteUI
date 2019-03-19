@@ -11,7 +11,7 @@ local UpdateValue = function(element, fps)
 		return element:OverrideValue(fps)
 	end
 	if element:IsObjectType("FontString") then 
-		element:SetFormattedText("%d%s", math_floor(fps), FPS_ABBR)
+		element:SetFormattedText("%.0f%s", math_floor(fps), FPS_ABBR)
 	end 
 end 
 

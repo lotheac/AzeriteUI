@@ -41,7 +41,7 @@ local shortXPString = "%s%%"
 local longXPString = "%s / %s"
 local fullXPString = "%s / %s (%s)"
 local restedString = " (%s%% %s)"
-local shortLevelString = "%s %d"
+local shortLevelString = "%s %.0f"
 
 -- Secure Code Snippets
 local secureSnippets = {
@@ -714,8 +714,8 @@ Module.SpawnButtons = function(self)
 
 		-- Reference all buttons in our menu callback frame
 		proxy:Execute(([=[
-			table.insert(Buttons, self:GetFrameRef("Button"..%d)); 
-			table.insert(Pagers, self:GetFrameRef("Pager"..%d)); 
+			table.insert(Buttons, self:GetFrameRef("Button"..%.0f)); 
+			table.insert(Pagers, self:GetFrameRef("Pager"..%.0f)); 
 		]=]):format(id, id))
 
 		-- Hide buttons beyond our current maximum visible

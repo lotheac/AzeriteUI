@@ -56,7 +56,7 @@ local UIWidgetDependency = {}
 
 -- Syntax check 
 local check = function(value, num, ...)
-	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
+	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
 	for i = 1,select("#", ...) do
 		if (type(value) == select(i, ...)) then 
 			return 
@@ -64,7 +64,7 @@ local check = function(value, num, ...)
 	end
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
-	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
+	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
 -- Proxy function to retrieve the actual frame whether 
@@ -89,7 +89,7 @@ local kill = function(object, keepEvents, silent)
 		if (silent and (not _G[object])) then
 			return false
 		end
-		assert(_G[object], ("Bad argument #%d to '%s'. No object named '%s' exists."):format(1, "Kill", object))
+		assert(_G[object], ("Bad argument #%.0f to '%s'. No object named '%s' exists."):format(1, "Kill", object))
 		object = _G[object]
 	end
 	if (not UIHider[object]) then
@@ -531,7 +531,7 @@ end
 
 UIWidgets["UnitFrameParty"] = function(self)
 	for i = 1,4 do
-		killUnitFrame(("PartyMemberFrame%d"):format(i))
+		killUnitFrame(("PartyMemberFrame%.0f"):format(i))
 	end
 
 	-- Kill off the party background
@@ -563,7 +563,7 @@ end
 
 UIWidgets["UnitFrameArena"] = function(self)
 	for i = 1,4 do
-		killUnitFrame(("ArenaEnemyFrame%d"):format(i))
+		killUnitFrame(("ArenaEnemyFrame%.0f"):format(i))
 	end
 
 	-- Blizzard_ArenaUI should not be loaded
@@ -574,7 +574,7 @@ end
 
 UIWidgets["UnitFrameBoss"] = function(self)
 	for i = 1,4 do
-		killUnitFrame(("Boss%dTargetFrame"):format(i))
+		killUnitFrame(("Boss%.0fTargetFrame"):format(i))
 	end
 end
 
@@ -698,7 +698,7 @@ LibBlizzard.DisableUIMenuPage = function(self, panel_id, panel_name)
 		end
 	end
 	if (panel_id and not button) then
-		print(("LibBlizzard: The panel button with id '%d' does not exist."):format(panel_id))
+		print(("LibBlizzard: The panel button with id '%.0f' does not exist."):format(panel_id))
 	end 
 	if (panel_name and not window) then
 		print(("LibBlizzard: The menu panel named '%s' does not exist."):format(panel_name))

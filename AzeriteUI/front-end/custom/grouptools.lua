@@ -268,9 +268,9 @@ Module.UpdateCounts = function(self)
 		for role,msg in pairs(self.RoleCount) do 
 			count = counts[role]
 			if (count.dead > 0) then 
-				msg:SetFormattedText("%d/%d", count.alive, count.alive + count.dead)
+				msg:SetFormattedText("%.0f/%.0f", count.alive, count.alive + count.dead)
 			else
-				msg:SetFormattedText("%d", count.alive)
+				msg:SetFormattedText("%.0f", count.alive)
 			end 
 		end 
 	end 
@@ -469,7 +469,7 @@ Module.CreateLeaderTools = function(self)
 		tank:SetIndentedWordWrap(false)
 		tank:SetWordWrap(false)
 		tank:SetNonSpaceWrap(false)
-		tank:SetFormattedText("%d|cff888888/|r%d", 0, 0)
+		tank:SetFormattedText("%.0f|cff888888/|r%.0f", 0, 0)
 		self.RoleCount.TANK = tank
 
 		local tankIcon = frame:CreateTexture()
@@ -487,7 +487,7 @@ Module.CreateLeaderTools = function(self)
 		healer:SetIndentedWordWrap(false)
 		healer:SetWordWrap(false)
 		healer:SetNonSpaceWrap(false)
-		healer:SetFormattedText("%d|cff888888/|r%d", 0, 0)
+		healer:SetFormattedText("%.0f|cff888888/|r%.0f", 0, 0)
 		self.RoleCount.HEALER = healer
 
 		local healerIcon = frame:CreateTexture()
@@ -505,7 +505,7 @@ Module.CreateLeaderTools = function(self)
 		dps:SetIndentedWordWrap(false)
 		dps:SetWordWrap(false)
 		dps:SetNonSpaceWrap(false)
-		dps:SetFormattedText("%d|cff888888/|r%d", 0, 0)
+		dps:SetFormattedText("%.0f|cff888888/|r%.0f", 0, 0)
 		self.RoleCount.DAMAGER = dps
 
 		local dpsIcon = frame:CreateTexture()

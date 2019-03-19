@@ -187,13 +187,13 @@ local SECURE = {
 		if (not inHealerMode) then 
 			anchorPoint = "%s"; 
 			anchorFrame = self; 
-			growthX = %d;
-			growthY = %d; 
+			growthX = %.0f;
+			growthY = %.0f; 
 		else
 			anchorPoint = "%s"; 
 			anchorFrame = self:GetFrameRef("HealerModeAnchor"); 
-			growthX = %d;
-			growthY = %d; 
+			growthX = %.0f;
+			growthY = %.0f; 
 		end
 
 		-- Iterate the frames
@@ -275,28 +275,28 @@ local SECURE = {
 		local groupAnchorHealerMode; 
 
 		if (groupLayout == "normal") then 
-			colSize = %d;
-			growthX = %d;
-			growthY = %d;
-			growthYHealerMode = %d;
-			groupGrowthX = %d;
-			groupGrowthY = %d;
-			groupGrowthYHealerMode = %d;
-			groupCols = %d;
-			groupRows = %d;
+			colSize = %.0f;
+			growthX = %.0f;
+			growthY = %.0f;
+			growthYHealerMode = %.0f;
+			groupGrowthX = %.0f;
+			groupGrowthY = %.0f;
+			groupGrowthYHealerMode = %.0f;
+			groupCols = %.0f;
+			groupRows = %.0f;
 			groupAnchor = "%s";
 			groupAnchorHealerMode = "%s"; 
 
 		elseif (groupLayout == "epic") then 
-			colSize = %d;
-			growthX = %d;
-			growthY = %d;
-			growthYHealerMode = %d;
-			groupGrowthX = %d;
-			groupGrowthY = %d;
-			groupGrowthYHealerMode = %d;
-			groupCols = %d;
-			groupRows = %d;
+			colSize = %.0f;
+			growthX = %.0f;
+			growthY = %.0f;
+			growthYHealerMode = %.0f;
+			groupGrowthX = %.0f;
+			groupGrowthY = %.0f;
+			groupGrowthYHealerMode = %.0f;
+			groupCols = %.0f;
+			groupRows = %.0f;
 			groupAnchor = "%s";
 			groupAnchorHealerMode = "%s"; 
 		end
@@ -467,9 +467,9 @@ local PostUpdateAuraButton = function(element, button)
 end
 
 local SmallFrame_OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 		-- 100m, 1000m, 2300m, etc
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%.0fm", min/1e6) 		-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 		-- 100k - 999k
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%.0fk", min/1e3) 		-- 100k - 999k
 	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
 	elseif (min > 0) then 		element.Value:SetText(min) 							-- 1 - 999
 	else 						element.Value:SetText("")
@@ -488,7 +488,7 @@ local SmallFrame_OverrideHealthValue = function(element, unit, min, max, disconn
 	else 
 		if element.Value then 
 			if element.Value.showPercent and (min < max) then 
-				return element.Value:SetFormattedText("%d%%", min/max*100 - (min/max*100)%1)
+				return element.Value:SetFormattedText("%.0f%%", min/max*100 - (min/max*100)%1)
 			else 
 				return SmallFrame_OverrideValue(element, unit, min, max, disconnected, dead, tapped)
 			end 
@@ -539,9 +539,9 @@ local SmallFrame_PostUpdateAlpha = function(self)
 end
 
 local TinyFrame_OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 		-- 100m, 1000m, 2300m, etc
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%.0fm", min/1e6) 		-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 		-- 100k - 999k
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%.0fk", min/1e3) 		-- 100k - 999k
 	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
 	elseif (min > 0) then 		element.Value:SetText(min) 							-- 1 - 999
 	else 						element.Value:SetText("")
@@ -560,7 +560,7 @@ local TinyFrame_OverrideHealthValue = function(element, unit, min, max, disconne
 	else 
 		if element.Value then 
 			if element.Value.showPercent and (min < max) then 
-				return element.Value:SetFormattedText("%d%%", min/max*100 - (min/max*100)%1)
+				return element.Value:SetFormattedText("%.0f%%", min/max*100 - (min/max*100)%1)
 			else 
 				return TinyFrame_OverrideValue(element, unit, min, max, disconnected, dead, tapped)
 			end 
@@ -588,9 +588,9 @@ local PlayerHUD_AltPower_OverrideValue = function(element, unit, current, min, m
 		else
 			if value.showPercent then
 				if value.showMaximum then
-					value:SetFormattedText("%s / %s - %d%%", short(current), short(max), math_floor(current/max * 100))
+					value:SetFormattedText("%s / %s - %.0f%%", short(current), short(max), math_floor(current/max * 100))
 				else
-					value:SetFormattedText("%s / %d%%", short(current), math_floor(current/max * 100))
+					value:SetFormattedText("%s / %.0f%%", short(current), math_floor(current/max * 100))
 				end
 			else
 				if value.showMaximum then
@@ -604,9 +604,9 @@ local PlayerHUD_AltPower_OverrideValue = function(element, unit, current, min, m
 end 
 
 local Player_OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 		-- 100m, 1000m, 2300m, etc
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%.0fm", min/1e6) 		-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 		-- 100k - 999k
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%.0fk", min/1e3) 		-- 100k - 999k
 	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
 	elseif (min > 0) then 		element.Value:SetText(min) 							-- 1 - 999
 	else 						element.Value:SetText("")
@@ -893,9 +893,9 @@ local Player_PostUpdateTextures = function(self, playerLevel)
 end 
 
 local Target_OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if (min >= 1e8) then 		element.Value:SetFormattedText("%dm", min/1e6) 		-- 100m, 1000m, 2300m, etc
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%.0fm", min/1e6) 		-- 100m, 1000m, 2300m, etc
 	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%dk", min/1e3) 		-- 100k - 999k
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%.0fk", min/1e3) 		-- 100k - 999k
 	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
 	elseif (min > 0) then 		element.Value:SetText(min) 							-- 1 - 999
 	else 						element.Value:SetText("")
@@ -919,7 +919,7 @@ local Target_OverrideHealthValue = function(element, unit, min, max, disconnecte
 		end 
 	else
 		if element.Percent then 
-			element.Percent:SetFormattedText("%d", min/max*100 - (min/max*100)%1)
+			element.Percent:SetFormattedText("%.0f", min/max*100 - (min/max*100)%1)
 		end 
 		if element.Value then 
 			Target_OverrideValue(element, unit, min, max, disconnected, dead, tapped)

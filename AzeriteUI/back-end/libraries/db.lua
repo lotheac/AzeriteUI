@@ -42,7 +42,7 @@ setmetatable(configs, { __index = function(tbl,key) tbl[key] = {} return tbl[key
 
 -- Syntax check 
 local check = function(value, num, ...)
-	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
+	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
 	for i = 1,select("#", ...) do
 		if (type(value) == select(i, ...)) then 
 			return 
@@ -50,7 +50,7 @@ local check = function(value, num, ...)
 	end
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
-	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
+	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
 -- Deep copy a table into a new table 

@@ -185,7 +185,7 @@ end
 
 -- Syntax check 
 local check = function(value, num, ...)
-	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
+	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
 	for i = 1,select("#", ...) do
 		if type(value) == select(i, ...) then 
 			return 
@@ -193,7 +193,7 @@ local check = function(value, num, ...)
 	end
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
-	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
+	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
 -------------------------------------------------------------
@@ -594,11 +594,11 @@ LibModule.NewModule = function(self, name, ...)
 
 	-- Don't allow modules to be overwritten
 	if self.modules[name] then
-		return error(("Bad argument #%d to '%s': A module named '%s' already exists!"):format(1, "NewModule", name))
+		return error(("Bad argument #%.0f to '%s': A module named '%s' already exists!"):format(1, "NewModule", name))
 	end
 
 	if PRIORITY_HASH[name] then
-		return error(("Bad argument #%d to '%s': Illegal module name '%s', pick another!"):format(1, "NewModule", name))
+		return error(("Bad argument #%.0f to '%s': Illegal module name '%s', pick another!"):format(1, "NewModule", name))
 	end
 
 	local module = setmetatable({ modules = {}, moduleLoadPriority = { HIGH = {}, NORMAL = {}, LOW = {}, PLUGIN = {} }, libraries = {} }, module_mt)
@@ -653,7 +653,7 @@ LibModule.GetModule = function(self, name, silentFail)
 		return self.modules[name]
 	end
 	if (not silentFail) then
-		return error(("Bad argument #%d to '%s': No module named '%s' exist!"):format(1, "Get", name))
+		return error(("Bad argument #%.0f to '%s': No module named '%s' exist!"):format(1, "Get", name))
 	end
 end
 
@@ -665,7 +665,7 @@ LibModule.ForAll = function(self, func, priorityFilter, ...)
 	-- If a valid priority filter is set, only modules of that given priority will be called.
 	if priorityFilter then
 		if (not PRIORITY_HASH[priorityFilter]) then
-			return error(("Bad argument #%d to '%s': The load priority '%s' is invalid! Valid priorities are: %s"):format(2, "ForAll", priorityFilter, table_concat(PRIORITY_INDEX, ", ")))
+			return error(("Bad argument #%.0f to '%s': The load priority '%s' is invalid! Valid priorities are: %s"):format(2, "ForAll", priorityFilter, table_concat(PRIORITY_INDEX, ", ")))
 		end
 		for name,module in pairs(self.moduleLoadPriority[priorityFilter]) do
 			if (type(func) == "string") then

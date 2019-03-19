@@ -67,17 +67,17 @@ local LONG_THRESHOLD = MINUTE*3
 
 local formatTime = function(time)
 	if (time > DAY) then -- more than a day
-		return "%1d%s", math_ceil(time / DAY), "d"
+		return "%.0f%s", math_ceil(time / DAY), "d"
 	elseif (time > HOUR) then -- more than an hour
-		return "%1d%s", math_ceil(time / HOUR), "h"
+		return "%.0f%s", math_ceil(time / HOUR), "h"
 	elseif (time > MINUTE) then -- more than a minute
-		return "%1d%s", math_ceil(time / MINUTE), "m"
+		return "%.0f%s", math_ceil(time / MINUTE), "m"
 	elseif (time > 5) then 
-		return "%d", math_ceil(time)
+		return "%.0f", math_ceil(time)
 	elseif (time > .9) then 
-		return "|cffff8800%d|r", math_ceil(time)
+		return "|cffff8800%.0f|r", math_ceil(time)
 	elseif (time > .05) then
-		return "|cffff0000%d|r", time*10 - time*10%1
+		return "|cffff0000%.0f|r", time*10 - time*10%1
 	else
 		return ""
 	end	

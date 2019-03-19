@@ -57,7 +57,7 @@ local UpdateValue = function(element, min, max, level)
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value.showPercent then 
 		if (max > 0) then 
-			value:SetFormattedText("%d%%", min/max*100)
+			value:SetFormattedText("%.0f%%", min/max*100)
 		else 
 			value:SetText("")
 		end 
@@ -69,7 +69,7 @@ local UpdateValue = function(element, min, max, level)
 	local percent = value.Percent
 	if percent then 
 		if (max > 0) then 
-			percent:SetFormattedText("%d%%", min/max*100)
+			percent:SetFormattedText("%.0f%%", min/max*100)
 		else 
 			percent:SetText("")
 		end 

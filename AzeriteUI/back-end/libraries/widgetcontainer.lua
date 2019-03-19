@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 16)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 18)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -65,7 +65,7 @@ local scriptFrame = LibWidgetContainer.scriptFrame
 --------------------------------------------------------------------------
 -- Syntax check 
 local check = function(value, num, ...)
-	assert(type(num) == "number", ("Bad argument #%d to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
+	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
 	for i = 1,select("#", ...) do
 		if type(value) == select(i, ...) then 
 			return 
@@ -73,7 +73,7 @@ local check = function(value, num, ...)
 	end
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
-	error(("Bad argument #%d to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
+	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
 -- Embed source methods into target.
@@ -547,7 +547,6 @@ LibWidgetContainer.RegisterElement = function(self, elementName, enableFunc, dis
 				return 
 			end 
 		end  
-		return 
 	end 
 
 	-- Create our new element 
@@ -564,18 +563,20 @@ LibWidgetContainer.RegisterElement = function(self, elementName, enableFunc, dis
 
 	-- Postupdate existing frames embedding this if it exists
 	if needUpdate then 
+
 		-- Iterate all frames for it
-		for unitFrame, element in pairs(frameElementsEnabled) do 
+		for widgetFrame, element in pairs(frameElementsEnabled) do 
 			if (element == elementName) then 
+
 				-- Run the old disable method, 
 				-- to get rid of old events and onupdate handlers.
 				if old.Disable then 
-					old.Disable(unitFrame)
+					old.Disable(widgetFrame)
 				end 
 
 				-- Run the new enable method
 				if new.Enable then 
-					new.Enable(unitFrame, unitFrame.unit, true)
+					new.Enable(widgetFrame, widgetFrame.unit, true)
 				end 
 			end 
 		end 

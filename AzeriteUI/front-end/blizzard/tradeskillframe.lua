@@ -113,7 +113,7 @@ Module.EnableScrollButton = function(self)
 					local numCreateable = recipeInfo.numAvailable
 					local numScrollsAvailable = GetItemCount(SCROLL_ID)
 					
-					enchantScrollButton:SetFormattedText("%s (%d)", SCROLL_TEXT, numScrollsAvailable)
+					enchantScrollButton:SetFormattedText("%s (%.0f)", SCROLL_TEXT, numScrollsAvailable)
 					
 					if (numScrollsAvailable == 0) then
 						numCreateable = 0

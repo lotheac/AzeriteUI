@@ -72,13 +72,13 @@ end
 
 local formatTime = function(time)
 	if time > DAY then -- more than a day
-		return ("%1d%s"):format((time / DAY) - (time / DAY)%1, "d")
+		return ("%.0f%s"):format((time / DAY) - (time / DAY)%1, "d")
 	elseif time > HOUR then -- more than an hour
-		return ("%1d%s"):format((time / HOUR) - (time / HOUR)%1, "h")
+		return ("%.0f%s"):format((time / HOUR) - (time / HOUR)%1, "h")
 	elseif time > MINUTE then -- more than a minute
-		return ("%1d%s %d%s"):format((time / MINUTE) - (time / MINUTE)%1, "m", (time%MINUTE) - (time%MINUTE)%1, "s")
+		return ("%.0f%s %.0f%s"):format((time / MINUTE) - (time / MINUTE)%1, "m", (time%MINUTE) - (time%MINUTE)%1, "s")
 	elseif time > 10 then -- more than 10 seconds
-		return ("%d%s"):format((time) - (time)%1, "s")
+		return ("%.0f%s"):format((time) - (time)%1, "s")
 	elseif time > 0 then
 		return ("%.1f"):format(time)
 	else

@@ -37,17 +37,17 @@ local LONG_THRESHOLD = MINUTE*3
 
 local formatTime = function(time)
 	if (time > DAY) then -- more than a day
-		return "%1d%s", math_ceil(time / DAY), "d"
+		return "%.0f%s", math_ceil(time / DAY), "d"
 	elseif (time > HOUR) then -- more than an hour
-		return "%1d%s", math_ceil(time / HOUR), "h"
+		return "%.0f%s", math_ceil(time / HOUR), "h"
 	elseif (time > MINUTE) then -- more than a minute
-		return "%1d%s", math_ceil(time / MINUTE), "m"
+		return "%.0f%s", math_ceil(time / MINUTE), "m"
 	elseif (time > 5) then 
-		return "%d", math_ceil(time)
+		return "%.0f", math_ceil(time)
 	elseif (time > .9) then 
-		return "|cffff8800%d|r", math_ceil(time)
+		return "|cffff8800%.0f|r", math_ceil(time)
 	elseif (time > .05) then
-		return "|cffff0000%d|r", time*10 - time*10%1
+		return "|cffff0000%.0f|r", time*10 - time*10%1
 	else
 		return ""
 	end	
@@ -56,19 +56,19 @@ end
 local formatTime2 = function(time)
 	if time > DAY then -- more than a day
 		time = time + DAY/2
-		return "%d%s", time/DAY - time/DAY%1, "d"
+		return "%.0f%s", time/DAY - time/DAY%1, "d"
 	elseif time > HOUR then -- more than an hour
 		time = time + HOUR/2
-		return "%d%s", time/HOUR - time/HOUR%1, "h"
+		return "%.0f%s", time/HOUR - time/HOUR%1, "h"
 	elseif time > MINUTE then -- more than a minute
 		time = time + MINUTE/2
-		return "%d%s", time/MINUTE - time/MINUTE%1, "m"
+		return "%.0f%s", time/MINUTE - time/MINUTE%1, "m"
 	elseif time > 10 then -- more than 10 seconds
-		return "%d", time - time%1
+		return "%.0f", time - time%1
 	elseif time >= 1 then -- more than 5 seconds
-		return "|cffff8800%d|r", time - time%1
+		return "|cffff8800%.0f|r", time - time%1
 	elseif time > 0 then
-		return "|cffff0000%d|r", time*10 - time*10%1
+		return "|cffff0000%.0f|r", time*10 - time*10%1
 	else
 		return ""
 	end	

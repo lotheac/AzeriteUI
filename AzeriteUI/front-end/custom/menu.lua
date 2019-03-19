@@ -752,17 +752,17 @@ Module.CreateMenuTable = function(self)
 							proxyModule = "ActionBarMain"
 						},
 						{
-							title = L["+%d Buttons"]:format(5), type = "SET_VALUE", 
+							title = L["+%.0f Buttons"]:format(5), type = "SET_VALUE", 
 							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 5 }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
-							title = L["+%d Buttons"]:format(11), type = "SET_VALUE", 
+							title = L["+%.0f Buttons"]:format(11), type = "SET_VALUE", 
 							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 11 }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
-							title = L["+%d Buttons"]:format(17), type = "SET_VALUE", 
+							title = L["+%.0f Buttons"]:format(17), type = "SET_VALUE", 
 							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 17 }, 
 							proxyModule = "ActionBarMain"
 						}

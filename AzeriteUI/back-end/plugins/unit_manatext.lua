@@ -54,9 +54,9 @@ local UpdateValue = function(element, unit, min, max)
 	if element.showDeficit then
 		if element.showPercent then
 			if element.showMaximum then
-				element:SetFormattedText("%s / %s - %d%%", short(max - min), short(max), math_floor(min/max * 100))
+				element:SetFormattedText("%s / %s - %.0f%%", short(max - min), short(max), math_floor(min/max * 100))
 			else
-				element:SetFormattedText("%s / %d%%", short(max - min), math_floor(min/max * 100))
+				element:SetFormattedText("%s / %.0f%%", short(max - min), math_floor(min/max * 100))
 			end
 		else
 			if element.showMaximum then
@@ -68,9 +68,9 @@ local UpdateValue = function(element, unit, min, max)
 	else
 		if element.showPercent then
 			if element.showMaximum then
-				element:SetFormattedText("%s / %s - %d%%", short(min), short(max), math_floor(min/max * 100))
+				element:SetFormattedText("%s / %s - %.0f%%", short(min), short(max), math_floor(min/max * 100))
 			else
-				element:SetFormattedText("%s / %d%%", short(min), math_floor(min/max * 100))
+				element:SetFormattedText("%s / %.0f%%", short(min), math_floor(min/max * 100))
 			end
 		else
 			if element.showMaximum then
