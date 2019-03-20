@@ -494,7 +494,7 @@ Module.GetBindingFrame = function(self)
 		frame.msg:ClearAllPoints()
 		frame.msg:SetPoint("TOPLEFT", 40, -60)
 		frame.msg:SetSize(Layout.Size[1] - 80, Layout.Size[2] - 80 - 50)
-		frame.msg:SetText("Hover your mouse over any actionbutton and press a key or a mouse button to bind it. Press the ESC key to clear the current actionbutton's keybinding.")
+		frame.msg:SetText(L["Hover your mouse over any actionbutton and press a key or a mouse button to bind it. Press the ESC key to clear the current actionbutton's keybinding."])
 
 		local perCharacter = frame:CreateFrame("CheckButton", nil, "OptionsCheckButtonTemplate")
 		perCharacter:SetSize(32,32)
