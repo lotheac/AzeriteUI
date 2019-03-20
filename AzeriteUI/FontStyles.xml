@@ -9,10 +9,10 @@
 			<Font font="Fonts\2002.TTF" height="10" />
 		</Member>
 		<Member alphabet="simplifiedchinese">
-			<Font font="Fonts\ARKai_C.ttf" height="11" />
+			<Font font="Fonts\ARKai_T.ttf" height="11" />
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\bHEI01B.TTF" height="11" />
+			<Font font="Fonts\blei00d.TTF" height="11" />
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\FRIZQT___CYR.TTF" height="10" />
@@ -27,10 +27,10 @@
 			<Font font="Fonts\2002.TTF" height="10" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="simplifiedchinese">
-			<Font font="Fonts\ARKai_C.ttf" height="11" outline="NORMAL"/>
+			<Font font="Fonts\ARKai_T.ttf" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\bHEI01B.TTF" height="11" outline="NORMAL"/>
+			<Font font="Fonts\blei00d.TTF" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
 			<Font font="Fonts\FRIZQT___CYR.TTF" height="10" outline="NORMAL"/>
@@ -42,7 +42,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="11" />
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="11" />
+			<Font font="Fonts\2002.ttf" height="11" />
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="11" />
@@ -51,7 +51,7 @@
 			<Font font="Fonts\blei00d.ttf" height="11" />
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="11" />
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="11" />
 		</Member>
 	</FontFamily>
 
@@ -60,7 +60,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="11" outline="NORMAL"/>
+			<Font font="Fonts\2002.ttf" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="11" outline="NORMAL"/>
@@ -69,7 +69,7 @@
 			<Font font="Fonts\blei00d.ttf" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="11" outline="NORMAL"/>
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="11" outline="NORMAL"/>
 		</Member>
 	</FontFamily>
 
@@ -78,7 +78,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="12" />
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="12" />
+			<Font font="Fonts\2002.ttf" height="12" />
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="12" />
@@ -87,7 +87,7 @@
 			<Font font="Fonts\blei00d.ttf" height="12" />
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="12" />
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="12" />
 		</Member>
 	</FontFamily>
 
@@ -96,7 +96,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="12" outline="NORMAL"/>
+			<Font font="Fonts\2002.ttf" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="12" outline="NORMAL"/>
@@ -105,7 +105,7 @@
 			<Font font="Fonts\blei00d.ttf" height="12" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="12" outline="NORMAL"/>
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="12" outline="NORMAL"/>
 		</Member>
 	</FontFamily>
 
@@ -114,7 +114,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="13" />
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="13" />
+			<Font font="Fonts\2002.ttf" height="13" />
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="13" />
@@ -123,7 +123,7 @@
 			<Font font="Fonts\blei00d.ttf" height="13" />
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="13" />
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="13" />
 		</Member>
 	</FontFamily>
 
@@ -132,7 +132,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="13" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="13" outline="NORMAL"/>
+			<Font font="Fonts\2002.ttf" height="13" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="13" outline="NORMAL"/>
@@ -141,7 +141,7 @@
 			<Font font="Fonts\blei00d.ttf" height="13" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="13" outline="NORMAL"/>
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="13" outline="NORMAL"/>
 		</Member>
 	</FontFamily>
 
@@ -150,7 +150,7 @@
 			<Font font="Fonts\FRIZQT__.ttf" height="14" />
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\K_Pagetext.ttf" height="14" />
+			<Font font="Fonts\2002.ttf" height="14" />
 		</Member>
 		<Member alphabet="simplifiedchinese">
 			<Font font="Fonts\ARKai_T.ttf" height="14" />
@@ -159,7 +159,7 @@
 			<Font font="Fonts\blei00d.ttf" height="14" />
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\MORPHEUS_CYR.ttf" height="14" />
+			<Font font="Fonts\FRIZQT___CYR.ttf" height="14" />
 		</Member>
 	</FontFamily>
 
@@ -177,7 +177,7 @@
 			<Font font="Fonts\blei00d.TTF"  height="14" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\FRIZQT___CYR.TTF" height="14" outline="NORMAL"/>
+			<Font font="Fonts\FRIZQT___CYR.TTF" height="15" outline="NORMAL"/>
 		</Member>
 	</FontFamily>
 
