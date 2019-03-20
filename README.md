@@ -35,6 +35,10 @@ For more buttons, right-click the cogwheel icon in the bottom right corner of th
 * Twitter Blakmane: [@troko512](https://twitter.com/troko512)  
 * Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
 
+## **Translators:**  
+* esES: **Sonshine**
+* ruRU: **Demorto**
+
 ## **Official Supporters:**  
 * **Jennifer Graff, Kjartan Kirchhof, Elexys, Jan Terje Hellemsbakken, Mel Brannon**  
 
