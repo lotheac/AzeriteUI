@@ -246,13 +246,13 @@ Toggle.OnEnter = function(self)
 	tooltip:AddLine(L["Main Menu"], Colors.title[1], Colors.title[2], Colors.title[3])
 	tooltip:AddLine(L["Click here to get access to game panels."], Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], true)
 	if self.leftButtonTooltip then 
-		tooltip:AddLine(self.leftButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		tooltip:AddLine(self.leftButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3], true)
 	end 
 	if self.rightButtonTooltip then 
-		tooltip:AddLine(self.rightButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		tooltip:AddLine(self.rightButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3], true)
 	end 
 	if self.middleButtonTooltip then 
-		tooltip:AddLine(self.middleButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3])
+		tooltip:AddLine(self.middleButtonTooltip, Colors.quest.green[1], Colors.quest.green[2], Colors.quest.green[3], true)
 	end 
 	tooltip:Show()
 end
@@ -696,6 +696,11 @@ end
 Module.CreateMenuTable = function(self)
 	MenuTable = {}
 
+	-- Let's color enabled/disabled entries entirely, 
+	-- instead of making them longer by adding the text.
+	local L_ENABLED = "|cff007700%s|r"
+	local L_DISABLED = "|cffff0000%s|r"
+
 	-- Debug Mode
 	local DebugMenu = {
 		title = L["Debug Mode"], type = nil, hasWindow = true, 
@@ -703,8 +708,8 @@ Module.CreateMenuTable = function(self)
 	}
 	if self:GetOwner():IsDebugModeEnabled() then 
 		table_insert(DebugMenu.buttons, {
-			enabledTitle = L["Debug Console: %s"]:format(L["Enabled"]),
-			disabledTitle = L["Debug Console: %s"]:format(L["Disabled"]),
+			enabledTitle = L_ENABLED:format(L["Debug Console"]),
+			disabledTitle = L_DISABLED:format(L["Debug Console"]),
 			--type = "TOGGLE_VALUE", 
 			--configDB = "Core", configKey = "enableDebugConsole", 
 			--proxyModule = nil, useCore = true
@@ -713,24 +718,24 @@ Module.CreateMenuTable = function(self)
 			proxyModule = nil, useCore = true
 		})
 		table_insert(DebugMenu.buttons, {
-			enabledTitle = L["Unload Console"],
-			disabledTitle = L["Unload Console"],
+			enabledTitle = L_ENABLED:format(L["Unload Console"]),
+			disabledTitle = L_DISABLED:format(L["Unload Console"]),
 			type = "TOGGLE_MODE", hasWindow = false, 
 			configDB = "Core", modeName = "unloadConsole", 
 			proxyModule = nil, useCore = true
 		})
 	else
 		table_insert(DebugMenu.buttons, {
-			enabledTitle = L["Load Console"],
-			disabledTitle = L["Load Console"],
+			enabledTitle = L_ENABLED:format(L["Load Console"]),
+			disabledTitle = L_DISABLED:format(L["Load Console"]),
 			type = "TOGGLE_MODE", hasWindow = false, 
 			configDB = "Core", modeName = "loadConsole", 
 			proxyModule = nil, useCore = true
 		})
 	end
 	table_insert(DebugMenu.buttons, {
-		enabledTitle = L["Reload UI"],
-		disabledTitle = L["Reload UI"],
+		enabledTitle = L_ENABLED:format(L["Reload UI"]),
+		disabledTitle = L_DISABLED:format(L["Reload UI"]),
 		type = "TOGGLE_MODE", hasWindow = false, 
 		configDB = "Core", modeName = "reloadUI", 
 		proxyModule = nil, useCore = true
@@ -792,8 +797,8 @@ Module.CreateMenuTable = function(self)
 					}
 				},
 				{
-					enabledTitle = L["Cast on Down: %s"]:format(L["Enabled"]),
-					disabledTitle = L["Cast on Down: %s"]:format(L["Disabled"]),
+					enabledTitle = L_ENABLED:format(L["Cast on Down"]),
+					disabledTitle = L_DISABLED:format(L["Cast on Down"]),
 					type = "TOGGLE_VALUE", hasWindow = false, 
 					configDB = "ActionBars", configKey = "castOnDown", 
 					proxyModule = "ActionBarMain"
@@ -803,15 +808,15 @@ Module.CreateMenuTable = function(self)
 		local Bindings = Core:GetModule("Bindings", true)
 		if Bindings then 
 			table_insert(ActionBarMenu.buttons, {
-				enabledTitle = L["Bind Mode: %s"]:format(L["Enabled"]),
-				disabledTitle = L["Bind Mode: %s"]:format(L["Disabled"]),
+				enabledTitle = L_ENABLED:format(L["Bind Mode"]),
+				disabledTitle = L_DISABLED:format(L["Bind Mode"]),
 				type = "TOGGLE_MODE", hasWindow = false, 
 				proxyModule = "Bindings", modeName = "bindMode"
 			})
 		end 
 		table_insert(ActionBarMenu.buttons, {
-			enabledTitle = L["Button Lock: %s"]:format(L["Enabled"]),
-			disabledTitle = L["Button Lock: %s"]:format(L["Disabled"]),
+			enabledTitle = L_ENABLED:format(L["Button Lock"]),
+			disabledTitle = L_DISABLED:format(L["Button Lock"]),
 			type = "TOGGLE_VALUE", hasWindow = false, 
 			configDB = "ActionBars", configKey = "buttonLock", 
 			proxyModule = "ActionBarMain"
@@ -830,8 +835,8 @@ Module.CreateMenuTable = function(self)
 	local UnitFrameParty = Core:GetModule("UnitFrameParty", true)
 	if UnitFrameParty and not (UnitFrameParty:IsIncompatible() or UnitFrameParty:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
-			enabledTitle = L["Party Frames: %s"]:format(L["Enabled"]),
-			disabledTitle = L["Party Frames: %s"]:format(L["Disabled"]),
+			enabledTitle = L_ENABLED:format(L["Party Frames"]),
+			disabledTitle = L_DISABLED:format(L["Party Frames"]),
 			type = "TOGGLE_VALUE", 
 			configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
 			proxyModule = "UnitFrameParty"
@@ -841,8 +846,8 @@ Module.CreateMenuTable = function(self)
 	local UnitFrameRaid = Core:GetModule("UnitFrameRaid", true)
 	if UnitFrameRaid and not (UnitFrameRaid:IsIncompatible() or UnitFrameRaid:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
-			enabledTitle = L["Raid Frames: %s"]:format(L["Enabled"]),
-			disabledTitle = L["Raid Frames: %s"]:format(L["Disabled"]),
+			enabledTitle = L_ENABLED:format(L["Raid Frames"]),
+			disabledTitle = L_DISABLED:format(L["Raid Frames"]),
 			type = "TOGGLE_VALUE", 
 			configDB = "UnitFrameRaid", configKey = "enableRaidFrames", 
 			proxyModule = "UnitFrameRaid"
@@ -852,8 +857,8 @@ Module.CreateMenuTable = function(self)
 	local UnitFrameArena = Core:GetModule("UnitFrameArena", true)
 	if UnitFrameArena and not (UnitFrameArena:IsIncompatible() or UnitFrameArena:DependencyFailed()) then 
 		table_insert(UnitFrameMenu.buttons, {
-			enabledTitle = L["PvP Frames: %s"]:format(L["Enabled"]),
-			disabledTitle = L["PvP Frames: %s"]:format(L["Disabled"]),
+			enabledTitle = L_ENABLED:format(L["PvP Frames"]),
+			disabledTitle = L_DISABLED:format(L["PvP Frames"]),
 			type = "TOGGLE_VALUE", 
 			configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
 			proxyModule = "UnitFrameArena"
@@ -870,8 +875,8 @@ Module.CreateMenuTable = function(self)
 			buttons = {
 				-- Disable player auras
 				{
-					enabledTitle = L["Auras: %s"]:format(L["Enabled"]),
-					disabledTitle = L["Auras: %s"]:format(L["Disabled"]),
+					enabledTitle = L_ENABLED:format(L["Auras"]),
+					disabledTitle = L_DISABLED:format(L["Auras"]),
 					type = "TOGGLE_VALUE", 
 					configDB = "NamePlates", configKey = "enableAuras", 
 					proxyModule = "NamePlates"
@@ -881,22 +886,22 @@ Module.CreateMenuTable = function(self)
 					title = MAKE_UNINTERACTABLE, type = nil, hasWindow = true, 
 					buttons = {
 						{
-							enabledTitle = L["Player: %s"]:format(L["Enabled"]),
-							disabledTitle = L["Player: %s"]:format(L["Disabled"]),
+							enabledTitle = L_ENABLED:format(L["Player"]),
+							disabledTitle = L_DISABLED:format(L["Player"]),
 							type = "TOGGLE_VALUE", 
 							configDB = "NamePlates", configKey = "clickThroughSelf", 
 							proxyModule = "NamePlates"
 						},
 						{
-							enabledTitle = L["Enemies: %s"]:format(L["Enabled"]),
-							disabledTitle = L["Enemies: %s"]:format(L["Disabled"]),
+							enabledTitle = L_ENABLED:format(L["Enemies"]),
+							disabledTitle = L_DISABLED:format(L["Enemies"]),
 							type = "TOGGLE_VALUE", 
 							configDB = "NamePlates", configKey = "clickThroughEnemies", 
 							proxyModule = "NamePlates"
 						},
 						{
-							enabledTitle = L["Friends: %s"]:format(L["Enabled"]),
-							disabledTitle = L["Friends: %s"]:format(L["Disabled"]),
+							enabledTitle = L_ENABLED:format(L["Friends"]),
+							disabledTitle = L_DISABLED:format(L["Friends"]),
 							type = "TOGGLE_VALUE", 
 							configDB = "NamePlates", configKey = "clickThroughFriends", 
 							proxyModule = "NamePlates"
@@ -913,8 +918,8 @@ Module.CreateMenuTable = function(self)
 		buttons = {
 			-- Talking Head
 			{
-				enabledTitle = L["TalkingHead: %s"]:format(L["Enabled"]),
-				disabledTitle = L["TalkingHead: %s"]:format(L["Disabled"]),
+				enabledTitle = L_ENABLED:format(L["TalkingHead"]),
+				disabledTitle = L_DISABLED:format(L["TalkingHead"]),
 				type = "TOGGLE_VALUE", 
 				configDB = "FloaterHUD", configKey = "enableTalkingHead", 
 				proxyModule = "BlizzardFloaterHUD"
@@ -922,8 +927,8 @@ Module.CreateMenuTable = function(self)
 
 			-- Alerts 
 			{
-				enabledTitle = L["Alerts: %s"]:format(L["Enabled"]),
-				disabledTitle = L["Alerts: %s"]:format(L["Disabled"]),
+				enabledTitle = L_ENABLED:format(L["Alerts"]),
+				disabledTitle = L_DISABLED:format(L["Alerts"]),
 				type = "TOGGLE_VALUE", 
 				configDB = "FloaterHUD", configKey = "enableAlerts", 
 				proxyModule = "BlizzardFloaterHUD"
@@ -941,15 +946,15 @@ Module.CreateMenuTable = function(self)
 			buttons = {
 				-- Enable explorer mode
 				{
-					enabledTitle = L["Player Fading: %s"]:format(L["Enabled"]),
-					disabledTitle = L["Player Fading: %s"]:format(L["Disabled"]),
+					enabledTitle = L_ENABLED:format(L["Player Fading"]),
+					disabledTitle = L_DISABLED:format(L["Player Fading"]),
 					type = "TOGGLE_VALUE", 
 					configDB = "ExplorerMode", configKey = "enableExplorer", 
 					proxyModule = "ExplorerMode"
 				},
 				{
-					enabledTitle = L["Tracker Fading: %s"]:format(L["Enabled"]),
-					disabledTitle = L["Tracker Fading: %s"]:format(L["Disabled"]),
+					enabledTitle = L_ENABLED:format(L["Tracker Fading"]),
+					disabledTitle = L_DISABLED:format(L["Tracker Fading"]),
 					type = "TOGGLE_VALUE", 
 					configDB = "ExplorerMode", configKey = "enableTrackerFading", 
 					proxyModule = "ExplorerMode"
@@ -960,8 +965,8 @@ Module.CreateMenuTable = function(self)
 
 	-- Healer Mode
 	table_insert(MenuTable, {
-		enabledTitle = L["Healer Mode: %s"]:format(L["Enabled"]),
-		disabledTitle = L["Healer Mode: %s"]:format(L["Disabled"]),
+		enabledTitle = L_ENABLED:format(L["Healer Mode"]),
+		disabledTitle = L_DISABLED:format(L["Healer Mode"]),
 		type = "TOGGLE_VALUE", 
 		configDB = "Core", configKey = "enableHealerMode", 
 		proxyModule = nil, useCore = true, modeName = "healerMode"
