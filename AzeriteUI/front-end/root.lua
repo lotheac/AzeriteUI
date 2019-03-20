@@ -312,15 +312,8 @@ Core.OnInit = function(self)
 	
 		-- Update initial console visibility
 		self:UpdateDebugConsole()
-
-		-- Just make sure we don't format anything localized with embedded color coding
-		for id,msg in ipairs({ L["Debug Mode is active."], L["Type /debug to toggle console visibility!"] }) do
-			if string_find(msg, "|c") then 
-				self:AddDebugMessage(msg)
-			else 
-				self:AddDebugMessageFormatted(msg)
-			end
-		end
+		self:AddDebugMessageFormatted("Debug Mode is active.")
+		self:AddDebugMessageFormatted("Type /debug to toggle console visibility!")
 
 		-- Add in a chat command to quickly unload the console
 		self:RegisterChatCommand("disableconsole", "UnloadDebugConsole")
