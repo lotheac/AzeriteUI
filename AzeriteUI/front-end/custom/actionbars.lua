@@ -212,47 +212,115 @@ local short = function(value)
 	end	
 end
 
+local L_KEY = {
+	-- Keybinds (visible on the actionbuttons)
+	["Alt"] = "A",
+	["Left Alt"] = "LA",
+	["Right Alt"] = "RA",
+	["Ctrl"] = "C",
+	["Left Ctrl"] = "LC",
+	["Right Ctrl"] = "RC",
+	["Shift"] = "S",
+	["Left Shift"] = "LS",
+	["Right Shift"] = "RS",
+	["NumPad"] = "N", 
+	["Backspace"] = "BS",
+	["Button1"] = "B1",
+	["Button2"] = "B2",
+	["Button3"] = "B3",
+	["Button4"] = "B4",
+	["Button5"] = "B5",
+	["Button6"] = "B6",
+	["Button7"] = "B7",
+	["Button8"] = "B8",
+	["Button9"] = "B9",
+	["Button10"] = "B10",
+	["Button11"] = "B11",
+	["Button12"] = "B12",
+	["Button13"] = "B13",
+	["Button14"] = "B14",
+	["Button15"] = "B15",
+	["Button16"] = "B16",
+	["Button17"] = "B17",
+	["Button18"] = "B18",
+	["Button19"] = "B19",
+	["Button20"] = "B20",
+	["Button21"] = "B21",
+	["Button22"] = "B22",
+	["Button23"] = "B23",
+	["Button24"] = "B24",
+	["Button25"] = "B25",
+	["Button26"] = "B26",
+	["Button27"] = "B27",
+	["Button28"] = "B28",
+	["Button29"] = "B29",
+	["Button30"] = "B30",
+	["Button31"] = "B31",
+	["Capslock"] = "Cp",
+	["Clear"] = "Cl",
+	["Delete"] = "Del",
+	["End"] = "End",
+	["Enter"] = "Ent",
+	["Return"] = "Ret",
+	["Home"] = "Hm",
+	["Insert"] = "Ins",
+	["Help"] = "Hlp",
+	["Mouse Wheel Down"] = "WD",
+	["Mouse Wheel Up"] = "WU",
+	["Num Lock"] = "NL",
+	["Page Down"] = "PD",
+	["Page Up"] = "PU",
+	["Print Screen"] = "Prt",
+	["Scroll Lock"] = "SL",
+	["Spacebar"] = "Sp",
+	["Tab"] = "Tb",
+	["Down Arrow"] = "Dn",
+	["Left Arrow"] = "Lf",
+	["Right Arrow"] = "Rt",
+	["Up Arrow"] = "Up"
+}
+
 -- Hotkey abbreviations for better readability
 local getBindingKeyText = function(key)
 	if key then
 		key = key:upper()
 		key = key:gsub(" ", "")
 
-		key = key:gsub("ALT%-", L["Alt"])
-		key = key:gsub("CTRL%-", L["Ctrl"])
-		key = key:gsub("SHIFT%-", L["Shift"])
-		key = key:gsub("NUMPAD", L["NumPad"])
+		key = key:gsub("ALT%-", L_KEY["Alt"])
+		key = key:gsub("CTRL%-", L_KEY["Ctrl"])
+		key = key:gsub("SHIFT%-", L_KEY["Shift"])
+		key = key:gsub("NUMPAD", L_KEY["NumPad"])
 
 		key = key:gsub("PLUS", "%+")
 		key = key:gsub("MINUS", "%-")
 		key = key:gsub("MULTIPLY", "%*")
 		key = key:gsub("DIVIDE", "%/")
 
-		key = key:gsub("BACKSPACE", L["Backspace"])
+		key = key:gsub("BACKSPACE", L_KEY["Backspace"])
 
 		for i = 1,31 do
-			key = key:gsub("BUTTON" .. i, L["Button" .. i])
+			key = key:gsub("BUTTON" .. i, L_KEY["Button" .. i])
 		end
 
-		key = key:gsub("CAPSLOCK", L["Capslock"])
-		key = key:gsub("CLEAR", L["Clear"])
-		key = key:gsub("DELETE", L["Delete"])
-		key = key:gsub("END", L["End"])
-		key = key:gsub("HOME", L["Home"])
-		key = key:gsub("INSERT", L["Insert"])
-		key = key:gsub("MOUSEWHEELDOWN", L["Mouse Wheel Down"])
-		key = key:gsub("MOUSEWHEELUP", L["Mouse Wheel Up"])
-		key = key:gsub("NUMLOCK", L["Num Lock"])
-		key = key:gsub("PAGEDOWN", L["Page Down"])
-		key = key:gsub("PAGEUP", L["Page Up"])
-		key = key:gsub("SCROLLLOCK", L["Scroll Lock"])
-		key = key:gsub("SPACEBAR", L["Spacebar"])
-		key = key:gsub("TAB", L["Tab"])
+		key = key:gsub("CAPSLOCK", L_KEY["Capslock"])
+		key = key:gsub("CLEAR", L_KEY["Clear"])
+		key = key:gsub("DELETE", L_KEY["Delete"])
+		key = key:gsub("END", L_KEY["End"])
+		key = key:gsub("HOME", L_KEY["Home"])
+		key = key:gsub("INSERT", L_KEY["Insert"])
+		key = key:gsub("MOUSEWHEELDOWN", L_KEY["Mouse Wheel Down"])
+		key = key:gsub("MOUSEWHEELUP", L_KEY["Mouse Wheel Up"])
+		key = key:gsub("NUMLOCK", L_KEY["Num Lock"])
+		key = key:gsub("PAGEDOWN", L_KEY["Page Down"])
+		key = key:gsub("PAGEUP", L_KEY["Page Up"])
+		key = key:gsub("SCROLLLOCK", L_KEY["Scroll Lock"])
+		key = key:gsub("SPACEBAR", L_KEY["Spacebar"])
+		key = key:gsub("TAB", L_KEY["Tab"])
 
-		key = key:gsub("DOWNARROW", L["Down Arrow"])
-		key = key:gsub("LEFTARROW", L["Left Arrow"])
-		key = key:gsub("RIGHTARROW", L["Right Arrow"])
-		key = key:gsub("UPARROW", L["Up Arrow"])
+		key = key:gsub("DOWNARROW", L_KEY["Down Arrow"])
+		key = key:gsub("LEFTARROW", L_KEY["Left Arrow"])
+		key = key:gsub("RIGHTARROW", L_KEY["Right Arrow"])
+		key = key:gsub("UPARROW", L_KEY["Up Arrow"])
 
 		return key
 	end
