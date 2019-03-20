@@ -1,6 +1,8 @@
 local ADDON = ...
-local L = CogWheel("LibLocale"):NewLocale(ADDON, "enUS", true)
-local isMac = IsMacClient()
+local L = CogWheel("LibLocale"):NewLocale(ADDON, "enUS", true) -- only enUS must have the 'true' argument!
+if (not L) then 
+	return 
+end 
 
 -- General Stuff
 --------------------------------------------

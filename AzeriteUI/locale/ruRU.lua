@@ -1,8 +1,14 @@
+-- ruRU locale written by Demorto#2597@ our Discord! 
 local ADDON = ...
-local L = CogWheel("LibLocale"):NewLocale(ADDON, "ruRU") -- ruRU locale written by Demorto @ our Discord! 
+local L = CogWheel("LibLocale"):NewLocale(ADDON, "ruRU") 
+if (not L) then 
+	return 
+end 
 
 -- General Stuff
 --------------------------------------------
+-- Most of these are inserted into other strings, 
+-- the idea here is to keep them short and simple. 
 L["Enable"] = "Включить" 
 L["Disable"] = "Отключить" 
 L["Enabled"] = "|cff00aa00Включено|r"
@@ -10,11 +16,6 @@ L["Disabled"] = "|cffff0000Отключено|r"
 L["<Left-Click>"] = "<Левая кнопка>"
 L["<Middle-Click>"] = "<Средняя кнопка>"
 L["<Right-Click>"] = "<Правая кнопка>"
-
--- Core Messages
---------------------------------------------
-L["Debug Mode is active."] = "Режим отладки активирован."
-L["Type /debug to toggle console visibility!"] = "Наберите /debug для переключения отображения консоли!"
 
 -- Clock & Time Settings
 --------------------------------------------
@@ -40,6 +41,7 @@ L["This is the latency of the home server, which affects things like chat, guild
 
 -- XP, Honor & Artifact Bars
 --------------------------------------------
+-- These are in the tooltips
 L["Normal"] = "Нормальный"
 L["Rested"] = "Отдохнувший"
 L["Resting"] = "Отдых"
@@ -52,15 +54,22 @@ L["%s of normal experience gained from monsters."] = "%s опыта после �
 L["You must rest for %s additional hours to become fully rested."] = "Вы должны отдохнуть в течении %s часов, чтобы полностью отдохнуть."
 L["You must rest for %s additional minutes to become fully rested."] = "Вы должны отдохнуть в течении %s минут, чтобы полностью отдохнуть."
 L["You should rest at an Inn."] = "Вы должны отдохнуть в Таверне."
+L["Sticky Minimap bars enabled."] = "Информация об опыте\репутации закреплена на миникарте."
+L["Sticky Minimap bars disabled."] = "Информация об опыте\репутации откреплена от миникарты."
+
+-- These are displayed within the circular minimap bar frame, 
+-- and must be very short, or we'll have an ugly overflow going. 
+L["to level %s"] = "до %s уровня" 
+L["to %s"] = "до %s"
+L["to next trait"] = "до следующей особенности"
+
+-- Try to keep the following fairly short, as they should
+-- ideally be shown on a single line in the tooltip, 
+-- even with the "<Right-Click>" and similar texts inserted.
 L["%s to toggle Artifact Window>"] = "%s для отображения окна Артефакта>"
 L["%s to toggle Honor Talents Window>"] = "%s для отображения окна PVP Талантов>"
 L["%s to disable sticky bars."] = "%s что бы открепить информацию."
 L["%s to enable sticky bars."] = "%s что бы закрепить информацию."  
-L["Sticky Minimap bars enabled."] = "Информация об опыте\репутации закреплена на миникарте."
-L["Sticky Minimap bars disabled."] = "Информация об опыте\репутации откреплена от миникарты."
-L["to level %s"] = "до %s уровня" 
-L["to %s"] = "до %s"
-L["to next trait"] = "до следующей особенности"
 
 -- Config & Micro Menu
 --------------------------------------------
@@ -69,21 +78,27 @@ L["to next trait"] = "до следующей особенности"
 --  while making sure the end result still is personalized to the addon.
 L["Main Menu"] = ADDON
 L["Click here to get access to game panels."] = "Нажмите сюда, чтобы получить доступ к различным игровым окнам, таким как персонаж, книга заклинаний, таланты или изменить различные настройки панелей команд."
+
+-- These should be fairly short to fit in a single line without 
+-- having the tooltip grow to very high widths. 
 L["%s to toggle Blizzard Menu."] = "%s для отображения Основного Меню."
 L["%s to toggle Options Menu."] = "%s для отображения настроек "..ADDON.."."
 L["%s to toggle your Bags."] = "%s для отображения ваших Сумок."
 
 -- Config Menu
+--------------------------------------------
+-- Remember that these shall fit on a button, 
+-- so they can't be that long. 
+-- You don't need a full description here. 
 L["Debug Mode"] = "Режим отладки" 
-L["Debug Console: %s"] = "Консоль отладки: %s" 
+L["Debug Console"] = "Консоль отладки" 
 L["Load Console"] = "Загрузить консоль"
 L["Unload Console"] = "Выгрузить консоль"
 L["Reload UI"] = "Перезагрузить интерфейс"
-
 L["ActionBars"] = "Панели команд"
-L["Bind Mode: %s"] = "Режим назначения клавиш: %s"
-L["Cast on Down: %s"] = "Срабатывать при нажатии: %s"
-L["Button Lock: %s"] = "Блокировка кнопок: %s"
+L["Bind Mode"] = "Режим назначения клавиш"
+L["Cast on Down"] = "Срабатывать при нажатии"
+L["Button Lock"] = "Блокировка кнопок"
 L["More Buttons"] = "Больше кнопок"
 L["No Extra Buttons"] = "Нет доп. кнопок"
 L["+%d Buttons"] = "+%d кнопок"
@@ -92,29 +107,26 @@ L["MouseOver"] = "По наведению"
 L["MouseOver + Combat"] = "По наведению"
 L["Always Visible"] = "Отображать всегда"
 L["Stance Bar"] = "Панель стоек"
+L["Pet Bar"] = "Панель питомца"
+L["UnitFrames"] = "Фреймы"
+L["Party Frames"] = "Фреймы группы"
+L["Raid Frames"] = "Фреймы рейда"
+L["PvP Frames"] = "Фреймы PVP"
+L["HUD"] = "HUD"
+L["Alerts"] = "Оповещения"
+L["TalkingHead"] = "Говорящие головы"
+L["NamePlates"] = "Индикаторы здоровья"
+L["Auras"] = "Ауры"
+L["Explorer Mode"] = "Режим исследователя"
+L["Player Fading"] = "Скрывать игрока"
+L["Tracker Fading"] = "Скрывать трекер"
+L["Healer Mode"] = "Режим лекаря" 
+
+-- Menu button tooltips, not actually used at the moment. 
 L["Click to enable the Stance Bar."] = "Нажмите для включения панели стоек."
 L["Click to disable the Stance Bar."] = "Нажмите для выключения панели стоек."
-L["Pet Bar"] = "Панель питомца"
 L["Click to enable the Pet Action Bar."] = "Нажмите для включения панели питомца."
 L["Click to disable the Pet Action Bar."] = "Нажмите для выключения панели питомца."
-
-L["UnitFrames"] = "Фреймы"
-L["Party Frames: %s"] = "Фреймы группы: %s"
-L["Raid Frames: %s"] = "Фреймы рейда: %s"
-L["PvP Frames: %s"] = "Фреймы PVP: %s"
-
-L["HUD"] = "HUD"
-L["Alerts: %s"] = "Оповещения: %s"
-L["TalkingHead: %s"] = "Говорящие головы: %s"
-
-L["NamePlates"] = "Индикаторы здоровья"
-L["Auras: %s"] = "Ауры: %s"
-
-L["Explorer Mode"] = "Режим исследователя"
-L["Player Fading: %s"] = "Скрывать игрока: %s"
-L["Tracker Fading: %s"] = "Скрывать трекер: %s"
-
-L["Healer Mode: %s"] = "Режим лекаря: %s" 
 
 -- Various Button Tooltips
 --------------------------------------------
@@ -123,13 +135,25 @@ L["%s to dismount."] = "%s что бы спешиться."
 
 -- Abbreviations
 --------------------------------------------
+-- This is shown of group frames when the unit 
+-- has low or very low mana. Keep it to 3 letters max! 
 L["oom"] = "oom" -- out of mana
+
+-- These are shown on the minimap compass when 
+-- rotating minimap is enabled. Keep it to single letters!
 L["N"] = "С" -- compass North
 L["E"] = "В" -- compass East
 L["S"] = "Ю" -- compass South
 L["W"] = "З" -- compass West
 
 -- Keybind mode
+--------------------------------------------
+-- This is shown in the frame, it is word-wrapped. 
+-- Try to keep the length fairly identical to enUS, though, 
+-- to make sure it fits properly inside the window. 
+L["Hover your mouse over any actionbutton and press a key or a mouse button to bind it. Press the ESC key to clear the current actionbutton's keybinding."] = true
+
+-- These are output to the chat frame. 
 L["Keybinds cannot be changed while engaged in combat."] = "Назначение клавиш не работает в бою."
 L["Keybind changes were discarded because you entered combat."] = "Изменения клавиш были отменены, так как вы вступили в бой."
 L["Keybind changes were saved."] = "Назначение клавиш были сохранены."
@@ -138,69 +162,3 @@ L["No keybinds were changed."] = "Назначение клавиш не был�
 L["No keybinds set."] = "Клавишы не назначены."
 L["%s is now unbound."] = "%s не назначены."
 L["%s is now bound to %s"] = "%s назначены для %s"
-
--- Keybinds (visible on the actionbuttons)
-L["Alt"] = "A"
-L["Left Alt"] = "LA"
-L["Right Alt"] = "RA"
-L["Ctrl"] = "C"
-L["Left Ctrl"] = "LC"
-L["Right Ctrl"] = "RC"
-L["Shift"] = "S"
-L["Left Shift"] = "LS"
-L["Right Shift"] = "RS"
-L["NumPad"] = "" -- "N"
-L["Backspace"] = "BS"
-L["Button1"] = "B1"
-L["Button2"] = "B2"
-L["Button3"] = "B3"
-L["Button4"] = "B4"
-L["Button5"] = "B5"
-L["Button6"] = "B6"
-L["Button7"] = "B7"
-L["Button8"] = "B8"
-L["Button9"] = "B9"
-L["Button10"] = "B10"
-L["Button11"] = "B11"
-L["Button12"] = "B12"
-L["Button13"] = "B13"
-L["Button14"] = "B14"
-L["Button15"] = "B15"
-L["Button16"] = "B16"
-L["Button17"] = "B17"
-L["Button18"] = "B18"
-L["Button19"] = "B19"
-L["Button20"] = "B20"
-L["Button21"] = "B21"
-L["Button22"] = "B22"
-L["Button23"] = "B23"
-L["Button24"] = "B24"
-L["Button25"] = "B25"
-L["Button26"] = "B26"
-L["Button27"] = "B27"
-L["Button28"] = "B28"
-L["Button29"] = "B29"
-L["Button30"] = "B30"
-L["Button31"] = "B31"
-L["Capslock"] = "Cp"
-L["Clear"] = "Cl"
-L["Delete"] = "Del"
-L["End"] = "End"
-L["Enter"] = "Ent"
-L["Return"] = "Ret"
-L["Home"] = "Hm"
-L["Insert"] = "Ins"
-L["Help"] = "Hlp"
-L["Mouse Wheel Down"] = "WD"
-L["Mouse Wheel Up"] = "WU"
-L["Num Lock"] = "NL"
-L["Page Down"] = "PD"
-L["Page Up"] = "PU"
-L["Print Screen"] = "Prt"
-L["Scroll Lock"] = "SL"
-L["Spacebar"] = "Sp"
-L["Tab"] = "Tb"
-L["Down Arrow"] = "Dn"
-L["Left Arrow"] = "Lf"
-L["Right Arrow"] = "Rt"
-L["Up Arrow"] = "Up"
