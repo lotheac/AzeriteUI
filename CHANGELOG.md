@@ -4,8 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.125-Beta] 2019-03-17
+## [1.2.126-Beta] 2019-03-20
 ### Added
+- Added ruRU locale by Demorto#2597 and esES by Sonshine#3640! Awesome work, folks!  
+- Added some comments in the locale files to make it easier for people to know what goes where when writing locales. Up to now I've been living in my own little bubble, not having anybody else needing to look at any of the code whatsoever, and that made me slack a little, I guess. I will be much better to comment and explain in the files in the future! 
 - Added non-interactive (click-through) options for friendly and hostile nameplates, as well as the personal resource display. 
 - Added heal predictions and heal absorbs for the player and target unit frames. 
 - Added a health preview layer for the player and target unit frames, which shows gained health instantly, while the "real" bar smoothly moves up towards it. 
@@ -19,6 +21,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added your own friendly auras to the party frames. This is not intended as a full aura display, but rather as a way for healers to easier be able to track shields, HoTs, things like that. A prioritized debuff display is also planned and will be added later in the 1.2-Alpha, but it is not part of the standard aura display beneath their frames, as this is currently only meant to track healing. 
 
 ### Changed
+- Changed all menu entries with an Enabled/Disabled added to just color the whole entry red or green instead. For red/green colorblindness we also have the brighter downpressed button texture to indicate the option is enabled, so this is neither worse nor better for them, this is a general improvement to avoid message overflows on menu entries. 
+- Removed debug mode localization as the ultimate purpose of the debug console is to provide Goldpaw with debug information. Messages to this frame is formatted in a specific manner, and having them displayed in the same language as the Lua API uses is of importance. 
+- Removing localization from keybind abbreviations, as we're working on a better and more logical icon-based system to display special keys like the arrow keys, page up and down, enter and so on. 
+- Added a missing locale existence check in non-primary addon locales to avoid bugs for enUS clients now that we have multiple localizations! 
+- Changed some of the font choices for non-latin game clients to be more in line with what Blizzard is using, and hopefully easier to read. 
 - Update actionbutton fading logic to be smoother and feel more responsive. 
 - Updated the nameplate opacity logic to be smoother, smarter, and tone down units that aren't in your line of sight. 
 - Hide chat bubbles while engaged in combat inside an instance, but allow them to remain visible otherwise to support cut scenes and similar.
@@ -46,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Major folder and code restructuring. This is both in preparation for our next major projects as well as the upcoming WoW Classic. 
 
 ### Fixed
+- Changed almost every format string in the user interface to work around a problem Blizzard have with displaying integers. A problem where they sometimes are WRONG for no apparent reason, while zero-decimal floats which for all intents and purposes work the same way, are always displayed with the correct number shown.
 - Changed the order of the actionbutton paging conditionals to allow for overridebars while having a vehicleui, as this was needed to make the buttons appear in the new WoW patch 8.1.5 world quest "Cycle of Life".
 - Updated player and pet unitframe conditionals to work with the world quest "Cycle of Life".
 - Fix actionbutton mask textures not being applied properly since WoW client build 29600(March 5th, 2019). This looked especially bad when buttons faded in and out, as the square shape of the original icons would shine through the border. Thank you Blizz, we really do love your undocumented changes. Hire us already. 
