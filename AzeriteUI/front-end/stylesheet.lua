@@ -42,6 +42,10 @@ local GetFont = Private.GetFont
 local GetMedia = Private.GetMedia
 local Colors = Private.Colors
 
+-- Just because we repeat them so many times
+local MenuButtonFontSize = 14
+local MenuButtonW, MenuButtonH = 300, 50
+
 ------------------------------------------------
 -- Utility Functions
 ------------------------------------------------
@@ -88,7 +92,60 @@ end
 local Core_MenuButton_PostCreate = function(self, text, ...)
 	local msg = self:CreateFontString()
 	msg:SetPoint("CENTER", 0, 0)
-	msg:SetFontObject(GetFont(14, false))
+	msg:SetFontObject(GetFont(MenuButtonFontSize, false))
+	msg:SetJustifyH("RIGHT")
+	msg:SetJustifyV("TOP")
+	msg:SetIndentedWordWrap(false)
+	msg:SetWordWrap(false)
+	msg:SetNonSpaceWrap(false)
+	msg:SetTextColor(0,0,0)
+	msg:SetShadowOffset(0, -.85)
+	msg:SetShadowColor(1,1,1,.5)
+	msg:SetText(text)
+	self.Msg = msg
+
+	local bg = self:CreateTexture()
+	bg:SetDrawLayer("ARTWORK")
+	bg:SetTexture(GetMedia("menu_button_disabled"))
+	bg:SetVertexColor(.9, .9, .9)
+	bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+	bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
+	self.NormalBackdrop = bg
+
+	local pushed = self:CreateTexture()
+	pushed:SetDrawLayer("ARTWORK")
+	pushed:SetTexture(GetMedia("menu_button_pushed"))
+	pushed:SetVertexColor(.9, .9, .9)
+	pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
+	pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
+	self.PushedBackdrop = pushed
+
+	local arrowUp = self:CreateTexture()
+	arrowUp:Hide()
+	arrowUp:SetDrawLayer("OVERLAY")
+	arrowUp:SetSize(20,20)
+	arrowUp:SetTexture([[Interface\BUTTONS\Arrow-Down-Down]])
+	arrowUp:SetDesaturated(true)
+	arrowUp:SetTexCoord(0,1,1,1,0,0,1,0) 
+	arrowUp:SetPoint("LEFT", 2, 1)
+	self.ArrowUp = arrowUp
+
+	local arrowDown = self:CreateTexture()
+	arrowDown:Hide()
+	arrowDown:SetDrawLayer("OVERLAY")
+	arrowDown:SetSize(20,20)
+	arrowDown:SetTexture([[Interface\BUTTONS\Arrow-Down-Down]])
+	arrowDown:SetTexCoord(0,1,1,1,0,0,1,0) 
+	arrowDown:SetPoint("LEFT", 2, -1)
+	self.ArrowDown = arrowDown
+
+	return self
+end
+
+local Core_MenuButton_PostCreate_Scaled = function(self, text, ...)
+	local msg = self:CreateFontString()
+	msg:SetPoint("CENTER", 0, 0)
+	msg:SetFontObject(GetFont(MenuButtonFontSize, false))
 	msg:SetJustifyH("RIGHT")
 	msg:SetJustifyV("TOP")
 	msg:SetIndentedWordWrap(false)
@@ -208,10 +265,8 @@ end
 -- General bind mode border creation method
 local BindMode_MenuWindow_CreateBorder = Core_Window_CreateBorder
 
--- Binding Dialogue MenuButton graphical post creation
+-- Binding Dialogue MenuButton
 local BindMode_MenuButton_PostCreate = Core_MenuButton_PostCreate
-
--- Binding Dialogue MenuButton graphical post update
 local BindMode_MenuButton_PostUpdate = Core_MenuButton_Layers_PostUpdate
 
 -- BindButton PostCreate 
@@ -239,68 +294,12 @@ local BindMode_BindButton_PostLeave = function(self)
 	self.bg:SetVertexColor(.4, .6, .9, .75)
 end
 
--- Blizzard GameMenu Button PostCreate
-local Blizzard_GameMenu_Button_PostCreate = function(self, text)
-	local msg = self:CreateFontString()
-	msg:SetPoint("CENTER", 0, 0)
-	msg:SetFontObject(GetFont(14, false))
-	msg:SetJustifyH("RIGHT")
-	msg:SetJustifyV("TOP")
-	msg:SetIndentedWordWrap(false)
-	msg:SetWordWrap(false)
-	msg:SetNonSpaceWrap(false)
-	msg:SetTextColor(0,0,0)
-	msg:SetShadowOffset(0, -.85)
-	msg:SetShadowColor(1,1,1,.5)
-	msg:SetText(text)
-	self.Msg = msg
+-- Blizzard GameMenu Button Post Updates
+local Blizzard_GameMenu_Button_PostCreate = Core_MenuButton_PostCreate 
+local Blizzard_GameMenu_Button_PostUpdate = Core_MenuButton_Layers_PostUpdate
 
-	local bg = self:CreateTexture()
-	bg:SetDrawLayer("ARTWORK")
-	bg:SetTexture(GetMedia("menu_button_disabled"))
-	bg:SetVertexColor(.9, .9, .9)
-	bg:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
-	bg:SetPoint("CENTER", msg, "CENTER", 0, 0)
-	self.NormalBackdrop = bg
-
-	local pushed = self:CreateTexture()
-	pushed:SetDrawLayer("ARTWORK")
-	pushed:SetTexture(GetMedia("menu_button_pushed"))
-	pushed:SetVertexColor(.9, .9, .9)
-	pushed:SetSize(1024 *1/3 *.75, 256 *1/3 *.75)
-	pushed:SetPoint("CENTER", msg, "CENTER", 0, 0)
-	self.PushedBackdrop = pushed
-end
-
--- Blizzard GameMenu Button PostUpdate
-local Blizzard_GameMenu_Button_PostUpdate = function(self)
-	local show = self.isDown and self.PushedBackdrop or self.NormalBackdrop
-	local hide = self.isDown and self.NormalBackdrop or self.PushedBackdrop
-
-	hide:SetAlpha(0)
-	show:SetAlpha(1)
-
-	if self.isDown then
-		self.Msg:SetPoint("CENTER", 0, -2)
-		if self:IsMouseOver() then
-			show:SetVertexColor(1, 1, 1)
-		else
-			show:SetVertexColor(.75, .75, .75)
-		end
-	else
-		self.Msg:SetPoint("CENTER", 0, 0)
-		if self:IsMouseOver() then
-			show:SetVertexColor(1, 1, 1)
-		else
-			show:SetVertexColor(.75, .75, .75)
-		end
-	end
-end
-
--- Blizzard MicroMenu Button PostCreate
+-- Blizzard MicroMenu Button Post Updates
 local BlizzardMicroMenu_Button_PostCreate = Core_MenuButton_PostCreate
-
--- Blizzard MicroMenu Button PostUpdate
 local BlizzardMicroMenu_Button_PostUpdate = Core_MenuButton_Layers_PostUpdate
 
 -- Blizzard Popup PostCreate styling
@@ -790,7 +789,7 @@ local Core = {
 		MenuWindow_OnHide = Core_Window_OnHide, 
 		MenuWindow_OnShow = Core_Window_OnShow,
 
-		MenuButtonSize = { 300, 50 },
+		MenuButtonSize = { MenuButtonW, MenuButtonH },
 		MenuButtonSpacing = 10, 
 		MenuButtonSizeMod = .75, 
 		MenuButton_PostCreate = Core_MenuButton_PostCreate, 
@@ -952,7 +951,7 @@ local BindMode = {
 	MenuWindow_CreateBorder = BindMode_MenuWindow_CreateBorder,
 
 	-- Binding Dialogue Buttons
-	MenuButtonSize = { 300, 50 },
+	MenuButtonSize = { MenuButtonW, MenuButtonH },
 	MenuButtonSpacing = 10, 
 	MenuButtonSizeMod = .75, 
 	MenuButton_PostCreate = BindMode_MenuButton_PostCreate,
@@ -1093,7 +1092,7 @@ local BlizzardFloaterHUD = {
 
 -- Blizzard Game Menu (Esc)
 local BlizzardGameMenu = {
-	MenuButtonSize = { 300, 50 },
+	MenuButtonSize = { MenuButtonW, MenuButtonH },
 	MenuButtonSpacing = 10, 
 	MenuButtonSizeMod = .75, 
 	MenuButton_PostCreate = Blizzard_GameMenu_Button_PostCreate,
@@ -1104,7 +1103,7 @@ local BlizzardGameMenu = {
 local BlizzardMicroMenu = {
 	Colors = Colors,
 
-	ButtonFont = GetFont(14, false),
+	ButtonFont = GetFont(MenuButtonFontSize, false),
 	ButtonFontColor = { 0, 0, 0 }, 
 	ButtonFontShadowOffset = { 0, -.85 },
 	ButtonFontShadowColor = { 1, 1, 1, .5 },
@@ -1120,7 +1119,7 @@ local BlizzardMicroMenu = {
 		}
 	},
 
-	MenuButtonSize = { 300, 50 },
+	MenuButtonSize = { MenuButtonW, MenuButtonH },
 	MenuButtonSpacing = 10, 
 	MenuButtonSizeMod = .75, 
 	MenuButtonTitleColor = { Colors.title[1], Colors.title[2], Colors.title[3] },
