@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.126-Beta] 2019-03-20
+## [1.2.126-RC] 2019-03-20
 ### Added
 - Added ruRU locale by Demorto#2597 and esES by Sonshine#3640! Awesome work, folks!  
 - Added some comments in the locale files to make it easier for people to know what goes where when writing locales. Up to now I've been living in my own little bubble, not having anybody else needing to look at any of the code whatsoever, and that made me slack a little, I guess. I will be much better to comment and explain in the files in the future! 
