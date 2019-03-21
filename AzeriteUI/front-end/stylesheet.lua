@@ -1961,7 +1961,7 @@ local Template_TinyFrame = {
 		},
 		HealthSmoothingMode = "bezier-fast-in-slow-out", -- smoothing method
 		HealthSmoothingFrequency = .2, -- speed of the smoothing method
-		HealthFrequentUpdates = false, -- listen to frequent health events for more accurate updates
+		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
 
 		UseHealthBackdrop = true,
 			HealthBackdropPlace = { "CENTER", 1, -2 },
