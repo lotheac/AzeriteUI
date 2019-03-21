@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.126-RC] 2019-03-20
+## [1.2.127-Release] 2019-03-21
 ### Added
 - Added ruRU locale by Demorto#2597 and esES by Sonshine#3640! Awesome work, folks!  
 - Added some comments in the locale files to make it easier for people to know what goes where when writing locales. Up to now I've been living in my own little bubble, not having anybody else needing to look at any of the code whatsoever, and that made me slack a little, I guess. I will be much better to comment and explain in the files in the future! 
 - Added non-interactive (click-through) options for friendly and hostile nameplates, as well as the personal resource display. 
-- Added heal predictions and heal absorbs for the player and target unit frames. 
+- Added heal predictions and heal absorbs for the player, target, party and raid unit frames. 
 - Added a health preview layer for the player and target unit frames, which shows gained health instantly, while the "real" bar smoothly moves up towards it. 
 - Added a prioritized single aura display for raid- and party frames. This displays boss debuffs, dispellable magic, curses, diseases and poisons when the player has a class and spec that can dispel them, as well as a few select other auras like Priest Atonement. 
 - Added a debug console which will be loaded but hidden by default. You can toggle the console visibility or fully unload it through the addon menu. I recommend leaving it loaded, but disabled. Then if you encounter actionbars that won't change when entering a vehicle, or other behavior that doesn't fully make sense, just enable it, take a screenshot and show us on discord, bitbucket or twitter! For the time being it only tracks actionbar paging changes (entering vehicles, switching druid forms, possessing somebody, etc) and missing locale entries. We'll be adding more if other problem areas should arise. As a rule of thumb though, we won't ever debug anything that doesn't at some point need debugging. And any fully fixed areas will have its debug code removed. 
