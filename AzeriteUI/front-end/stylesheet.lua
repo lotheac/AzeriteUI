@@ -3752,6 +3752,16 @@ local UnitFrameParty = setmetatable({
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
 
+	UseHealPredict = true, 
+		HealPredictPlace = { "TOPLEFT", 0, 0 }, -- relative to the health bar, not the frame! 
+		HealPredictSize = nil, 
+		HealPredictFrequentUpdates = true, 
+		HealPredictOrientation = "RIGHT", 
+		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
+		HealPredictSize = Constant.TinyBar,
+		HealPredictTexture = Constant.TinyBarTexture,
+
 	UseUnitStatus = true, -- Prio #4
 		UnitStatusPlace = { "CENTER", 0, -(7 + 100/2) },
 		UnitStatusDrawLayer = { "ARTWORK", 2 },
@@ -4079,6 +4089,16 @@ local UnitFrameRaid = setmetatable({
 		HealthColorHealth = true, -- color anything else in the default health color
 		UseHealthValue = false,
 	
+	UseHealPredict = true, 
+		HealPredictPlace = { "TOPLEFT", 0, 0 }, -- relative to the health bar, not the frame! 
+		HealPredictSize = nil, 
+		HealPredictFrequentUpdates = true, 
+		HealPredictOrientation = "RIGHT", 
+		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
+		HealPredictSize = Constant.RaidBar,
+		HealPredictTexture = Constant.TinyBarTexture,
+
 	AbsorbSize = Constant.RaidBar,
 		AbsorbBarColor = { 1, 1, 1, .5 },
 

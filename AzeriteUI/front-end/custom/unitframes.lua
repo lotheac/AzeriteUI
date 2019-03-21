@@ -1621,9 +1621,9 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 		health:SetSize(unpack(Layout.HealthSize))
 	end 
 
+	health:SetFrameLevel(health:GetFrameLevel() + 2)
 	health:Place(unpack(Layout.HealthPlace))
-	health:SetSmoothingMode(Layout.HealthSmoothingMode or "bezier-fast-in-slow-out") -- set the smoothing mode.
-	health:SetSmoothingFrequency(Layout.HealthSmoothingFrequency or .5) -- set the duration of the smoothing.
+	health:SetSmartSmoothing(true)
 	health.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
 	health.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
 	health.colorClass = Layout.HealthColorClass -- color players by class 
@@ -1632,9 +1632,53 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
 	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
 
+	local healthPreview = content:CreateStatusBar()
+	healthPreview:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
+	healthPreview:SetFrameLevel(health:GetFrameLevel() - 1)
+	healthPreview:SetAlpha(.5)
+	healthPreview:Place(unpack(Layout.HealthPlace))
+	healthPreview:DisableSmoothing(true)
+	healthPreview:SetSparkTexture("")
+	healthPreview.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
+	healthPreview.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
+	healthPreview.colorClass = Layout.HealthColorClass -- color players by class 
+	healthPreview.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
+	healthPreview.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+
+	healthPreview.PostUpdate = function(self)
+		local value = health:GetValue()
+		local displayValue = health:GetDisplayValue()
+		local _,maxValue = health:GetMinMaxValues()
+
+		if displayValue < value then 
+			local difference = (value - displayValue)/maxValue
+			if difference > .10 then 
+				healthPreview:SetFrameLevel(health:GetFrameLevel() - 1)
+				healthPreview:Show()
+			else 
+				healthPreview:Hide()
+			end
+		elseif displayValue > value then 
+			healthPreview:Hide()
+		end 
+	end
+	
+	if (not Layout.UseProgressiveFrames) then 
+		healthPreview:SetStatusBarTexture(Layout.HealthBarTexture)
+		healthPreview:SetSize(unpack(Layout.HealthSize))
+	end 
+
+	-- Custom little magic script handler
+	if Layout.HealthOnTexCoordChanged then 
+		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthOnTexCoordChanged)
+	end
+	
+	healthPreview.PostUpdate = Layout.HealthOnTexCoordChanged
+	health.Preview = healthPreview
+
 	self.Health = health
 	self.Health.PostUpdate = Layout.HealthBarPostUpdate
-	
+
 	if Layout.UseHealthBackdrop then 
 		local healthBg = health:CreateTexture()
 		healthBg:SetDrawLayer(unpack(Layout.HealthBackdropDrawLayer))
@@ -1660,6 +1704,27 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 			healthFg:SetVertexColor(unpack(Layout.HealthForegroundColor))
 		end 
 		self.Health.Fg = healthFg
+	end 
+
+	-- Heal Prediction
+	-----------------------------------------------------------	
+	if Layout.UseHealPredict then 
+		local healPredict = health:CreateFrame("Frame")
+		healPredict:SetPoint(unpack(Layout.HealPredictPlace))
+		healPredict:SetSize(unpack(Layout.HealPredictSize))
+		healPredict.frequent = Layout.HealPredictFrequentUpdates
+		healPredict.orientation = Layout.HealPredictOrientation
+		healPredict.width = Layout.HealPredictSize[1]
+		healPredict.height = Layout.HealPredictSize[2]
+
+		local healPredictTexture = healPredict:CreateTexture()
+		healPredictTexture:SetDrawLayer("ARTWORK", 0)
+		healPredictTexture:SetTexture(Layout.HealPredictTexture)
+		healPredict.Texture = healPredictTexture
+
+		self.HealPredict = healPredict
+		self.HealPredict.PostUpdate = Layout.HealPredictPostUpdate
+		self.HealPredict.OverrideUpdate = Layout.HealPredictOverrideUpdate
 	end 
 
 	-- Absorb Bar
@@ -2206,9 +2271,9 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 		health:SetSize(unpack(Layout.HealthSize))
 	end 
 
+	health:SetFrameLevel(health:GetFrameLevel() + 2)
 	health:Place(unpack(Layout.HealthPlace))
-	health:SetSmoothingMode(Layout.HealthSmoothingMode or "bezier-fast-in-slow-out") -- set the smoothing mode.
-	health:SetSmoothingFrequency(Layout.HealthSmoothingFrequency or .5) -- set the duration of the smoothing.
+	health:SetSmartSmoothing(true)
 	health.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
 	health.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
 	health.colorClass = Layout.HealthColorClass -- color players by class 
@@ -2217,6 +2282,49 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
 	health.frequent = Layout.HealthFrequentUpdates -- listen to frequent health events for more accurate updates
 
+	local healthPreview = content:CreateStatusBar()
+	healthPreview:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
+	healthPreview:SetFrameLevel(health:GetFrameLevel() - 1)
+	healthPreview:SetAlpha(.5)
+	healthPreview:Place(unpack(Layout.HealthPlace))
+	healthPreview:DisableSmoothing(true)
+	healthPreview:SetSparkTexture("")
+	healthPreview.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
+	healthPreview.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
+	healthPreview.colorClass = Layout.HealthColorClass -- color players by class 
+	healthPreview.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
+	healthPreview.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+
+	healthPreview.PostUpdate = function(self)
+		local value = health:GetValue()
+		local displayValue = health:GetDisplayValue()
+		local _,maxValue = health:GetMinMaxValues()
+
+		if displayValue < value then 
+			local difference = (value - displayValue)/maxValue
+			if difference > .10 then 
+				healthPreview:SetFrameLevel(health:GetFrameLevel() - 1)
+				healthPreview:Show()
+			else 
+				healthPreview:Hide()
+			end
+		elseif displayValue > value then 
+			healthPreview:Hide()
+		end 
+	end
+	
+	if (not Layout.UseProgressiveFrames) then 
+		healthPreview:SetStatusBarTexture(Layout.HealthBarTexture)
+		healthPreview:SetSize(unpack(Layout.HealthSize))
+	end 
+
+	-- Custom little magic script handler
+	if Layout.HealthOnTexCoordChanged then 
+		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthOnTexCoordChanged)
+	end
+	
+	healthPreview.PostUpdate = Layout.HealthOnTexCoordChanged
+	health.Preview = healthPreview
 	self.Health = health
 	self.Health.PostUpdate = Layout.HealthBarPostUpdate
 	
@@ -2245,6 +2353,27 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 			healthFg:SetVertexColor(unpack(Layout.HealthForegroundColor))
 		end 
 		self.Health.Fg = healthFg
+	end 
+
+	-- Heal Prediction
+	-----------------------------------------------------------	
+	if Layout.UseHealPredict then 
+		local healPredict = health:CreateFrame("Frame")
+		healPredict:SetPoint(unpack(Layout.HealPredictPlace))
+		healPredict:SetSize(unpack(Layout.HealPredictSize))
+		healPredict.frequent = Layout.HealPredictFrequentUpdates
+		healPredict.orientation = Layout.HealPredictOrientation
+		healPredict.width = Layout.HealPredictSize[1]
+		healPredict.height = Layout.HealPredictSize[2]
+
+		local healPredictTexture = healPredict:CreateTexture()
+		healPredictTexture:SetDrawLayer("ARTWORK", 0)
+		healPredictTexture:SetTexture(Layout.HealPredictTexture)
+		healPredict.Texture = healPredictTexture
+
+		self.HealPredict = healPredict
+		self.HealPredict.PostUpdate = Layout.HealPredictPostUpdate
+		self.HealPredict.OverrideUpdate = Layout.HealPredictOverrideUpdate
 	end 
 
 	-- Absorb Bar
@@ -2830,7 +2959,7 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		healPredict.Texture = healPredictTexture
 
 		if (not Layout.UseProgressiveFrames) then
-			healPredict:SetSize(unpack(Layout.HealPredictize))
+			healPredict:SetSize(unpack(Layout.HealPredictSize))
 			healPredict.width = Layout.HealPredictSize[1]
 			healPredict.height = Layout.HealPredictSize[2]
 			healPredictTexture:SetTexture(Layout.HealPredictTexture)
@@ -3781,7 +3910,7 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 		healPredict.Texture = healPredictTexture
 
 		if (not Layout.UseProgressiveFrames) then
-			healPredict:SetSize(unpack(Layout.HealPredictize))
+			healPredict:SetSize(unpack(Layout.HealPredictSize))
 			healPredict.width = Layout.HealPredictSize[1]
 			healPredict.height = Layout.HealPredictSize[2]
 			healPredictTexture:SetTexture(Layout.HealPredictTexture)
