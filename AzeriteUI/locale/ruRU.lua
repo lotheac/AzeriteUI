@@ -151,7 +151,7 @@ L["W"] = "З" -- compass West
 -- This is shown in the frame, it is word-wrapped. 
 -- Try to keep the length fairly identical to enUS, though, 
 -- to make sure it fits properly inside the window. 
-L["Hover your mouse over any actionbutton and press a key or a mouse button to bind it. Press the ESC key to clear the current actionbutton's keybinding."] = true
+L["Hover your mouse over any actionbutton and press a key or a mouse button to bind it. Press the ESC key to clear the current actionbutton's keybinding."] = "Наведите мышь на кнопку действия и нажмите клавишу или кнопку мыши, чтобы привязать её. Нажмите клавишу ESC, чтобы сбросить привязку."
 
 -- These are output to the chat frame. 
 L["Keybinds cannot be changed while engaged in combat."] = "Назначение клавиш не работает в бою."
