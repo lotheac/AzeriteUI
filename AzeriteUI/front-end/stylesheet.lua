@@ -1512,7 +1512,7 @@ local NamePlates = {
 		HealthColorThreat = true,
 		HealthThreatFeedbackUnit = "player",
 		HealthThreatHideSolo = false, 
-		HealthFrequent = false,
+		HealthFrequent = true,
 
 	UseHealthBackdrop = true, 
 		HealthBackdropPlace = { "CENTER", 0, 0 },
