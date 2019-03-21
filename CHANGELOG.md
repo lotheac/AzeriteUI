@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.129-Release] 2019-03-21
+### Changed
+- Re-enabled frequent updates for all raid frames, as their health doesn't appear to update after returning to life otherwise. 
+
 ## [1.2.128-Release] 2019-03-21
 ### Changed
 - Re-enabled frequent updates for all nameplates, as the alternative appears to keep their health at max for too long periods at a time. 
