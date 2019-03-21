@@ -699,7 +699,7 @@ Module.CreateMenuTable = function(self)
 	-- Let's color enabled/disabled entries entirely, 
 	-- instead of making them longer by adding the text.
 	local L_ENABLED = "|cff007700%s|r"
-	local L_DISABLED = "|cffff0000%s|r"
+	local L_DISABLED = "|cffaa0000%s|r"
 
 	-- Debug Mode
 	local DebugMenu = {
