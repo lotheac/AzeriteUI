@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.128-Release] 2019-03-21
+### Changed
+- Re-enabled frequent updates for all nameplates, as the alternative appears to keep their health at max for too long periods at a time. 
+
 ## [1.2.127-Release] 2019-03-21
 ### Added
 - Added ruRU locale by Demorto#2597 and esES by Sonshine#3640! Awesome work, folks!  
