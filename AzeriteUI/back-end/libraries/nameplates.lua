@@ -1114,12 +1114,12 @@ LibNamePlate.KillClassClutter810 = function(self)
 		DeathKnightResourceOverlayFrame, 
 
 		ClassNameplateManaBarFrame, 
-		ClassNameplateManaBarFrame.Border, 
-		ClassNameplateManaBarFrame.FeedbackFrame, 
-		ClassNameplateManaBarFrame.FullPowerFrame, 
-		ClassNameplateManaBarFrame.ManaCostPredictionBar, 
-		ClassNameplateManaBarFrame.background, 
-		ClassNameplateManaBarFrame.Texture
+		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.Border, 
+		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FeedbackFrame, 
+		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FullPowerFrame, 
+		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.ManaCostPredictionBar, 
+		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.background, 
+		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.Texture
 	}) do
 		if object then 
 			object:ClearAllPoints()
