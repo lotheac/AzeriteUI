@@ -1,5 +1,5 @@
-local Version = 31 -- This library's version 
-local MapVersion = 31 -- Minimap library version the minimap created by this is compatible with
+local Version = 32 -- This library's version 
+local MapVersion = 32 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -166,8 +166,6 @@ local RegisterEvent = ElementHandler_MT.__index.RegisterEvent
 local RegisterUnitEvent = ElementHandler_MT.__index.RegisterUnitEvent
 local UnregisterEvent = ElementHandler_MT.__index.UnregisterEvent
 local UnregisterAllEvents = ElementHandler_MT.__index.UnregisterAllEvents
-local SetScale = ElementHandler_MT.__index.UnregisterAllEvents
-local SetSize = ElementHandler_MT.__index.UnregisterAllEvents
 
 local IsMessageRegistered = LibMinimap.IsMessageRegistered
 local RegisterMessage = LibMinimap.RegisterMessage
@@ -774,17 +772,20 @@ LibMinimap.RemoveButton = function(self, button)
 
 	-- Store the button's original data
 	self.baggedButtonsHidden[button] = {
-		parent = button:GetParent(),
-		position = { button:GetPoint() },
-		size = { button:GetSize() }
+		parent = getMetaMethod("GetParent")(button),
+		position = { getMetaMethod("GetPoint")(button) },
+		size = { getMetaMethod("GetSize")(button) }
 	}
 
 	-- Grab it!
-	button:SetParent(self.buttonBag)
-	button:SetSize(24,24)
-	button:ClearAllPoints() 
-	button:SetPoint("CENTER", 0, 0)
+	getMetaMethod("SetParent")(button, self.buttonBag)
+	getMetaMethod("SetSize")(button, 24,24)
+	getMetaMethod("ClearAllPoints")(button)
+	getMetaMethod("SetPoint")(button, "CENTER", 0, 0)
 
+	-- Kill off the Blizzard API
+	button.ClearAllPoints = function() end
+	button.SetPoint = function() end
 end
 
 LibMinimap.RestoreButton = function(self, button)
@@ -798,10 +799,14 @@ LibMinimap.RestoreButton = function(self, button)
 
 	-- Release the button 
 	-- and return it to its original position
-	button:SetParent(data.parent)
-	button:SetSize(unpack(data.size))
-	button:ClearAllPoints() 
-	button:SetPoint(unpack(data.position))
+	getMetaMethod("SetParent")(button, data.parent)
+	getMetaMethod("SetSize")(button, unpack(data.size))
+	getMetaMethod("ClearAllPoints")(button)
+	getMetaMethod("SetPoint")(button, unpack(data.position))
+
+	-- Restore original meta methods.
+	button.ClearAllPoints = nil 
+	button.SetPoint = nil
 
 	-- Delete the entry
 	self.baggedButtonsHidden[button] = nil
@@ -826,35 +831,38 @@ LibMinimap.OnUpdate = function(_, elapsed)
 	-- Yes, we're doing this
 	local self = LibMinimap
 
-	if (self.enableCompass and self.rotateMinimap) then 
-		self:UpdateCompass()
+	self.shortTimer = (self.shortTimer or 0) - elapsed
+	if (self.shortTimer <= 0) then 
+		if (self.enableCompass and self.rotateMinimap) then 
+			self:UpdateCompass()
+		end 
+		self.shortTimer = 1/60
 	end 
 
-	-- Throttle it down, don't waste resources
-	self.elapsed = (self.elapsed or 0) - elapsed
-	if (self.elapsed > 0) then 
-		return 
+	self.longTimer = (self.longTimer or 0) - elapsed
+	if (self.longTimer <= 0) then 
+		if (not self.allowMinimapButtons) then 
+			local numMinimapChildren = Minimap:GetNumChildren()
+			if (self.numMinimapChildren ~= numMinimapChildren) then
+				for i = 1, numMinimapChildren do
+					self:ParseButton((select(i, Minimap:GetChildren())))
+				end
+				self.numMinimapChildren = numMinimapChildren
+			end
+
+			local numMinimapBackdropChildren = MinimapBackdrop:GetNumChildren()
+			if (self.numMinimapBackdropChildren ~= numMinimapBackdropChildren) then
+				for i = 1, numMinimapBackdropChildren do
+					self:ParseButton((select(i, MinimapBackdrop:GetChildren())))
+				end
+				self.numMinimapBackdropChildren = numMinimapBackdropChildren
+			end
+		end
+
+		-- Don't really need to check for this very often
+		-- It's not a problem that the user see the buttons disappear
+		self.longTimer = 5
 	end 
-
-	local numMinimapChildren = Minimap:GetNumChildren()
-	if (self.numMinimapChildren ~= numMinimapChildren) then
-		for i = 1, numMinimapChildren do
-			self:ParseButton((select(i, Minimap:GetChildren())))
-		end
-		self.numMinimapChildren = numMinimapChildren
-	end
-
-	local numMinimapBackdropChildren = MinimapBackdrop:GetNumChildren()
-	if (self.numMinimapBackdropChildren ~= numMinimapBackdropChildren) then
-		for i = 1, numMinimapBackdropChildren do
-			self:ParseButton((select(i, MinimapBackdrop:GetChildren())))
-		end
-		self.numMinimapBackdropChildren = numMinimapBackdropChildren
-	end
-
-	-- Don't really need to check for this very often
-	-- It's not a problem that the user see the buttons disappear
-	self.elapsed = 5
 end
 
 LibMinimap.EvaluateNeedForOnUpdate = function(self)

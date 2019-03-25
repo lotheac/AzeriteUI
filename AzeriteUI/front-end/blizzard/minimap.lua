@@ -840,9 +840,8 @@ Module.SetUpMinimap = function(self)
 
 	-- Minimap Buttons
 	----------------------------------------------------
-	-- We don't want them, simple as that.
-	-- Will add in support for MBB later one, or make our own system. 
-	self:SetMinimapAllowAddonButtons(Layout.AllowButtons)
+	-- Only allow these when MBB is loaded. 
+	self:SetMinimapAllowAddonButtons(self.MBB)
 
 	-- Minimap Compass
 	if Layout.UseCompass then 
@@ -1237,6 +1236,83 @@ Module.SetUpMinimap = function(self)
 
 end 
 
+Module.SetUpMBB = function(self)
+
+	local Handler = self:GetMinimapHandler()
+	local button = Handler:CreateOverlayFrame()
+	button:SetFrameLevel(button:GetFrameLevel() + 10) 
+	button:Place(unpack(Layout.MBBPlace))
+	button:SetSize(unpack(Layout.MBBSize))
+	button:SetFrameStrata("MEDIUM") 
+
+	local mbbFrame = _G.MBB_MinimapButtonFrame
+	mbbFrame:SetParent(button)
+	mbbFrame:RegisterForDrag()
+	mbbFrame:SetSize(unpack(Layout.MBBSize)) 
+	mbbFrame:ClearAllPoints()
+	mbbFrame:SetFrameStrata("MEDIUM") 
+	mbbFrame:SetPoint("CENTER", 0, 0)
+	mbbFrame:SetHighlightTexture("") 
+	mbbFrame:DisableDrawLayer("OVERLAY") 
+
+	mbbFrame.ClearAllPoints = function() end
+	mbbFrame.SetPoint = function() end
+	mbbFrame.SetAllPoints = function() end
+
+	local mbbIcon = _G.MBB_MinimapButtonFrame_Texture
+	mbbIcon:ClearAllPoints()
+	mbbIcon:SetPoint("CENTER", 0, 0)
+	mbbIcon:SetSize(unpack(Layout.MBBSize))
+	mbbIcon:SetTexture(Layout.MBBTexture)
+	mbbIcon:SetTexCoord(0,1,0,1)
+	mbbIcon:SetAlpha(.85)
+	
+	local down, over
+	local setalpha = function()
+		if (down and over) then
+			mbbIcon:SetAlpha(1)
+		elseif (down or over) then
+			mbbIcon:SetAlpha(.95)
+		else
+			mbbIcon:SetAlpha(.85)
+		end
+	end
+
+	mbbFrame:SetScript("OnMouseDown", function(self) 
+		down = true
+		setalpha()
+	end)
+
+	mbbFrame:SetScript("OnMouseUp", function(self) 
+		down = false
+		setalpha()
+	end)
+
+	mbbFrame:SetScript("OnEnter", function(self) 
+		over = true
+		_G.MBB_ShowTimeout = -1
+
+		local tooltip = Module:GetMinimapTooltip()
+		tooltip:SetDefaultAnchor(self)
+		tooltip:SetMaximumWidth(320)
+		tooltip:AddLine("MinimapButtonBag v" .. MBB_Version)
+		tooltip:AddLine(MBB_TOOLTIP1, 0, 1, 0, true)
+		tooltip:Show()
+
+		setalpha()
+	end)
+
+	mbbFrame:SetScript("OnLeave", function(self) 
+		over = false
+		_G.MBB_ShowTimeout = 0
+
+		local tooltip = Module:GetMinimapTooltip()
+		tooltip:Hide()
+
+		setalpha()
+	end)
+end
+
 -- Perform and initial update of all elements, 
 -- as this is not done automatically by the back-end.
 Module.EnableAllElements = function(self)
@@ -1468,6 +1544,15 @@ Module.OnEvent = function(self, event, ...)
 		self:UpdateMinimapMask()
 	end
 
+	if (event == "ADDON_LOADED") then 
+		local addon = ...
+		if (addon == "MBB") then 
+			self:SetUpMBB()
+			self:UnregisterEvent("ADDON_LOADED", "OnEvent")
+			return 
+		end 
+	end 
+
 	if Layout.UseStatusRings then 
 		self:UpdateBars()
 	end 
@@ -1481,8 +1566,17 @@ end
 
 Module.OnInit = function(self)
 	self.db = self:NewConfig("Minimap", defaults, "global")
+	self.MBB = Layout.UseMBB and self:IsAddOnEnabled("MBB")
 
 	self:SetUpMinimap()
+
+	if self.MBB then 
+		if IsAddOnLoaded("MBB") then 
+			self:SetUpMBB()
+		else 
+			self:RegisterEvent("ADDON_LOADED", "OnEvent")
+		end 
+	end 
 
 	if Layout.UseStatusRings then 
 		self:UpdateBars()
@@ -1491,7 +1585,7 @@ end
 
 Module.OnEnable = function(self)
 
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent") -- don't we always need this? :)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent") -- size and mask must be updated after this
 
 	if Layout.UseStatusRings then 

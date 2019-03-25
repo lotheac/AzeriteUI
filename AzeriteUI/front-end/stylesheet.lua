@@ -1323,12 +1323,6 @@ local Minimap = {
 			["8.2.0"] = [[Interface\MiniMap\ObjectIconsAtlas]]
 		},
 
-	-- Allow addon minimap buttons
-	-- *note that enabling this isn't recommended as most addons don't handle buttons properly, 
-	--  resulting in buttons placed inside, beneath or outside the map, 
-	--  colliding with other objects and generally not working at all. 
-	AllowButtons = false, 
-
 	UseCompass = true, 
 		CompassTexts = { L["N"] }, -- only setting the North tag text, as we don't want a full compass ( order is NESW )
 		CompassFont = GetFont(12, true), 
@@ -1457,7 +1451,10 @@ local Minimap = {
 		FrameRatePlaceFunc = Minimap_Performance_FrameRate_PlaceFunc, 
 
 	UseMail = true,
-		MailPlace = { "BOTTOMRIGHT", -(31 + 213), 35 },
+		MailPlace = 
+			CogWheel("LibModule"):IsAddOnEnabled("MBB") and 
+			{ "BOTTOMRIGHT", -(31 + 213 + 40), 35 } or 
+			{ "BOTTOMRIGHT", -(31 + 213), 35 },
 		MailSize = { 43, 32 },
 		MailTexture = GetMedia("icon_mail"),
 		MailTexturePlace = { "CENTER", 0, 0 }, 
@@ -1465,13 +1462,18 @@ local Minimap = {
 		MailTextureDrawLayer = { "ARTWORK", 1 },
 		MailTextureRotation = 15 * (2*math_pi)/360,
 
+	UseMBB = true, 
+		MBBSize = { 32, 32 },
+		MBBPlace = { "BOTTOMRIGHT", -(31 + 213), 35 },
+		MBBTexture = GetMedia("plus"),
+
 	UseGroupFinderEye = true, 
-		GroupFinderEyePlace = { "CENTER", math.cos(45*math_pi/180) * (213/2 + 10), math.sin(45*math_pi/180) * (213/2 + 10) }, 
+		GroupFinderEyePlace = { "CENTER", math_cos(45*math_pi/180) * (213/2 + 10), math_sin(45*math_pi/180) * (213/2 + 10) }, 
 		GroupFinderEyeSize = { 64, 64 }, 
 		GroupFinderEyeTexture = GetMedia("group-finder-eye-green"),
 		GroupFinderEyeColor = { .90, .95, 1 }, 
 		GroupFinderQueueStatusPlace = { "BOTTOMRIGHT", _G.QueueStatusMinimapButton, "TOPLEFT", 0, 0 }
-		
+
 }
 
 -- NamePlates
