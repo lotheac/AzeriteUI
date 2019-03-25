@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.131-Release] 2019-03-25
+### Added
+- Added better MBB (MinimapButtonBag) support. 
+
 ## [1.2.130-Release] 2019-03-24
 ### Fixed
 - Fixed some entries in the ruRU and esES locales which I overlooked when changing format strings from `%d` to `%.0f`.  
