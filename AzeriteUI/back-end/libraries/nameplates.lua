@@ -113,10 +113,6 @@ if (not LibNamePlate.uiHider) then
 	LibNamePlate.uiHider = uiHider
 end
 
-
--- We need this one
-local UICenter = LibFrame:GetFrame()
-
 -- Speed shortcuts
 local allPlates = LibNamePlate.allPlates
 local visiblePlates = LibNamePlate.visiblePlates
@@ -672,28 +668,12 @@ NamePlate.DisableElement = function(self, element, softDisable)
 		if (count == 0) then
 			frequentUpdates[self] = nil
 		end
-		
-		-- Disable the entire script handler if no elements
-		-- on any frames require frequent updates. 
-		count = 0
-		for i,v in pairs(frequentUpdates) do
-			count = count + 1
-		end
-		if (count == 0) then
-			if LibNamePlate:GetScript("OnUpdate") then
-				LibNamePlate:SetScript("OnUpdate", nil)
-			end
-		end
 	end
 end
 
 NamePlate.IsElementEnabled = function(self, element)
-	local enabled = frameElementsEnabled[self] and frameElementsEnabled[self][element]
-	if enabled then 
-		return true 
-	else 
-		return false 
-	end 
+	-- Keep returns consistently true/false
+	return (frameElementsEnabled[self] and frameElementsEnabled[self][element]) and true or false 
 end
 
 NamePlate.EnableFrequentUpdates = function(self, element, frequency)
@@ -701,9 +681,6 @@ NamePlate.EnableFrequentUpdates = function(self, element, frequency)
 		frequentUpdates[self] = {}
 	end
 	frequentUpdates[self][element] = { elapsed = 0, hz = tonumber(frequency) or .5 }
-	--if (not LibUnitFrame:GetScript("OnUpdate")) then
-	--	LibUnitFrame:SetScript("OnUpdate", OnUpdate)
-	--end
 end
 
 -- This is where a name plate is first created, 
@@ -852,7 +829,7 @@ end
 -- TODO: Make this useful. 
 LibNamePlate.UpdateAllScales = function(self)
 	--local oldScale = LibNamePlate.SCALE
-	--local scale = UICenter:GetEffectiveScale()
+	--local scale = LibNamePlate:GetFrame("UICenter"):GetEffectiveScale()
 	--if scale then
 	--	SCALE = scale
 	--end
@@ -916,7 +893,13 @@ LibNamePlate.OnEvent = function(self, event, ...)
 			hasSetBlizzardSettings = true
 		end
 		self:UpdateAllScales()
-		self.frame:SetScript("OnUpdate", function(_, ...) self:OnUpdate(...) end)
+		self.frame.elapsed = 0
+		self.frame.throttle = THROTTLE
+		self.frame:SetScript("OnUpdate", self.OnUpdate)
+
+	elseif (event == "PLAYER_LEAVING_WORLD") then 
+		self.frame:SetScript("OnUpdate", nil)
+		self.frame.elapsed = 0
 
 	elseif (event == "PLAYER_REGEN_DISABLED") then 
 		IN_COMBAT = true
@@ -980,10 +963,10 @@ LibNamePlate.GetScript = function(self, scriptHandler)
 end
 
 LibNamePlate.OnUpdate = function(self, elapsed)
-
+	
 	-- Throttle the updates, to increase the performance. 
-	self.elapsed = (self.elapsed or 0) + elapsed
-	if (self.elapsed < THROTTLE) then
+	self.elapsed = self.elapsed + elapsed
+	if (self.elapsed < self.throttle) then
 		return
 	end
 
@@ -1094,6 +1077,7 @@ LibNamePlate.Enable = function(self)
 
 	-- Updates
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	self:RegisterEvent("PLAYER_LEAVING_WORLD", "OnEvent")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent")
