@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 29)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 30)
 if (not LibNamePlate) then	
 	return
 end
@@ -945,8 +945,10 @@ end
 LibNamePlate.SetScript = function(self, scriptHandler, script)
 	scriptHandlers[scriptHandler] = script
 	if (scriptHandler == "OnUpdate") then
+		local scriptFrame = LibNamePlate.scriptFrame
 		if (not scriptFrame) then
 			scriptFrame = CreateFrame("Frame", nil, LibFrame:GetFrame())
+			LibNamePlate.scriptFrame = scriptFrame
 		end
 		if script then 
 			scriptFrame:SetScript("OnUpdate", function(self, ...) 
