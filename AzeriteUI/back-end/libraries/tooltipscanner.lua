@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 22)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 27)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -58,7 +58,6 @@ local UnitRace = _G.UnitRace
 local UnitReaction = _G.UnitReaction
 local DoesSpellExist = _G.C_Spell.DoesSpellExist 
 
-
 LibTooltipScanner.embeds = LibTooltipScanner.embeds or {}
 
 -- Tooltip used for scanning
@@ -66,15 +65,12 @@ LibTooltipScanner.scannerName = LibTooltipScanner.scannerName or "CG_TooltipScan
 LibTooltipScanner.scannerTooltip = LibTooltipScanner.scannerTooltip 
 								or CreateFrame("GameTooltip", LibTooltipScanner.scannerName, WorldFrame, "GameTooltipTemplate")
 
-
 -- Shortcuts
 local Scanner = LibTooltipScanner.scannerTooltip
 local ScannerName = LibTooltipScanner.scannerName
 
-
 -- Scanning Constants & Patterns
 ---------------------------------------------------------
-
 -- Localized Constants
 local Constants = {
 	CastChanneled = _G.SPELL_CAST_CHANNELED, 
@@ -169,23 +165,23 @@ local Constants = {
 	ITEM_COOLDOWN_TIME_SEC = "Cooldown remaining: %d sec"
 	]]
 
-	local singlePattern = function(msg, plain)
-		msg = msg:gsub("%%%d?$?c", ".+")
-		msg = msg:gsub("%%%d?$?d", "%%d+")
-		msg = msg:gsub("%%%d?$?s", ".+")
-		msg = msg:gsub("([%(%)])", "%%%1")
-		msg = msg:gsub("|4(.+):.+;", "%1")
-		return plain and msg or ("^" .. msg)
-	end
-	
-	local pluralPattern = function(msg, plain)
-		msg = msg:gsub("%%%d?$?c", ".+")
-		msg = msg:gsub("%%%d?$?d", "%%d+")
-		msg = msg:gsub("%%%d?$?s", ".+")
-		msg = msg:gsub("([%(%)])", "%%%1")
-		msg = msg:gsub("|4.+:(.+);", "%1")
-		return plain and msg or ("^" .. msg)
-	end
+local singlePattern = function(msg, plain)
+	msg = msg:gsub("%%%d?$?c", ".+")
+	msg = msg:gsub("%%%d?$?d", "%%d+")
+	msg = msg:gsub("%%%d?$?s", ".+")
+	msg = msg:gsub("([%(%)])", "%%%1")
+	msg = msg:gsub("|4(.+):.+;", "%1")
+	return plain and msg or ("^" .. msg)
+end
+
+local pluralPattern = function(msg, plain)
+	msg = msg:gsub("%%%d?$?c", ".+")
+	msg = msg:gsub("%%%d?$?d", "%%d+")
+	msg = msg:gsub("%%%d?$?s", ".+")
+	msg = msg:gsub("([%(%)])", "%%%1")
+	msg = msg:gsub("|4.+:(.+);", "%1")
+	return plain and msg or ("^" .. msg)
+end
 	
 -- Will come up with a better system as this expands, 
 -- just doing it fast and simple for now.
@@ -295,10 +291,8 @@ local sorted2ndStats = {
 	"ITEM_MOD_BLOCK_RATING_SHORT",
 }
 
-
 -- Utility Functions
 ---------------------------------------------------------
-
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -321,7 +315,6 @@ local GetBattlePetInfo = function(itemLink)
 	local  _, _, level, rarity = string_match(data, "(%w+):(%d+):(%d+):(%d+)")
 	return true, level or 1, tonumber(rarity) or 0
 end
-
 
 -- Library API
 ---------------------------------------------------------
@@ -841,7 +834,7 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 						end 
 					end 
 
-					-- item USe effect. Can only be one. I think. 
+					-- item Use effect. Can only be one. I think. 
 					if ((not foundUseEffect) and (string_find(msg, Patterns.ItemUseEffect))) then 
 						foundUseEffect = lineIndex
 						tbl.itemUseEffect = msg
@@ -1640,7 +1633,6 @@ LibTooltipScanner.GetTooltipDataForInventorySlot = function(self, unit, inventor
 			tbl[i] = nil
 		end 
 
-
 		return tbl
 	end
 end
@@ -1932,7 +1924,6 @@ LibTooltipScanner.GetTooltipDataForUnitDebuff = function(self, unit, debuffID, f
 		return tbl
 	end
 end
-
 
 -- Module embedding
 local embedMethods = {
