@@ -1103,7 +1103,7 @@ LibNamePlate.Enable = function(self)
 	self:RegisterEvent("UI_SCALE_CHANGED", "OnEvent")
 
 	-- Kill 8.1.0 added personal resource display clutter
-	self:KillClassClutter()
+	self:KillClassClutter810()
 
 	-- These we will enforce 
 	self:EnforceConsoleVars()
@@ -1112,7 +1112,7 @@ LibNamePlate.Enable = function(self)
 	self.enabled = true
 end 
 
-LibNamePlate.KillClassClutter = function(self)
+LibNamePlate.KillClassClutter810 = function(self)
 	for _,object in pairs({
 		ClassNameplateBarFrame, 
 		ClassNameplateBarShardFrame, 
