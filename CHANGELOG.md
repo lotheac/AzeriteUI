@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.132-Release] 2019-03-25
+### Changed
+- Replaced "xp", "ap" and "rp" texts for Minimap rings at less than one percent with the more eye-catching new feature icon. 
+- Fine-tuned the Nameplate back-end's update handler's performance slightly. 
+
+### Fixed
+- Adjusted the Minimap ring description's vertical alignment.
+
 ## [1.2.131-Release] 2019-03-25
 ### Added
 - Added better MBB (MinimapButtonBag) support. 
