@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 13)
+local LibFader = CogWheel:Set("LibFader", 14)
 if (not LibFader) then	
 	return
 end
@@ -32,16 +32,19 @@ local CursorHasItem = _G.CursorHasItem
 local CursorHasSpell = _G.CursorHasSpell
 local GetCursorInfo = _G.GetCursorInfo
 local HasOverrideActionBar = _G.HasOverrideActionBar
+local HasTempShapeshiftActionBar = _G.HasTempShapeshiftActionBar
 local HasVehicleActionBar = _G.HasVehicleActionBar
 local InCombatLockdown = _G.InCombatLockdown
 local IsInGroup = _G.IsInGroup
 local IsInInstance = _G.IsInInstance
+local IsPossessBarVisible = _G.IsPossessBarVisible
 local RegisterAttributeDriver = _G.RegisterAttributeDriver
 local SpellFlyout = _G.SpellFlyout
 local UnitDebuff = _G.UnitDebuff
 local UnitExists = _G.UnitExists
 local UnitHealth = _G.UnitHealth
 local UnitHealthMax = _G.UnitHealthMax
+local UnitInVehicle = _G.UnitInVehicle
 local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local UnitPowerType = _G.UnitPowerType
@@ -239,6 +242,7 @@ LibFader.CheckCursor = function(self)
 	Data.busyCursor = nil
 end 
 
+-- TODO: Integration with LibAura
 LibFader.CheckAuras = function(self)
 	for i = 1, DEBUFF_MAX_DISPLAY do
 		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitDebuff("player", i, filter)
