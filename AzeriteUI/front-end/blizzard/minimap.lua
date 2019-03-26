@@ -49,6 +49,7 @@ local STANDING = _G.STANDING
 local UNKNOWN = _G.UNKNOWN
 
 local Spinner = {}
+local NEW = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:0:0:0:0|t]]
 local shortXPString = "%s%%"
 local longXPString = "%s / %s"
 local fullXPString = "%s / %s (%s)"
@@ -718,7 +719,7 @@ local XP_OverrideValue = function(element, min, max, restedLeft, restedTimeLeft)
 				percent:SetText("xp") -- no localization for this
 			end 
 		else 
-			percent:SetText("xp") -- no localization for this
+			percent:SetText(NEW) 
 		end 
 	end 
 	if element.colorValue then 
@@ -761,7 +762,7 @@ local Rep_OverrideValue = function(element, current, min, max, factionName, stan
 				percent:SetText("rp") 
 			end 
 		else 
-			percent:SetText("rp") 
+			percent:SetText(NEW) 
 		end 
 	end 
 	if element.colorValue then 
@@ -788,7 +789,7 @@ local AP_OverrideValue = function(element, min, max, level)
 				-- removing the percentage sign
 				percent:SetFormattedText("%.0f", percValue)
 			else 
-				percent:SetText("ap") 
+				percent:SetText(NEW) 
 			end 
 		else 
 			percent:SetText("ap") 
