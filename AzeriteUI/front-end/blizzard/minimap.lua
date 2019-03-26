@@ -1236,6 +1236,7 @@ Module.SetUpMinimap = function(self)
 
 end 
 
+-- Set up the MBB (MinimapButtonBag) integration
 Module.SetUpMBB = function(self)
 
 	local Handler = self:GetMinimapHandler()
