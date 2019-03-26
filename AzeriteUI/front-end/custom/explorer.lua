@@ -15,7 +15,26 @@ local unpack = unpack
 local defaults = {
 	enableExplorer = true,
 	enableTrackerFading = false, 
+
+	useFadingInInstance = true, 
+	useFadingInvehicles = false
 }
+
+local deprecated = {
+	enableExplorerInstances = true,
+	enablePlayerFading = true,
+	enableTrackerFadingInstances = true
+}
+
+Module.ParseSavedSettings = function(self)
+	local db = self:NewConfig("ExplorerMode", defaults, "global")
+	for key,remove in pairs(deprecated) do
+		if remove then 
+			db[key] = nil
+		end 
+	end
+	return db
+end
 
 Module.PostUpdateSettings = function(self)
 	local db = self.db
@@ -55,11 +74,8 @@ Module.DetachModuleFrame = function(self, moduleName)
 	end 
 end 
 
-Module.PreInit = function(self)
-end
-
 Module.OnInit = function(self)
-	self.db = self:NewConfig("ExplorerMode", defaults, "global")
+	self.db = self:ParseSavedSettings()
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	proxy.PostUpdateSettings = function() self:PostUpdateSettings() end
