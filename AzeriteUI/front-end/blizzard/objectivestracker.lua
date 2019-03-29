@@ -83,26 +83,6 @@ Module.PositionTracker = function(self)
 	end
 	hooksecurefunc(ObjectiveTrackerFrame,"SetPoint", ObjectiveTrackerFrame_SetPosition)
 
-	local autoHider = self:CreateFrame("Frame", nil, ObjectiveTrackerFrame, "SecureHandlerStateTemplate")
-	autoHider:SetAttribute("_onstate-objectiveHider", [[
-		if (newstate == "hide") then
-			self:Hide()
-		else
-			self:Show()
-		end
-	]])
-
-	autoHider:SetScript("OnHide", function()
-		local _, _, difficulty = GetInstanceInfo()
-		if (difficulty ~= 8) then
-			_G.ObjectiveTracker_Collapse()
-		end
-	end)
-
-	autoHider:SetScript("OnShow", _G.ObjectiveTracker_Expand)
-
-	ObjectiveTrackerFrame.autoHider = AutoHider
-
 	self:StyleTracker()
 end
 
