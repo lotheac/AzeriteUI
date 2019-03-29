@@ -48,6 +48,7 @@ Module.PositionTracker = function(self)
 	ObjectiveFrameHolder:Place(unpack(Layout.Place))
 	
 	ObjectiveTrackerFrame:SetParent(self.frame) -- taint or ok?
+	ObjectiveTrackerFrame:SetFrameStrata("BACKGROUND") -- keep it below unitframes
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOP", ObjectiveFrameHolder, "TOP")
 
@@ -82,6 +83,26 @@ Module.PositionTracker = function(self)
 	end
 	hooksecurefunc(ObjectiveTrackerFrame,"SetPoint", ObjectiveTrackerFrame_SetPosition)
 
+	local autoHider = self:CreateFrame("Frame", nil, ObjectiveTrackerFrame, "SecureHandlerStateTemplate")
+	autoHider:SetAttribute("_onstate-objectiveHider", [[
+		if (newstate == "hide") then
+			self:Hide()
+		else
+			self:Show()
+		end
+	]])
+
+	autoHider:SetScript("OnHide", function()
+		local _, _, difficulty = GetInstanceInfo()
+		if (difficulty ~= 8) then
+			_G.ObjectiveTracker_Collapse()
+		end
+	end)
+
+	autoHider:SetScript("OnShow", _G.ObjectiveTracker_Expand)
+
+	ObjectiveTrackerFrame.autoHider = AutoHider
+
 	self:StyleTracker()
 end
 
@@ -97,18 +118,26 @@ end
 
 Module.CreateDriver = function(self)
 	if Layout.HideInCombat or Layout.HideInBossFights or Layout.HideInArena then 
-		local driverFrame = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
-		driverFrame:Hide()
+
+		local driverFrame = self:CreateFrame("Frame", nil, _G.UIParent, "SecureHandlerAttributeTemplate")
+
 		driverFrame:HookScript("OnShow", function() 
-			if ObjectiveTrackerFrame then 
-				ObjectiveTrackerFrame:SetAlpha(.9)
+			if _G.ObjectiveTrackerFrame then 
+				_G.ObjectiveTrackerFrame:SetAlpha(.9)
+				-- This taints. 
+				--_G.ObjectiveTracker_Expand()
 			end
 		end)
+
+		-- DifficultyID: https://wow.gamepedia.com/DifficultyID
 		driverFrame:HookScript("OnHide", function() 
-			if ObjectiveTrackerFrame then 
-				ObjectiveTrackerFrame:SetAlpha(0)
+			if _G.ObjectiveTrackerFrame then 
+				_G.ObjectiveTrackerFrame:SetAlpha(.5)
+				-- This taints. 
+				--_G.ObjectiveTracker_Collapse()
 			end
 		end)
+
 		driverFrame:SetAttribute("_onattributechanged", [=[
 			if (name == "state-vis") then
 				if (value == "show") then 
@@ -125,10 +154,10 @@ Module.CreateDriver = function(self)
 
 		local driver = "hide;show"
 		if Layout.HideInArena then 
-			driver = "[@arena1,exists]" .. driver
+			driver = "[@arena1,exists][@arena2,exists][@arena3,exists][@arena4,exists][@arena5,exists]" .. driver
 		end 
 		if Layout.HideInBossFights then 
-			driver = "[@boss1,exists]" .. driver
+			driver = "[@boss1,exists][@boss2,exists][@boss3,exists][@boss4,exists]" .. driver
 		end 
 		if Layout.HideInCombat then 
 			driver = "[combat]" .. driver
