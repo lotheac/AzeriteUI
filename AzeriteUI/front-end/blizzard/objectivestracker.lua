@@ -112,7 +112,7 @@ Module.CreateDriver = function(self)
 		-- DifficultyID: https://wow.gamepedia.com/DifficultyID
 		driverFrame:HookScript("OnHide", function() 
 			if _G.ObjectiveTrackerFrame then 
-				_G.ObjectiveTrackerFrame:SetAlpha(.5)
+				_G.ObjectiveTrackerFrame:SetAlpha(0)
 				-- This taints. 
 				--_G.ObjectiveTracker_Collapse()
 			end
