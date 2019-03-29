@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 50)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 51)
 if (not LibSecureButton) then	
 	return
 end
@@ -1078,8 +1078,38 @@ LibSecureButton.CreateButtonSpellHighlight = function(self, button)
 	texture:SetAllPoints()
 	texture:SetVertexColor(255/255, 225/255, 125/255, 1)
 
+	local model = spellHighlight:CreateFrame("PlayerModel")
+	model:Hide()
+	model:SetFrameLevel(button:GetFrameLevel()-1)
+	model:SetPoint("CENTER", 0, 0)
+	model:EnableMouse(false)
+	model:ClearModel()
+	model:SetDisplayInfo(26501) 
+	model:SetCamDistanceScale(3)
+	model:SetPortraitZoom(0)
+	model:SetPosition(0, 0, 0)
+
+	local sizeFactor = 2 -- 3 is huge
+	local updateSize = function()
+		local w,h = button:GetSize()
+		if (w and h) then 
+			model:SetSize(w*sizeFactor,h*sizeFactor)
+			if (not model:IsShown()) then 
+				model:Show()
+			end 
+		else 
+			model:Hide()
+		end 
+	end
+	updateSize(model)
+
+	hooksecurefunc(button, "SetSize", updateSize)
+	hooksecurefunc(button, "SetWidth", updateSize)
+	hooksecurefunc(button, "SetHeight", updateSize)
+
 	button.SpellHighlight = spellHighlight
 	button.SpellHighlight.Texture = texture
+	button.SpellHighlight.Model = model
 end
 
 LibSecureButton.CreateButtonAutoCast = function(self, button)
