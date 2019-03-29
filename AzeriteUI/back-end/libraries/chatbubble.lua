@@ -1,4 +1,4 @@
-local LibChatBubble = CogWheel:Set("LibChatBubble", 13)
+local LibChatBubble = CogWheel:Set("LibChatBubble", 14)
 if (not LibChatBubble) then	
 	return
 end
@@ -334,13 +334,19 @@ LibChatBubble.OnEvent = function(self, event, ...)
 		if self.stylingEnabled then 
 			local _, instanceType = IsInInstance()
 			if (instanceType == "none") then
-				SetCVar("chatBubbles", 1)
+				if UnitAffectingCombat("player") then 
+					SetCVar("chatBubbles", 0)
+				else 
+					SetCVar("chatBubbles", 1)
+				end 
+				--SetCVar("chatBubbles", 1)
 			else
 				if UnitAffectingCombat("player") then 
 					SetCVar("chatBubbles", 0)
 				else 
 					SetCVar("chatBubbles", 1)
 				end 
+				--SetCVar("chatBubbles", 0)
 			end
 
 			self:SetHook(UIParent, "OnHide", "UpdateBubbleVisibility", "CG_UIPARENT_ONHIDE_BUBBLEUPDATE")
