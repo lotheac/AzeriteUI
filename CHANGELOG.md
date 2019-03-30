@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.135-Release] 2019-03-30
+### Fixed
+- Fixed the issue where mousebuttons (except the first two) wouldn't be recognized when trying to keybind the actionbuttons. 
+
 ## [1.2.134-Release] 2019-03-30
 ### Changed
 - Trying an experimental change to how spell activation alerts are shown on the action buttons. 
