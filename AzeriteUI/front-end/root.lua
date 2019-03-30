@@ -13,6 +13,8 @@ Core:RegisterSavedVariablesGlobal(ADDON.."_DB")
 
 -- Can't have both us and these
 Core:SetIncompatible("DiabolicUI")
+Core:SetIncompatible("DiabolicTwo")
+Core:SetIncompatible("GoldieSix")
 Core:SetIncompatible("GoldpawUI")
 Core:SetIncompatible("KkthnxUI")
 Core:SetIncompatible("Tukui")
