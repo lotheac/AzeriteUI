@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 56)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 57)
 if (not LibUnitFrame) then	
 	return
 end
@@ -432,11 +432,17 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 
 	elseif (unit:match("^boss(%d+)")) then
 		frame.unitGroup = "boss"
+
+		frame:SetFrameStrata("MEDIUM")
+		frame:SetFrameLevel(1000)
 		frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_TARGETABLE_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("^arena(%d+)")) then
 		frame.unitGroup = "arena"
+
+		frame:SetFrameStrata("MEDIUM")
+		frame:SetFrameLevel(1000)
 		frame:RegisterEvent("ARENA_OPPONENT_UPDATE", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit:match("^party(%d+)")) then 
