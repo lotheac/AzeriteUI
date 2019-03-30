@@ -48,7 +48,6 @@ Module.PositionTracker = function(self)
 	ObjectiveFrameHolder:Place(unpack(Layout.Place))
 	
 	ObjectiveTrackerFrame:SetParent(self.frame) -- taint or ok?
-	ObjectiveTrackerFrame:SetFrameStrata("BACKGROUND") -- keep it below unitframes
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOP", ObjectiveFrameHolder, "TOP")
 
