@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.136-Release] 2019-03-30
+### Changed
+- Reverted a change to the quest tracker layer, as it wasn't working as intended. 
+- Redid layering of boss and enemy arena/pvp unitframes in the back-end to be above the aforementioned tracker. Let's attempt to fix this issue in the back-end, leaving the modules and the blizzard elements out of our crazy hacks. 
+
 ## [1.2.135-Release] 2019-03-30
 ### Fixed
 - Fixed the issue where mousebuttons (except the first two) wouldn't be recognized when trying to keybind the actionbuttons. 
