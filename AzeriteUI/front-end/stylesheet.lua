@@ -768,7 +768,7 @@ local Core = {
 	},
 	UseEasySwitch = true, 
 		EasySwitch = {
-			["GoldpawUI"] = { goldpawui5 = true, goldpawui = true, goldpaw = true, goldui = true, gui5 = true, gui = true },
+			["GoldieSix"] = { goldpawui = true, goldpaw = true, goldui = true, gui5 = true, gui = true },
 			["DiabolicUI"] = { diabolicui2 = true, diabolicui = true, diabolic = true, diabloui = true, dui2 = true, dui = true }
 		},
 		
