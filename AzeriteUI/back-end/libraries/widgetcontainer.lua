@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 18)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 19)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -511,6 +511,7 @@ LibWidgetContainer.CreateWidgetContainer = function(self, frameType, parent, tem
 
 	-- we sure we want to be doing this?
 	frame:SetFrameStrata("LOW")
+	frame:SetFrameLevel(1000)
 	
 	return LibWidgetContainer:InitWidgetContainer(frame, unit, styleFunc, ...)
 end
