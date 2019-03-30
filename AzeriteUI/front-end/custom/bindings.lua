@@ -194,7 +194,7 @@ Module.GetBinding = function(self, key)
 	if (key == "LeftButton") then key = "BUTTON1" end
 	if (key == "RightButton") then key = "BUTTON2" end
 	if (key == "MiddleButton") then key = "BUTTON3" end
-	if (key:find("Button%.0f")) then
+	if (key:find("Button%d")) then
 		key = key:upper()
 	end
 	
