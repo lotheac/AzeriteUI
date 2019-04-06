@@ -40,6 +40,6 @@ For more buttons, right-click the cogwheel icon in the bottom right corner of th
 * ruRU: **Demorto**
 
 ## **Official Supporters:**  
-* **Jennifer Graff, Kjartan Kirchhof, Elexys, Jan Terje Hellemsbakken, Mel Brannon**  
+* **Adam Stribley, Matt Gallardo, Gary D. Cook, Elexys, Mel Brannon, Jennifer Graff, Kjartan Kirchhof, Jan Terje Hellemsbakken**  
 
 _Visit [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui) to become an Official Supporter!_
