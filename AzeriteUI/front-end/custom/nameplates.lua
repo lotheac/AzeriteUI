@@ -301,8 +301,18 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 
 	if Layout.UseAuras then 
 		local auras = plate:CreateFrame("Frame")
-		auras:Place(unpack(Layout.AuraFramePlace))
 		auras:SetSize(unpack(Layout.AuraFrameSize)) -- auras will be aligned in the available space, this size gives us 8x1 auras
+		if Layout.AuraPoint then 
+			auras.point = Layout.AuraPoint
+			auras.anchor = plate[Layout.AuraAnchor] or plate
+			auras.relPoint = Layout.AuraRelPoint
+			auras.offsetX = Layout.AuraOffsetX
+			auras.offsetY = Layout.AuraOffsetY
+			auras:ClearAllPoints()
+			auras:SetPoint(auras.point, auras.anchor, auras.relPoint, auras.offsetX, auras.offsetY)
+		else 
+			auras:Place(unpack(Layout.AuraFramePlace))
+		end 
 		auras.auraSize = Layout.AuraSize -- size of the aura. assuming squares. 
 		auras.spacingH = Layout.AuraSpaceH -- horizontal/column spacing between buttons
 		auras.spacingV = Layout.AuraSpaceV -- vertical/row spacing between aura buttons

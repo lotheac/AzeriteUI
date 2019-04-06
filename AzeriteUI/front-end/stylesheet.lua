@@ -509,8 +509,16 @@ local NamePlates_Auras_PostUpdate = function(element, unit, visible)
 
 	-- The aura frame misalignment continues, 
 	-- so we might have to re-anchor it to the frame on post updates. 
+	-- Edit: This does NOT fix it...?
+	-- Do we need to hook to something else?
+	-- Edit2: Trying to anchor to Health element instead, 
+	-- as some blizzard sizing might be the issue(?). 
 	element:ClearAllPoints()
-	element:Place(unpack(self.layout.AuraFramePlace))
+	if element.point then 
+		element:SetPoint(element.point, element.anchor, element.relPoint, element.offsetX, element.offsetY)
+	else 
+		element:SetPoint(unpack(self.layout.AuraFramePlace))
+	end 
 
 	local raidTarget = self.RaidTarget
 	if raidTarget then 
@@ -1589,6 +1597,8 @@ local NamePlates = {
 		-- Weirdness. Can't reproduce it consistantly, which backs up that theory. 
 		-- So for now I'll just attempt to work around it, see if it goes away!
 		AuraFramePlace = { "TOPLEFT", (80 - 30*3 + 2*5)/2, 30*2+5 + 10 },
+		AuraPoint = "BOTTOMLEFT", AuraAnchor = "Health", AuraRelPoint = "TOPLEFT",
+		AuraOffsetX = (80 - 30*3 + 2*5)/2, AuraOffsetY = 10 + 2,
 
 		AuraSize = 30, 
 		AuraSpaceH = 4, 
