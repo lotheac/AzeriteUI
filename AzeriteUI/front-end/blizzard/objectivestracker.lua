@@ -6,6 +6,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardObjectivesTracker", "LibEvent", "LibFrame")
+Module:SetIncompatible("!KalielsTracker")
+
 local L, Layout
 
 -- Lua API
