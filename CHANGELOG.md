@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.137-Release] 2019-04-06
+### Changed
+- Added support for Kaliel's Tracker to the tracker module. It doesn't resolve Kaliel's initial startup bug, though, because that bug is a part of Kaliel's Tracker, not any other addon. 
+
 ## [1.2.136-Release] 2019-03-30
 ### Changed
 - Reverted a change to the quest tracker layer, as it wasn't working as intended. 
