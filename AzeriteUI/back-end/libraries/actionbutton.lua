@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 51)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 52)
 if (not LibSecureButton) then	
 	return
 end
@@ -969,14 +969,16 @@ ActionButton.OnEvent = function(button, event, ...)
 end
 
 ActionButton.OnEnter = function(self) 
-	if (not HasAction(self.buttonAction)) or (self:GetSpellID() == 0) then 
-		return self:OnLeave()
-	end 
-
 	self.isMouseOver = true
-	self.UpdateTooltip = UpdateTooltip
 
-	self:UpdateTooltip()
+	-- Don't fire off tooltip updates if the button has no content
+	if (not HasAction(self.buttonAction)) or (self:GetSpellID() == 0) then 
+		self.UpdateTooltip = nil
+		self:GetTooltip():Hide()
+	else
+		self.UpdateTooltip = UpdateTooltip
+		self:UpdateTooltip()
+	end 
 
 	if self.PostEnter then 
 		self:PostEnter()
