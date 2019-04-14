@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.139-Release] 2019-04-14
+### Added
+- Added zhTW translation by Alex Wang.
+
 ## [1.2.138-Release] 2019-04-06
 ### Added
-- Added zhCN translation by Jiawei Zhou
+- Added zhCN translation by Jiawei Zhou.
 
 ## [1.2.137-Release] 2019-04-06
 ### Changed
