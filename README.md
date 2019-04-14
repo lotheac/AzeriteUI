@@ -38,8 +38,10 @@ For more buttons, right-click the cogwheel icon in the bottom right corner of th
 ## **Translators:**  
 * esES: **Sonshine**
 * ruRU: **Demorto**
+* zhCN: **Jiawei Zhou**
+* zhTW: **Alex Wang**
 
 ## **Official Supporters:**  
-* **Adam Stribley, Elexys, Mel Brannon, Jennifer Graff, Kjartan Kirchhof, Jan Terje Hellemsbakken**  
+* **Adam Stribley, Amariah Crawford, Elexys, Mel Brannon, Jennifer Graff, Kjartan Kirchhof, Jan Terje Hellemsbakken**  
 
 _Visit [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui) to become an Official Supporter!_
