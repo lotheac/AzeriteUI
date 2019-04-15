@@ -1,4 +1,4 @@
-local LibFader = CogWheel:Set("LibFader", 14)
+local LibFader = CogWheel:Set("LibFader", 15)
 if (not LibFader) then	
 	return
 end
@@ -189,6 +189,15 @@ LibFader.SetObjectFadeOverride = function(self, force)
 	else 
 		LibFader.FORCED = nil 
 	end 
+end
+
+-- Prevent objects from fading out in instances
+LibFader.DisableInstanceFading = function(self, fade)
+	if (fade) then 
+		Data.disableInstanceFade = true 
+	else 
+		Data.disableInstanceFade = false 
+	end
 end
 
 -- Set the default alpha of an opaque object
@@ -448,7 +457,7 @@ LibFader.OnUpdate = function(self, elapsed)
 	or Data.hasOverride 
 	or Data.hasPossess 
 	or Data.inVehicle 
-	or Data.inInstance
+	or (Data.inInstance and Data.disableInstanceFade)
 	or Data.lowHealth 
 	or Data.lowPower 
 	or Data.busyCursor 
@@ -496,7 +505,8 @@ end
 local embedMethods = {
 	SetObjectFadeOverride = true, 
 	RegisterObjectFade = true,
-	UnregisterObjectFade = true
+	UnregisterObjectFade = true,
+	DisableInstanceFading = true, 
 }
 
 LibFader.Embed = function(self, target)
