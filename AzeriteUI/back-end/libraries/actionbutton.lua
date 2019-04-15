@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 52)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 53)
 if (not LibSecureButton) then	
 	return
 end
@@ -1664,7 +1664,6 @@ LibSecureButton.UpdateActionButtonBindings = function(self)
 			local key = select(keyNumber, GetBindingKey(bindingAction)) 
 			if (key and (key ~= "")) then
 				-- this is why we need named buttons
-				-- SetOverrideBindingClick(owner, isPriority, "key", "buttonName"[, "mouseClick"]);
 				SetOverrideBindingClick(pager, false, key, button:GetName(), "CLICK: LeftButton") -- assign the key to our own button
 			end	
 		end
