@@ -43,6 +43,9 @@ local fullXPString = "%s / %s (%s)"
 local restedString = " (%s%% %s)"
 local shortLevelString = "%s %.0f"
 
+-- Is ConsolePort loaded?
+local CONSOLEPORT = Module:IsAddOnEnabled("ConsolePort")
+
 -- Secure Code Snippets
 local secureSnippets = {
 	-- TODO: 
@@ -961,6 +964,23 @@ Module.UpdateCastOnDown = function(self)
 	end 
 end 
 
+Module.UpdateConsolePortBindings = function(self)
+	local CP = _G.ConsolePort
+	if (not CP) then 
+		return 
+	end 
+
+	
+end
+
+Module.UpdateBindings = function(self)
+	if (CONSOLEPORT) then 
+		self:UpdateConsolePortBindings()
+	else
+		self:UpdateActionButtonBindings()
+	end
+end
+
 Module.UpdateTooltipSettings = function(self)
 	if (not Layout.UseTooltipSettings) then 
 		return 
@@ -984,9 +1004,9 @@ end
 
 Module.OnEvent = function(self, event, ...)
 	if (event == "UPDATE_BINDINGS") then 
-		self:UpdateActionButtonBindings()
+		self:UpdateBindings()
 	elseif (event == "PLAYER_ENTERING_WORLD") then 
-		self:UpdateActionButtonBindings()
+		self:UpdateBindings()
 	elseif (event == "PLAYER_REGEN_DISABLED") then
 		IN_COMBAT = true 
 	elseif (event == "PLAYER_REGEN_ENABLED") then 
@@ -1092,7 +1112,7 @@ Module.OnInit = function(self)
 	self:ArrangeButtons()
 
 	-- Update saved settings
-	self:UpdateActionButtonBindings()
+	self:UpdateBindings()
 	self:UpdateSettings()
 end 
 
