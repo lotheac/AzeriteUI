@@ -262,58 +262,63 @@ Toggle.OnLeave = function(self)
 	tooltip:Hide() 
 end
 
-Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
-	local option = setmetatable(self:CreateFrame("CheckButton", nil, "SecureHandlerClickTemplate"), Button_MT)
-	option:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod)
-	option:SetPoint("BOTTOMRIGHT", -Layout.MenuButtonSpacing, Layout.MenuButtonSpacing + (Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod + Layout.MenuButtonSpacing)*(self.numButtons))
+do
+	local buttonCount = 0
+	Window.AddButton = function(self, text, updateType, optionDB, optionName, ...)
+		buttonCount = buttonCount + 1
+		-- print(buttonCount); 34
+		local option = setmetatable(self:CreateFrame("CheckButton", ADDON.."_ConfigMenu_OptionsButton"..buttonCount, "SecureHandlerClickTemplate"), Button_MT)
+		option:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod)
+		option:SetPoint("BOTTOMRIGHT", -Layout.MenuButtonSpacing, Layout.MenuButtonSpacing + (Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod + Layout.MenuButtonSpacing)*(self.numButtons))
 
-	option:HookScript("OnEnable", Button.OnEnable)
-	option:HookScript("OnDisable", Button.OnDisable)
-	option:HookScript("OnShow", Button.OnShow)
-	option:HookScript("OnHide", Button.OnHide)
-	option:HookScript("OnMouseDown", Button.OnMouseDown)
-	option:HookScript("OnMouseUp", Button.OnMouseUp)
-	option:HookScript("OnEnter", Button.Update)
-	option:HookScript("OnLeave", Button.Update)
+		option:HookScript("OnEnable", Button.OnEnable)
+		option:HookScript("OnDisable", Button.OnDisable)
+		option:HookScript("OnShow", Button.OnShow)
+		option:HookScript("OnHide", Button.OnHide)
+		option:HookScript("OnMouseDown", Button.OnMouseDown)
+		option:HookScript("OnMouseUp", Button.OnMouseUp)
+		option:HookScript("OnEnter", Button.Update)
+		option:HookScript("OnLeave", Button.Update)
 
-	option:SetAttribute("updateType", updateType)
-	option:SetAttribute("optionDB", optionDB)
-	option:SetAttribute("optionName", optionName)
+		option:SetAttribute("updateType", updateType)
+		option:SetAttribute("optionDB", optionDB)
+		option:SetAttribute("optionName", optionName)
 
-	option:SetFrameRef("Window", self)
+		option:SetFrameRef("Window", self)
 
-	for i = 1, select("#", ...) do 
-		local value = select(i, ...)
-		option:SetAttribute("optionArg"..i, value)
-		option["optionArg"..i] = value
+		for i = 1, select("#", ...) do 
+			local value = select(i, ...)
+			option:SetAttribute("optionArg"..i, value)
+			option["optionArg"..i] = value
+		end 
+
+		option.updateType = updateType
+		option.optionDB = optionDB
+		option.optionName = optionName
+
+		if (updateType == "SET_VALUE") or (updateType == "GET_VALUE") or (updateType == "TOGGLE_VALUE") or (updateType == "TOGGLE_MODE") then 
+			option:SetAttribute("_onclick", secureSnippets.buttonClick)
+		end
+
+		if (not Module.optionCallbacks) then 
+			Module.optionCallbacks = {}
+		end 
+
+		Module.optionCallbacks[option] = self
+
+		if Layout.MenuButton_PostCreate then 
+			Layout.MenuButton_PostCreate(option, text, updateType, optionDB, optionName, ...)
+		end
+
+		self.numButtons = self.numButtons + 1
+		self.buttons[self.numButtons] = option
+
+		self:PostUpdateSize()
+		self:UpdateSiblings()
+
+		return option
 	end 
-
-	option.updateType = updateType
-	option.optionDB = optionDB
-	option.optionName = optionName
-
-	if (updateType == "SET_VALUE") or (updateType == "GET_VALUE") or (updateType == "TOGGLE_VALUE") or (updateType == "TOGGLE_MODE") then 
-		option:SetAttribute("_onclick", secureSnippets.buttonClick)
-	end
-
-	if (not Module.optionCallbacks) then 
-		Module.optionCallbacks = {}
-	end 
-
-	Module.optionCallbacks[option] = self
-
-	if Layout.MenuButton_PostCreate then 
-		Layout.MenuButton_PostCreate(option, text, updateType, optionDB, optionName, ...)
-	end
-
-	self.numButtons = self.numButtons + 1
-	self.buttons[self.numButtons] = option
-
-	self:PostUpdateSize()
-	self:UpdateSiblings()
-
-	return option
-end 
+end
 
 Window.ParseOptionsTable = function(self, tbl, parentLevel)
 	local level = (parentLevel or 1) + 1
@@ -494,7 +499,8 @@ end
 
 Module.CreateConfigWindowLevel = function(self, level, parent)
 	local frameLevel = 10 + (level-1)*5
-	local window = setmetatable(self:CreateFrame("Frame", nil, parent or "UICenter", "SecureHandlerAttributeTemplate"), Window_MT)
+	local name = level == 1 and ADDON.."_ConfigMenu"
+	local window = setmetatable(self:CreateFrame("Frame", name, parent or "UICenter", "SecureHandlerAttributeTemplate"), Window_MT)
 	window:Hide()
 	window:EnableMouse(true)
 	window:SetFrameStrata("DIALOG")
@@ -507,7 +513,7 @@ Module.CreateConfigWindowLevel = function(self, level, parent)
 		self:AddFrameToAutoHide(window)
 	end 
 
-	return window
+	return window, name
 end
 
 Module.GetOptionsMenuTooltip = function(self)
@@ -516,7 +522,7 @@ end
 
 Module.GetToggleButton = function(self)
 	if (not self.ToggleButton) then 
-		local toggleButton = setmetatable(self:CreateFrame("CheckButton", nil, "UICenter", "SecureHandlerClickTemplate"), Toggle_MT)
+		local toggleButton = setmetatable(self:CreateFrame("CheckButton", ADDON.."_ConfigMenu_ToggleButton", "UICenter", "SecureHandlerClickTemplate"), Toggle_MT)
 		toggleButton:SetFrameStrata("DIALOG")
 		toggleButton:SetFrameLevel(50)
 		toggleButton:SetSize(unpack(Layout.MenuToggleButtonSize))
@@ -570,7 +576,6 @@ Module.GetConfigWindow = function(self)
 		end 
 
 		self.ConfigWindow = window
-
 	end 
 	return self.ConfigWindow
 end
@@ -806,13 +811,15 @@ Module.CreateMenuTable = function(self)
 			}
 		}
 		local Bindings = Core:GetModule("Bindings", true)
-		if Bindings then 
-			table_insert(ActionBarMenu.buttons, {
-				enabledTitle = L_ENABLED:format(L["Bind Mode"]),
-				disabledTitle = L_DISABLED:format(L["Bind Mode"]),
-				type = "TOGGLE_MODE", hasWindow = false, 
-				proxyModule = "Bindings", modeName = "bindMode"
-			})
+		if Bindings and not (Bindings:IsIncompatible() or Bindings:DependencyFailed()) then 
+			if Bindings then 
+				table_insert(ActionBarMenu.buttons, {
+					enabledTitle = L_ENABLED:format(L["Bind Mode"]),
+					disabledTitle = L_DISABLED:format(L["Bind Mode"]),
+					type = "TOGGLE_MODE", hasWindow = false, 
+					proxyModule = "Bindings", modeName = "bindMode"
+				})
+			end 
 		end 
 		table_insert(ActionBarMenu.buttons, {
 			enabledTitle = L_ENABLED:format(L["Button Lock"]),
