@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.140-Release] 2019-04-20
+In this build we're adding some compatibility changes to better allow the usage of ConsolePort and AzeriteUI together without having to reset the WoW keybinds to their defaults. We will not be adding in the option to disable our actionbars.
+
+### Changed
+- The actionbutton /bind mode and its menu entry will not be loaded when ConsolePort is enabled. 
+- The actionbuttons won't currently display any keybind text when ConsolePort is enabled. Our intention is to add in the ConsolePort binding icons here, though we can't at this point guarantee that it'll actually happen. 
+- The actionbutton module will no longer grab or relocate keybinds to our own actionbuttons when ConsolePort is enabled, as this was causing problems when some of the buttons had keybinds that ConsolePort used for its various behaviors. 
+- Attempting some experimental changes to prevent an invisible objectivestracker from causing mouseover events when trying to click arena or boss frames.  
+
 ## [1.2.139-Release] 2019-04-14
 ### Added
 - Added zhTW translation by Alex Wang.
