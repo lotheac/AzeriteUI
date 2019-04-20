@@ -102,12 +102,22 @@ local check = function(value, num, ...)
 	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
+-- Return a value rounded to the nearest integer.
+local round = function(value)
+	return (value + .5) - (value + .5)%1
+end
+
 -- Parse a position
 local AREA_START = 1/3
 local AREA_END = 2/3
 
 -- Parse position information 
 local parsePosition = function(parentWidth, parentHeight, x, y, bottomOffset, leftOffset, topOffset, rightOffset)
+	parentWidth, parentHeight = round(parentWidth), round(parentHeight)
+	x, y = round(x), round(y)
+	topOffset, bottomOffset = round(topOffset), round(bottomOffset)
+	leftOffset, rightOffset = round(leftOffset), round(rightOffset)
+
 	if (y < parentHeight * AREA_START) then 
 		if (x < parentWidth * AREA_START) then 
 			return "BOTTOMLEFT", leftOffset, bottomOffset
@@ -136,7 +146,7 @@ local parsePosition = function(parentWidth, parentHeight, x, y, bottomOffset, le
 end
 
 -- Get the parsed position of a frame relative to UIParent
-local getParsedPosition = function(frame)
+local getParsedPosition = function(frame, grid)
 	local uiW, uiH = UIParent:GetSize()
 
 	-- These points should all be in the UIParent coordinate space, 
@@ -321,6 +331,8 @@ Mover.OnDragStart = function(self)
 end
 
 -- Called while the mover is being dragged
+-- TODO: Make this reflect the dragged frame's coordinates instead of the cursor, 
+-- as the cursor is bound to be in the middle of it, not its most logical edge.
 Mover.OnUpdate = function(self, elapsed)
 	local uiW, uiH = UIParent:GetSize()
 	local scale = UIParent:GetScale()
@@ -362,6 +374,7 @@ LibMover.CreateMover = function(self, target, styleFunc, ...)
 
 	-- Retrieve the parsed position of the target frame
 	local rPoint, xOffset, yOffset = getParsedPosition(target)
+	local width, height = target:GetSize()
 	target:ClearAllPoints()
 
 	-- Our overlay drag handle
