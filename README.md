@@ -15,6 +15,9 @@ The stance bar will be introduced as an optional feature in an upcoming update, 
 
 For more buttons, right-click the cogwheel icon in the bottom right corner of the screen. You can have a maximum of 24 buttons, which in effect is the main actionbar and the bar known in the default interface as the "bottom left multi action bar". 
 
+## **How can I disable the actionbars?**
+This is not a feature we intend to implement. We do realize that some of you would like this feature for it to look better with ConsolePort, or just completely replace our bars with Bartender, but dismantling our user interface to make it fit a completely different project slightly better just isn't something we're going to do. We do plan to release a project better suited for ConsolePort, though. So those looking for that, follow our twitter!
+
 ## **Downloads & Bug Reports**  
 * Download: [curse.azeriteui.com](http://curse.azeriteui.com)  
 * Issues: [issues.azeriteui.com](http://issues.azeriteui.com)  
@@ -36,10 +39,10 @@ For more buttons, right-click the cogwheel icon in the bottom right corner of th
 * Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
 
 ## **Translators:**  
-* esES: **Sonshine**
-* ruRU: **Demorto**
-* zhCN: **Jiawei Zhou**
-* zhTW: **Alex Wang**
+* esES: **Sonshine**  
+* ruRU: **Demorto** _(Anton Bozhina)_  
+* zhCN: **4679** _(Jiawei Zhou)_  
+* zhTW: **Alex Wang**  
 
 ## **Official Supporters:**  
 * **Adam Stribley, Amariah Crawford, Elexys, Mel Brannon, Jennifer Graff, Kjartan Kirchhof, Jan Terje Hellemsbakken**  
