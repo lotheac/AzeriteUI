@@ -15,7 +15,8 @@ local _G = _G
 local math_min = math.min
 
 -- WoW API
-local hooksecurefunc = hooksecurefunc
+local hooksecurefunc = _G.hooksecurefunc
+local RegisterAttributeDriver = _G.RegisterAttributeDriver
 local GetScreenHeight = _G.GetScreenHeight
 
 local IN_COMBAT, IN_BOSS_FIGHT, IN_ARENA
@@ -53,10 +54,20 @@ Module.PositionTracker = function(self)
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOP", ObjectiveFrameHolder, "TOP")
 
+	-- Create a dummy frame to cover the tracker  
+	-- to block mouse input when it's faded out. 
+	local ObjectiveFrameCover = self:CreateFrame("Frame", nil, "UICenter")
+	ObjectiveFrameCover:SetParent(ObjectiveFrameHolder)
+	ObjectiveFrameCover:SetFrameLevel(ObjectiveTrackerFrame:GetFrameLevel() + 5)
+	ObjectiveFrameCover:SetAllPoints()
+	ObjectiveFrameCover:EnableMouse(true)
+	ObjectiveFrameCover:Hide()
+
 	-- Minihack to fix mouseover fading
 	self.frame:ClearAllPoints()
 	self.frame:SetAllPoints(ObjectiveTrackerFrame)
 	self.frame.holder = ObjectiveFrameHolder
+	self.frame.cover = ObjectiveFrameCover
 
 	local top = ObjectiveTrackerFrame:GetTop() or 0
 	local screenHeight = GetScreenHeight()
@@ -105,6 +116,7 @@ Module.CreateDriver = function(self)
 		driverFrame:HookScript("OnShow", function() 
 			if _G.ObjectiveTrackerFrame then 
 				_G.ObjectiveTrackerFrame:SetAlpha(.9)
+				self.frame.cover:Hide()
 				-- This taints. 
 				--_G.ObjectiveTracker_Expand()
 			end
@@ -114,6 +126,7 @@ Module.CreateDriver = function(self)
 		driverFrame:HookScript("OnHide", function() 
 			if _G.ObjectiveTrackerFrame then 
 				_G.ObjectiveTrackerFrame:SetAlpha(0)
+				self.frame.cover:Show()
 				-- This taints. 
 				--_G.ObjectiveTracker_Collapse()
 			end
