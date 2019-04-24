@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 19)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 20)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -25,6 +25,7 @@ local select = select
 local setmetatable = setmetatable
 local string_format = string.format
 local string_gsub = string.gsub
+local string_join = string.join
 local string_match = string.match
 local table_insert = table.insert
 local table_remove = table.remove
