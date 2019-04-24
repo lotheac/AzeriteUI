@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.141-Release] 2019-04-24
+### Fixed
+- Health preview won't be updated on dead or disconnected units. This should hopefully take care of the "TexCoord out of range" bug experienced by some players in groups. 
+
 ## [1.2.140-Release] 2019-04-20
 In this build we're adding some compatibility changes to better allow the usage of ConsolePort and AzeriteUI together without having to reset the WoW keybinds to their defaults. We will not be adding in the option to disable our actionbars.
 
