@@ -1,4 +1,4 @@
-local LibSlash = CogWheel:Set("LibSlash", 6)
+local LibSlash = CogWheel:Set("LibSlash", 7)
 if (not LibSlash) then	
 	return
 end
@@ -93,7 +93,8 @@ LibSlash.RegisterChatCommand = function(self, command, func, forced)
 	else 
 		local module = self -- overdoing the locals?
 		SlashCmdList[name] = function(msg, editBox)
-			module[func](module, editBox, parseArguments(msg))
+			-- Make the arguments lower case, we don't want case sensitivity here. 
+			module[func](module, editBox, parseArguments(string_lower(msg)))
 		end 
 	end 
 
