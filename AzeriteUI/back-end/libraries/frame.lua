@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 47)
+local LibFrame = CogWheel:Set("LibFrame", 48)
 if (not LibFrame) then	
 	return
 end
@@ -62,12 +62,17 @@ if (not IsLoggedIn()) and (not InCombatLockdown()) then
 	LibFrame.frameParent:Hide()
 end
 
-local SetDisplaySize = function(self)
+-- Return a value rounded to the nearest integer.
+local round = function(value)
+	return (value + .5) - (value + .5)%1
+end
+
+local SetDisplaySize = function()
 
 	--Retrieve UIParent size
 	local width, height = UIParent:GetSize()
-	width = (width + .5) - (width + .5)%1
-	height = (height + .5) - (height + .5)%1
+	width = round(width)
+	height = round(height)
 
 	-- Set the size and take scale into consideration
 	local precision = 1e5
@@ -87,8 +92,7 @@ local SetDisplaySize = function(self)
 		local desiredRatioMin = LibFrame.DesiredRatioMin or 4/3 -- 16/10 
 		local desiredRatioMax = LibFrame.DesiredRatioMax or 16/10 -- 16/9
 
-		--local deviation = precision/scale
-		local deviation = (((displayRatio*precision + .5) - (displayRatio*precision + .5)%1)/precision) - displayRatio
+		local deviation = ((round(displayRatio*precision))/precision) - displayRatio
 
 		-- if the goal range exists, figure out which one to use. 
 		local min = ((desiredRatioMin - deviation) <= displayRatio) and ((desiredRatioMin + deviation) >= displayRatio)
@@ -98,17 +102,17 @@ local SetDisplaySize = function(self)
 
 		-- The desired ratio is within the bounds of the screen size, apply it!
 		if min then
-			displayWidth = (displayHeight*desiredRatioMin +.5) - (displayHeight*desiredRatioMin +.5)%1
+			displayWidth = round(displayHeight*desiredRatioMin)
 			--print("Going with Minratio, it's a fit!")
 		elseif max then 
-			displayWidth = (displayHeight*desiredRatioMax +.5) - (displayHeight*desiredRatioMax +.5)%1
+			displayWidth = round(displayHeight*desiredRatioMax)
 			--print("Going with Maxratio, it's a fit!")
 		else
-			if displayRatio > desiredRatioMax then
-				displayWidth = (displayHeight*desiredRatioMax +.5) - (displayHeight*desiredRatioMax +.5)%1
+			if (displayRatio > desiredRatioMax) then
+				displayWidth = round(displayHeight*desiredRatioMax)
 				--print("Going with Maxratio, as it's closest to our goal")
-			elseif displayRatio > desiredRatioMin then 
-				displayWidth = (displayHeight*desiredRatioMin +.5) - (displayHeight*desiredRatioMin +.5)%1
+			elseif (displayRatio > desiredRatioMin) then 
+				displayWidth = round(displayHeight*desiredRatioMin)
 				--print("Going with Minratio, as it's closest to our goal")
 			end
 		end
@@ -119,9 +123,9 @@ local SetDisplaySize = function(self)
 	LibFrame.frame:ClearAllPoints()
 	LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
 	LibFrame.frame:SetScale(scale)
-	LibFrame.frame:SetSize((displayWidth + .5) - displayWidth%1, (displayHeight + .5) - displayHeight%1)
+	LibFrame.frame:SetSize(round(displayWidth), round(displayHeight))
 end 
-SetDisplaySize(LibFrame)
+SetDisplaySize()
 
 -- Keep it and all its children hidden during pet battles. 
 RegisterAttributeDriver(LibFrame.frame, "state-visibility", "[petbattle] hide; show")
@@ -143,7 +147,6 @@ local keyWords = LibFrame.keyWords
 local DisplayFrame = LibFrame.frame
 local VisibilityFrame = LibFrame.frameParent
 
-
 -- Frame meant for events, timers, etc
 local Frame = CreateFrame("Frame", nil, WorldFrame) -- parented to world frame to keep running even if the UI is hidden
 local FrameMethods = getmetatable(Frame).__index
@@ -153,7 +156,6 @@ local blizzCreateTexture = FrameMethods.CreateTexture
 local blizzRegisterEvent = FrameMethods.RegisterEvent
 local blizzUnregisterEvent = FrameMethods.UnregisterEvent
 local blizzIsEventRegistered = FrameMethods.IsEventRegistered
-
 local blizzSetSize = FrameMethods.SetSize
 local blizzSetWidth = FrameMethods.SetWidth
 local blizzSetHeight = FrameMethods.SetHeight
@@ -242,7 +244,7 @@ local frameWidgetPrototype = {
 	end, 
 
 	-- ConsolePort assumes this exists on a multiple of frames, 
-	-- so we're adding it and just opt out of various things by setting to to true.
+	-- so we're adding it and just opt out of various things by setting it to true.
 	IsForbidden = function(self) 
 		return true
 	end
@@ -252,10 +254,8 @@ local frameWidgetPrototype = {
 local framePrototype
 framePrototype = {
 	CreateFrame = function(self, frameType, frameName, template) 
-
 		local frame = embed(CreateFrame(frameType or "Frame", frameName, self, template), framePrototype)
 		frames[frame] = true
-
 		return frame
 	end,
 	CreateFontString = function(self, ...)
@@ -330,14 +330,14 @@ LibFrame.GetFrame = function(self, anchor)
 end
 
 LibFrame.UpdateDisplaySize = function(self)
-	if InCombatLockdown() then 
+	if (InCombatLockdown()) then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
 	end 
-	SetDisplaySize(self)
+	SetDisplaySize()
 end
 
 LibFrame.OnEvent = function(self, event, ...)
-	if InCombatLockdown() then 
+	if (InCombatLockdown()) then 
 		return self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
 	elseif (event == "PLAYER_REGEN_ENABLED") then 
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED", "OnEvent")
