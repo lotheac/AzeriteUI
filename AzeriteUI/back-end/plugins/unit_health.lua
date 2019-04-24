@@ -178,18 +178,25 @@ local Update = function(self, event, unit)
 
 	local elementPreview = self.Health.Preview
 	if elementPreview then 
-		elementPreview:SetMinMaxValues(0, max, true)
-		elementPreview:SetValue(min, true)
-		elementPreview:UpdateColor(unit, min, max, disconnected, dead, tapped)
-		elementPreview:UpdateValue(unit, min, max, disconnected, dead, tapped)
+		-- Prevent texture bugs from both min and max being zero
+		if (dead) then 
+			if (elementPreview:IsShown()) then 
+				elementPreview:Hide()
+			end
+		else 
+			elementPreview:SetMinMaxValues(0, max, true)
+			elementPreview:SetValue(min, true)
+			elementPreview:UpdateColor(unit, min, max, disconnected, dead, tapped)
+			elementPreview:UpdateValue(unit, min, max, disconnected, dead, tapped)
 
-		if (not elementPreview:IsShown()) then 
-			elementPreview:Show()
-		end
+			if (not elementPreview:IsShown()) then 
+				elementPreview:Show()
+			end
 
-		if elementPreview.PostUpdate then
-			elementPreview:PostUpdate(unit, min, max, disconnected, dead, tapped)
-		end	
+			if elementPreview.PostUpdate then
+				elementPreview:PostUpdate(unit, min, max, disconnected, dead, tapped)
+			end	
+		end 
 	end 
 
 	if (not element:IsShown()) then 
@@ -256,5 +263,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 18)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 19)
 end 
