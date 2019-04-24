@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 57)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 59)
 if (not LibUnitFrame) then	
 	return
 end
@@ -28,6 +28,7 @@ local select = select
 local setmetatable = setmetatable
 local string_format = string.format
 local string_gsub = string.gsub
+local string_join = string.join
 local string_match = string.match
 local table_insert = table.insert
 local table_remove = table.remove
@@ -386,7 +387,26 @@ end
 
 -- spawn and style a new unitframe
 LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
+	check(unit, 1, "string")
+	check(parent, 2, "table", "string", "nil")
+	check(styleFunc, 3, "function", "string", "nil")
 
+	-- Alllow modules to use methods as styling functions. 
+	-- We don't want to allow this in the widgetcontainer back-end,  
+	-- so we need a bit of trickery here to make it happen. 
+	if (type(styleFunc) == "string") then 
+		local func = self[styleFunc]
+		if func then 
+			local module, method = self, styleFunc
+			styleFunc = function(...) 
+				-- Always call the method by name, 
+				-- don't assume the function is the same each time. 
+				-- Even though it is. So this is weird. 
+				return module[method](self, ...)
+			end 
+		end 
+	end 
+	
 	local frame = LibUnitFrame:CreateWidgetContainer("Button", parent, "SecureUnitButtonTemplate", unit, styleFunc, ...)
 	for method,func in pairs(UnitFrame) do 
 		frame[method] = func
