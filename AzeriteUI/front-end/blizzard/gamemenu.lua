@@ -222,7 +222,7 @@ Module.OnInit = function(self)
 		{ content = GameMenuButtonOptions, label = SYSTEMOPTIONS_MENU },
 		{ content = GameMenuButtonUIOptions, label = UIOPTIONS_MENU },
 		{ content = GameMenuButtonKeybindings, label = KEY_BINDINGS },
-		{ content = "GameMenuButtonMoveAnything", label = function() return GameMenuButtonMoveAnything:GetText() end, addon = true }, -- MoveAnything
+		{ content = "GameMenuButtonMoveAnything", label = function() return GameMenuButtonMoveAnything:GetText() end, addon = true }, 
 		{ content = GameMenuButtonMacros, label = MACROS },
 		{ content = GameMenuButtonAddons, label = ADDONS },
 		{ content = GameMenuButtonRatings, label = RATINGS_MENU },
