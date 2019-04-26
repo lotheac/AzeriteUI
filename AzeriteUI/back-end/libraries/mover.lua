@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 12)
+local LibMover = CogWheel:Set("LibMover", 17)
 if (not LibMover) then	
 	return
 end
@@ -12,9 +12,13 @@ assert(LibMessage, "LibMover requires LibMessage to be loaded.")
 local LibEvent = CogWheel("LibEvent")
 assert(LibEvent, "LibMover requires LibEvent to be loaded.")
 
+local LibTooltip = CogWheel("LibTooltip")
+assert(LibTooltip, "LibMover requires LibTooltip to be loaded.")
+
 LibFrame:Embed(LibMover)
 LibMessage:Embed(LibMover)
 LibEvent:Embed(LibMover)
+LibTooltip:Embed(LibMover)
 
 -- Lua API
 local _G = _G
@@ -24,6 +28,7 @@ local error = error
 local pairs = pairs
 local select = select
 local string_find = string.find
+local string_format = string.format
 local string_join = string.join
 local string_match = string.match
 local type = type
@@ -68,21 +73,10 @@ local MoverData = LibMover.moverData
 local MoverByTarget = LibMover.moverByTarget
 local TargetByMover = LibMover.targetByMover 
 
--- Just to easier be able to change things for me.
-local LABEL, VALUE = "|cffaeaeae", "|cffffd200"
-
--- Messages that don't need localization,
--- so we can keep them as part of the back- end
+local ALPHA_DRAGGING, ALPHA_STOPPED = .5, .85 -- Alpha of the movers and handles
+local LABEL, VALUE = "|cffaeaeae", "|cffffd200" -- Just to easier be able to change things for me.
 local POSITION = LABEL.."Anchor|r: "..VALUE.."%s|r - "..LABEL.."X|r: "..VALUE.."%.1f|r - "..LABEL.."Y|r: "..VALUE.."%.1f|r"
 local SCALE = LABEL.."Scale|r: "..VALUE.."%.0f|r%%"
-
--- Alpha of the movers and handles
-local ALPHA_DRAGGING = .5
-local ALPHA_STOPPED = .85
-
--- General backdrop for all overlays
-local BACKDROP_COLOR = { .4, .4, .9 }
-local BACKDROP_BORDERCOLOR = { .3, .3, .7 }
 local BACKDROP = {
 	bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
 	edgeFile = [[Interface\ChatFrame\ChatFrameBackground]],
@@ -94,6 +88,20 @@ local BACKDROP = {
 		left = 0, 
 		right = 0 
 	}
+}
+
+local Colors = {
+	backdrop = { 102/255, 102/255, 229/255 },
+	border = { 76/255, 76/255, 178/255 },
+	highlight = { 250/255, 250/255, 250/255 },
+	normal = { 229/255, 178/255, 38/255 },
+	offwhite = { 196/255, 196/255, 196/255 }, 
+	title = { 255/255, 234/255, 137/255 },
+	red = { 204/255, 25/255, 25/255 },
+	orange = { 255/255, 128/255, 25/255 },
+	yellow = { 255/255, 204/255, 25/255 },
+	green = { 25/255, 178/255, 25/255 },
+	gray = { 153/255, 153/255, 153/255 }
 }
 
 ---------------------------------------------------
@@ -113,26 +121,15 @@ local check = function(value, num, ...)
 end
 
 -- Return a value rounded to the nearest integer.
-local round = function(value)
-	return (value + .5) - (value + .5)%1
-end
-
-local getCenter = function(frame)
-end 
-
-local getBottom = function(frame)
-end 
-
-local getLeft = function(frame)
-end 
-
-local getTop = function(frame)
-end 
-
-local getRight = function(frame)
-end 
-
-local translate = function()
+local round = function(value, precision)
+	if precision then
+		value = value * 10^precision
+		value = (value + .5) - (value + .5)%1
+		value = value / 10^precision
+		return value
+	else 
+		return (value + .5) - (value + .5)%1
+	end 
 end
 
 local parsePosition = function(parentWidth, parentHeight, x, y, bottomOffset, leftOffset, topOffset, rightOffset)
@@ -212,10 +209,10 @@ local getParsedPosition = function(frame)
 	top = top - uiTop
 
 	-- Figure out the point within the given coordinate space
-	local point, xOffset, yOffset = parsePosition(uiWidth, uiHeight, x, y, bottom, left, top, right)
+	local point, offsetX, offsetY = parsePosition(uiWidth, uiHeight, x, y, bottom, left, top, right)
 
 	-- Convert coordinates to the frame's scale. 
-	return point, xOffset/frameScale, yOffset/frameScale
+	return point, offsetX/frameScale, offsetY/frameScale
 end
 
 ---------------------------------------------------
@@ -242,10 +239,6 @@ Mover.Unlock = function(self)
 	self:Show()
 end
 
--- Resets a mover's frame to its default position
-Mover.ResetPosition = function(self)
-end
-
 Mover.CenterH = function(self)
 end 
 
@@ -262,6 +255,26 @@ Mover.SetScalingEnabled = function(self, enableScaling)
 	MoverData[self].enableScaling = enableScaling and true or false
 end
 
+Mover.SetMaxScale = function(self, maxScale)
+	MoverData[self].maxScale = maxScale
+end 
+
+Mover.SetMinScale = function(self, minScale)
+	MoverData[self].minScale = minScale
+end 
+
+-- Sets the default position of the mover
+Mover.SetDefaultPosition = function(self, ...)
+end
+
+Mover.SetName = function(self, name)
+	MoverData[self].name = name
+end
+
+Mover.SetDescription = function(self, description)
+	MoverData[self].description = description
+end
+
 -- @return <boolean> if dragging is currently enabled
 Mover.IsDraggingEnabled = function(self)
 	return MoverData[self].enableDragging
@@ -272,26 +285,19 @@ Mover.IsScalingEnabled = function(self)
 	return MoverData[self].enableDragging
 end
 
--- Sets the default position of the mover
-Mover.SetDefaultPosition = function(self, ...)
-end
-
--- Saves the current position of the mover
-Mover.SavePosition = function(self)
-end
-
--- Restores the saved position of the mover
-Mover.RestorePosition = function(self)
-end
-
 -- Returns the mover to its default position
 Mover.RestoreDefaultPosition = function(self)
 end
 
+Mover.GetTooltip = function(self)
+	return LibMover:GetMoverTooltip()
+end
+
+
 -- Mover Internal API
 ---------------------------------------------------
 Mover.UpdateInfoFramePosition = function(self)
-	local rPoint, xOffset, yOffset = getParsedPosition(TargetByMover[self])
+	local rPoint, offsetX, offsetY = getParsedPosition(TargetByMover[self])
 	if string_find(rPoint, "TOP") then 
 		self.infoFrame:Place("TOP", self, "BOTTOM", 0, -6)
 	else 
@@ -313,18 +319,38 @@ Mover.UpdateTexts = function(self, point, x, y)
 end
 
 Mover.UpdateScale = function(self)
-	--local width = self.realWidth * self.scale
-	--local height = self.realHeight * self.scale
-
 	if self.PreUpdateScale then 
 		self:PreUpdateScale()
 	end
 
-	--Anchor[self]:SetSize(width, height)
-	--Content[self]:SetScale(self.scale)
+	local data = MoverData[self]
 
-	--self:SetSize(width, height)
-	--self:UpdateTexts(Anchor[self]:GetPoint())
+	-- Rescale the target according to the stored setting
+	local target = TargetByMover[self]
+	target:SetScale(data.scale)
+
+	-- Glue the target to the mover position, 
+	-- as rescaling is bound to have changed it. 
+	local point, offsetX, offsetY = getParsedPosition(self)
+	target:Place(point, self, point, 0, 0)
+
+	-- Parse the current target position and reposition it
+	-- Strictly speaking we could've math'ed this. But this is easier. 
+	local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
+	target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
+
+	-- Resize and reposition the mover frame. 
+	local targetWidth, targetHeight = target:GetSize()
+	local relativeScale = target:GetEffectiveScale() / self:GetEffectiveScale()
+
+	self:SetSize(targetWidth*relativeScale, targetHeight*relativeScale)
+	self:Place(data.point, "UICenter", data.point, data.offsetX, data.offsetY)
+
+	--self:UpdateTexts()
+
+	if self:IsMouseOver() then 
+		self:OnEnter()
+	end
 
 	if self.PostUpdateScale then 
 		self:PostUpdateScale()
@@ -360,6 +386,41 @@ end
 
 -- Called when the mouse enters the mover
 Mover.OnEnter = function(self)
+	self.isMouseOver = true
+
+	local data = MoverData[self]
+	local r, g, b = Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3]
+	local r2, g2, b2 = Colors.normal[1], Colors.normal[2], Colors.normal[3]
+	local r3, g3, b3 = Colors.green[1], Colors.green[2], Colors.green[3]
+	
+	local tooltip = self:GetTooltip()
+	local bottom = self:GetBottom() 
+	local top = UICenter:GetHeight() - self:GetTop()
+	local point = ((bottom < top) and "BOTTOM" or "TOP")
+	local rPoint = ((bottom < top) and "TOP" or "BOTTOM")
+	local offset = (bottom < top) and 20 or -20
+	
+	tooltip:SetOwner(self, "ANCHOR_NONE")
+	tooltip:Place(point, self, rPoint, 0, offset)
+
+	tooltip:SetMinimumWidth(380)
+	tooltip:AddLine(data.name, Colors.title[1], Colors.title[2], Colors.title[3])
+	tooltip:AddDoubleLine("Scale:", string_format("%.1f", data.scale), r, g, b, r2, g2, b2)
+	tooltip:AddDoubleLine("Anchor:", data.point, r, g, b, r2, g2, b2)
+	tooltip:AddDoubleLine("X:", round(data.offsetX, 1), r, g, b, r2, g2, b2)
+	tooltip:AddDoubleLine("Y:", round(data.offsetY, 1), r, g, b, r2, g2, b2)
+
+	if data.enableDragging or data.enableScaling then 
+		tooltip:AddLine(" ")
+		if data.enableDragging then 
+			tooltip:AddLine("<Shift> + <Left-Click> to reset position", r3, g3, b3)
+		end 
+		if data.enableScaling then 
+			tooltip:AddLine("<Shift> + <Right-Click> to reset scale", r3, g3, b3)
+		end 
+	end 
+	tooltip:Show()
+
 	if self.PostEnter then 
 		return self:PostEnter()
 	end 
@@ -367,6 +428,11 @@ end
 
 -- Called when them ouse leaves the mover
 Mover.OnLeave = function(self)
+	self.isMouseOver = nil
+
+	local tooltip = self:GetTooltip()
+	tooltip:Hide()
+
 	if self.PostLeave then 
 		return self:PostLeave()
 	end 
@@ -378,25 +444,13 @@ Mover.OnClick = function(self, button)
 		return self:OverrideClick(button)
 	end 
 
-	local shift = IsShiftKeyDown()
-	local ctrl = IsControlKeyDown()
-	local alt = IsAltKeyDown()
-
-	-- Only ever assume 3 buttons. 
-	if (button == "LeftButton") then 
-		if (alt and ctrl and shift) then 
-			-- reset position
-		elseif (alt and shift) then 
-
-		elseif (alt and ctrl) then 
-		end 
-	elseif (button == "RightButton") then 
-		if shift then 
-			-- reset position
-		end 
-		
-	elseif (button == "MiddleButton") then 
-		-- reset scale
+	if IsShiftKeyDown() then 
+		local data = MoverData[self]
+		if (button == "LeftButton") then 
+		elseif (button == "RightButton") then 
+			data.scale = data.defaultScale
+			self:UpdateScale()
+		end
 	end 
 
 	if self.PostClick then 
@@ -409,13 +463,18 @@ Mover.OnMouseWheel = function(self, delta)
 	if (not self:IsScalingEnabled()) then 
 		return 
 	end 
+	local data = MoverData[self]
 	if (delta < 0) then
-		if (self.scale - .1 > .5) then 
-			self.scale = self.scale - .1
+		if (data.scale - data.scaleStep >= data.minScale) then 
+			data.scale = data.scale - data.scaleStep
+		else 
+			data.scale = data.minScale
 		end 
 	else
-		if (self.scale + .1 < 1.5) then 
-			self.scale = self.scale + .1 
+		if (data.scale + data.scaleStep <= data.maxScale) then 
+			data.scale = data.scale + data.scaleStep 
+		else 
+			data.scale = data.maxScale
 		end 
 	end
 	self:UpdateScale()
@@ -429,6 +488,7 @@ Mover.OnDragStart = function(self)
 	self:SetScript("OnUpdate", self.OnUpdate)
 	self:StartMoving()
 	self:SetAlpha(ALPHA_DRAGGING)
+	self:OnLeave()
 end
 
 -- Called when dragging stops
@@ -437,24 +497,30 @@ Mover.OnDragStop = function(self)
 	self:StopMovingOrSizing()
 	self:SetAlpha(ALPHA_STOPPED)
 
-	-- We need to parse our own position first
-	local point, xOffset, yOffset = getParsedPosition(self)
-
-	-- Correct the x,y values for the target
+	-- Glue the target to the new mover position
 	local target = TargetByMover[self]
-	local targetScale = target:GetEffectiveScale()
-	local moverScale = self:GetEffectiveScale()
-	xOffset = xOffset/moverScale*targetScale
-	yOffset = yOffset/moverScale*targetScale
+	local point, offsetX, offsetY = getParsedPosition(self)
+	target:Place(point, self, point, 0, 0)
 
-	-- Reposition the target relative to the ui 
-	target:Place(point, "UICenter", point, xOffset, yOffset)
+	-- Parse the current target position and reposition it
+	-- Strictly speaking we could've math'ed this. But this is easier. 
+	local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
+	target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
+
+	-- Store it. They are equal. 
+	MoverData[self].point = point
+	MoverData[self].offsetX = offsetX
+	MoverData[self].offsetY = offsetY
 
 	--self:UpdateInfoFramePosition()
-	--self:UpdateTexts(rPoint, xOffset, yOffset)
+	--self:UpdateTexts(rPoint, offsetX, offsetY)
+
+	if self:IsMouseOver() then 
+		self:OnEnter()
+	end
 
 	-- Fire a message for module callbacks
-	LibMover:SendMessage("CG_MOVER_UPDATED", self, target, rPoint, xOffset, yOffset)
+	LibMover:SendMessage("CG_MOVER_UPDATED", self, target, rPoint, offsetX, offsetY)
 end 
 
 -- Called while the mover is being dragged
@@ -501,22 +567,23 @@ LibMover.CreateMover = function(self, target, template, ...)
 	mover:SetScript("OnMouseWheel", mover.OnMouseWheel)
 	mover:SetScript("OnShow", mover.OnShow)
 	mover:SetScript("OnClick", mover.OnClick)
+	mover:SetScript("OnEnter", mover.OnEnter)
+	mover:SetScript("OnLeave", mover.OnLeave)
 	mover:SetFrameLevel(100)
 	mover:SetBackdrop(BACKDROP)
-	mover:SetBackdropColor(BACKDROP_COLOR[1], BACKDROP_COLOR[2], BACKDROP_COLOR[3])
-	mover:SetBackdropBorderColor(BACKDROP_BORDERCOLOR[1], BACKDROP_BORDERCOLOR[2], BACKDROP_BORDERCOLOR[3])
+	mover:SetBackdropColor(Colors.backdrop[1], Colors.backdrop[2], Colors.backdrop[3])
+	mover:SetBackdropBorderColor(Colors.border[1], Colors.border[2], Colors.border[3])
 	mover:SetAlpha(ALPHA_STOPPED)
-	mover.scale = 1
 
 	-- Retrieve the parsed position of the target frame,
 	-- and scale, size and position the mover frame accordingly. 
-	local targetPoint, targetXOffset, targetYOffset = getParsedPosition(target)
+	local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
 	local targetWidth, targetHeight = target:GetSize()
-	local targetScale = target:GetEffectiveScale()
-	local moverScale = mover:GetEffectiveScale()
-	local scalar = targetScale/moverScale
-	mover:SetSize(targetWidth*scalar, targetHeight*scalar)
-	mover:Place(targetPoint, "UICenter", targetPoint, targetXOffset, targetYOffset)
+	local targetEffectiveScale = target:GetEffectiveScale()
+	local moverEffectiveScale = mover:GetEffectiveScale()
+	local scale = target:GetScale()
+	mover:SetSize(targetWidth*targetEffectiveScale/moverEffectiveScale, targetHeight*targetEffectiveScale/moverEffectiveScale)
+	mover:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
 	
 	local infoFrame = mover:CreateFrame("Frame")
 	infoFrame:SetSize(2,2)
@@ -543,7 +610,7 @@ LibMover.CreateMover = function(self, target, template, ...)
 	local handle = mover:CreateTexture()
 	handle:SetDrawLayer("ARTWORK")
 	handle:SetAllPoints()
-	handle:SetColorTexture(BACKDROP_COLOR[1], BACKDROP_COLOR[2], BACKDROP_COLOR[3], ALPHA_DRAGGING)
+	handle:SetColorTexture(Colors.backdrop[1], Colors.backdrop[2], Colors.backdrop[3], ALPHA_DRAGGING)
 	handle:SetIgnoreParentAlpha(true)
 
 	-- Apply template methods and values, if any.
@@ -559,11 +626,27 @@ LibMover.CreateMover = function(self, target, template, ...)
 	MoverByTarget[target] = mover
 	TargetByMover[mover] = target
 
+	local numMovers = 0
+	for target in pairs(MoverByTarget) do 
+		numMovers = numMovers + 1
+	end 
+
 	-- Put all mover related data in here
-	-- This is how movers data always be referenced: 
 	MoverData[mover] = {
+		name = "CG_Mover_"..numMovers, 
 		enableDragging = true, 
-		enableScaling = true
+		enableScaling = true,
+		point = targetPoint, 
+		offsetX = targetOffsetX, 
+		offsetY = targetOffsetY,
+		scale = scale,
+		scaleStep = .1, 
+		minScale = .5, 
+		maxScale = 1.5,
+		defaultScale = 1,
+		defaultPoint = targetPoint, 
+		defaultOffsetX = targetOffsetX,
+		defaultOffsetY = targetOffsetY
 	}
 
 	LibMover:SendMessage("CG_MOVER_CREATED", mover, target)
@@ -633,6 +716,9 @@ LibMover.ToggleAllMovers = function(self)
 	end 
 end 
 
+LibMover.GetMoverTooltip = function(self)
+	return LibMover:GetTooltip("CG_MoverTooltip") or LibMover:CreateTooltip("CG_MoverTooltip")
+end
 ---------------------------------------------------
 -- Library Event Handling
 ---------------------------------------------------
@@ -654,7 +740,8 @@ local embedMethods = {
 	UnlockMover = true,
 	UnlockAllMovers = true, 
 	ToggleMover = true, 
-	ToggleAllMovers = true
+	ToggleAllMovers = true, 
+	GetMoverTooltip = true
 }
 
 LibMover.Embed = function(self, target)
