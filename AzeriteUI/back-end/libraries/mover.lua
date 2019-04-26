@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 17)
+local LibMover = CogWheel:Set("LibMover", 18)
 if (not LibMover) then	
 	return
 end
@@ -287,6 +287,18 @@ end
 
 -- Returns the mover to its default position
 Mover.RestoreDefaultPosition = function(self)
+	local data = MoverData[self]
+	data.point = data.defaultPoint
+	data.offsetX = data.defaultOffsetX
+	data.offsetY = data.defaultOffsetY
+	self:UpdatePosition()
+end
+
+-- Returns the mover to its default scale
+Mover.RestoreDefaultScale = function(self)
+	local data = MoverData[self]
+	data.scale = data.defaultScale
+	self:UpdateScale()
 end
 
 Mover.GetTooltip = function(self)
@@ -306,23 +318,11 @@ Mover.UpdateInfoFramePosition = function(self)
 end 
 
 Mover.UpdateTexts = function(self, point, x, y)
-	if self.PreUpdateTexts then 
-		self:PreUpdateTexts(point, x, y)
-	end 
-
 	--self.positionText:SetFormattedText(POSITION, point, x, y)
 	--self.scaleText:SetFormattedText(SCALE, self.scale*100)
-
-	if self.PostUpdateTexts then 
-		self:PostUpdateTexts(point, x, y)
-	end 
 end
 
 Mover.UpdateScale = function(self)
-	if self.PreUpdateScale then 
-		self:PreUpdateScale()
-	end
-
 	local data = MoverData[self]
 
 	-- Rescale the target according to the stored setting
@@ -351,22 +351,35 @@ Mover.UpdateScale = function(self)
 	if self:IsMouseOver() then 
 		self:OnEnter()
 	end
+end 
 
-	if self.PostUpdateScale then 
-		self:PostUpdateScale()
+Mover.UpdatePosition = function(self)
+	if self:IsMouseOver() then 
+		self:OnLeave()
 	end
-	
+
+	local data = MoverData[self]
+	local target = TargetByMover[self]
+
+	self:Place(data.point, "UICenter", data.point, data.offsetX, data.offsetY)
+
+	-- Glue the target to the mover position, 
+	-- as rescaling is bound to have changed it. 
+	local point, offsetX, offsetY = getParsedPosition(self)
+	target:Place(point, self, point, 0, 0)
+
+	-- Parse the current target position and reposition it
+	-- Strictly speaking we could've math'ed this. But this is easier. 
+	local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
+	target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
+
+	if self:IsMouseOver() then 
+		self:OnEnter()
+	end
 end 
 
 -- Mover Callbacks
 ---------------------------------------------------
--- Called when the mover is created
-Mover.OnCreate = function(self)
-	if self.PostCreate then 
-		return self:PostCreate()
-	end 
-end 
-
 -- Called when the mover is shown
 Mover.OnShow = function(self)
 	if self.PreShow then 
@@ -403,7 +416,7 @@ Mover.OnEnter = function(self)
 	tooltip:SetOwner(self, "ANCHOR_NONE")
 	tooltip:Place(point, self, rPoint, 0, offset)
 
-	tooltip:SetMinimumWidth(380)
+	tooltip:SetMinimumWidth(280)
 	tooltip:AddLine(data.name, Colors.title[1], Colors.title[2], Colors.title[3])
 	tooltip:AddDoubleLine("Scale:", string_format("%.1f", data.scale), r, g, b, r2, g2, b2)
 	tooltip:AddDoubleLine("Anchor:", data.point, r, g, b, r2, g2, b2)
@@ -413,10 +426,10 @@ Mover.OnEnter = function(self)
 	if data.enableDragging or data.enableScaling then 
 		tooltip:AddLine(" ")
 		if data.enableDragging then 
-			tooltip:AddLine("<Shift> + <Left-Click> to reset position", r3, g3, b3)
+			tooltip:AddLine("<Shift Left Click> to reset position", r3, g3, b3)
 		end 
 		if data.enableScaling then 
-			tooltip:AddLine("<Shift> + <Right-Click> to reset scale", r3, g3, b3)
+			tooltip:AddLine("<Shift Right Click> to reset scale", r3, g3, b3)
 		end 
 	end 
 	tooltip:Show()
@@ -432,29 +445,16 @@ Mover.OnLeave = function(self)
 
 	local tooltip = self:GetTooltip()
 	tooltip:Hide()
-
-	if self.PostLeave then 
-		return self:PostLeave()
-	end 
 end 
 
 -- Called when the mover is clicked
 Mover.OnClick = function(self, button)
-	if self.OverrideClick then 
-		return self:OverrideClick(button)
-	end 
-
 	if IsShiftKeyDown() then 
-		local data = MoverData[self]
-		if (button == "LeftButton") then 
+		if (button == "LeftButton") then
+			self:RestoreDefaultPosition()
 		elseif (button == "RightButton") then 
-			data.scale = data.defaultScale
-			self:UpdateScale()
+			self:RestoreDefaultScale()
 		end
-	end 
-
-	if self.PostClick then 
-		return self:PostClick(button)
 	end 
 end 
 
@@ -498,19 +498,22 @@ Mover.OnDragStop = function(self)
 	self:SetAlpha(ALPHA_STOPPED)
 
 	-- Glue the target to the new mover position
-	local target = TargetByMover[self]
-	local point, offsetX, offsetY = getParsedPosition(self)
-	target:Place(point, self, point, 0, 0)
+	--local target = TargetByMover[self]
+	--local point, offsetX, offsetY = getParsedPosition(self)
+	--target:Place(point, self, point, 0, 0)
 
 	-- Parse the current target position and reposition it
 	-- Strictly speaking we could've math'ed this. But this is easier. 
-	local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
-	target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
+	--local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
+	--target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
 
 	-- Store it. They are equal. 
-	MoverData[self].point = point
-	MoverData[self].offsetX = offsetX
-	MoverData[self].offsetY = offsetY
+	local data = MoverData[self]
+	data.point = point
+	data.offsetX = offsetX
+	data.offsetY = offsetY
+
+	self:UpdatePosition()
 
 	--self:UpdateInfoFramePosition()
 	--self:UpdateTexts(rPoint, offsetX, offsetY)
@@ -537,10 +540,6 @@ Mover.OnUpdate = function(self, elapsed)
 	--local top = (y + h/2) - uiH
 	--local right = (y + w/2) - uiW
 	--self:UpdateTexts(parsePosition(uiW, uiH, realX, realY, bottom, left, top, right))
-
-	if self.PostUpdate then 
-		self:PostUpdate()
-	end
 end
 
 
@@ -633,6 +632,7 @@ LibMover.CreateMover = function(self, target, template, ...)
 
 	-- Put all mover related data in here
 	MoverData[mover] = {
+		id = numMovers, 
 		name = "CG_Mover_"..numMovers, 
 		enableDragging = true, 
 		enableScaling = true,
