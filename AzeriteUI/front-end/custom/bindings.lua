@@ -5,6 +5,7 @@ if (not Core) then
 	return 
 end
 
+local L, Layout
 local Module = Core:NewModule("Bindings", "PLUGIN", "LibEvent", "LibMessage", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibFader", "LibSlash")
 Module:SetIncompatible("ConsolePort")
 
