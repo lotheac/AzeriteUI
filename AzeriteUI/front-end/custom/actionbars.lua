@@ -7,7 +7,7 @@ end
 
 -- Note that there's still a lot of hardcoded things in this file, 
 -- and it will eventually be changed to be fully Layout driven. 
-
+local Layout, L
 local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibMessage", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer", "LibPlayerData")
 
 -- Lua API
@@ -198,7 +198,6 @@ local deprecated = {
 	visibilityPet = 1
 }
 
-local Layout, L
 local IN_COMBAT
 
 local short = function(value)
