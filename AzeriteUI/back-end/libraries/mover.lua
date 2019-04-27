@@ -263,8 +263,22 @@ Mover.SetMinScale = function(self, minScale)
 	MoverData[self].minScale = minScale
 end 
 
--- Sets the default position of the mover
+-- Sets the default position of the mover.
+-- This will parse the position provided. 
 Mover.SetDefaultPosition = function(self, ...)
+	if (not LibMover.positionHelper) then 
+		local positionHelper = Parent:CreateFrame("Frame")
+		positionHelper:Hide()
+		positionHelper:SetSize(self:GetSize())
+		LibMover.positionHelper = positionHelper
+	end
+	local positionHelper = LibMover.positionHelper
+	positionHelper:Place(...)
+	local point, offsetX, offsetY = getParsedPosition(positionHelper)
+	local data = MoverData[self]
+	data.defaultPoint = point
+	data.defaultOffsetX = offsetX
+	data.defaultOffsetY = offsetY
 end
 
 Mover.SetName = function(self, name)
@@ -372,6 +386,9 @@ Mover.UpdatePosition = function(self)
 	-- Strictly speaking we could've math'ed this. But this is easier. 
 	local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
 	target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
+
+	-- Fire a message for module callbacks
+	LibMover:SendMessage("CG_MOVER_UPDATED", self, TargetByMover[self], point, offsetX, offsetY)
 
 	if self:IsMouseOver() then 
 		self:OnEnter()
@@ -497,33 +514,22 @@ Mover.OnDragStop = function(self)
 	self:StopMovingOrSizing()
 	self:SetAlpha(ALPHA_STOPPED)
 
-	-- Glue the target to the new mover position
-	--local target = TargetByMover[self]
-	--local point, offsetX, offsetY = getParsedPosition(self)
-	--target:Place(point, self, point, 0, 0)
-
-	-- Parse the current target position and reposition it
-	-- Strictly speaking we could've math'ed this. But this is easier. 
-	--local targetPoint, targetOffsetX, targetOffsetY = getParsedPosition(target)
-	--target:Place(targetPoint, "UICenter", targetPoint, targetOffsetX, targetOffsetY)
-
-	-- Store it. They are equal. 
 	local data = MoverData[self]
-	data.point = point
-	data.offsetX = offsetX
-	data.offsetY = offsetY
+	local point, offsetX, offsetY = getParsedPosition(self)
 
-	self:UpdatePosition()
+	if (point ~= data.point or offsetX ~= data.offsetX or offsetY ~= data.offsetY) then 
+		data.point = point
+		data.offsetX = offsetX
+		data.offsetY = offsetY
 
-	--self:UpdateInfoFramePosition()
-	--self:UpdateTexts(rPoint, offsetX, offsetY)
+		self:UpdatePosition()
+		--self:UpdateInfoFramePosition()
+		--self:UpdateTexts(rPoint, offsetX, offsetY)
+	end
 
 	if self:IsMouseOver() then 
 		self:OnEnter()
 	end
-
-	-- Fire a message for module callbacks
-	LibMover:SendMessage("CG_MOVER_UPDATED", self, target, rPoint, offsetX, offsetY)
 end 
 
 -- Called while the mover is being dragged
