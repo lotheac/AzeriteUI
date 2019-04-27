@@ -35,8 +35,10 @@ local GetSpecialization = _G.GetSpecialization
 local IsPlayerSpell = _G.IsPlayerSpell
 local UnitAffectingCombat = _G.UnitAffectingCombat
 local UnitCanAttack = _G.UnitCanAttack
+local UnitClass = _G.UnitClass
 local UnitHasVehiclePlayerFrameUI = _G.UnitHasVehiclePlayerFrameUI
 local UnitIsFriend = _G.UnitIsFriend
+local UnitIsPlayer = _G.UnitIsPlayer
 local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local UnitPowerDisplayMod = _G.UnitPowerDisplayMod
@@ -165,6 +167,13 @@ local Generic = setmetatable({
 		local color = self.colors.power[powerType] 
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.maxDisplayed or element.max or max
+
+		-- Class Color Overrides
+		if (element.colorClass and UnitIsPlayer(unit)) then
+			local _, class = UnitClass(unit)
+			color = class and self.colors.class[class]
+			r, g, b = color[1], color[2], color[3]
+		end 
 
 		-- Has the module chosen to only show this with an active target,
 		-- or has the module chosen to hide all when empty?
@@ -526,6 +535,13 @@ ClassPower.Runes = setmetatable({
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.max or max
 
+		-- Class Color Overrides
+		if (element.colorClass and UnitIsPlayer(unit)) then
+			local _, class = UnitClass(unit)
+			color = class and self.colors.class[class]
+			r, g, b = color[1], color[2], color[3]
+		end 
+		
 		-- Ready ones fully opaque, charging ones toned down, everything even more without a hostile target
 		if (UnitAffectingCombat("player") or UnitAffectingCombat("pet")) then 
 			local chargingAlpha = element.alphaEmpty or .5
@@ -708,6 +724,13 @@ ClassPower.Stagger = setmetatable({
 		local r, g, b = color[1], color[2], color[3]
 		local maxDisplayed = element.maxDisplayed or element.max or max
 
+		-- Class Color Overrides
+		if (element.colorClass and UnitIsPlayer(unit)) then
+			local _, class = UnitClass(unit)
+			color = class and self.colors.class[class]
+			r, g, b = color[1], color[2], color[3]
+		end 
+		
 		-- Has the module chosen to only show this with an active target,
 		-- or has the module chosen to hide all when empty?
 		if (element.hideWhenNoTarget and (not UnitExists("target")))
@@ -975,5 +998,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 26)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 27)
 end 
