@@ -977,7 +977,7 @@ local Disable = function(self)
 
 		-- Disable the current powerType, if any
 		if element._currentType then 
-			element:DisablePower()
+			element.DisablePower(self)
 			element._currentType = nil
 			element.powerType = nil
 		end 
@@ -998,5 +998,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 27)
+	Lib:RegisterElement("ClassPower", Enable, Disable, Proxy, 28)
 end 
