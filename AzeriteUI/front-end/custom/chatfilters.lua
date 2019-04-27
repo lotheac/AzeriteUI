@@ -11,6 +11,7 @@ Module:SetIncompatible("Prat-3.0")
 -- Lua API
 local _G = _G
 local pairs = pairs
+local string_format = string.format
 
 -- WoW API
 local ChatFrame_AddMessageEventFilter = _G.ChatFrame_AddMessageEventFilter
@@ -62,22 +63,25 @@ local throttleMessages = function(self, event, msg, ...)
 	-- This iteration shouldn't cost much when called on every new message, 
 	-- the database simply won't have time to accumulate very many entries. 
 	for msg,when in pairs(throttledMessages) do 
-		if ((when > now) and (msg ~= text)) then 
+		if ((when < now) and (msg ~= text)) then 
 			throttledMessages[msg] = nil
+			--Module:AddDebugMessageFormatted(string_format("ChatFilters cleared the timer for: '%s'", msg))
 		end
 	end
 
     -- If the timer for this message hasn't been set, or if 10 seconds have passed, 
     -- we set the timer to 10 new seconds, show the message once, and return. 
-    if ((not throttledMessages[msg]) or (throttledMessages[msg] > now)) then 
+    if (not throttledMessages[msg]) then 
 		throttledMessages[msg] = now + 10 
+		--Module:AddDebugMessageFormatted(string_format("ChatFilters set a 10 second throttle for: '%s'", msg))
         return 
-    end
-
+	end
+	
     -- If we got here the timer has been set, but it's still too early.
-    if (throttledMessages[msg] < now) then 
-        return true 
-    end
+	if ((throttledMessages[msg]) and (throttledMessages[msg] > now)) then 
+		--Module:AddDebugMessageFormatted(string_format("ChatFilters filtered out: '%s'", msg))
+		return true
+	end 
 end
 
 Module.OnInit = function(self)
