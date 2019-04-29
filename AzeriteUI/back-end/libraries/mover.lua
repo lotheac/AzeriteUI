@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 20)
+local LibMover = CogWheel:Set("LibMover", 23)
 if (not LibMover) then	
 	return
 end
@@ -619,7 +619,11 @@ LibMover.UnlockMover = function(self, target)
 	if (InCombatLockdown()) then 
 		return 
 	end 
-	MoverByTarget[target]:Show()
+	local mover = MoverByTarget[target]
+	local data = MoverData[mover]
+	if (data.enableDragging or data.enableScaling) then 
+		mover:Show()
+	end
 end 
 
 LibMover.ToggleMover = function(self, target)
@@ -627,15 +631,30 @@ LibMover.ToggleMover = function(self, target)
 		return 
 	end 
 	local mover = MoverByTarget[target]
-	mover:SetShown(not mover:IsShown())
+	local data = MoverData[mover]
+	if (mover:IsShown()) then 
+		mover:Hide()
+	else 
+		local data = MoverData[mover]
+		if (data.enableDragging or data.enableScaling) then 
+			mover:Show()
+		end
+	end 
 end 
 
 LibMover.LockAllMovers = function(self)
 	if (InCombatLockdown()) then 
 		return 
 	end 
+	local changed
 	for target,mover in pairs(MoverByTarget) do 
-		mover:Hide()
+		if (mover:IsShown()) then 
+			mover:Hide()
+			changed = true
+		end 
+	end 
+	if (changed) then 
+		LibMover:SendMessage("CG_MOVERS_LOCKED")
 	end 
 end 
 
@@ -643,9 +662,19 @@ LibMover.UnlockAllMovers = function(self)
 	if (InCombatLockdown()) then 
 		return 
 	end 
+	local changed
 	for target,mover in pairs(MoverByTarget) do 
-		mover:Show()
+		if (not mover:IsShown()) then 
+			local data = MoverData[mover]
+			if (data.enableDragging or data.enableScaling) then 
+				mover:Show()
+				changed = true
+			end
+		end 
 	end 
+	if (changed) then 
+		LibMover:SendMessage("CG_MOVERS_UNLOCKED")
+	end
 end 
 
 LibMover.ToggleAllMovers = function(self)
