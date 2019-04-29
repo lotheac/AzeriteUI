@@ -350,9 +350,9 @@ UpdateTexts = function(self, point, x, y, name)
 	local data = MoverData[self]
 	local infoString
 	if (point and x and y) then 
-		infoString = string_format("|cffffb200%s|r || |cffffb200%s, %s|r || |r|cffffb200%.1f|r", point, tostring(round(x, 1)), tostring(round(y, 1)), data.scale)
+		infoString = string_format("|cffffb200%s|r || |cffffb200%s, %s|r || |r|cffffb200%.2f|r", point, tostring(round(x, 1)), tostring(round(y, 1)), data.scale)
 	else 
-		infoString = string_format("|cffffb200%s|r || |cffffb200%s, %s|r || |r|cffffb200%.1f|r", data.point, tostring(round(data.offsetX, 1)), tostring(round(data.offsetY, 1)), data.scale)
+		infoString = string_format("|cffffb200%s|r || |cffffb200%s, %s|r || |r|cffffb200%.2f|r", data.point, tostring(round(data.offsetX, 1)), tostring(round(data.offsetY, 1)), data.scale)
 	end 
 	self.name:SetText(name or data.name)
 	self.info:SetText(infoString)
