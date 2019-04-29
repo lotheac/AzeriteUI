@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 23)
+local LibMover = CogWheel:Set("LibMover", 27)
 if (not LibMover) then	
 	return
 end
@@ -271,13 +271,23 @@ end
 
 -- Called when the mover is clicked
 OnClick = function(self, button)
-	if IsShiftKeyDown() then 
+	if (IsAltKeyDown() or IsControlKeyDown()) and (self.OnClick) then 
+		
+		-- Call the user/module method
+		self:OnClick(button)
+		
+		-- Do a post update for the tooltips
+		if self:IsMouseOver() then 
+			OnEnter(self)
+		end
+
+	elseif IsShiftKeyDown() then 
 		if (button == "LeftButton") then
 			self:RestoreDefaultPosition()
 		elseif (button == "RightButton") then 
 			self:RestoreDefaultScale()
 		end
-	else
+	else 
 		if (button == "LeftButton") then 
 			self:Raise()
 		elseif (button == "RightButton") then 
@@ -381,6 +391,9 @@ UpdateScale = function(self)
 
 	self:SetSize(targetWidth*relativeScale, targetHeight*relativeScale)
 	self:Place(data.point, "UICenter", data.point, data.offsetX, data.offsetY)
+
+	-- Fire a message for module callbacks
+	LibMover:SendMessage("CG_MOVER_SCALE_UPDATED", self, TargetByMover[self], data.scale)
 
 	if self:IsMouseOver() then 
 		OnEnter(self)
@@ -512,6 +525,10 @@ end
 
 Mover.GetTooltip = function(self)
 	return LibMover:GetMoverTooltip()
+end
+
+Mover.ForceUpdate = function(self)
+	OnShow(self)
 end
 
 ---------------------------------------------------
