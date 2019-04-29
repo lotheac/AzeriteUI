@@ -443,13 +443,23 @@ Mover.SetScalingEnabled = function(self, enableScaling)
 	MoverData[self].enableScaling = enableScaling and true or false
 end
 
-Mover.SetMaxScale = function(self, maxScale)
-	MoverData[self].maxScale = maxScale
+Mover.SetMinScale = function(self, minScale)
+	MoverData[self].minScale = tonumber(minScale) or .5
 end 
 
-Mover.SetMinScale = function(self, minScale)
-	MoverData[self].minScale = minScale
+Mover.SetMaxScale = function(self, maxScale)
+	MoverData[self].maxScale = tonumber(maxScale) or 1.5
 end 
+
+Mover.SetScaleStep = function(self, scaleStep)
+	MoverData[self].scaleStep = tonumber(scaleStep) or .1
+end 
+
+Mover.SetMinMaxScale = function(self, minScale, maxScale, scaleStep)
+	MoverData[self].minScale = tonumber(minScale) or .5
+	MoverData[self].maxScale = tonumber(maxScale) or 1.5
+	MoverData[self].scaleStep = tonumber(scaleStep) or .1
+end
 
 -- Sets the default position of the mover.
 -- This will parse the position provided. 
