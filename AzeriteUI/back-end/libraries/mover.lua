@@ -31,6 +31,7 @@ local string_find = string.find
 local string_format = string.format
 local string_join = string.join
 local string_match = string.match
+local tonumber = tonumber
 local type = type
 
 -- WoW API
@@ -232,6 +233,17 @@ end
 
 -- Called when the mover is shown
 OnShow = function(self)
+
+	local data = MoverData[self]
+	local target = TargetByMover[self]
+
+	-- Resize and reposition the mover frame. 
+	local targetWidth, targetHeight = target:GetSize()
+	local relativeScale = target:GetEffectiveScale() / self:GetEffectiveScale()
+	
+	self:SetSize(targetWidth*relativeScale, targetHeight*relativeScale)
+	self:Place(data.point, "UICenter", data.point, data.offsetX, data.offsetY)
+	
 	LibMover:SendMessage("CG_MOVER_UNLOCKED", self, TargetByMover[self])
 end 
 
