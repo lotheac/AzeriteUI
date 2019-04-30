@@ -1,4 +1,4 @@
-local LibDB = CogWheel:Set("LibDB", 12)
+local LibDB = CogWheel:Set("LibDB", 13)
 if (not LibDB) then	
 	return
 end
@@ -170,14 +170,19 @@ end
 -- The 'option' argument allows the module to retrieve options 
 -- for specific realms, characters or faction.
 -- Remember that the realm name is a part of the character profile name!
-LibDB.GetConfig = function(self, name, profile, option)
+LibDB.GetConfig = function(self, name, profile, option, silent)
 	check(name, 1, "string")
 	check(profile, 2, "string", "nil")
 	check(option, 3, "string", "nil")
+	check(option, 4, "boolean", "nil")
 
 	local configDB = configs[tostring(self:GetOwner())]
 	if (not configDB[name]) then
-		return error(("The config '%s' doesn't exist!"):format(name))
+		if (silent) then 
+			return 
+		else
+			return error(("The config '%s' doesn't exist!"):format(name))
+		end
 	end	
 	local config
 	if (profile == "realm") then
