@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 27)
+local LibMover = CogWheel:Set("LibMover", 29)
 if (not LibMover) then	
 	return
 end
@@ -489,6 +489,10 @@ Mover.SetName = function(self, name)
 	UpdateTexts(self)
 end
 
+Mover.GetName = function(self)
+	return MoverData[self].name
+end
+
 -- Not currently using this, but leaving it here for later when we will. 
 Mover.SetDescription = function(self, description)
 	MoverData[self].description = description
@@ -504,6 +508,25 @@ end
 Mover.IsScalingEnabled = function(self)
 	return MoverData[self].enableDragging
 end
+
+-- @return <boolean> if mover is in its registered default position
+Mover.IsDefaultPosition = function(self)
+	local data = MoverData[self]
+	return (data.point == data.defaultPoint) 
+	   and (round(data.offsetX,2) == round(data.defaultOffsetX,2)) 
+	   and (round(data.offsetY,2) == round(data.defaultOffsetY,2))
+end 
+
+-- @return <boolean> if mover has its registered default scale
+Mover.IsDefaultScale = function(self)
+	local data = MoverData[self]
+	return (data.scale == data.defaultScale)
+end 
+
+-- @return <boolean> if mover is in its registered default position and have its default scale
+Mover.IsDefaultPositionAndScale = function(self)
+	return self:IsDefaultPosition() and self:IsDefaultScale()
+end 
 
 -- Returns the mover to its default position
 Mover.RestoreDefaultPosition = function(self)
