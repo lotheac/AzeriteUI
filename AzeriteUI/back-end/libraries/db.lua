@@ -1,4 +1,4 @@
-local LibDB = CogWheel:Set("LibDB", 13)
+local LibDB = CogWheel:Set("LibDB", 14)
 if (not LibDB) then	
 	return
 end
@@ -174,7 +174,7 @@ LibDB.GetConfig = function(self, name, profile, option, silent)
 	check(name, 1, "string")
 	check(profile, 2, "string", "nil")
 	check(option, 3, "string", "nil")
-	check(option, 4, "boolean", "nil")
+	check(silent, 4, "boolean", "nil")
 
 	local configDB = configs[tostring(self:GetOwner())]
 	if (not configDB[name]) then
