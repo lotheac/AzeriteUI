@@ -49,7 +49,15 @@ local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 	local value = element.Value or element:IsObjectType("FontString") and element 
 	if value.showPercent then 
 		if (max > 0) then 
-			value:SetFormattedText("%.0f%%", min/max*100)
+			local perc = math_floor(min/max*100)
+			if (perc == 100) and (min < max) then 
+				perc = 99
+			end
+			if (perc >= 1) then 
+				value:SetFormattedText("%.0f%%", perc)
+			else 
+				value:SetText(_G.XP)
+			end
 		else 
 			value:SetText("")
 		end 
@@ -61,7 +69,15 @@ local UpdateValue = function(element, min, max, restedLeft, restedTimeLeft)
 	local percent = value.Percent
 	if percent then 
 		if (max > 0) then 
-			percent:SetFormattedText("%.0f%%", min/max*100)
+			local perc = math_floor(min/max*100)
+			if (perc == 100) and (min < max) then 
+				perc = 99
+			end
+			if (perc >= 1) then 
+				percent:SetFormattedText("%.0f%%", perc)
+			else 
+				percent:SetText(_G.XP)
+			end
 		else 
 			percent:SetText("")
 		end 
@@ -184,5 +200,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("XP", Enable, Disable, Proxy, 11)
+	Lib:RegisterElement("XP", Enable, Disable, Proxy, 12)
 end 
