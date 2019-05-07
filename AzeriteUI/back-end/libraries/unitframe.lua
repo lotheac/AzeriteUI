@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 59)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 60)
 if (not LibUnitFrame) then	
 	return
 end
@@ -385,6 +385,36 @@ LibUnitFrame.GetScript = function(self, scriptHandler)
 	return scriptHandlers[scriptHandler]
 end
 
+LibUnitFrame.GetUnitFrameVisibilityDriver = function(self, unit)
+	local visDriver
+	if (unit == "player") then 
+		-- Might seem stupid, but I want the player frame to disappear along with the actionbars 
+		-- when we've blown the flight master's whistle and are getting picked up.
+		visDriver = "[@player,exists][vehicleui][possessbar][overridebar][mounted]show;hide"
+	elseif (unit == "pet") then 
+		visDriver = "[@pet,exists][nooverridebar,vehicleui]show;hide"
+	else
+		visDriver = string_format("[@%s,exists]show;hide", unit)
+	end
+	return visDriver
+end 
+
+LibUnitFrame.GetUnitFrameVehicleDriver = function(self, unit)
+	local vehicleDriver
+	if (unit == "player") then 
+		-- Should work in all cases where the unitframe is replaced. It should always be the "pet" unit.
+		--vehicleDriver = "[vehicleui]pet;player"
+		vehicleDriver = "[nooverridebar,vehicleui]pet;[overridebar,@vehicle,exists]vehicle;player"
+	elseif (unit == "pet") then 
+		vehicleDriver = "[nooverridebar,vehicleui]player;pet"
+	elseif (unit:match("^party(%d+)")) then 
+		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
+	elseif (unit:match("^raid(%d+)")) then 
+		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
+	end
+	return vehicleDriver
+end 
+
 -- spawn and style a new unitframe
 LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 	check(unit, 1, "string")
@@ -426,22 +456,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame:RegisterForClicks("AnyUp")
 	end 
 
-	local vehicleDriver, visDriver
-	if (unit == "player") then 
-		-- Should work in all cases where the unitframe is replaced. It should always be the "pet" unit.
-		--vehicleDriver = "[vehicleui]pet;player"
-		vehicleDriver = "[nooverridebar,vehicleui]pet;[overridebar,@vehicle,exists]vehicle;player"
-
-		-- Might seem stupid, but I want the player frame to disappear along with the actionbars 
-		-- when we've blown the flight master's whistle and are getting picked up.
-		visDriver = "[@player,exists][vehicleui][possessbar][overridebar][mounted]show;hide"
-
-	elseif (unit == "pet") then 
-		--vehicleDriver = "[vehicleui]player;pet"
-		vehicleDriver = "[nooverridebar,vehicleui]player;pet"
-		visDriver = "[@pet,exists][nooverridebar,vehicleui]show;hide"
-
-	elseif (unit == "target") then
+	if (unit == "target") then
 		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit == "focus") then
@@ -470,23 +485,16 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElements, true)
 		frame:RegisterEvent("UNIT_PET", UpdatePet)
 
-		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
-
 	elseif (unit:match("^raid(%d+)")) then 
 		frame.unitGroup = "raid"
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE", UnitFrame.OverrideAllElementsOnChangedGUID, true)
 		frame:RegisterEvent("UNIT_PET", UpdatePet)
 
-		vehicleDriver = string_format("[unithasvehicleui,@%s]%s;%s", unit, unit.."pet", unit)
-
 	elseif (unit:match("%w+target")) then
 		frame:EnableFrameFrequent(.5, "unit")
 	end
 
-	if (not visDriver) then
-		visDriver = string_format("[@%s,exists]show;hide", unit)
-	end
-
+	local vehicleDriver = LibUnitFrame:GetUnitFrameVehicleDriver(unit)
 	if vehicleDriver then 
 		local vehicleSwitcher = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
 		vehicleSwitcher:SetFrameRef("UnitFrame", frame)
@@ -502,6 +510,7 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame:SetAttribute("unit", unit)
 	end 
 
+	local visDriver = LibUnitFrame:GetUnitFrameVisibilityDriver(unit)
 	frame:SetAttribute("visibilityDriver", visDriver)
 	RegisterAttributeDriver(frame, "state-visibility", visDriver)
 
@@ -556,6 +565,8 @@ end
 -- Module embedding
 local embedMethods = {
 	SpawnUnitFrame = true,
+	GetUnitFrameVehicleDriver = true, 
+	GetUnitFrameVisibilityDriver = true, 
 	GetUnitFrameTooltip = true
 }
 
