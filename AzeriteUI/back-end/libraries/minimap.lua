@@ -1,5 +1,5 @@
-local Version = 32 -- This library's version 
-local MapVersion = 32 -- Minimap library version the minimap created by this is compatible with
+local Version = 34 -- This library's version 
+local MapVersion = 34 -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -79,7 +79,9 @@ LibMinimap.buttonBag:Hide() -- icons aren't hidden without this /doh
 LibMinimap.baggedButtonsChecked = LibMinimap.baggedButtonsChecked or {} -- buttons already checked
 LibMinimap.baggedButtonsHidden = LibMinimap.baggedButtonsHidden or {} -- buttons we have hidden 
 LibMinimap.baggedButtonsIgnored = LibMinimap.baggedButtonsIgnored or {} -- buttons we're ignoring
-LibMinimap.minimapScale = LibMinimap.minimapScale or 1 -- current minimap scale
+LibMinimap.minimapBlipScale = LibMinimap.minimapBlipScale or 1 -- current minimap blip scale
+LibMinimap.minimapFrameScale = LibMinimap.minimapFrameScale or 1 -- current minimap scale
+LibMinimap.minimapScale = nil
 LibMinimap.numBaggedButtons = LibMinimap.numBaggedButtons or 0 -- current count of hidden buttons
 
 -- Button bag icon list imported from GUI4's last updated list from Feb 1st 2018.
@@ -135,7 +137,6 @@ local ElementPoolEnabled = LibMinimap.elementPoolEnabled
 local ElementProxy = LibMinimap.elementProxy
 local Frame = LibMinimap.frame
 
-
 -- Utility Functions
 ---------------------------------------------------------
 -- Syntax check 
@@ -151,16 +152,13 @@ local check = function(value, num, ...)
 	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
-
 -- Element Template
 ---------------------------------------------------------
 local ElementHandler = LibMinimap:CreateFrame("Frame")
 local ElementHandler_MT = { __index = ElementHandler }
 
-
 -- Methods we don't wish to expose to the modules
 --------------------------------------------------------------------------
-
 local IsEventRegistered = ElementHandler_MT.__index.IsEventRegistered
 local RegisterEvent = ElementHandler_MT.__index.RegisterEvent
 local RegisterUnitEvent = ElementHandler_MT.__index.RegisterUnitEvent
@@ -389,10 +387,8 @@ ElementHandler.EnableAllElements = function(proxy)
 	end
 end 
 
-
 -- Public API
 ---------------------------------------------------------
-
 -- Create or fetch our minimap. Only one can exist, this is a WoW limitation.
 LibMinimap.SyncMinimap = function(self, onlyQuery)
 
@@ -418,7 +414,6 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 			error(("LibMinimap: '%s' failed, map version too old. Did you forget to call 'SyncMinimap()' first?"):format(name),3)
 		end 
 	end 
-
 
 	-- Create Custom Scaffolding
 	-----------------------------------------------------------
@@ -583,6 +578,7 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 
 	-- Should I move this to its own API call?	
 	Private.MapContent:EnableMouseWheel(true)
+
 	Private.MapContent:SetScript("OnMouseWheel", function(self, delta)
 		if (delta > 0) then
 			_G.MinimapZoomIn:Click()
@@ -590,6 +586,7 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 			_G.MinimapZoomOut:Click()
 		end
 	end)
+
 	Private.MapContent:SetScript("OnMouseUp", function(self, button)
 		if (button == "RightButton") then
 			ToggleDropDownMenu(1, nil,  _G.MiniMapTrackingDropDown, self)
@@ -611,14 +608,11 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 		end
 	end)
 	
-
 	-- Configure Custom Elements
 	-----------------------------------------------------------
-
 	-- Register our Minimap as a keyword with the Engine, 
 	-- to capture other module's attempt to anchor to it.
 	LibMinimap:RegisterKeyword("Minimap", function() return Private.MapContent end)
-
 
 	-- Store the minimap reference and library version that initialized it
 	LibMinimap.minimap = LibMinimap.minimap or {}
@@ -637,20 +631,12 @@ LibMinimap.SetMinimapSize = function(self, ...)
 	-- The following elements rely on but aren't slave to the holder size, 
 	-- and thus we need to manually update them after any size changes. 
 	LibMinimap:UpdateCompass()
-	LibMinimap:SetMinimapScale()	
+	LibMinimap:UpdateScale()
 end 
 
-LibMinimap.SetMinimapScale = function(self, scale)
-	check(scale, 1, "number", "nil")
-
-	self:SyncMinimap(true)
-
-	-- Set or retrieve the current minimap scale.
-	if scale then 
-		LibMinimap.minimapScale = scale 
-	else
-		scale = LibMinimap.minimapScale
-	end
+LibMinimap.UpdateScale = function(self)
+	-- Retrieve the current minimap blip scale
+	local blipScale = LibMinimap.minimapBlipScale or 1
 
 	-- Retrieve the scaffold size
 	local width, height = Private.MapHolder:GetSize()
@@ -659,9 +645,23 @@ LibMinimap.SetMinimapScale = function(self, scale)
 	local SetScale = getMetaMethod("SetScale")
 	local SetSize = getMetaMethod("SetSize")
 
-	SetScale(Private.MapContent, scale)
-	SetSize(Private.MapContent, width/scale, height/scale)
+	SetScale(Private.MapContent, blipScale)
+	SetSize(Private.MapContent, width/blipScale, height/blipScale)
 end
+
+LibMinimap.SetMinimapBlipScale = function(self, blipScale)
+	check(blipScale, 1, "number", "nil")
+
+	self:SyncMinimap(true)
+
+	LibMinimap.minimapBlipScale = blipScale or LibMinimap.minimapBlipScale or 1
+	LibMinimap:UpdateScale()
+end
+
+-- This isn't semantically intelligent, 
+-- but we're doing this for backwards compatibility, 
+-- since this method was used to changed the blip scale originally. 
+LibMinimap.SetMinimapScale = LibMinimap.SetMinimapBlipScale
 
 LibMinimap.SetMinimapPosition = function(self, ...)
 	return self:SyncMinimap(true) and Private.MapHolder:Place(...)
@@ -1226,7 +1226,6 @@ LibMinimap.RegisterElement = function(self, elementName, enableFunc, disableFunc
 	end 
 end
 
-
 -- Module embedding
 local embedMethods = {
 	EnableMinimapElement = true, 
@@ -1246,6 +1245,7 @@ local embedMethods = {
 	SetMinimapMaskTexture = true, 
 	SetMinimapPosition = true, 
 	SetMinimapQuestBlobAlpha = true, 
+	SetMinimapBlipScale = true, 
 	SetMinimapScale = true, 
 	SetMinimapSize = true, 
 	SetMinimapTaskBlobAlpha = true, 
