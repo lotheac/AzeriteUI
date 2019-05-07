@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 29)
+local LibMover = CogWheel:Set("LibMover", 30)
 if (not LibMover) then	
 	return
 end
@@ -506,7 +506,7 @@ end
 
 -- @return <boolean> if scaling is currently enabled
 Mover.IsScalingEnabled = function(self)
-	return MoverData[self].enableDragging
+	return MoverData[self].enableScaling
 end
 
 -- @return <boolean> if mover is in its registered default position
