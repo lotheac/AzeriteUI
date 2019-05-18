@@ -8,6 +8,9 @@ end
 local Module = Core:NewModule("ChatFilters", "LibEvent", "LibMessage", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibFader", "LibSlash")
 Module:SetIncompatible("Prat-3.0")
 
+-- Something isn't working as intended, disabling it until we can figure it out. 
+Module:SetIncompatible("AzeriteUI")
+
 -- Lua API
 local _G = _G
 local pairs = pairs
