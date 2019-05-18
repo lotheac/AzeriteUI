@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.143-Release] 2019-05-18
+### Changed
+- Disabled the chat throttle filter as it still for unknown reasons randomly blocks messages it shouldn't. We won't re-enable it until this is sorted out. 
+
 ## [1.2.142-Release] 2019-04-27
 ### Fixed
 - Fixed the throttle filter meant to hide identical messages within a 10 second period from the first message. It's working as intended now, and not randomly hiding messages after the timer runs out. This should fix issues some had with not being able to see their own messages in guild chat. 
