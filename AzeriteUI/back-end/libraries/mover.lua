@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 30)
+local LibMover = CogWheel:Set("LibMover", 32)
 if (not LibMover) then	
 	return
 end
@@ -456,6 +456,12 @@ Mover.SetScalingEnabled = function(self, enableScaling)
 	MoverData[self].enableScaling = enableScaling and true or false
 end
 
+Mover.SetScale = function(self, scale)
+	MoverData[self].scale = tonumber(scale) or 1
+	UpdateScale(self)
+	UpdateTexts(self)
+end
+
 Mover.SetMinScale = function(self, minScale)
 	MoverData[self].minScale = tonumber(minScale) or .5
 end 
@@ -472,6 +478,10 @@ Mover.SetMinMaxScale = function(self, minScale, maxScale, scaleStep)
 	MoverData[self].minScale = tonumber(minScale) or .5
 	MoverData[self].maxScale = tonumber(maxScale) or 1.5
 	MoverData[self].scaleStep = tonumber(scaleStep) or .1
+end
+
+Mover.GetScale = function(self, scale)
+	return MoverData[self].scale
 end
 
 -- Sets the default position of the mover.
