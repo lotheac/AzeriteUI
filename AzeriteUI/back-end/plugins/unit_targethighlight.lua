@@ -14,8 +14,12 @@ local Update = function(self, event, unit, ...)
 		element:PreUpdate(unit)
 	end
 
+	-- Hide if the owner is too transparent
+	if (self:GetAlpha() < 0.1) then 
+		element:Hide()
+
 	-- Don't highlight the focus frame as the current focus
-	if element.showFocus and (unit ~= "focus") and UnitIsUnit("focus", unit) then 
+	elseif element.showFocus and (unit ~= "focus") and UnitIsUnit("focus", unit) then 
 		if element.colorFocus then 
 			element:SetVertexColor(element.colorFocus[1], element.colorFocus[2], element.colorFocus[3], element.colorFocus[4])
 		end
@@ -75,5 +79,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("TargetHighlight", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("TargetHighlight", Enable, Disable, Proxy, 3)
 end 
