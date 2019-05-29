@@ -536,14 +536,18 @@ local SmallFrame_PostUpdateAlpha = function(self)
 	elseif (targetStyle == "Hidden") then 
 		self:SetAlpha(0)
 	end
+
+	if self.TargetHighlight then 
+		self.TargetHighlight:ForceUpdate()
+	end
 end
 
 local TinyFrame_OverrideValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if (min >= 1e8) then 		element.Value:SetFormattedText("%.0fm", min/1e6) 		-- 100m, 1000m, 2300m, etc
-	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6) 	-- 1.0m - 99.9m 
-	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%.0fk", min/1e3) 		-- 100k - 999k
-	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3) 	-- 1.0k - 99.9k
-	elseif (min > 0) then 		element.Value:SetText(min) 							-- 1 - 999
+	if (min >= 1e8) then 		element.Value:SetFormattedText("%.0fm", min/1e6)  -- 100m, 1000m, 2300m, etc
+	elseif (min >= 1e6) then 	element.Value:SetFormattedText("%.1fm", min/1e6)  -- 1.0m - 99.9m 
+	elseif (min >= 1e5) then 	element.Value:SetFormattedText("%.0fk", min/1e3)  -- 100k - 999k
+	elseif (min >= 1e3) then 	element.Value:SetFormattedText("%.1fk", min/1e3)  -- 1.0k - 99.9k
+	elseif (min > 0) then 		element.Value:SetText(min) 						  -- 1 - 999
 	else 						element.Value:SetText("")
 	end 
 end 
