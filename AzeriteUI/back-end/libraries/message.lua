@@ -1,4 +1,4 @@
-local LibMessage = CogWheel:Set("LibMessage", 8)
+local LibMessage = CogWheel:Set("LibMessage", 9)
 if (not LibMessage) then	
 	return
 end
@@ -310,11 +310,11 @@ LibMessage.UnregisterMessage = function(self, message, func)
 	-- If we reach this point it means nothing to unregister was found
 	if (type(func) == "string") then
 		if (func == message) then
-			return error(("Attempting to unregister the general occurence of the message '%s' in the object '%s', when no such thing has been registered. Did you forget to add function or method name to UnregisterMessage?"):format(event, tostring(self)))
+			return error(("Attempting to unregister the general occurence of the message '%s' in the object '%s', when no such thing has been registered. Did you forget to add function or method name to UnregisterMessage?"):format(message, tostring(self)))
 		else
 			return error(("The method named '%s' isn't registered for the message '%s' in the object '%s'."):format(func, message, tostring(self)))
 		end
-	else
+	elseif (not func) then
 		return error(("The function call assigned to the message '%s' in the object '%s' doesn't exist."):format(message, tostring(self)))
 	end
 end
