@@ -1,10 +1,13 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 30)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 31)
 if (not LibNamePlate) then	
 	return
 end
 
 local LibClientBuild = CogWheel("LibClientBuild")
 assert(LibClientBuild, "LibNamePlate requires LibClientBuild to be loaded.")
+
+local LibMessage = CogWheel("LibMessage")
+assert(LibMessage, "LibNamePlate requires LibMessage to be loaded.")
 
 local LibEvent = CogWheel("LibEvent")
 assert(LibEvent, "LibNamePlate requires LibEvent to be loaded.")
@@ -19,6 +22,7 @@ local LibStatusBar = CogWheel("LibStatusBar")
 assert(LibStatusBar, "LibNamePlate requires LibStatusBar to be loaded.")
 
 -- Embed event functionality into this
+LibMessage:Embed(LibNamePlate)
 LibEvent:Embed(LibNamePlate)
 LibFrame:Embed(LibNamePlate)
 LibSecureHook:Embed(LibNamePlate)
@@ -311,6 +315,10 @@ local RegisterUnitEvent = NamePlate_MT.__index.RegisterUnitEvent
 local UnregisterEvent = NamePlate_MT.__index.UnregisterEvent
 local UnregisterAllEvents = NamePlate_MT.__index.UnregisterAllEvents
 
+local IsMessageRegistered = LibNamePlate.IsMessageRegistered
+local RegisterMessage = LibNamePlate.RegisterMessage
+local UnregisterMessage = LibNamePlate.UnregisterMessage
+
 -- TODO: Cache some of this upon unit changes and show, to avoid so many function calls. 
 NamePlate.UpdateAlpha = function(self)
 	local unit = self.unit
@@ -539,6 +547,59 @@ NamePlate.UnregisterAllEvents = function(self)
 	end
 	UnregisterAllEvents(self)
 end
+
+NamePlate.RegisterMessage = function(self, event, func, unitless)
+	if (frequentUpdateFrames[self]) then 
+		return 
+	end
+	if (not callbacks[self]) then
+		callbacks[self] = {}
+	end
+	if (not callbacks[self][event]) then
+		callbacks[self][event] = {}
+	end
+	
+	local events = callbacks[self][event]
+	if (#events > 0) then
+		for i = #events, 1, -1 do
+			if (events[i] == func) then
+				return
+			end
+		end
+	end
+
+	table_insert(events, func)
+
+	if (not IsMessageRegistered(self, event, NamePlate.OnEvent)) then
+		RegisterMessage(self, event, NamePlate.OnEvent)
+		if (not unitless) then 
+			unitEvents[event] = true
+		end 
+	end
+end
+
+NamePlate.UnregisterMessage = function(self, event, func)
+	-- silently fail if the event isn't even registered
+	if not callbacks[self] or not callbacks[self][event] then
+		return
+	end
+
+	local events = callbacks[self][event]
+
+	if #events > 0 then
+		for i = #events, 1, -1 do
+			if events[i] == func then
+				table_remove(events, i)
+			end
+		end
+		if (#events == 0) then
+			if (IsMessageRegistered(self, event, NamePlate.OnEvent)) then 
+				UnregisterMessage(self, event, NamePlate.OnEvent) 
+			end
+		end
+	end
+end
+
 
 NamePlate.UpdateAllElements = function(self, event, ...)
 	local unit = self.unit

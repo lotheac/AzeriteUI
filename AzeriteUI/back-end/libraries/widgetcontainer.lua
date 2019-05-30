@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 20)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 21)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -129,6 +129,10 @@ local RegisterUnitEvent = WidgetFrame_MT.__index.RegisterUnitEvent
 local UnregisterEvent = WidgetFrame_MT.__index.UnregisterEvent
 local UnregisterAllEvents = WidgetFrame_MT.__index.UnregisterAllEvents
 
+local IsMessageRegistered = LibWidgetContainer.IsMessageRegistered
+local RegisterMessage = LibWidgetContainer.RegisterMessage
+local UnregisterMessage = LibWidgetContainer.UnregisterMessage
+
 local UpdateAllElements = function(self, ...)
 	return (self.OverrideAllElements or self.UpdateAllElements) (self, ...)
 end 
@@ -253,6 +257,58 @@ WidgetFrame.UnregisterAllEvents = function(self)
 		end
 	end
 	UnregisterAllEvents(self)
+end
+
+WidgetFrame.RegisterMessage = function(self, event, func, unitless)
+	if (frequentUpdateFrames[self]) then 
+		return 
+	end
+	if (not callbacks[self]) then
+		callbacks[self] = {}
+	end
+	if (not callbacks[self][event]) then
+		callbacks[self][event] = {}
+	end
+	
+	local events = callbacks[self][event]
+	if (#events > 0) then
+		for i = #events, 1, -1 do
+			if (events[i] == func) then
+				return
+			end
+		end
+	end
+
+	table_insert(events, func)
+
+	if (not IsMessageRegistered(self, event, WidgetFrame.OnEvent)) then
+		RegisterMessage(self, event, WidgetFrame.OnEvent)
+		if (not unitless) then 
+			unitEvents[event] = true
+		end 
+	end
+end
+
+WidgetFrame.UnregisterMessage = function(self, event, func)
+	-- silently fail if the event isn't even registered
+	if not callbacks[self] or not callbacks[self][event] then
+		return
+	end
+
+	local events = callbacks[self][event]
+
+	if (#events > 0) then
+		for i = #events, 1, -1 do
+			if (events[i] == func) then
+				table_remove(events, i)
+			end
+		end
+		if (#events == 0) then
+			if (IsMessageRegistered(self, event, WidgetFrame.OnEvent)) then
+				UnregisterMessage(self, event, WidgetFrame.OnEvent) 
+			end
+		end
+	end
 end
 
 WidgetFrame.UpdateAllElements = function(self, event, ...)
