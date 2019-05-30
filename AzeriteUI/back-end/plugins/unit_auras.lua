@@ -372,38 +372,14 @@ end
 
 local tables = {}
 local IterateBuffs = function(element, unit, filter, customFilter, visible)
-
 	local visibleBuffs = 0
 	local visible = visible or 0
-
-	-- Iterate all helpful auras once, to gather priority listings
-	--[[
-	local counter = 0
-	for i = 1, BUFF_MAX_DISPLAY do 
-		local cache = Cache[element][i]
-		if not cache then 
-			local tbl = table_remove(tables) or {}
-			Cache[element][i] = tbl
-			cache = tbl
-		end 
-	end
-
-	-- Clear unneeded entries
-	for i = counter + 1, #Cache[element] do 
-		local tbl = Cache[element][i]
-		table_insert(tables, tbl)
-		for i in pairs(tbl) do 
-			tbl[i] = nil
-		end 
-		Cache[element][i] = nil
-	end 
-	]]
 
 	-- Iterate helpful auras
 	for i = 1, BUFF_MAX_DISPLAY do 
 
 		-- Retrieve buff information
-		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitBuff(unit, i, filter)
+		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = LibAura:GetUnitBuff(unit, i, filter)
 
 		-- No name means no more buffs matching the filter
 		if (not name) then
@@ -496,8 +472,9 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 		end 
 
 	end 
+
 	return visible, visibleBuffs
-end 
+end
 
 local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 
@@ -508,7 +485,7 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 	for i = 1, DEBUFF_MAX_DISPLAY do
 		
 		-- Retrieve debuff information
-		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitDebuff(unit, i, filter)
+		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = LibAura:GetUnitDebuff(unit, i, filter)
 
 		-- No name means no more debuffs matching the filter
 		if (not name) then
@@ -639,13 +616,25 @@ local Update = function(self, event, unit)
 			Auras:PreUpdate(unit)
 		end
 
+		local buffFilter = Auras.buffFilter or Auras.auraFilter or Auras.filter
+		local debuffFilter = Auras.debuffFilter or Auras.auraFilter or Auras.filter
+		local buffFilterFunc = Auras.BuffFilter or Auras.AuraFilter
+		local debuffFilterFunc = Auras.DebuffFilter or Auras.AuraFilter
+
+		-- Forcefully register aura watches for the relevant filters
+		-- This is to ensure force updates actually have the right filters and fully updated caches
+		if (event == "Forced") then 
+			LibAura:CacheUnitBuffsByFilter(unit, buffFilter)
+			LibAura:CacheUnitDebuffsByFilter(unit, debuffFilter)
+		end 
+
 		local visible = 0
 		if Auras.debuffsFirst then 
-			visible = IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible) 
-			visible = IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
+			visible = IterateDebuffs(Auras, unit, debuffFilter, debuffFilterFunc, visible) 
+			visible = IterateBuffs(Auras, unit, buffFilter, buffFilterFunc, visible)
 		else 
-			visible = IterateBuffs(Auras, unit, Auras.buffFilter or Auras.auraFilter or Auras.filter, Auras.BuffFilter or Auras.AuraFilter, visible)
-			visible = IterateDebuffs(Auras, unit, Auras.debuffFilter or Auras.auraFilter or Auras.filter, Auras.DebuffFilter or Auras.AuraFilter, visible)
+			visible = IterateBuffs(Auras, unit, buffFilter, buffFilterFunc, visible)
+			visible = IterateDebuffs(Auras, unit, debuffFilter, debuffFilterFunc, visible)
 		end 
 
 		EvaluateVisibilities(Auras, visible)
@@ -728,7 +717,7 @@ local Enable = function(self)
 		if frequent then
 			self:EnableFrequentUpdates("Auras", frequent)
 		else
-			self:RegisterEvent("UNIT_AURA", Proxy)
+			self:RegisterMessage("CG_UNIT_AURA", Proxy)
 			self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy, true)
 			self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)
 			self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
@@ -779,7 +768,8 @@ local Disable = function(self)
 		end
 	
 		if not ((Auras and Auras.frequent) or (Buffs and Buffs.frequent) or (Debuffs and Debuffs.frequent)) then
-			self:UnregisterEvent("UNIT_AURA", Proxy)
+			self:UnregisterMessage("CG_UNIT_AURA", Proxy)
+			
 			self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 			self:UnregisterEvent("PLAYER_REGEN_DISABLED", Proxy)
 			self:UnregisterEvent("PLAYER_REGEN_ENABLED", Proxy)
@@ -798,5 +788,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 35)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 36)
 end 
