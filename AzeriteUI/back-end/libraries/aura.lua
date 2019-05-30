@@ -1,4 +1,4 @@
-local LibAura = CogWheel:Set("LibAura", -1)
+local LibAura = CogWheel:Set("LibAura", 1)
 if (not LibAura) then	
 	return
 end
@@ -27,27 +27,37 @@ local debugstack = debugstack
 local error = error
 local pairs = pairs
 local select = select
+local string_gsub = string.gsub
 local string_join = string.join
 local string_match = string.match
 local tonumber = tonumber
 local type = type
 
 -- WoW API
+local UnitAura = _G.UnitAura
+
+-- WoW Constants
+local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
+local DEBUFF_MAX_DISPLAY = _G.DEBUFF_MAX_DISPLAY 
 
 -- Library registries
 LibAura.embeds = LibAura.embeds or {}
-LibAura.auras = LibAura.auras or {}
-LibAura.cache = LibAura.cache or {}
-LibAura.infoFlags = LibAura.infoFlags or {}
-LibAura.userFlags = LibAura.userFlags or {}
-LibAura.frame = LibAura.frame or LibAura:CreateFrame("Frame")
+LibAura.auraWatches = LibAura.auraWatches or {} -- currently tracked units
+LibAura.auras = LibAura.auras or {} -- static aura flag cache
+LibAura.cache = LibAura.cache or {} -- current unit aura cache
+LibAura.infoFlags = LibAura.infoFlags or {} -- static info flags about the auras
+LibAura.userFlags = LibAura.userFlags or {} -- added user flags about the auras
+LibAura.frame = LibAura.frame or LibAura:CreateFrame("Frame") -- frame tracking events and updates
 
 -- Shortcuts
+local Units = LibAura.auraWatches
 local Auras = LibAura.auras
 local Cache = LibAura.cache
 local InfoFlags = LibAura.infoFlags
 local UserFlags = LibAura.userFlags
 
+-- Utility Functions
+--------------------------------------------------------------------------
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -61,52 +71,223 @@ local check = function(value, num, ...)
 	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
 end
 
+-- Utility function to parse and order a filter, 
+-- to make sure we avoid duplicate caches. 
+local parseFilter = function(filter)
+	
+	-- speed it up for default situations
+	if ((not filter) or (filter == "")) then 
+		return "HELPFUL"
+	end
+
+	-- parse the string, ignore separator types and order
+	local harmful = string_match(filter, "HARMFUL")
+	local helpful = string_match(filter, "HELPFUL")
+	local player = string_match(filter, "PLAYER") -- auras that were applied by the player
+	local raid = string_match(filter, "RAID") -- auras that can be applied (if HELPFUL) or dispelled (if HARMFUL) by the player
+	local cancelable = string_match(filter, "CANCELABLE") -- buffs that can be removed (such as by right-clicking or using the /cancelaura command)
+	local not_cancelable = string_match(filter, "NOT_CANCELABLE") -- buffs that cannot be removed
+
+	-- return a nil value for invalid filters. 
+	-- *this might cause an error, but that is the intention.
+	if (harmful and helpful) or (cancelable and not_cancelable) then 
+		return 
+	end
+
+	-- always include these, as we're always using UnitAura() to retrieve buffs/debuffs.
+	local parsedFilter
+	if (harmful) then 
+		parsedFilter = "HARMFUL"
+	else 
+		parsedFilter = "HELPFUL" -- default when no help/harm is mentioned
+	end 
+
+	-- return a parsed filter with arguments separated by spaces, and in our preferred order
+	return parsedFilter .. (player and " PLAYER" or "") 
+						.. (raid and " RAID" or "") 
+						.. (cancelable and " CANCELABLE" or "") 
+						.. (not_cancelable and " NOT_CANCELABLE" or "") 
+end 
+
+-- Aura tracking frame and event handling
+--------------------------------------------------------------------------
 local Frame = LibAura.frame
 local Frame_MT = { __index = Frame }
 
 -- Methods we don't wish to expose to the modules
---------------------------------------------------------------------------
 local IsEventRegistered = Frame_MT.__index.IsEventRegistered
 local RegisterEvent = Frame_MT.__index.RegisterEvent
 local RegisterUnitEvent = Frame_MT.__index.RegisterUnitEvent
 local UnregisterEvent = Frame_MT.__index.UnregisterEvent
 local UnregisterAllEvents = Frame_MT.__index.UnregisterAllEvents
 
-Frame.OnEvent = function(self, event, unit)
+Frame.OnEvent = function(self, event, unit, ...)
+
+	-- don't bother caching up anything we haven't got a registered aurawatch or cache for
+	if (not Units[unit]) then 
+		return 
+	end 
+
+	-- retrieve the unit's aura cache, bail out if none has been queried before
 	local cache = Cache[unit]
 	if (not cache) then 
 		return 
 	end 
 
-	
-end
-
-LibAura.GetUnitAura = function(self, unit)
-end
-
-LibAura.RegisterAuraWatch = function(self, unit)
-	check(unit, 1, "string")
-
-	-- UNIT_AURA
-
-	if (not Cache[unit]) then 
-		Cache[unit] = {}
-		RegisterUnitEvent(Frame, "UNIT_AURA")
+	-- refresh all the registered filters
+	for filter in pairs(cache) do 
+		LibAura:CacheUnitAurasByFilter(unit, filter)
 	end 
 
+	-- Send a message to anybody listening
+	LibAura:SendMessage("CG_UNIT_AURA", unit)
 end
 
-LibAura.UnregisterAuraWatch = function(self, unit)
+LibAura.CacheUnitBuffsByFilter = function(self, unit, filter)
+	return self:CacheUnitAurasByFilter(unit, "HELPFUL" .. (filter or ""))
+end 
+
+LibAura.CacheUnitDebuffsByFilter = function(self, unit, filter)
+	return self:CacheUnitAurasByFilter(unit, "HARMFUL" .. (filter or ""))
+end 
+
+LibAura.CacheUnitAurasByFilter = function(self, unit, filter)
+	-- Parse the provided or create a default filter
+	local filter = parseFilter(filter)
+	if (not filter) then 
+		return -- don't cache invalid filters
+	end
+
+	-- Enable the aura watch for this unit and filter if it hasn't been already
+	-- This also creates the relevant tables for us. 
+	if (not Units[unit]) or (not Cache[unit][filter]) then 
+		LibAura:RegisterAuraWatch(unit, filter)
+	end 
+
+	-- Retrieve the aura cache for this unit and filter
+	local cache = Cache[unit][filter]
+
+	local counter, limit = 0, string_match(filter, "HARMFUL") and DEBUFF_MAX_DISPLAY or BUFF_MAX_DISPLAY
+	for i = 1,limit do 
+
+		-- Retrieve buff information
+		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 = UnitAura(unit, i, filter)
+
+		-- No name means no more buffs matching the filter
+		if (not name) then
+			break
+		end
+
+		-- Cache up the values for the aura index.
+		-- *Only ever replace the whole table on its initial creation, 
+		-- always reuse the existing ones at all other times. 
+		-- This can fire A LOT in battlegrounds, so this is needed for performance and memory. 
+		if (cache[i]) then 
+			cache[i][1], 
+			cache[i][2], 
+			cache[i][3], 
+			cache[i][4], 
+			cache[i][5], 
+			cache[i][6], 
+			cache[i][7], 
+			cache[i][8], 
+			cache[i][9], 
+			cache[i][10], 
+			cache[i][11], 
+			cache[i][12], 
+			cache[i][13], 
+			cache[i][14], 
+			cache[i][15], 
+			cache[i][16], 
+			cache[i][17], 
+			cache[i][18] = name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3
+		else 
+			cache[i] = { name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3 }
+		end 
+
+		counter = counter + 1
+	end 
+
+	-- Clear out old, if any
+	local numAuras = #cache
+	if (numAuras > counter) then 
+		for i = counter+1,numAuras do 
+			for j = 1,#cache[i] do 
+				cache[i][j] = nil
+			end 
+		end
+	end
+	
+	-- return cache and aura count for this filter and unit
+	return cache, counter
+end
+
+-- retrieve a cached filtered aura list for the given unit
+LibAura.GetUnitAuraCacheByFilter = function(self, unit, filter)
+	return Cache[unit] and Cache[unit][filter] or LibAura:CacheUnitAurasByFilter(unit, filter)
+end
+
+LibAura.GetUnitAura = function(self, unit, auraID, filter)
+	local cache = self:GetUnitAuraCacheByFilter(unit, filter)
+	local aura = cache and cache[auraID]
+	if aura then 
+		return aura[1], aura[2], aura[3], aura[4], aura[5], aura[6], aura[7], aura[8], aura[9], aura[10], aura[11], aura[12], aura[13], aura[14], aura[15], aura[16], aura[17], aura[18]
+	end 
+end
+
+LibAura.GetUnitBuff = function(self, unit, auraID, filter)
+	local cache = self:CacheUnitAurasByFilter(unit, "HELPFUL" .. (filter or ""))
+	local aura = cache and cache[auraID]
+	if aura then 
+		return aura[1], aura[2], aura[3], aura[4], aura[5], aura[6], aura[7], aura[8], aura[9], aura[10], aura[11], aura[12], aura[13], aura[14], aura[15], aura[16], aura[17], aura[18]
+	end 
+end
+
+LibAura.GetUnitDebuff = function(self, unit, auraID, filter)
+	local cache = self:CacheUnitAurasByFilter(unit, "HARMFUL" .. (filter or ""))
+	local aura = cache and cache[auraID]
+	if aura then 
+		return aura[1], aura[2], aura[3], aura[4], aura[5], aura[6], aura[7], aura[8], aura[9], aura[10], aura[11], aura[12], aura[13], aura[14], aura[15], aura[16], aura[17], aura[18]
+	end 
+end
+
+LibAura.RegisterAuraWatch = function(self, unit, filter)
 	check(unit, 1, "string")
 
+	-- set the tracking flag for this unit
+	Units[unit] = true
+
+	-- create the relevant tables
+	-- this is needed for the event handler to respond 
+	-- to blizz events and cache up the relevant auras.
+	if (not Cache[unit]) then 
+		Cache[unit] = {}
+	end 
+	if (not Cache[unit][filter]) then 
+		Cache[unit][filter] = {}
+	end 
+
+	-- register the main event with our event frame, if it hasn't been already
+	if (not IsEventRegistered(Frame, "UNIT_AURA")) then
+		RegisterEvent(Frame, "UNIT_AURA")
+	end
 end
 
-LibAura.GetUnitAuraWatchCache = function(self, unit)
-	return Cache[unit]
-end
+LibAura.UnregisterAuraWatch = function(self, unit, filter)
+	check(unit, 1, "string")
 
-LibAura.SendAuraUpdate = function(self, unit)
-	self:SendMessage("CG_UNIT_AURA", unit, Cache[unit])
+	-- clear the tracking flag for this unit
+	Units[unit] = false
+
+	-- check if anything is still tracked
+	for unit,tracked in pairs(Units) do 
+		if (tracked) then 
+			return 
+		end 
+	end 
+
+	-- if we made it this far, we're not tracking anything
+	UnregisterEvent(Frame, "UNIT_AURA")
 end
 
 LibAura.AddAuraFlags = function(self, spellID, flags)
@@ -141,9 +322,16 @@ LibAura.RemoveAuraFlags = function(self, spellID, removalFlags)
 end 
 
 local embedMethods = {
-	RegisterAuraWatch = true, 
+	CacheUnitAurasByFilter = true,
+	CacheUnitBuffsByFilter = true,
+	CacheUnitDebuffsByFilter = true,
+	GetUnitAura = true,
+	GetUnitBuff = true,
+	GetUnitDebuff = true,
+	GetUnitAuraCacheByFilter = true,
+	RegisterAuraWatch = true,
 	UnregisterAuraWatch = true,
-	AddAuraFlags = true, 
+	AddAuraFlags = true,
 	RemoveAuraFlags = true
 }
 
@@ -160,6 +348,9 @@ for target in pairs(LibAura.embeds) do
 	LibAura:Embed(target)
 end
 
+-- Important. Doh. 
+Frame:UnregisterAllEvents()
+Frame:SetScript("OnEvent", Frame.OnEvent)
 
 --------------------------------------------------------------------------
 -- InfoFlags
@@ -1369,258 +1560,258 @@ end
 ------------------------------------------------------------------------
 do 
 	-- *missing most BfA ones, will add a copout here. 
-	Cache[ 19705] = IsFood
-	Cache[ 19706] = IsFood
-	Cache[ 19708] = IsFood
-	Cache[ 19709] = IsFood
-	Cache[ 19710] = IsFood
-	Cache[ 19711] = IsFood
-	Cache[ 24799] = IsFood
-	Cache[ 24870] = IsFood
-	Cache[ 25694] = IsFood
-	Cache[ 25941] = IsFood
-	Cache[ 33254] = IsFood
-	Cache[ 33256] = IsFood
-	Cache[ 33257] = IsFood
-	Cache[ 33259] = IsFood
-	Cache[ 33261] = IsFood
-	Cache[ 33263] = IsFood
-	Cache[ 33265] = IsFood
-	Cache[ 33268] = IsFood
-	Cache[ 33272] = IsFood
-	Cache[ 35272] = IsFood
-	Cache[ 42293] = IsFood
-	Cache[ 43764] = IsFood
-	Cache[ 45245] = IsFood
-	Cache[ 45619] = IsFood
-	Cache[ 46682] = IsFood
-	Cache[ 46687] = IsFood
-	Cache[ 46899] = IsFood
-	Cache[ 53284] = IsFood
-	Cache[ 57079] = IsFood
-	Cache[ 57097] = IsFood
-	Cache[ 57100] = IsFood
-	Cache[ 57102] = IsFood
-	Cache[ 57107] = IsFood
-	Cache[ 57111] = IsFood
-	Cache[ 57139] = IsFood
-	Cache[ 57286] = IsFood
-	Cache[ 57288] = IsFood
-	Cache[ 57291] = IsFood
-	Cache[ 57294] = IsFood
-	Cache[ 57325] = IsFood
-	Cache[ 57327] = IsFood
-	Cache[ 57329] = IsFood
-	Cache[ 57332] = IsFood
-	Cache[ 57334] = IsFood
-	Cache[ 57356] = IsFood
-	Cache[ 57358] = IsFood
-	Cache[ 57360] = IsFood
-	Cache[ 57363] = IsFood
-	Cache[ 57365] = IsFood
-	Cache[ 57367] = IsFood
-	Cache[ 57371] = IsFood
-	Cache[ 57373] = IsFood
-	Cache[ 57399] = IsFood
-	Cache[ 59230] = IsFood
-	Cache[ 62349] = IsFood
-	Cache[ 64057] = IsFood
-	Cache[ 65410] = IsFood
-	Cache[ 65412] = IsFood
-	Cache[ 65414] = IsFood
-	Cache[ 65415] = IsFood
-	Cache[ 65416] = IsFood
-	Cache[ 66623] = IsFood
-	Cache[ 87545] = IsFood
-	Cache[ 87546] = IsFood
-	Cache[ 87547] = IsFood
-	Cache[ 87548] = IsFood
-	Cache[ 87549] = IsFood
-	Cache[ 87550] = IsFood
-	Cache[ 87551] = IsFood
-	Cache[ 87552] = IsFood
-	Cache[ 87554] = IsFood
-	Cache[ 87555] = IsFood
-	Cache[ 87556] = IsFood
-	Cache[ 87557] = IsFood
-	Cache[ 87558] = IsFood
-	Cache[ 87559] = IsFood
-	Cache[ 87560] = IsFood
-	Cache[ 87561] = IsFood
-	Cache[ 87562] = IsFood
-	Cache[ 87563] = IsFood
-	Cache[ 87564] = IsFood
-	Cache[ 87565] = IsFood
-	Cache[ 87634] = IsFood
-	Cache[ 87635] = IsFood
-	Cache[ 87697] = IsFood
-	Cache[ 87699] = IsFood
-	Cache[ 99305] = IsFood
-	Cache[ 99478] = IsFood
-	Cache[100368] = IsFood
-	Cache[100373] = IsFood
-	Cache[100375] = IsFood
-	Cache[100377] = IsFood
-	Cache[104264] = IsFood
-	Cache[104267] = IsFood
-	Cache[104271] = IsFood
-	Cache[104272] = IsFood
-	Cache[104273] = IsFood
-	Cache[104274] = IsFood
-	Cache[104275] = IsFood
-	Cache[104276] = IsFood
-	Cache[104277] = IsFood
-	Cache[104278] = IsFood
-	Cache[104279] = IsFood
-	Cache[104280] = IsFood
-	Cache[104281] = IsFood
-	Cache[104282] = IsFood
-	Cache[104283] = IsFood
-	Cache[105226] = IsFood
-	Cache[108028] = IsFood
-	Cache[108031] = IsFood
-	Cache[108032] = IsFood
-	Cache[110645] = IsFood
-	Cache[114733] = IsFood
-	Cache[124151] = IsFood
-	Cache[124210] = IsFood
-	Cache[124211] = IsFood
-	Cache[124212] = IsFood
-	Cache[124213] = IsFood
-	Cache[124214] = IsFood
-	Cache[124215] = IsFood
-	Cache[124216] = IsFood
-	Cache[124217] = IsFood
-	Cache[124218] = IsFood
-	Cache[124219] = IsFood
-	Cache[124220] = IsFood
-	Cache[124221] = IsFood
-	Cache[125070] = IsFood
-	Cache[125071] = IsFood
-	Cache[125102] = IsFood
-	Cache[125104] = IsFood
-	Cache[125106] = IsFood
-	Cache[125108] = IsFood
-	Cache[125113] = IsFood
-	Cache[125115] = IsFood
-	Cache[130342] = IsFood
-	Cache[130343] = IsFood
-	Cache[130344] = IsFood
-	Cache[130345] = IsFood
-	Cache[130346] = IsFood
-	Cache[130347] = IsFood
-	Cache[130348] = IsFood
-	Cache[130350] = IsFood
-	Cache[130351] = IsFood
-	Cache[130352] = IsFood
-	Cache[130353] = IsFood
-	Cache[130354] = IsFood
-	Cache[130355] = IsFood
-	Cache[130356] = IsFood
-	Cache[131828] = IsFood
-	Cache[133428] = IsFood
-	Cache[133593] = IsFood
-	Cache[133594] = IsFood
-	Cache[133595] = IsFood
-	Cache[133596] = IsFood
-	Cache[134094] = IsFood
-	Cache[134219] = IsFood
-	Cache[134506] = IsFood
-	Cache[134712] = IsFood
-	Cache[134887] = IsFood
-	Cache[135076] = IsFood
-	Cache[135440] = IsFood
-	Cache[140410] = IsFood
-	Cache[145304] = IsFood
-	Cache[146804] = IsFood
-	Cache[146805] = IsFood
-	Cache[146806] = IsFood
-	Cache[146807] = IsFood
-	Cache[146808] = IsFood
-	Cache[146809] = IsFood
-	Cache[147312] = IsFood
-	Cache[159372] = IsFood
-	Cache[160600] = IsFood
-	Cache[160722] = IsFood
-	Cache[160724] = IsFood
-	Cache[160726] = IsFood
-	Cache[160778] = IsFood
-	Cache[160793] = IsFood
-	Cache[160832] = IsFood
-	Cache[160839] = IsFood
-	Cache[160883] = IsFood
-	Cache[160885] = IsFood
-	Cache[160889] = IsFood
-	Cache[160893] = IsFood
-	Cache[160895] = IsFood
-	Cache[160897] = IsFood
-	Cache[160900] = IsFood
-	Cache[160902] = IsFood
-	Cache[165802] = IsFood
-	Cache[168349] = IsFood
-	Cache[168475] = IsFood
-	Cache[174062] = IsFood
-	Cache[174077] = IsFood
-	Cache[174078] = IsFood
-	Cache[174079] = IsFood
-	Cache[174080] = IsFood
-	Cache[175218] = IsFood
-	Cache[175219] = IsFood
-	Cache[175220] = IsFood
-	Cache[175222] = IsFood
-	Cache[175223] = IsFood
-	Cache[175784] = IsFood
-	Cache[175785] = IsFood
-	Cache[177931] = IsFood
-	Cache[180745] = IsFood
-	Cache[180746] = IsFood
-	Cache[180747] = IsFood
-	Cache[180748] = IsFood
-	Cache[180749] = IsFood
-	Cache[180750] = IsFood
-	Cache[185736] = IsFood
-	Cache[185786] = IsFood
-	Cache[188534] = IsFood
-	Cache[192004] = IsFood
-	Cache[201223] = IsFood
-	Cache[201330] = IsFood
-	Cache[201332] = IsFood
-	Cache[201334] = IsFood
-	Cache[201336] = IsFood
-	Cache[201350] = IsFood
-	Cache[201634] = IsFood
-	Cache[201635] = IsFood
-	Cache[201636] = IsFood
-	Cache[201637] = IsFood
-	Cache[201638] = IsFood
-	Cache[201639] = IsFood
-	Cache[201640] = IsFood
-	Cache[201641] = IsFood
-	Cache[201679] = IsFood
-	Cache[201695] = IsFood
-	Cache[207076] = IsFood
-	Cache[215607] = IsFood
-	Cache[216343] = IsFood
-	Cache[216353] = IsFood
-	Cache[216828] = IsFood
-	Cache[225597] = IsFood
-	Cache[225598] = IsFood
-	Cache[225599] = IsFood
-	Cache[225600] = IsFood
-	Cache[225601] = IsFood
-	Cache[225602] = IsFood
-	Cache[225603] = IsFood
-	Cache[225604] = IsFood
-	Cache[225605] = IsFood
-	Cache[225606] = IsFood
-	Cache[226805] = IsFood
-	Cache[226807] = IsFood
-	Cache[230061] = IsFood
-	Cache[251234] = IsFood
-	Cache[251247] = IsFood
-	Cache[251248] = IsFood
-	Cache[251261] = IsFood
-	Cache[262571] = IsFood
+	Auras[ 19705] = IsFood
+	Auras[ 19706] = IsFood
+	Auras[ 19708] = IsFood
+	Auras[ 19709] = IsFood
+	Auras[ 19710] = IsFood
+	Auras[ 19711] = IsFood
+	Auras[ 24799] = IsFood
+	Auras[ 24870] = IsFood
+	Auras[ 25694] = IsFood
+	Auras[ 25941] = IsFood
+	Auras[ 33254] = IsFood
+	Auras[ 33256] = IsFood
+	Auras[ 33257] = IsFood
+	Auras[ 33259] = IsFood
+	Auras[ 33261] = IsFood
+	Auras[ 33263] = IsFood
+	Auras[ 33265] = IsFood
+	Auras[ 33268] = IsFood
+	Auras[ 33272] = IsFood
+	Auras[ 35272] = IsFood
+	Auras[ 42293] = IsFood
+	Auras[ 43764] = IsFood
+	Auras[ 45245] = IsFood
+	Auras[ 45619] = IsFood
+	Auras[ 46682] = IsFood
+	Auras[ 46687] = IsFood
+	Auras[ 46899] = IsFood
+	Auras[ 53284] = IsFood
+	Auras[ 57079] = IsFood
+	Auras[ 57097] = IsFood
+	Auras[ 57100] = IsFood
+	Auras[ 57102] = IsFood
+	Auras[ 57107] = IsFood
+	Auras[ 57111] = IsFood
+	Auras[ 57139] = IsFood
+	Auras[ 57286] = IsFood
+	Auras[ 57288] = IsFood
+	Auras[ 57291] = IsFood
+	Auras[ 57294] = IsFood
+	Auras[ 57325] = IsFood
+	Auras[ 57327] = IsFood
+	Auras[ 57329] = IsFood
+	Auras[ 57332] = IsFood
+	Auras[ 57334] = IsFood
+	Auras[ 57356] = IsFood
+	Auras[ 57358] = IsFood
+	Auras[ 57360] = IsFood
+	Auras[ 57363] = IsFood
+	Auras[ 57365] = IsFood
+	Auras[ 57367] = IsFood
+	Auras[ 57371] = IsFood
+	Auras[ 57373] = IsFood
+	Auras[ 57399] = IsFood
+	Auras[ 59230] = IsFood
+	Auras[ 62349] = IsFood
+	Auras[ 64057] = IsFood
+	Auras[ 65410] = IsFood
+	Auras[ 65412] = IsFood
+	Auras[ 65414] = IsFood
+	Auras[ 65415] = IsFood
+	Auras[ 65416] = IsFood
+	Auras[ 66623] = IsFood
+	Auras[ 87545] = IsFood
+	Auras[ 87546] = IsFood
+	Auras[ 87547] = IsFood
+	Auras[ 87548] = IsFood
+	Auras[ 87549] = IsFood
+	Auras[ 87550] = IsFood
+	Auras[ 87551] = IsFood
+	Auras[ 87552] = IsFood
+	Auras[ 87554] = IsFood
+	Auras[ 87555] = IsFood
+	Auras[ 87556] = IsFood
+	Auras[ 87557] = IsFood
+	Auras[ 87558] = IsFood
+	Auras[ 87559] = IsFood
+	Auras[ 87560] = IsFood
+	Auras[ 87561] = IsFood
+	Auras[ 87562] = IsFood
+	Auras[ 87563] = IsFood
+	Auras[ 87564] = IsFood
+	Auras[ 87565] = IsFood
+	Auras[ 87634] = IsFood
+	Auras[ 87635] = IsFood
+	Auras[ 87697] = IsFood
+	Auras[ 87699] = IsFood
+	Auras[ 99305] = IsFood
+	Auras[ 99478] = IsFood
+	Auras[100368] = IsFood
+	Auras[100373] = IsFood
+	Auras[100375] = IsFood
+	Auras[100377] = IsFood
+	Auras[104264] = IsFood
+	Auras[104267] = IsFood
+	Auras[104271] = IsFood
+	Auras[104272] = IsFood
+	Auras[104273] = IsFood
+	Auras[104274] = IsFood
+	Auras[104275] = IsFood
+	Auras[104276] = IsFood
+	Auras[104277] = IsFood
+	Auras[104278] = IsFood
+	Auras[104279] = IsFood
+	Auras[104280] = IsFood
+	Auras[104281] = IsFood
+	Auras[104282] = IsFood
+	Auras[104283] = IsFood
+	Auras[105226] = IsFood
+	Auras[108028] = IsFood
+	Auras[108031] = IsFood
+	Auras[108032] = IsFood
+	Auras[110645] = IsFood
+	Auras[114733] = IsFood
+	Auras[124151] = IsFood
+	Auras[124210] = IsFood
+	Auras[124211] = IsFood
+	Auras[124212] = IsFood
+	Auras[124213] = IsFood
+	Auras[124214] = IsFood
+	Auras[124215] = IsFood
+	Auras[124216] = IsFood
+	Auras[124217] = IsFood
+	Auras[124218] = IsFood
+	Auras[124219] = IsFood
+	Auras[124220] = IsFood
+	Auras[124221] = IsFood
+	Auras[125070] = IsFood
+	Auras[125071] = IsFood
+	Auras[125102] = IsFood
+	Auras[125104] = IsFood
+	Auras[125106] = IsFood
+	Auras[125108] = IsFood
+	Auras[125113] = IsFood
+	Auras[125115] = IsFood
+	Auras[130342] = IsFood
+	Auras[130343] = IsFood
+	Auras[130344] = IsFood
+	Auras[130345] = IsFood
+	Auras[130346] = IsFood
+	Auras[130347] = IsFood
+	Auras[130348] = IsFood
+	Auras[130350] = IsFood
+	Auras[130351] = IsFood
+	Auras[130352] = IsFood
+	Auras[130353] = IsFood
+	Auras[130354] = IsFood
+	Auras[130355] = IsFood
+	Auras[130356] = IsFood
+	Auras[131828] = IsFood
+	Auras[133428] = IsFood
+	Auras[133593] = IsFood
+	Auras[133594] = IsFood
+	Auras[133595] = IsFood
+	Auras[133596] = IsFood
+	Auras[134094] = IsFood
+	Auras[134219] = IsFood
+	Auras[134506] = IsFood
+	Auras[134712] = IsFood
+	Auras[134887] = IsFood
+	Auras[135076] = IsFood
+	Auras[135440] = IsFood
+	Auras[140410] = IsFood
+	Auras[145304] = IsFood
+	Auras[146804] = IsFood
+	Auras[146805] = IsFood
+	Auras[146806] = IsFood
+	Auras[146807] = IsFood
+	Auras[146808] = IsFood
+	Auras[146809] = IsFood
+	Auras[147312] = IsFood
+	Auras[159372] = IsFood
+	Auras[160600] = IsFood
+	Auras[160722] = IsFood
+	Auras[160724] = IsFood
+	Auras[160726] = IsFood
+	Auras[160778] = IsFood
+	Auras[160793] = IsFood
+	Auras[160832] = IsFood
+	Auras[160839] = IsFood
+	Auras[160883] = IsFood
+	Auras[160885] = IsFood
+	Auras[160889] = IsFood
+	Auras[160893] = IsFood
+	Auras[160895] = IsFood
+	Auras[160897] = IsFood
+	Auras[160900] = IsFood
+	Auras[160902] = IsFood
+	Auras[165802] = IsFood
+	Auras[168349] = IsFood
+	Auras[168475] = IsFood
+	Auras[174062] = IsFood
+	Auras[174077] = IsFood
+	Auras[174078] = IsFood
+	Auras[174079] = IsFood
+	Auras[174080] = IsFood
+	Auras[175218] = IsFood
+	Auras[175219] = IsFood
+	Auras[175220] = IsFood
+	Auras[175222] = IsFood
+	Auras[175223] = IsFood
+	Auras[175784] = IsFood
+	Auras[175785] = IsFood
+	Auras[177931] = IsFood
+	Auras[180745] = IsFood
+	Auras[180746] = IsFood
+	Auras[180747] = IsFood
+	Auras[180748] = IsFood
+	Auras[180749] = IsFood
+	Auras[180750] = IsFood
+	Auras[185736] = IsFood
+	Auras[185786] = IsFood
+	Auras[188534] = IsFood
+	Auras[192004] = IsFood
+	Auras[201223] = IsFood
+	Auras[201330] = IsFood
+	Auras[201332] = IsFood
+	Auras[201334] = IsFood
+	Auras[201336] = IsFood
+	Auras[201350] = IsFood
+	Auras[201634] = IsFood
+	Auras[201635] = IsFood
+	Auras[201636] = IsFood
+	Auras[201637] = IsFood
+	Auras[201638] = IsFood
+	Auras[201639] = IsFood
+	Auras[201640] = IsFood
+	Auras[201641] = IsFood
+	Auras[201679] = IsFood
+	Auras[201695] = IsFood
+	Auras[207076] = IsFood
+	Auras[215607] = IsFood
+	Auras[216343] = IsFood
+	Auras[216353] = IsFood
+	Auras[216828] = IsFood
+	Auras[225597] = IsFood
+	Auras[225598] = IsFood
+	Auras[225599] = IsFood
+	Auras[225600] = IsFood
+	Auras[225601] = IsFood
+	Auras[225602] = IsFood
+	Auras[225603] = IsFood
+	Auras[225604] = IsFood
+	Auras[225605] = IsFood
+	Auras[225606] = IsFood
+	Auras[226805] = IsFood
+	Auras[226807] = IsFood
+	Auras[230061] = IsFood
+	Auras[251234] = IsFood
+	Auras[251247] = IsFood
+	Auras[251248] = IsFood
+	Auras[251261] = IsFood
+	Auras[262571] = IsFood
 end 
 
 
