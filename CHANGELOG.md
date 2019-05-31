@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.145-Release] 2019-05-31
+### Added
+- Added frFR locale by Sonshine! 
+
 ## [1.2.144-Release] 2019-05-29
 ### Fixed
 - The ToT target highlight outline will no longer be visible when the ToT frame itself is hidden, which is the case when the Target frame and the ToT frame share the same unit. 
