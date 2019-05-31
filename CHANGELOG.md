@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.2.145-Release] 2019-05-31
 ### Added
-- Added frFR locale by Sonshine! 
+- Added frFR locale by HipNoTik! 
 
 ## [1.2.144-Release] 2019-05-29
 ### Fixed

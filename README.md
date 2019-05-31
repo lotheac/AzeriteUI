@@ -41,6 +41,7 @@ This is not a feature we intend to implement. We do realize that some of you wou
 
 ## **Translators:**  
 * esES: **Sonshine**  
+* frFR: **HipNoTik**  
 * ruRU: **Demorto** _(Anton Bozhina)_  
 * zhCN: **4679** _(Jiawei Zhou)_  
 * zhTW: **Alex Wang**  
