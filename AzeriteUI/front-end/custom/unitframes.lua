@@ -34,6 +34,12 @@ local UnitFrameParty = Core:NewModule("UnitFrameParty", "LibDB", "LibFrame", "Li
 local UnitFrameRaid = Core:NewModule("UnitFrameRaid", "LibDB", "LibFrame", "LibUnitFrame", "LibBlizzard")
 
 -- Incompatibilities
+-- *Note that Arena frames can also be manually disabled from our menu!
+--  The same is true for party- and raid frames, which is 
+--  part of why we haven't included any auto-disabling of them. 
+--  Other reason is that some like to combine, have our party frames, 
+--  but use Grid for raids, or have our raid frames but another addon 
+--  to rack specific groups like tanks and so on. 
 UnitFrameArena:SetIncompatible("sArena")
 UnitFrameArena:SetIncompatible("Gladius")
 UnitFrameArena:SetIncompatible("GladiusEx")
