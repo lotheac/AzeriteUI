@@ -1,4 +1,4 @@
-local LibLocale = CogWheel:Set("LibLocale", 3)
+local LibLocale = CogWheel:Set("LibLocale", 5)
 if (not LibLocale) then	
 	return
 end
@@ -48,14 +48,19 @@ end
 -- 	the default locale definition. 
 local read = {
 	__index = function(tbl, key)
-		rawset(tbl, key, key)
+		local defaultValue 
+		local defaultLocale = rawget(tbl, "_owner")._defaultLocale
+		if defaultLocale then 
+			defaultValue = rawget(LibLocale.modules[module][defaultLocale], key)
+		end 
+		rawset(tbl, key, defaultValue or key)
 
 		local LibModule = CogWheel("LibModule")
 		if LibModule and LibModule.AddDebugMessage then 
 
 			local name = "XXX"
 			for module,moduleTbl in pairs(LibLocale.modules) do 
-				if moduleTbl == tbl then 
+				if (moduleTbl == tbl) then 
 					name = module 
 					break 
 					--(getmetatable(moduleTbl) == read) and moduleTbl or setmetatable(LibLocale.modules[module], read)
@@ -92,6 +97,9 @@ local writeDefault = {
 -- 	this metatable can safely overwrite existing entries.
 local write = {
 	__newindex = function(tbl, key, value)
+		if (value == true) then 
+			return 
+		end 
 		rawset(tbl, key, (value == true) and key or value)
 	end,
 	__index = function() end
@@ -108,13 +116,6 @@ LibLocale.NewLocale = function(self, module, locale, isDefault)
 	check(locale, 2, "string")
 	check(isDefault, 3, "boolean", "nil")
 
-	-- Retrieve or create the module locale table
-	local mod = LibLocale.modules[module]
-	if (not mod) then
-		mod = {}
-		LibLocale.modules[module] = mod
-	end
-
 	-- Allow the usage of the GAME_LOCALE global 
 	-- to test other locales than the client locale.
 	local gameLocale = GAME_LOCALE or gameLocale
@@ -122,8 +123,23 @@ LibLocale.NewLocale = function(self, module, locale, isDefault)
 		return 
 	end
 
+	-- Retrieve or create the module locale table
+	if (not LibLocale.modules[module]) then
+		LibLocale.modules[module] = {}
+	end
+	local tbl = LibLocale.modules[module][locale]
+	if (not tbl) then 
+		tbl = { _owner = module, _locale = locale }
+		LibLocale.modules[module][locale] = tbl
+		LibLocale.modules[module]._defaultLocale = isDefault and locale or nil
+	end 
+
 	-- Return the module locale table with the correct metatable attached
-	return setmetatable(LibLocale.modules[module], isDefault and writeDefault or write)
+	if isDefault then 
+		return setmetatable(tbl, writeDefault)
+	else 
+		return setmetatable(tbl, write)
+	end 
 end
 
 -- Get the current locale for your module
@@ -133,9 +149,9 @@ end
 LibLocale.GetLocale = function(self, module)
 	check(module, 1, "string")
 
-	local tbl = LibLocale.modules[module]
+	local tbl = LibLocale.modules[module][GAME_LOCALE or gameLocale]
 	if tbl then
-		return (getmetatable(tbl) == read) and tbl or setmetatable(LibLocale.modules[module], read)
+		return (getmetatable(tbl) == read) and tbl or setmetatable(tbl, read)
 	end
 end
 
