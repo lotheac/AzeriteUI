@@ -40,6 +40,7 @@ This is not a feature we intend to implement. We do realize that some of you wou
 * Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
 
 ## **Translators:**  
+* deDE: **Maoe**  
 * esES: **Sonshine**  
 * frFR: **HipNoTik**  
 * ruRU: **Demorto** _(Anton Bozhina)_  

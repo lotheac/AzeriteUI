@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.147-Release] 2019-06-17
+### Added 
+- Added deDE by Maoe!
+
 ## [1.2.146-Release] 2019-06-02
 ### Changed
 - Updated frFR locale.
