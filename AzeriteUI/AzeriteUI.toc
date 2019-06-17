@@ -110,6 +110,7 @@ back-end\plugins\unit_threat.lua
 
 # Addon localization
 locale\enUS.lua
+locale\deDE.lua
 locale\esES.lua
 locale\esMX.lua
 locale\esMX.lua
