@@ -1702,7 +1702,10 @@ local NamePlates = {
 local TooltipStyling = {
 	Colors = Colors,
 
-	TooltipPlace = { "BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -48, 107 }, 
+	-- Going with full positioning after 8.2.0. 
+	TooltipPlace = { "BOTTOMRIGHT", "UICenter", "BOTTOMRIGHT", -(48 + 58 + 213), (107 + 59) }, 
+	--TooltipPlace = { "BOTTOMRIGHT", "Minimap", "BOTTOMLEFT", -48, 107 }, 
+
 	TooltipStatusBarTexture = GetMedia("statusbar_normal"), 
 	TooltipBackdrop = {
 		bgFile = [[Interface\ChatFrame\ChatFrameBackground]], tile = false, 
