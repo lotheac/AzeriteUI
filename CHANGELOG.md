@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.151-Beta] 2019-06-27
+### Changed
+- Disabled the blips from 8.1.5 again, turns out that even though the humanoid icons were right, the rest weren't. Balls. I'll re-order the icons tomorrow. Need a little actual playing here now. I want to do the new quests too! :'(
+
 ## [1.2.150-Beta] 2019-06-27
 WoW Client Patch 8.2.0 Mayhem continues still!
 
