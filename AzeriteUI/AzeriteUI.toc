@@ -143,12 +143,12 @@ front-end\root.lua
 # Modules which mostly modify Blizzard elements
 front-end\blizzard\chatbubbles.lua
 front-end\blizzard\chatwindows.lua
-front-end\blizzard\floaters.lua
+#front-end\blizzard\floaters.lua
 front-end\blizzard\fonts.lua
 front-end\blizzard\gamemenu.lua
-front-end\blizzard\micromenu.lua
-front-end\blizzard\minimap.lua
-front-end\blizzard\objectivestracker.lua
+#front-end\blizzard\micromenu.lua
+#front-end\blizzard\minimap.lua
+#front-end\blizzard\objectivestracker.lua
 front-end\blizzard\popups.lua
 front-end\blizzard\timers.lua
 front-end\blizzard\tooltips.lua
@@ -160,7 +160,7 @@ front-end\custom\bindings.lua
 front-end\custom\chatfilters.lua
 front-end\custom\explorer.lua
 front-end\custom\grouptools.lua
-front-end\custom\menu.lua
+#front-end\custom\menu.lua
 front-end\custom\nameplates.lua
 front-end\custom\tooltips.lua
 front-end\custom\unitframes.lua
