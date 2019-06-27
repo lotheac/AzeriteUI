@@ -1,7 +1,10 @@
-local LibFrame = CogWheel:Set("LibFrame", 49)
+local LibFrame = CogWheel:Set("LibFrame", 52)
 if (not LibFrame) then	
 	return
 end
+
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "LibFrame requires LibClientBuild to be loaded.")
 
 local LibMessage = CogWheel("LibMessage")
 assert(LibMessage, "LibFrame requires LibMessage to be loaded.")
@@ -16,6 +19,7 @@ local LibSecureHook = CogWheel("LibSecureHook")
 assert(LibSecureHook, "LibFrame requires LibSecureHook to be loaded.")
 
 -- Embed event functionality into this
+LibClientBuild:Embed(LibFrame)
 LibMessage:Embed(LibFrame)
 LibEvent:Embed(LibFrame)
 LibHook:Embed(LibFrame)
@@ -122,7 +126,7 @@ local SetDisplaySize = function()
 	LibFrame.frame:SetFrameStrata(UIParent:GetFrameStrata())
 	LibFrame.frame:SetFrameLevel(UIParent:GetFrameLevel())
 	LibFrame.frame:ClearAllPoints()
-	LibFrame.frame:SetPoint("BOTTOM", WorldFrame, "BOTTOM")
+	LibFrame.frame:SetPoint("BOTTOM", UIParent, "BOTTOM")
 	LibFrame.frame:SetScale(scale)
 	LibFrame.frame:SetSize(round(displayWidth), round(displayHeight))
 end 
@@ -387,8 +391,10 @@ LibFrame.Enable = function(self)
 	self:RegisterMessage("CG_INTERFACE_SCALE_UPDATE", "OnEvent")
 	
 	-- Could it be enough to just track frame changes and not events?
-	self:SetHook(UIParent, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_UIParent_OnSizeChanged")
-	self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
+	--if (not self:IsBuild("8.2.0")) then
+		self:SetHook(UIParent, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_UIParent_OnSizeChanged")
+		self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
+	--end
 
 end 
 
