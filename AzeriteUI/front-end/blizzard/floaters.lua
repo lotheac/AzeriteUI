@@ -460,6 +460,8 @@ Module.StyleZoneAbilityButton = function(self)
 end 
 
 Module.StyleDurabilityFrame = function(self)
+	-- This still breaks in 8.2.0, regardless of our frame library updates. 
+	-- So until further changes have been made, we need it disabled. 
 	if (not Layout.StyleDurabilityFrame) or (self:IsBuild("8.2.0")) then 
 		return 
 	end
