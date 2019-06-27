@@ -1,5 +1,5 @@
-local Version = 35 -- This library's version 
-local MapVersion = 35 -- Minimap library version the minimap created by this is compatible with
+local Version = 36 -- This library's version 
+local MapVersion = Version -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
 	return
@@ -557,9 +557,9 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 	local ClearAllPoints = getMetaMethod("ClearAllPoints")
 	local SetPoint = getMetaMethod("SetPoint")
 	Private.MapHolder.Place = function(self, ...)
-		ClearAllPoints(self)
 		Place(self, ...)
 		ClearAllPoints(Private.MapContent)
+		--Place(Private.MapContent, ...)
 		SetPoint(Private.MapContent, "CENTER", self, "CENTER", 0, 0)
 	end 
 
