@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.150-Beta] 2019-06-27
+WoW Client Patch 8.2.0 Mayhem continues still!
+
+### Changed
+- Re-enabled our styled Minimap blips from patch 8.1.5, as they don't appear to have changed their atlas(?). Kind of strange, but I'm not complaining. Will disable them again if it turns out things are changed. If that happens, I'll manually update the file like in previous patches! 
+
 ## [1.2.149-Beta] 2019-06-27
 WoW Client Patch 8.2.0 Mayhem continues!
 
