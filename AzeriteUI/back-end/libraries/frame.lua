@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 48)
+local LibFrame = CogWheel:Set("LibFrame", 49)
 if (not LibFrame) then	
 	return
 end
@@ -26,6 +26,7 @@ local _G = _G
 local getmetatable = getmetatable
 local math_floor = math.floor
 local pairs = pairs
+local pcall = pcall
 local select = select
 local string_match = string.match
 local type = type
@@ -171,6 +172,14 @@ end
 local parseAnchorStrict = function(anchor)
 	return anchor and (keyWords[anchor] and keyWords[anchor]() or _G[anchor] and _G[anchor] or anchor) 
 end
+
+-- WoW 8.2 restricted frame check
+local isRestricted = function(frame)
+	if (frame and (not pcall(frame.GetPoint, frame))) then
+		return true
+	end
+end
+
 
 -- Embed source methods into target.
 local embed = function(target, source)
