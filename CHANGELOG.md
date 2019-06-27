@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.148-Beta] 2019-06-27
+WoW Client Patch 8.2.0 Mayhem! 
+
+### Changed
+- A ton of fixes aimed towards the 8.2.0 bugs. 
+
+### Removed
+- Cogwheel button, micro menu and addon menu gone until some bugs being caused by undocumented changes to the Blizzard API has been figured out. Might have to rewrite this part from scratch if I can't figure it out, or if the changes are of a sort that permanently breaks my system.  
+
 ## [1.2.147-Release] 2019-06-17
 ### Added 
 - Added deDE by Maoe!
