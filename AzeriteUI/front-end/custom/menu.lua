@@ -269,6 +269,7 @@ do
 		-- print(buttonCount); 34
 		local option = setmetatable(self:CreateFrame("CheckButton", ADDON.."_ConfigMenu_OptionsButton"..buttonCount, "SecureHandlerClickTemplate"), Button_MT)
 		option:SetSize(Layout.MenuButtonSize[1]*Layout.MenuButtonSizeMod, Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod)
+		option:ClearAllPoints()
 		option:SetPoint("BOTTOMRIGHT", -Layout.MenuButtonSpacing, Layout.MenuButtonSpacing + (Layout.MenuButtonSize[2]*Layout.MenuButtonSizeMod + Layout.MenuButtonSpacing)*(self.numButtons))
 
 		option:HookScript("OnEnable", Button.OnEnable)
@@ -460,6 +461,7 @@ end
 Button.CreateWindow = function(self, level)
 	local window = Module:CreateConfigWindowLevel(level, self)
 	--window:SetPoint("BOTTOM", Module:GetConfigWindow(), "BOTTOM", 0, 0) -- relative to parent button's window
+	window:ClearAllPoints()
 	window:SetPoint("BOTTOM", self, "BOTTOM", 0, -Layout.MenuButtonSpacing) -- relative to parent button
 	window:SetPoint("RIGHT", self, "LEFT", -Layout.MenuButtonSpacing*2, 0)
 
@@ -552,6 +554,7 @@ Module.GetToggleButton = function(self)
 		toggleButton.Icon = toggleButton:CreateTexture()
 		toggleButton.Icon:SetTexture(Layout.MenuToggleButtonIcon)
 		toggleButton.Icon:SetSize(unpack(Layout.MenuToggleButtonIconSize))
+		toggleButton.Icon:ClearAllPoints()
 		toggleButton.Icon:SetPoint(unpack(Layout.MenuToggleButtonIconPlace))
 		toggleButton.Icon:SetVertexColor(unpack(Layout.MenuToggleButtonIconColor))
 
@@ -598,6 +601,7 @@ Module.AddFrameToAutoHide = function(self, frame)
 
 	-- create a new autohide frame
 	local autohideParent = CreateFrame("Frame", nil, window, "SecureHandlerStateTemplate")
+	autohideParent:ClearAllPoints()
 	autohideParent:SetPoint("TOPLEFT", frame, "TOPLEFT", -6, 6)
 	autohideParent:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 6, -6)
 
