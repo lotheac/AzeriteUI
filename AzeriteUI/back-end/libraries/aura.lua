@@ -167,6 +167,8 @@ LibAura.CacheUnitAurasByFilter = function(self, unit, filter)
 	-- Retrieve the aura cache for this unit and filter
 	local cache = Cache[unit][filter]
 
+	-- Clear info flags from the cache
+
 	local counter, limit = 0, string_match(filter, "HARMFUL") and DEBUFF_MAX_DISPLAY or BUFF_MAX_DISPLAY
 	for i = 1,limit do 
 
