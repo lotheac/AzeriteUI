@@ -182,9 +182,9 @@ Module.StyleWindow = function(self, frame)
 	self.frame:SetFrameStrata("DIALOG")
 	self.frame:SetFrameLevel(120)
 
-	
-	if not self.objects then
-		self.objects = {} -- registry of objects we won't strip
+	-- registry of objects we won't strip (not actually used yet)
+	if (not self.objects) then
+		self.objects = {} 
 	end
 	
 	for i = 1, self.frame:GetNumRegions() do
@@ -200,6 +200,12 @@ Module.StyleWindow = function(self, frame)
 			end
 		end
 	end
+
+	-- 8.2.0 weirdness
+	if self.frame.Border then 
+		self.frame.Border:SetParent(self.UIHider)
+	end
+
 end
 
 Module.PreInit = function(self)
@@ -233,6 +239,7 @@ Module.OnInit = function(self)
 	
 	local UIHider = CreateFrame("Frame")
 	UIHider:Hide()
+	self.UIHider = UIHider
 	
 	-- kill mac options button if not a mac client
 	if GameMenuButtonMacOptions and (not IsMacClient()) then
