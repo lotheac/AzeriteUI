@@ -1,4 +1,4 @@
-local LibClientBuild = CogWheel:Set("LibClientBuild", 25)
+local LibClientBuild = CogWheel:Set("LibClientBuild", 26)
 if (not LibClientBuild) then
 	return
 end
@@ -192,7 +192,8 @@ local builds = {
 	["Battle for Azeroth"] = 27101, ["BfA"] = 27101, 
 		["8.0.1"] 	= 27101, 
 		["8.1.0"] 	= 29600, -- March 5th, 2019 
-		["8.1.5"] 	= 29704  -- March 12th 2019 
+		["8.1.5"] 	= 29704, -- March 12th 2019 
+		["8.2.0"] 	= 30920  -- June 25th 2019 
 
 }
 
