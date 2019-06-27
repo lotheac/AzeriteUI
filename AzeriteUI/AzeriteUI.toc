@@ -147,7 +147,8 @@ front-end\blizzard\floaters.lua
 front-end\blizzard\fonts.lua
 front-end\blizzard\gamemenu.lua
 #front-end\blizzard\micromenu.lua
-#front-end\blizzard\minimap.lua
+front-end\blizzard\minimap.lua
+#front-end\blizzard\minimap-new.lua
 #front-end\blizzard\objectivestracker.lua
 front-end\blizzard\popups.lua
 front-end\blizzard\timers.lua
