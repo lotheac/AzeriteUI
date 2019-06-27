@@ -1327,8 +1327,11 @@ local Minimap = {
 			["8.1.0"] = GetMedia("Blip-Nandini-New-810"),
 			["8.1.5"] = GetMedia("Blip-Nandini-New-815"),
 
+			-- The 8.1.5 blips appear to still be right? 
+			["8.2.0"] = GetMedia("Blip-Nandini-New-815"),
+
 			-- Blizzard Fallback
-			["8.2.0"] = [[Interface\MiniMap\ObjectIconsAtlas]]
+			--["8.2.0"] = [[Interface\MiniMap\ObjectIconsAtlas]]
 		},
 
 	UseCompass = true, 
