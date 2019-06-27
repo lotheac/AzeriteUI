@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.149-Beta] 2019-06-27
+WoW Client Patch 8.2.0 Mayhem continues!
+
+### Added
+- Put the cogwheel and micro menu functionality back, but leaving our own addon menu disabled for the time being. This way at least we can access in-game panels with the mouse, and not just keybinds! 
+
 ## [1.2.148-Beta] 2019-06-27
 WoW Client Patch 8.2.0 Mayhem! 
 
