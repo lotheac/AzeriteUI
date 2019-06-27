@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 48)
+local LibTooltip = CogWheel:Set("LibTooltip", 49)
 if (not LibTooltip) then	
 	return
 end
@@ -2190,7 +2190,7 @@ LibTooltip.SetDefaultTooltipPosition = function(self, ...)
 	else 
 		LibTooltip:SetDefaultCValue("defaultAnchor", { ... })
 	end 
-	LibTooltip:SetSecureHook("GameTooltip_SetDefaultAnchor", SetDefaultAnchor)
+	--LibTooltip:SetSecureHook("GameTooltip_SetDefaultAnchor", SetDefaultAnchor)
 end 
 
 LibTooltip.SetDefaultTooltipBackdrop = function(self, backdropTable)
