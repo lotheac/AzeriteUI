@@ -5,7 +5,7 @@ if (not Core) then
 	return 
 end
 
-local Module = Core:NewModule("BlizzardFloaterHUD", "LibEvent", "LibFrame", "LibTooltip", "LibDB", "LibBlizzard")
+local Module = Core:NewModule("BlizzardFloaterHUD", "LibEvent", "LibFrame", "LibTooltip", "LibDB", "LibBlizzard", "LibClientBuild")
 
 -- Lua API
 local _G = _G
@@ -460,7 +460,7 @@ Module.StyleZoneAbilityButton = function(self)
 end 
 
 Module.StyleDurabilityFrame = function(self)
-	if (not Layout.StyleDurabilityFrame) then 
+	if (not Layout.StyleDurabilityFrame) or (self:IsBuild("8.2.0")) then 
 		return 
 	end
 
