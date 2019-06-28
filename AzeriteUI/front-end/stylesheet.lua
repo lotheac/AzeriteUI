@@ -308,6 +308,12 @@ local BlizzardPopup_PostCreate = function(self, popup)
 	popup:SetBackdropColor(0,0,0,0)
 	popup:SetBackdropBorderColor(0,0,0,0)
 
+	-- 8.2.0 Additions
+	if (popup.Border) then 
+		popup.Border:Hide()
+		popup.Border:SetAlpha(0)
+	end
+
 	-- add a bigger backdrop frame with room for our larger buttons
 	if (not popup.backdrop) then
 		local backdrop = CreateFrame("Frame", nil, popup)
