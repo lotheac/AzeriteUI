@@ -1,4 +1,4 @@
-local LibSecureHook = CogWheel:Set("LibSecureHook", 6)
+local LibSecureHook = CogWheel:Set("LibSecureHook", 7)
 if (not LibSecureHook) then	
 	return
 end
@@ -19,8 +19,10 @@ local type = type
 
 LibSecureHook.embeds = LibSecureHook.embeds or {}
 LibSecureHook.secureHooks = LibSecureHook.secureHooks or {}
+LibSecureHook.modules = LibSecureHook.modules or {} 
 
 local SecureHooks = LibSecureHook.secureHooks
+local Modules = LibSecureHook.modules
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -98,23 +100,39 @@ LibSecureHook.SetSecureHook = function(self, ...)
 			return 
 		end 
 
+		-- If the hook is a method, we need a uniqueID for our module reference list!
+		if (type(hook) == "string") then 
+
+			-- Let's make this backwards compatible and just make up an ID when it's not provided(?)
+			if (not uniqueID) then 
+				uniqueID = (self:GetName()).."_"..hook
+			end
+
+			-- Reference the module
+			Modules[uniqueID] = self
+		end
+
 		local hookList = SecureHooks[ref]
 		if (not hookList) then 
 			local list = { list = {}, unique = {} }
 			local call = function(...)
 				for id,func in pairs(list.unique) do 
 					if (type(func) == "string") then 
-						self[func](self, id, ...)
+						local module = Modules[id]
+						if (module) then 
+							module[func](module, id, ...)
+						end
 					else
+					-- We allow unique hooks to just run a function
+					-- without passing the self.
 						func(...)
 					end 
 				end 
+
+				-- This only ever occurs when the hook is a function, 
+				-- and no uniqueID is given.
 				for _,func in ipairs(list.list) do 
-					if (type(func) == "string") then 
-						self[func](self, global, ...)
-					else
-						func(...)
-					end 
+					func(...)
 				end 
 			end 
 			hooksecurefunc(global, call)
@@ -152,25 +170,35 @@ LibSecureHook.SetSecureHook = function(self, ...)
 			return 
 		end 
 
+		-- If the hook is a method, we need a uniqueID for our module reference list!
+		if (type(hook) == "string") then 
+
+			-- Let's make this backwards compatible and just make up an ID when it's not provided(?)
+			if (not uniqueID) then 
+				uniqueID = (self:GetName()).."_"..hook
+			end
+
+			-- Reference the module
+			Modules[uniqueID] = self
+		end
+		
 		local hookList = SecureHooks[ref]
 		if (not hookList) then 
 			local list = { list = {}, unique = {} }
 			local call = function(...)
 				for id,func in pairs(list.unique) do 
 					if (type(func) == "string") then 
-						self[func](self, id, ...)
+						local module = Modules[id]
+						if (module) then 
+							module[func](module, id, ...)
+						end
 					else
 						func(...)
 					end 
 	
 				end 
 				for _,func in ipairs(list.list) do 
-					if (type(func) == "string") then 
-						self[func](self, method, ...)
-					else
-						func(...)
-					end 
-	
+					func(...)
 				end 
 			end 
 			hooksecurefunc(global, method, call)

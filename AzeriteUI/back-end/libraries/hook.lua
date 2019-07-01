@@ -1,4 +1,4 @@
-local LibHook = CogWheel:Set("LibHook", 4)
+local LibHook = CogWheel:Set("LibHook", 7)
 if (not LibHook) then	
 	return
 end
@@ -18,9 +18,11 @@ local table_remove = table.remove
 local type = type
 
 LibHook.embeds = LibHook.embeds or {}
-LibHook.hooks = LibHook.hooks or {}
+LibHook.hooks = LibHook.hooks or {} 
+LibHook.modules = LibHook.modules or {} 
 
 local Hooks = LibHook.hooks
+local Modules = LibHook.modules
 
 -- Syntax check 
 local check = function(value, num, ...)
@@ -66,6 +68,19 @@ LibHook.SetHook = function(self, frame, handler, hook, uniqueID)
 	check(frame, 1, "table")
 	check(handler, 2, "string")
 	check(hook, 3, "function", "string")
+	check(uniqueID, 4, "string", "nil")
+
+	-- If the hook is a method, we need a uniqueID for our module reference list!
+	if (type(hook) == "string") then 
+
+		-- Let's make this backwards compatible and just make up an ID when it's not provided(?)
+		if (not uniqueID) then 
+			uniqueID = (self:GetName()).."_"..hook
+		end
+
+		-- Reference the module
+		Modules[uniqueID] = self
+	end
 
 	if (not Hooks[frame]) then 
 		Hooks[frame] = {}
@@ -75,21 +90,30 @@ LibHook.SetHook = function(self, frame, handler, hook, uniqueID)
 		Hooks[frame][handler] = { list = {}, unique = {} }
 
 		-- We only need a single handler
+		-- Problem discovered in 8.2.0: 
+		-- The 'self' here will only refer to the first module
+		-- that registered a hook for this frame and script handler. 
+		-- Meaning unless we track each registration's module, 
+		-- we'll get a nil error or weird bug by usind the wrong 'self'!
 		local hookList = Hooks[frame][handler]
 		frame:HookScript(handler, function(...)
 			for id,func in pairs(hookList.unique) do 
 				if (type(func) == "string") then 
-					self[func](self, id, ...)
+					local module = Modules[id]
+					if (module) then 
+						module[func](module, id, ...)
+					end
 				else
+					-- We allow unique hooks to just run a function
+					-- without passing the self.
 					func(...)
 				end 
 			end 
+
+			-- This only ever occurs when the hook is a function, 
+			-- and no uniqueID is given.
 			for _,func in ipairs(hookList.list) do 
-				if (type(func) == "string") then 
-					self[func](self, handler, ...)
-				else
-					func(...)
-				end 
+				func(...)
 			end 
 		end)
 	end 
