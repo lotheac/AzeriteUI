@@ -1332,9 +1332,10 @@ local Minimap = {
 		BlipTextures = {
 			["8.1.0"] = GetMedia("Blip-Nandini-New-810"),
 			["8.1.5"] = GetMedia("Blip-Nandini-New-815"),
+			["8.2.0"] = GetMedia("Blip-Nandini-New-820"),
 
 			-- Blizzard Fallback
-			["8.2.0"] = [[Interface\MiniMap\ObjectIconsAtlas]]
+			["8.2.5"] = [[Interface\MiniMap\ObjectIconsAtlas]]
 		},
 
 	UseCompass = true, 
