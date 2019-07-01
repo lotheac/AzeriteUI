@@ -129,7 +129,6 @@ local secureSnippets = {
 		elseif (updateType == "GET_VALUE") then 
 
 		elseif (updateType == "TOGGLE_VALUE") then 
-			
 			-- Figure out the window's attribute name for this button's attached setting
 			local optionDB = self:GetAttribute("optionDB"); 
 			local optionName = self:GetAttribute("optionName"); 
@@ -157,8 +156,16 @@ local secureSnippets = {
 			-- Fire lua post updates to menu buttons
 			self:CallMethod("Update"); 
 
+			do 
+				return 
+			end
+
 			-- Enable/Disable other menu buttons as needed 
-			for i=1,select("#", window:GetChildren()) do 
+			-- 8.2.0: This bugs out now. 
+			--for i=1,select("#", window:GetChildren()) do 
+
+			local numChildren = window:GetNumChildren()
+			for i = 1,numChildren do 
 
 				-- Find the child menu buttons that have a slave setting
 				local child = select(i, window:GetChildren()); 
@@ -540,10 +547,10 @@ Module.GetToggleButton = function(self)
 				end
 			elseif (button == "RightButton") then 
 				-- 8.2.0: this isn't working as of now. 
-				--local rightclick = self:GetAttribute("rightclick");
-				--if rightclick then
-				--	self:RunAttribute("rightclick", button);
-				--end
+				local rightclick = self:GetAttribute("rightclick");
+				if rightclick then
+					self:RunAttribute("rightclick", button);
+				end
 			elseif (button == "MiddleButton") then
 				local middleclick = self:GetAttribute("middleclick");
 				if middleclick then
