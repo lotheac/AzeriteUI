@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.153-Release] 2019-07-01
+### Added
+- Added updated Minimap blips for WoW client patch 8.2.0.
+
 ## [1.2.152-Release] 2019-07-01
 ### Fixed
 - 8.2.0: Changed calls to `select("#", window:GetChildren())` to use `window:GetNumChildren()` from within the secure snippets used in our menu, as the former appears to not be accepted anymore. Hooray for undocumented changes, folks! Give me a medal for figuring it out, already.  
