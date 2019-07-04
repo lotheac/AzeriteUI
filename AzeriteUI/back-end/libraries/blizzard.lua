@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 20)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 21)
 if (not LibBlizzard) then 
 	return
 end
@@ -141,6 +141,7 @@ end
 UIWidgets["ActionBars"] = function(self)
 	UIWidgets["ActionBarsMainBar"](self)
 	UIWidgets["ActionBarsMicroButtons"](self)
+	UIWidgets["ActionBarsBagBarAnims"](self)
 end 
 
 UIWidgets["ActionBarsMainBar"] = function(self)
@@ -265,6 +266,28 @@ UIWidgets["ActionBarsMicroButtons"] = function(self)
 		hooksecurefunc("TalentFrame_LoadUI", function() _G.PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED") end)
 	end
 end 
+
+UIWidgets["ActionBarsBagBarAnims"] = function(self)
+
+	-- Gets rid of the loot anims
+	local backpackButton = _G.MainMenuBarBackpackButton
+	if backpackButton then 
+		backpackButton:UnregisterEvent("ITEM_PUSH") 
+	end 
+
+	for slot = 0,3 do
+		local bagSlot = _G["CharacterBag"..slot.."Slot"]
+		if bagSlot then 
+			bagSlot:UnregisterEvent("ITEM_PUSH") 
+		end 
+	end
+
+	-- hook event removal to any buttons we somehow missed
+	if _G.ItemAnim_OnLoad then 
+		hooksecurefunc("ItemAnim_OnLoad", function(self) self:UnregisterEvent("ITEM_PUSH") end)
+	end 
+
+end
 
 UIWidgets["Alerts"] = function(self)
 	local AlertFrame = _G.AlertFrame
