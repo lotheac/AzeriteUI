@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 52)
+local LibFrame = CogWheel:Set("LibFrame", 53)
 if (not LibFrame) then	
 	return
 end
@@ -391,11 +391,8 @@ LibFrame.Enable = function(self)
 	self:RegisterMessage("CG_INTERFACE_SCALE_UPDATE", "OnEvent")
 	
 	-- Could it be enough to just track frame changes and not events?
-	--if (not self:IsBuild("8.2.0")) then
-		self:SetHook(UIParent, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_UIParent_OnSizeChanged")
-		self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
-	--end
-
+	self:SetHook(UIParent, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_UIParent_OnSizeChanged")
+	self:SetHook(WorldFrame, "OnSizeChanged", "UpdateDisplaySize", "LibFrame_WorldFrame_OnSizeChanged")
 end 
 
 LibFrame:UnregisterAllEvents()
