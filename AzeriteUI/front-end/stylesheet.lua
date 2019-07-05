@@ -3091,6 +3091,42 @@ local UnitFrameFocus = setmetatable({
 
 		end,
 
+	UsePowerBar = true,
+		PowerPlace = { "BOTTOMLEFT", -35, 4 },
+		PowerSize = { 30, 35 },
+		PowerType = "StatusBar", 
+		PowerBarTexture = GetMedia("power_crystal_small_front"),
+		PowerBarTexCoord = { 50/255, 206/255, 37/255, 219/255 },
+		PowerBarOrientation = "UP",
+		PowerBarSmoothingMode = "bezier-fast-in-slow-out",
+		PowerBarSmoothingFrequency = .45,
+		PowerColorSuffix = "_CRYSTAL", 
+		PowerIgnoredResource = nil,
+	
+		UsePowerBackground = true,
+			PowerBackgroundPlace = { "CENTER", 0, 0 },
+			PowerBackgroundSize = { 30/(206-50)*255, 35/(219-37)*255 },
+			PowerBackgroundTexture = GetMedia("power_crystal_small_back"),
+			PowerBackgroundDrawLayer = { "BACKGROUND", -2 },
+			PowerBackgroundColor = { 1, 1, 1, .95 },
+			PowerBarSparkMap = {
+				top = {
+					{ keyPercent =   0/256, offset =  -65/256 }, 
+					{ keyPercent =  72/256, offset =    0/256 }, 
+					{ keyPercent = 116/256, offset =  -16/256 }, 
+					{ keyPercent = 128/256, offset =  -28/256 }, 
+					{ keyPercent = 256/256, offset =  -84/256 }, 
+				},
+				bottom = {
+					{ keyPercent =   0/256, offset =  -47/256 }, 
+					{ keyPercent =  84/256, offset =    0/256 }, 
+					{ keyPercent = 135/256, offset =  -24/256 }, 
+					{ keyPercent = 142/256, offset =  -32/256 }, 
+					{ keyPercent = 225/256, offset =  -79/256 }, 
+					{ keyPercent = 256/256, offset = -168/256 }, 
+				}
+			},
+	
 }, { __index = Template_SmallFrame_Auras })
 
 ------------------------------------------------------------------
