@@ -277,9 +277,7 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		threat:SetSize(unpack(Layout.ThreatSize))
 		threat:SetTexture(Layout.ThreatTexture)
 		threat:SetDrawLayer(unpack(Layout.ThreatDrawLayer))
-		if Layout.ThreatColor then 
-			threat:SetVertexColor(unpack(Layout.ThreatColor))
-		end
+		threat:SetVertexColor(unpack(Layout.ThreatColor))
 		threat.hideSolo = Layout.ThreatHideSolo
 		threat.feedbackUnit = "player"
 		plate.Threat = threat

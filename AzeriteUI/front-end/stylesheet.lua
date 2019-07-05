@@ -1590,7 +1590,7 @@ local NamePlates = {
 		ThreatPlace = { "CENTER", 0, 0 },
 		ThreatSize = { 84*256/(256-28), 14*64/(64-28) },
 		ThreatTexture = GetMedia("nameplate_glow"),
-		TheatColor = { 1, 1, 1, 1 },
+		ThreatColor = { 1, 1, 1, 1 },
 		ThreatDrawLayer = { "BACKGROUND", -3 },
 		ThreatHideSolo = true, 
 
