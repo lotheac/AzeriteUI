@@ -4394,10 +4394,6 @@ UnitFrameRaid.OnInit = function(self)
 	))
 	self.frame:SetAttribute("_onattributechanged", SECURE.Raid_OnAttribute)
 
-	if (not self.db.allowBlizzard) then 
-		self:DisableUIWidget("UnitFrameRaid") 
-	end
-
 	-- Only show it in raids of 6 or more players 
 	-- Use an attribute driver to do it so the normal unitframe visibility handler can remain unchanged
 	local visDriver = dev and "[@player,exists]show;hide" or "[@raid6,exists]show;hide"

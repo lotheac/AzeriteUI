@@ -129,12 +129,8 @@ end
 -- but before the library calls its own updates.
 Module.PreUpdateNamePlateOptions = function(self)
 
-	local _, instanceType = IsInInstance()
-	if (instanceType == "none") then
-		SetCVar("nameplateMaxDistance", 30)
-	else
-		SetCVar("nameplateMaxDistance", 45)
-	end
+	-- local preference
+	SetCVar("nameplateMaxDistance", 50)
 
 	-- If these are enabled the GameTooltip will become protected, 
 	-- and all sort of taints and bugs will occur.
