@@ -1,4 +1,4 @@
-local LibAura = CogWheel:Set("LibAura", 1)
+local LibAura = CogWheel:Set("LibAura", 2)
 if (not LibAura) then	
 	return
 end
@@ -292,7 +292,17 @@ LibAura.UnregisterAuraWatch = function(self, unit, filter)
 	UnregisterEvent(Frame, "UNIT_AURA")
 end
 
-LibAura.AddAuraFlags = function(self, spellID, flags)
+--------------------------------------------------------------------------
+-- UserFlags
+-- The flags set here are registered per module, 
+-- and are to be used for the front-end's own purposes, 
+-- whether that be display preference, blacklists, whitelists, etc. 
+-- Nothing here is global, and all is separate from the InfoFlags.
+--------------------------------------------------------------------------
+-- Adds a custom aura flag
+LibAura.AddAuraUserFlags = function(self, spellID, flags)
+	check(spellID, 1, "number")
+	check(flags, 2, "number")
 	if (not UserFlags[self]) then 
 		UserFlags[self] = {}
 	end 
@@ -303,23 +313,50 @@ LibAura.AddAuraFlags = function(self, spellID, flags)
 	UserFlags[self][spellID] = bit_bor(UserFlags[self][spellID], flags)
 end 
 
-LibAura.RemoveAuraFlags = function(self, spellID, removalFlags)
+-- Retrieve the current set flags for the aura, or nil if none are set
+LibAura.GetAuraUserFlags = function(self, spellID, flags)
+	-- Not verifying input types as we don't want the extra function calls on 
+	-- something that might be called multiple times each second. 
+	if (not UserFlags[self]) or (not UserFlags[self][spellID]) then 
+		return 
+	end 
+	return UserFlags[self][spellID]
+end
+
+-- Check if the provided user flags are set for the aura
+LibAura.HasAuraUserFlags = function(self, spellID, flags)
+	-- Not verifying input types as we don't want the extra function calls on 
+	-- something that might be called multiple times each second. 
+	if (not UserFlags[self]) or (not UserFlags[self][spellID]) then 
+		return 
+	end 
+	return (bit_band(UserFlags[self][spellID], flags) ~= 0)
+end
+
+-- Remove a set of user flags, or all if no removalFlags are provided.
+LibAura.RemoveAuraUserFlags = function(self, spellID, removalFlags)
+	check(spellID, 1, "number")
+	check(removalFlags, 2, "number", "nil")
 	if (not UserFlags[self]) or (not UserFlags[self][spellID]) then 
 		return 
 	end 
 	local userFlags = UserFlags[self][spellID]
-	local changed
-	for i = 1,64 do -- bit.bits ? 
-		local bit = (i-1)^2 -- create a mask 
-		local userFlagsHasBit = bit_band(userFlags, bit) -- see if the user filter has the bit set
-		local removalFlagsHasBit = bit_band(removalFlags, bit) -- see if the removal flags has the bit set
-		if (userFlagsHasBit and removalFlagsHasBit) then 
-			userFlags = userFlags - bit -- just simply deduct the masked bit value if it was set
-			changed = true 
+	if removalFlags  then 
+		local changed
+		for i = 1,64 do -- bit.bits ? 
+			local bit = (i-1)^2 -- create a mask 
+			local userFlagsHasBit = bit_band(userFlags, bit) -- see if the user filter has the bit set
+			local removalFlagsHasBit = bit_band(removalFlags, bit) -- see if the removal flags has the bit set
+			if (userFlagsHasBit and removalFlagsHasBit) then 
+				userFlags = userFlags - bit -- just simply deduct the masked bit value if it was set
+				changed = true 
+			end 
 		end 
-	end 
-	if (changed) then 
-		UserFlags[self][spellID] = userFlags
+		if (changed) then 
+			UserFlags[self][spellID] = userFlags
+		end 
+	else 
+		UserFlags[self][spellID] = nil
 	end 
 end 
 
@@ -333,8 +370,10 @@ local embedMethods = {
 	GetUnitAuraCacheByFilter = true,
 	RegisterAuraWatch = true,
 	UnregisterAuraWatch = true,
-	AddAuraFlags = true,
-	RemoveAuraFlags = true
+	AddAuraUserFlags = true,
+	GetAuraUserFlags = true,
+	HasAuraUserFlags = true, 
+	RemoveAuraUserFlags = true
 }
 
 LibAura.Embed = function(self, target)
@@ -356,9 +395,8 @@ Frame:SetScript("OnEvent", Frame.OnEvent)
 
 --------------------------------------------------------------------------
 -- InfoFlags
--- The flags in this DB should only describe 
--- generic properties of the auras like type of spell, 
--- and not user choices related to visibility like who the caster is. 
+-- The flags in this DB should only describe factual properties 
+-- of the auras like type of spell, what class it belongs to, etc. 
 --------------------------------------------------------------------------
 
 local IsPlayerSpell 	= tonumber("0000000000000000000000000000000000000000000000000000000000000001", 2) 
@@ -469,11 +507,9 @@ local IsTauren = IsRacialSpell + Tauren
 local IsTroll = IsRacialSpell + Troll
 local IsWorgen = IsRacialSpell + Worgen
 
-
 -- RegEx used to convert the database;
 -- 	Search: Cache\[([\d\s]+)\](.*?)= (.*?) (\-\-?)(.*?)(\n)
 -- 	Replace: AddFlags($1, $3) $4$5$6
-
 
 -- Add flags to or create the cache entry
 -- This is to avoid duplicate entries removing flags
@@ -484,7 +520,6 @@ local AddFlags = function(spellID, flags)
 	end 
 	Auras[spellID] = bit_bor(Auras[spellID], flags)
 end
-
 
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
@@ -1516,7 +1551,6 @@ do
 	AddFlags(248133, IsCrowdControl) -- Stygian Blast
 end 
 
-
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
 -- 						FOOD & FLASKS & RUNES 
@@ -1816,13 +1850,11 @@ do
 	Auras[262571] = IsFood
 end 
 
-
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
 -- 							CLASSES
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
-
 
 -- Death Knight
 ------------------------------------------------------------------------
@@ -2327,7 +2359,6 @@ do
 	AddFlags(215562, IsWarrior) -- War Machine
 	AddFlags(215570, IsWarrior) -- Wrecking Ball
 end 
-
 
 ------------------------------------------------------------------------
 -- Taunts (tanks only)
