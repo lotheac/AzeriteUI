@@ -483,21 +483,22 @@ end
 
 auraFilters.nameplate = function(element, isBuff, unit, isOwnedByPlayer, name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, nameplateShowPersonal, spellID, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, value1, value2, value3)
 
+	local timeLeft 
+	if (expirationTime and expirationTime > 0) then 
+		timeLeft = expirationTime - GetTime()
+	end
+
 	local infoFlags = auraInfoFlags[spellID]
 	local userFlags = auraUserFlags[spellID]
 
 	if infoFlags then 
-		if (bit_band(infoFlags, infoFilter.IsPlayerSpell) ~= 0) then 
+		if (unitCaster and isOwnedByPlayer) and (bit_band(infoFlags, infoFilter.IsPlayerSpell) ~= 0) then 
 			if (userFlags and (bit_band(userFlags, NeverOnPlate) ~= 0)) then 
 				return
 			else
-				return isOwnedByPlayer 
+				return ((duration and (duration > 0) and (duration < 180)) or (timeLeft and (timeLeft < 180)))
 			end
-		elseif (userFlags and (bit_band(userFlags, PlayerIsTank) ~= 0)) then 
-			return (GetPlayerRole() == "TANK")
 		end 
-	else
-		return isOwnedByPlayer
 	end 
 end 
 
