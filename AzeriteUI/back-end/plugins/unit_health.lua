@@ -233,9 +233,12 @@ local Enable = function(self)
 		else
 			self:RegisterEvent("UNIT_HEALTH", Proxy)
 		end
+
 		self:RegisterEvent("UNIT_MAXHEALTH", Proxy)
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
 		self:RegisterEvent("UNIT_FACTION", Proxy) 
+		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Proxy)
+		self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", Proxy)
 
 		element.UpdateColor = UpdateColor
 		element.UpdateValue = UpdateValue
@@ -260,10 +263,12 @@ local Disable = function(self)
 		self:UnregisterEvent("UNIT_MAXHEALTH", Proxy)
 		self:UnregisterEvent("UNIT_CONNECTION", Proxy)
 		self:UnregisterEvent("UNIT_FACTION", Proxy) 
+		self:UnregisterEvent("UNIT_THREAT_SITUATION_UPDATE", Proxy)
+		self:UnregisterEvent("UNIT_THREAT_LIST_UPDATE", Proxy)
 	end
 end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 22)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 23)
 end 
