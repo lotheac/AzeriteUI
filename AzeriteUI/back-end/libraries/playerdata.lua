@@ -1,4 +1,4 @@
-local LibPlayerData = CogWheel:Set("LibPlayerData", 2)
+local LibPlayerData = CogWheel:Set("LibPlayerData", 3)
 if (not LibPlayerData) then	
 	return
 end
@@ -27,6 +27,10 @@ local UnitLevel = _G.UnitLevel
 
 -- Library registries
 LibPlayerData.embeds = LibPlayerData.embeds or {}
+LibPlayerData.frame = LibPlayerData.frame or CreateFrame("Frame")
+
+-- Constant to track current player role
+local CURRENT_ROLE
 
 -- Specific per class buffs we wish to see
 local _,playerClass = UnitClass("player")
@@ -48,6 +52,28 @@ local classCanTank = {
 	WARRIOR = true 
 }
 
+-- Setup our frame for tracking role events
+if classIsDamage[playerClass] then
+	CURRENT_ROLE = "DAMAGER"
+	LibPlayerData.frame:SetScript("OnEvent", nil)
+	LibPlayerData.frame:UnregisterAllEvents()
+else
+	LibPlayerData.frame:SetScript("OnEvent", function(self, event, ...) 
+		if (event == "PLAYER_LOGIN") then
+			self:UnregisterEvent(event)
+			self:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+		end
+		local _, _, _, _, _, role = GetSpecializationInfo(GetSpecialization() or 0)
+		CURRENT_ROLE = role or "DAMAGER"
+	end)
+	if IsLoggedIn() then 
+		LibPlayerData.frame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+		LibPlayerData.frame:GetScript("OnEvent")(LibPlayerData.frame)
+	else 
+		LibPlayerData.frame:RegisterEvent("PLAYER_LOGIN")
+	end 
+end 
+
 -- Syntax check 
 local check = function(value, num, ...)
 	assert(type(num) == "number", ("Bad argument #%.0f to '%s': %s expected, got %s"):format(2, "Check", "number", type(num)))
@@ -59,15 +85,6 @@ local check = function(value, num, ...)
 	local types = string_join(", ", ...)
 	local name = string_match(debugstack(2, 2, 0), ": in function [`<](.-)['>]")
 	error(("Bad argument #%.0f to '%s': %s expected, got %s"):format(num, name, types, type(value)), 3)
-end
-
-LibPlayerData.GetPlayerRole = classIsDamage[playerClass] and function() 
-	return "DAMAGER" 
-end 
-or
-function()
-	local _, _, _, _, _, role = GetSpecializationInfo(GetSpecialization() or 0)
-	return role or "DAMAGER"
 end
 
 -- Returns the maximum level the account has access to 
@@ -136,6 +153,10 @@ end
 
 LibPlayerData.PlayerIsDamageOnly = function()
 	return classIsDamage[playerClass]
+end
+
+LibPlayerData.GetPlayerRole = function()
+	return CURRENT_ROLE
 end
 
 local embedMethods = {
