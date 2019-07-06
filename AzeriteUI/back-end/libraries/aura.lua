@@ -1,4 +1,4 @@
-local LibAura = CogWheel:Set("LibAura", 2)
+local LibAura = CogWheel:Set("LibAura", 5)
 if (not LibAura) then	
 	return
 end
@@ -293,6 +293,37 @@ LibAura.UnregisterAuraWatch = function(self, unit, filter)
 end
 
 --------------------------------------------------------------------------
+-- InfoFlag queries
+--------------------------------------------------------------------------
+-- Not a fan of this in the slightest, 
+-- but for purposes of speed we need to hand this table out to the modules. 
+-- and in case of library updates we need this table to be the same,
+LibAura.GetAllAuraInfoFlags = function(self)
+	return Auras
+end
+
+-- Return the hashed info flag table, 
+-- to allow easy usage of keywords in the modules.
+-- We will have make sure the keywords remain consistent.  
+LibAura.GetAllAuraInfoBitFilters = function(self)
+	return InfoFlags
+end
+
+-- Check if the provided info flags are set for the aura
+LibAura.HasAuraInfoFlags = function(self, spellID, flags)
+	-- Not verifying input types as we don't want the extra function calls on 
+	-- something that might be called multiple times each second. 
+	return Auras[spellID] and (bit_band(Auras[spellID], flags) ~= 0)
+end
+
+-- Retrieve the current info flags for the aura, or nil if none are set
+LibAura.GetAuraInfoFlags = function(self, spellID)
+	-- Not verifying input types as we don't want the extra function calls on 
+	-- something that might be called multiple times each second. 
+	return Auras[spellID]
+end
+
+--------------------------------------------------------------------------
 -- UserFlags
 -- The flags set here are registered per module, 
 -- and are to be used for the front-end's own purposes, 
@@ -314,13 +345,18 @@ LibAura.AddAuraUserFlags = function(self, spellID, flags)
 end 
 
 -- Retrieve the current set flags for the aura, or nil if none are set
-LibAura.GetAuraUserFlags = function(self, spellID, flags)
+LibAura.GetAuraUserFlags = function(self, spellID)
 	-- Not verifying input types as we don't want the extra function calls on 
 	-- something that might be called multiple times each second. 
 	if (not UserFlags[self]) or (not UserFlags[self][spellID]) then 
 		return 
 	end 
 	return UserFlags[self][spellID]
+end
+
+-- Return the full user flag table for the module
+LibAura.GetAllAuraUserFlags = function(self)
+	return UserFlags[self]
 end
 
 -- Check if the provided user flags are set for the aura
@@ -370,6 +406,11 @@ local embedMethods = {
 	GetUnitAuraCacheByFilter = true,
 	RegisterAuraWatch = true,
 	UnregisterAuraWatch = true,
+	GetAllAuraInfoFlags = true, 
+	GetAllAuraUserFlags = true, 
+	GetAllAuraInfoBitFilters = true, 
+	GetAuraInfoFlags = true, 
+	HasAuraInfoFlags = true, 
 	AddAuraUserFlags = true,
 	GetAuraUserFlags = true,
 	HasAuraUserFlags = true, 
