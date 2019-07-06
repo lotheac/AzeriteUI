@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.156-Release] 2019-07-06
+### Fixed
+- Fixed the aura filter for the personal resource display to once again only show relevant player cast auras with short duration.   
+- Fixed a misalignment that caused the nameplate auras to not be centered above the nameplates but instead slightly towards the right side.
+
 ## [1.2.155-Release] 2019-07-06
 ### Fixed
 - Added the missing threat related events to the health element to properly update threat coloring when we attract aggro from nearby monsters.
