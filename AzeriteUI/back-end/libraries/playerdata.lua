@@ -1,4 +1,4 @@
-local LibPlayerData = CogWheel:Set("LibPlayerData", 3)
+local LibPlayerData = CogWheel:Set("LibPlayerData", 4)
 if (not LibPlayerData) then	
 	return
 end
@@ -63,7 +63,8 @@ else
 			self:UnregisterEvent(event)
 			self:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
 		end
-		local _, _, _, _, _, role = GetSpecializationInfo(GetSpecialization() or 0)
+		-- Role name is 7th stat, wowpedia has it wrong. 
+		local _, _, _, _, _, _, role = GetSpecializationInfo(GetSpecialization() or 0)
 		CURRENT_ROLE = role or "DAMAGER"
 	end)
 	if IsLoggedIn() then 
