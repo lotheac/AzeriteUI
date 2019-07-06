@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.154-Release] 2019-07-06
+### Changed
+- Tuned the threat colors used in unitframes and nameplates to be easier to understand. It should now be far more evident when you're starting to lose threat when tanking. 
+- Changed the health element used in unitframes and nameplates to show even the lowest threat levels, making it far easier for both tanks, healers and damagers to see what mobs are actually attacking them when engaged in combat.  
+- We're now filtering out Consecrated Ground from hostile nameplates, as it's implicit that mobs have this from their positioning around the Paladin. This is done using our updated aura systems, and one of the steps towards cleaning up nameplates and a bit in spammy situations. 
+- Our custom aura filters now uses both the descriptive back-end aura library and the front-end filter display lists when deciding what to show. This is important because it's one of the steps toward our upcoming priority based filter systems. One of the reasons for our constant baby steps is both my currently limited available time, but also to as far as possible keep the changes backwards compatible to avoid unneeded bugs and breakage. 
+- The tiny Blizzard animation of an item going into your backpack or bags has been removed, as it was missing the target by miles in this and our other custom user interfaces. Items still end up in your bags, of course, this was just to remove one of many redundant remnants of the original Blizzard interface.
+
+### Removed
+- Killed off the entire `/front-end/deprecated` folder, as its functions and tables have all been built into the appropriate places in the aura back-end and addon front-end now. The name of the folder kind of implied this would happen. 
+
 ## [1.2.153-Release] 2019-07-01
 ### Added
 - Added updated Minimap blips for WoW client patch 8.2.0.
