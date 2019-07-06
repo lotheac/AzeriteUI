@@ -13,15 +13,9 @@ local tonumber = tonumber
 local unpack = unpack
 
 -- WoW API
-local GetSpecialization = _G.GetSpecialization
-local GetSpecializationInfo = _G.GetSpecializationInfo
 local GetTime = _G.GetTime
 local InCombatLockdown = _G.InCombatLockdown
-local IsInGroup = _G.IsInGroup
-local IsInInstance = _G.IsInInstance
-local IsLoggedIn = _G.IsLoggedIn
 local UnitCanAttack = _G.UnitCanAttack
-local UnitIsFriend = _G.UnitIsFriend
 local UnitIsUnit = _G.UnitIsUnit
 local UnitHasVehicleUI = _G.UnitHasVehicleUI
 local UnitPlayerControlled = _G.UnitPlayerControlled
@@ -279,14 +273,15 @@ colorDB.timer.FEIGNDEATH = createColor(217/255, 90/255, 0/255)
 
 -- threat
 colorDB.threat = {}
-colorDB.threat[0] = createColor(195/255, 165/255, 155/255) -- not really on the threat table
-colorDB.threat[1] = createColor(249/255, 188/255, 65/255) -- tanks having lost threat, dps overnuking 
+colorDB.threat[0] = colorDB.reaction[4] -- not really on the threat table
+colorDB.threat[1] = createColor(249/255, 158/255, 35/255) -- tanks having lost threat, dps overnuking 
 colorDB.threat[2] = createColor(255/255, 96/255, 12/255) -- tanks about to lose threat, dps getting aggro
 colorDB.threat[3] = createColor(255/255, 0/255, 0/255) -- securely tanking, or totally fucked :) 
 --colorDB.threat[0] = createColor(175/255, 165/255, 155/255) 
 --colorDB.threat[1] = createColor(255/255, 128/255, 64/255)  
 --colorDB.threat[2] = createColor(255/255, 64/255, 12/255) 
 --colorDB.threat[3] = createColor(255/255, 0/255, 0/255)  
+--colorDB.reaction[8] = colorDB.threat[1] -- just testing
 
 -- zone names
 colorDB.zone = {}
