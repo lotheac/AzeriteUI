@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 50)
+local LibTooltip = CogWheel:Set("LibTooltip", 51)
 if (not LibTooltip) then	
 	return
 end
