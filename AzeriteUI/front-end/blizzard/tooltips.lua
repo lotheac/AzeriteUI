@@ -58,7 +58,7 @@ local StatusBar_UpdateValue = function(bar, value, max)
 end 
 
 local GetTooltipUnit = function(tooltip)
-	local unit = tooltip.unit
+	local unit = tooltip.unit or tooltip.GetUnit and tooltip:GetUnit()
 	if (not unit) then 
 		return UnitExists("mouseover") and "mouseover" or nil 
 	elseif UnitExists(unit) then 
