@@ -1665,7 +1665,7 @@ end
 Tooltip.GetTooltipUnit = function(self)
 	local unit = self.unit
 	if (not unit) then 
-		return UnitExists("mouseover") and unit or nil 
+		return UnitExists("mouseover") and "mouseover" or nil
 	elseif UnitExists(unit) then 
 		return UnitIsUnit(unit, "mouseover") and "mouseover" or unit 
 	end
