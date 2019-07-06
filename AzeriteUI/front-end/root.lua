@@ -1,7 +1,7 @@
-local ADDON = ...
+local ADDON, Private = ...
 
 -- Wooh! 
-local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibMessage", "LibEvent", "LibBlizzard", "LibFrame", "LibSlash")
+local Core = CogWheel("LibModule"):NewModule(ADDON, "LibDB", "LibMessage", "LibEvent", "LibBlizzard", "LibFrame", "LibSlash", "LibAura")
 
 -- Tell the back-end what addon to look for before 
 -- initializing this module and all its submodules. 
@@ -238,7 +238,7 @@ end
 
 Core.ApplyExperimentalFeatures = function(self)
 
-	-- Attempt to hook the bar bar to the bags
+	-- Attempt to hook the bag bar to the bags
 	local MicroBagBar = _G.MicroButtonAndBagsBar and _G.MicroButtonAndBagsBar.MicroBagBar
 	if MicroBagBar then 
 
@@ -268,6 +268,17 @@ Core.ApplyExperimentalFeatures = function(self)
 			end 
 		end 
 	end
+
+	-- Register addon specific aura filters.
+	-- These can be accessed by the other modules by calling 
+	-- the relevant methods on the 'Core' module object. 
+	local auraFlags = Private.AuraFlags
+	if auraFlags then 
+		for spellID,flags in pairs(auraFlags) do 
+			self:AddAuraUserFlags(spellID,flags)
+		end 
+	end
+
 end
 
 -- We could add this into the back-end, leaving it here for now, though. 
