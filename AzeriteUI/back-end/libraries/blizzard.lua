@@ -497,11 +497,7 @@ UIWidgets["UnitFrameParty"] = function(self)
 end
 
 UIWidgets["UnitFrameRaid"] = function(self)
-	-- dropdowns cause taint through the blizz compact unit frames, so we disable them
-	-- http://www.wowinterface.com/forums/showpost.php?p=261589&postcount=5
-	CompactUnitFrameProfiles:UnregisterAllEvents()
-	CompactRaidFrameManager:SetParent(UIHider)
-	UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
+	return
 end
 
 UIWidgets["UnitFrameArena"] = function(self)
