@@ -1,3 +1,5 @@
+local LibPlayerData = CogWheel("LibPlayerData")
+assert(LibPlayerData, "UnitHealth requires LibPlayerData to be loaded.")
 
 -- Lua API
 local _G = _G
@@ -19,7 +21,6 @@ local UnitIsTapDenied = _G.UnitIsTapDenied
 local UnitLevel = _G.UnitLevel
 local UnitPlayerControlled = _G.UnitPlayerControlled
 local UnitReaction = _G.UnitReaction
-
 
 -- Number abbreviations
 ---------------------------------------------------------------------	
@@ -116,6 +117,7 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 		local _, class = UnitClass("player")
 		color = class and self.colors.class[class]
 	else 
+
 		-- BUG: Non-existent '*target' or '*pet' units cause UnitThreatSituation() errors (thank you oUF!)
 		local threat
 		if ((not element.hideThreatSolo) or (IsInGroup() or IsInInstance())) then
@@ -127,7 +129,7 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 			end
 		end
 
-		if (element.colorThreat and threat and (threat > 0)) then
+		if (element.colorThreat and threat) then 
 			color = self.colors.threat[threat]
 		elseif (element.colorReaction and UnitReaction(unit, "player")) then
 			color = self.colors.reaction[UnitReaction(unit, "player")]
@@ -263,5 +265,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 20)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 22)
 end 
