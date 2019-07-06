@@ -375,6 +375,18 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
 		timeLeft = expirationTime - GetTime()
 	end
 
+        local blacklist = {
+                [269279] = true, -- Resounding Protection
+                [245686] = true, -- Fashionable!
+                [285061] = true, -- Gift of N'Zoth
+                [225787] = true, -- Sign of the Warrior (bonus event)
+                [299664] = true, -- Contract: Rustbolt Resistance
+                [264420] = true, -- Soldier of the Alliance (war mode)
+        }
+        if (blacklist[spellID]) then
+                return false
+        end
+
 	if (isBossDebuff or isBossDebuff or (userFlags and (bit_band(userFlags, PrioBoss) ~= 0)) or (unitCaster == "vehicle")) then
 		return true
 
@@ -396,23 +408,11 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
 			end
 		end
 
-		-- Auras from hostile npc's
-		if (not unitCaster) or (UnitCanAttack("player", unitCaster) and (not UnitPlayerControlled(unitCaster))) then 
-			return ((not isBuff) and (duration and duration < 180))
-		end
-
+		-- always show debuffs
+		return (not isBuff)
 	else 
-		if userFlags then 
-			if unitIsPlayer[unit] and (bit_band(userFlags, OnPlayer) ~= 0) then 
-				return true  
-			end
-		elseif isBuff then 
-			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
-				return true
-			end 
-		else
-			return true
-		end 
+		-- out of combat, display everything not explicitly blacklisted
+		return true
 	end 
 end 
 
@@ -431,6 +431,20 @@ auraFilters.target = function(element, isBuff, unit, isOwnedByPlayer, name, icon
 	-- Stealable and boss auras
 	if (isStealable or isBossDebuff or (userFlags and (bit_band(userFlags, PrioBoss) ~= 0))) then 
 		return true 
+
+	-- show all auras on npcs
+	elseif (not UnitIsPlayer(unit) or UnitIsOtherPlayersPet(unit)) then
+		-- ... but only if they are not debuffs cast by other players.
+		local playercastdebuff = (isCastByPlayer and not isBuff)
+		local castbyme = (unitCaster ~= nil and UnitIsUnit("player", unitCaster))
+		if (castbyme or not playercastdebuff) then
+			return true
+		else
+			return false
+		end
+	-- and player as target
+	elseif (UnitIsUnit("player", unit)) then
+		return true
 
 	-- Auras on enemies
 	elseif UnitCanAttack("player", unit) then 
