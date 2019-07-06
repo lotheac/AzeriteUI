@@ -10,9 +10,6 @@ local ADDON, Private = ...
 local L = CogWheel("LibLocale"):GetLocale(ADDON)
 local LibDB = CogWheel("LibDB")
 
--- *will be replaced by LibAura
-local Auras = CogWheel("LibDB"):GetDatabase(ADDON..": Auras") 
-
 ------------------------------------------------
 -- Addon Environment
 ------------------------------------------------
@@ -38,13 +35,13 @@ local UnitIsUnit = _G.UnitIsUnit
 local UnitLevel = _G.UnitLevel
 
 -- Private Addon API
+local GetAuraFilterFunc = Private.GetAuraFilterFunc
 local GetFont = Private.GetFont
 local GetMedia = Private.GetMedia
 local Colors = Private.Colors
 
 -- Just because we repeat them so many times
-local MenuButtonFontSize = 14
-local MenuButtonW, MenuButtonH = 300, 50
+local MenuButtonFontSize, MenuButtonW, MenuButtonH = 14, 300, 50
 
 ------------------------------------------------
 -- Utility Functions
@@ -1621,8 +1618,8 @@ local NamePlates = {
 		AuraFilter = nil, 
 		AuraBuffFilter = "PLAYER HELPFUL", 
 		AuraDebuffFilter = "PLAYER HARMFUL", 
-		AuraFilterFunc = Auras:GetFilterFunc("nameplate"), 
-		BuffFilterFunc = Auras:GetFilterFunc("nameplate"), 
+		AuraFilterFunc = GetAuraFilterFunc("nameplate"), 
+		BuffFilterFunc = GetAuraFilterFunc("nameplate"), 
 		DebuffFilterFunc = nil, 
 		AuraDisableMouse = true, -- don't allow mouse input here
 		AuraTooltipDefaultPosition = nil, 
@@ -2346,8 +2343,8 @@ local UnitFramePlayer = {
 		AuraBuffFilter = "HELPFUL", -- buff specific filter passed to blizzard API calls
 		AuraDebuffFilter = "HARMFUL", -- debuff specific filter passed to blizzard API calls
 		AuraFilterFunc = nil, -- general aura filter function, called when the below aren't there
-		BuffFilterFunc = Auras:GetFilterFunc("player"), -- buff specific filter function
-		DebuffFilterFunc = Auras:GetFilterFunc("player"), -- debuff specific filter function
+		BuffFilterFunc = GetAuraFilterFunc("player"), -- buff specific filter function
+		DebuffFilterFunc = GetAuraFilterFunc("player"), -- debuff specific filter function
 		--BuffFilterFunc = function() return true end, -- buff specific filter function
 		--DebuffFilterFunc = function() return true end, -- debuff specific filter function
 		AuraFrameSize = { 40*8 + 6*7, 40 },
@@ -3277,8 +3274,8 @@ local UnitFrameTarget = {
 		AuraBuffFilter = "HELPFUL", -- buff specific filter passed to blizzard API calls
 		AuraDebuffFilter = "HARMFUL", -- debuff specific filter passed to blizzard API calls
 		AuraFilterFunc = nil, -- general aura filter function, called when the below aren't there
-		BuffFilterFunc = Auras:GetFilterFunc("target"), -- buff specific filter function
-		DebuffFilterFunc = Auras:GetFilterFunc("target"), -- debuff specific filter function
+		BuffFilterFunc = GetAuraFilterFunc("target"), -- buff specific filter function
+		DebuffFilterFunc = GetAuraFilterFunc("target"), -- debuff specific filter function
 		AuraFrameSize = { 40*7 + 6*(7 -1), 40 },
 		AuraFramePlace = { "TOPRIGHT", -(27 + 10), -(27 + 40 + 20) },
 		AuraTooltipDefaultPosition = nil,
@@ -3682,8 +3679,8 @@ local UnitFrameFocus = setmetatable({
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
-	BuffFilterFunc = Auras:GetFilterFunc("focus"), 
-	DebuffFilterFunc = Auras:GetFilterFunc("focus"), 
+	BuffFilterFunc = GetAuraFilterFunc("focus"), 
+	DebuffFilterFunc = GetAuraFilterFunc("focus"), 
 
 	HealthFrequentUpdates = true, 
 	HealthColorTapped = true, -- color tap denied units 
@@ -3715,8 +3712,8 @@ local UnitFrameBoss = setmetatable({
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
-	BuffFilterFunc = Auras:GetFilterFunc("boss"), 
-	DebuffFilterFunc = Auras:GetFilterFunc("boss"), 
+	BuffFilterFunc = GetAuraFilterFunc("boss"), 
+	DebuffFilterFunc = GetAuraFilterFunc("boss"), 
 
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = false, -- color disconnected units
@@ -3742,8 +3739,8 @@ local UnitFrameArena = setmetatable({
 		NameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
 		NameSize = nil,
 
-	BuffFilterFunc = Auras:GetFilterFunc("arena"), 
-	DebuffFilterFunc = Auras:GetFilterFunc("arena"), 
+	BuffFilterFunc = GetAuraFilterFunc("arena"), 
+	DebuffFilterFunc = GetAuraFilterFunc("arena"), 
 
 	HealthColorTapped = false, -- color tap denied units 
 	HealthColorDisconnected = true, -- color disconnected units
@@ -4031,8 +4028,8 @@ local UnitFrameParty = setmetatable({
 		AuraFilter = nil, 
 		AuraBuffFilter = "PLAYER HELPFUL", 
 		AuraDebuffFilter = "PLAYER HARMFUL", 
-		AuraFilterFunc = Auras:GetFilterFunc("nameplate"), 
-		BuffFilterFunc = Auras:GetFilterFunc("nameplate"), 
+		AuraFilterFunc = GetAuraFilterFunc("nameplate"), 
+		BuffFilterFunc = GetAuraFilterFunc("nameplate"), 
 		DebuffFilterFunc = nil, 
 		AuraDisableMouse = true, -- don't allow mouse input here
 		AuraTooltipDefaultPosition = nil, 
