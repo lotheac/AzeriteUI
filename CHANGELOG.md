@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.155-Release] 2019-07-06
+### Fixed
+- Added the missing threat related events to the health element to properly update threat coloring when we attract aggro from nearby monsters.
+
 ## [1.2.154-Release] 2019-07-06
 ### Changed
 - Tuned the threat colors used in unitframes and nameplates to be easier to understand. It should now be far more evident when you're starting to lose threat when tanking. 
