@@ -1592,7 +1592,7 @@ local NamePlates = {
 		ThreatHideSolo = true, 
 
 	UseAuras = true, 
-		AuraFrameSize = { 30*3 + 2*5, 30*2 + 5  }, 
+		AuraFrameSize = { 30*3 + 4*2, 30*2 + 4  }, 
 		--AuraFramePlace = { "TOP", 0, 30*2+5 + 10 },
 
 		-- Try to work around the problem with misaligned auras by changing the anchor? 
@@ -1600,9 +1600,9 @@ local NamePlates = {
 		-- anchored before the frame has a real size and the anchor just "sticks"...? 
 		-- Weirdness. Can't reproduce it consistantly, which backs up that theory. 
 		-- So for now I'll just attempt to work around it, see if it goes away!
-		AuraFramePlace = { "TOPLEFT", (80 - 30*3 + 2*5)/2, 30*2+5 + 10 },
+		AuraFramePlace = { "TOPLEFT", (84 - (30*3 + 4*2))/2, 30*2 + 4 + 10 },
 		AuraPoint = "BOTTOMLEFT", AuraAnchor = "Health", AuraRelPoint = "TOPLEFT",
-		AuraOffsetX = (80 - 30*3 + 2*5)/2, AuraOffsetY = 10 + 2,
+		AuraOffsetX = (84 - (30*3 + 4*2))/2, AuraOffsetY = 10 + 4,
 
 		AuraSize = 30, 
 		AuraSpaceH = 4, 
