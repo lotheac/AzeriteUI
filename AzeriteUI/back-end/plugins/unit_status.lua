@@ -28,11 +28,11 @@ local Update = function(self, event, unit)
 	end
 
 	local msg, critical
-	if (not UnitIsConnected(unit)) then 
+	if (not element.hideOffline) and (not UnitIsConnected(unit)) then 
 		msg = element.offlineMsg or S_PLAYER_OFFLINE
-	elseif UnitIsDeadOrGhost(unit) then 
+	elseif (not element.hideDead) and UnitIsDeadOrGhost(unit) then 
 		msg = element.deadMsg or S_DEAD
-	elseif UnitIsAFK(unit) then 
+	elseif (not element.hideAFK) and UnitIsAFK(unit) then 
 		msg = element.afkMsg or S_AFK
 	else 
 		local currentID, currentType = UnitPowerType(unit)
@@ -116,5 +116,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("UnitStatus", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("UnitStatus", Enable, Disable, Proxy, 7)
 end 
