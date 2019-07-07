@@ -58,12 +58,18 @@ local StatusBar_UpdateValue = function(bar, value, max)
 end 
 
 local GetTooltipUnit = function(tooltip)
-	local unit = tooltip.unit or tooltip.GetUnit and tooltip:GetUnit()
-	if (not unit) then 
-		return UnitExists("mouseover") and "mouseover" or nil 
-	elseif UnitExists(unit) then 
-		return UnitIsUnit(unit, "mouseover") and "mouseover" or unit 
+	local _, unit = tooltip:GetUnit()
+	if (not unit) and UnitExists("mouseover") then
+		unit = "mouseover"
 	end
+	if unit and UnitIsUnit(unit, "mouseover") then
+		unit = "mouseover"
+	end
+	return UnitExists(unit) and unit	
+end
+
+local OnTooltipHide = function(tooltip)
+	tooltip.unit = nil
 end
 
 local OnTooltipSetUnit = function(tooltip)
@@ -286,6 +292,10 @@ Module.OnEnable = function(self)
 
 		if tooltip:HasScript("OnTooltipSetUnit") then 
 			tooltip:HookScript("OnTooltipSetUnit", OnTooltipSetUnit)
+		end
+
+		if tooltip:HasScript("OnHide") then 
+			tooltip:HookScript("OnHide", OnTooltipHide)
 		end
 
 		local bar = _G[tooltip:GetName().."StatusBar"]
