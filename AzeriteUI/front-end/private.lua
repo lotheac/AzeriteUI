@@ -384,6 +384,7 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
                 [264420] = true, -- Soldier of the Alliance (war mode)
 		[294027] = true, -- Avenging Wrath (LotP crit buff)
 		[272903] = true, -- Avenger's Might (+mastery during AW)
+		[298700] = true, -- Metal Detector (mechagon trinket)
         }
         if (blacklist[spellID]) then
                 return false
@@ -411,7 +412,13 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
 		end
 
 		-- always show debuffs
-		return (not isBuff)
+		if (not isBuff) then
+			return true
+		end
+		-- show things without duration (could be buff zones on ground etc)
+		if (not duration) then
+			return true
+		end
 	else 
 		-- out of combat, display everything not explicitly blacklisted
 		return true
