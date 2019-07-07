@@ -1857,9 +1857,28 @@ local Template_SmallFrame = {
 		CastBarNameJustifyV = "MIDDLE",
 
 	CastBarPostUpdate =	function(cast, unit)
+		local self = cast._owner
+
+		-- This takes presedence
 		local isCasting = UnitCastingInfo(unit) or UnitChannelInfo(unit)
 		cast.Name:SetShown(isCasting)
-		cast._owner.Health.Value:SetShown(not isCasting)
+
+		-- Only show the health value if we're not casting, and no status should be visible
+		local unitStatus = self.UnitStatus
+		if unitStatus then 
+			if isCasting then 
+				unitStatus:Hide()
+				self.Health.Value:Hide()
+			elseif unitStatus.status then 
+				unitStatus:Show()
+				self.Health.Value:Hide()
+			else 
+				unitStatus:Hide()
+				self.Health.Value:Show()
+			end 
+		else 
+			self.Health.Value:SetShown(not isCasting)
+		end 
 	end,
 
 	HealthBarPostUpdate = function(health, unit)
@@ -1867,9 +1886,28 @@ local Template_SmallFrame = {
 		if not unit then 
 			return 
 		end 
+		local self = health._owner
+
+		-- This takes presedence
 		local isCasting = UnitCastingInfo(unit) or UnitChannelInfo(unit)
-		health.Value:SetShown(not isCasting)
-		health._owner.Cast.Name:SetShown(isCasting)
+		self.Cast.Name:SetShown(isCasting)
+
+		-- Only show the health value if we're not casting, and no status should be visible
+		local unitStatus = self.UnitStatus
+		if unitStatus then 
+			if isCasting then 
+				unitStatus:Hide()
+			elseif unitStatus.status then 
+				unitStatus:Show()
+				health.Value:Hide()
+			else 
+				unitStatus:Hide()
+				health.Value:Show()
+			end 
+		else 
+			health.Value:SetShown(not isCasting)
+		end 
+
 	end, 
 
 	UseTargetHighlight = true, 
