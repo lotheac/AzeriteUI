@@ -264,7 +264,7 @@ Update = function(self, event, unit, ...)
 			element.max = max
 			element.delay = 0
 			element.casting = true
-			element.interrupt = notInterruptible
+			element.notInterruptible = notInterruptible
 			element.tradeskill = isTradeSkill
 			element.total = nil
 			element.starttime = nil
@@ -276,7 +276,7 @@ Update = function(self, event, unit, ...)
 			if element.Icon then element.Icon:SetTexture(texture) end
 			if element.Value then element.Value:SetText("") end
 			if element.Shield then 
-				if element.interrupt and not UnitIsUnit(unit ,"player") then
+				if element.notInterruptible and not UnitIsUnit(unit ,"player") then
 					element.Shield:Show()
 				else
 					element.Shield:Hide()
@@ -305,7 +305,7 @@ Update = function(self, event, unit, ...)
 		element.tradeskill = nil
 		element.total = nil
 		element.casting = nil
-		element.interrupt = nil
+		element.notInterruptible = nil
 
 		element:Hide()
 		
@@ -317,7 +317,7 @@ Update = function(self, event, unit, ...)
 
 		clear(element)
 		element.casting = nil
-		element.interrupt = nil
+		element.notInterruptible = nil
 		element.tradeskill = nil
 		element.total = nil
 
@@ -334,14 +334,24 @@ Update = function(self, event, unit, ...)
 		element.tradeskill = nil
 		element.total = nil
 		element.casting = nil
-		element.interrupt = nil
+		element.notInterruptible = nil
 
 		element:Hide()
 		
-	elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE" or event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
-		element.interruptible = (event == "UNIT_SPELLCAST_INTERRUPTIBLE")
+	elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then 
+		element.notInterruptible = nil
 		if element.Shield then 
-			if element.interrupt and not UnitIsUnit(unit ,"player") then
+			if element.notInterruptible and (not UnitIsUnit(unit ,"player")) then
+				element.Shield:Show()
+			else
+				element.Shield:Hide()
+			end
+		end
+
+	elseif (event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
+		element.notInterruptible = true
+		if element.Shield then 
+			if element.notInterruptible and (not UnitIsUnit(unit ,"player")) then
 				element.Shield:Show()
 			else
 				element.Shield:Hide()
@@ -377,7 +387,7 @@ Update = function(self, event, unit, ...)
 			element.max = max
 			element.delay = 0
 			element.channeling = true
-			element.interrupt = notInterruptible
+			element.notInterruptible = notInterruptible
 			element.name = name
 			element.text = text
 
@@ -391,7 +401,7 @@ Update = function(self, event, unit, ...)
 			if element.Icon then element.Icon:SetTexture(texture) end
 			if element.Value then element.Value:SetText("") end
 			if element.Shield then 
-				if element.interrupt and not UnitIsUnit(unit ,"player") then
+				if element.notInterruptible and not UnitIsUnit(unit ,"player") then
 					element.Shield:Show()
 				else
 					element.Shield:Hide()
@@ -431,7 +441,7 @@ Update = function(self, event, unit, ...)
 		if element:IsShown() then
 			clear(element)
 			element.channeling = nil
-			element.interrupt = nil
+			element.notInterruptible = nil
 			element:Hide()
 		end
 		
@@ -446,7 +456,7 @@ Update = function(self, event, unit, ...)
 		clear(element)
 
 		element.casting = nil
-		element.interrupt = nil
+		element.notInterruptible = nil
 		element.tradeskill = nil
 		element.total = nil
 
@@ -516,5 +526,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 15)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 16)
 end 
