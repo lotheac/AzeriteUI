@@ -4912,8 +4912,6 @@ UnitFrameRaid.OnInit = function(self)
 	))
 	self.frame:SetAttribute("_onattributechanged", SECURE.Raid_OnAttribute)
 
-	-- Kill off the blizzard frames and leader tools
-	-- *todo: make this a user choice
 	if (not self.db.allowBlizzard) then 
 		self:DisableUIWidget("UnitFrameRaid") 
 	end
