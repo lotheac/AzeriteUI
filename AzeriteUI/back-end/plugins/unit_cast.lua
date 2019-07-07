@@ -338,38 +338,8 @@ Update = function(self, event, unit, ...)
 
 		element:Hide()
 		
-	elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then	
-		if element.casting then
-			local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
-			if name then
-				element.interrupt = notInterruptible
-			end
-		elseif element.channeling then
-			local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
-			if name then
-				element.interrupt = notInterruptible
-			end
-		end
-		if element.Shield then 
-			if element.interrupt and not UnitIsUnit(unit ,"player") then
-				element.Shield:Show()
-			else
-				element.Shield:Hide()
-			end
-		end
-	
-	elseif (event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then	
-		if element.casting then
-			local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
-			if name then
-				element.interrupt = notInterruptible
-			end
-		elseif element.channeling then
-			local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo(unit)
-			if name then
-				element.interrupt = notInterruptible
-			end
-		end
+	elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE" or event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE") then
+		element.interruptible = (event == "UNIT_SPELLCAST_INTERRUPTIBLE")
 		if element.Shield then 
 			if element.interrupt and not UnitIsUnit(unit ,"player") then
 				element.Shield:Show()
