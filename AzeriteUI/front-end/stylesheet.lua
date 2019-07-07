@@ -541,7 +541,7 @@ local NamePlates_Auras_PostUpdate = function(element, unit, visible)
 end
 
 local NamePlate_CastBar_PostUpdate = function(cast, unit)
-	if cast.interrupt then
+	if cast.notInterruptible then
 
 		-- Set it to the protected look 
 		if (cast.currentStyle ~= "protected") then 
