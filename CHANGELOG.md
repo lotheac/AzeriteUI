@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.157-Release] 2019-07-07
+### Added
+- Added the text based indicator for low mana or out of mana to the focus frame as well. 
+
+### Fixed
+- Fixed an issue that would prevent casts going from interruptable to non interruptable or the other way in the middle of the cast from not being visually updated to illustrate the changed interruptable state. 
+
 ## [1.2.156-Release] 2019-07-06
 ### Fixed
 - Fixed the aura filter for the personal resource display to once again only show relevant player cast auras with short duration.   
