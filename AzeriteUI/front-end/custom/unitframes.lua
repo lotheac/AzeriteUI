@@ -1374,7 +1374,30 @@ local StyleSmallFrame = function(self, unit, id, Layout, ...)
 		self.TargetHighlight = targetHighlight
 	end
 
-
+	-- Unit Status
+	-----------------------------------------------------------
+	if Layout.UseUnitStatus then 
+		local unitStatus = overlay:CreateFontString()
+		unitStatus:SetPoint(unpack(Layout.UnitStatusPlace))
+		unitStatus:SetDrawLayer(unpack(Layout.UnitStatusDrawLayer))
+		unitStatus:SetJustifyH(Layout.UnitStatusJustifyH)
+		unitStatus:SetJustifyV(Layout.UnitStatusJustifyV)
+		unitStatus:SetFontObject(Layout.UnitStatusFont)
+		unitStatus:SetTextColor(unpack(Layout.UnitStatusColor))
+		unitStatus.hideAFK = Layout.UnitStatusHideAFK
+		unitStatus.hideDead = Layout.UnitStatusHideDead
+		unitStatus.hideOffline = Layout.UnitStatusHideOffline
+		unitStatus.afkMsg = Layout.UseUnitStatusMessageAFK
+		unitStatus.deadMsg = Layout.UseUnitStatusMessageDead
+		unitStatus.offlineMsg = Layout.UseUnitStatusMessageDC
+		unitStatus.oomMsg = Layout.UseUnitStatusMessageOOM
+		if Layout.UnitStatusSize then 
+			unitStatus:SetSize(unpack(Layout.UnitStatusSize))
+		end 
+		self.UnitStatus = unitStatus
+		self.UnitStatus.PostUpdate = Layout.UnitStatusPostUpdate
+	end 
+		
 	-- Auras
 	-----------------------------------------------------------
 	if Layout.UseAuras then 
