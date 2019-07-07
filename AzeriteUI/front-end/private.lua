@@ -570,6 +570,7 @@ Private.GetMedia = function(name, type) return ([[Interface\AddOns\%s\media\%s.%
 -- Spammy stuff that is implicit and not really needed
 --auraUserFlags[155722] = NeverOnPlate -- Rake (just for my own testing purposes)
 auraUserFlags[204242] = NeverOnPlate -- Consecration (talent Consecrated Ground)
+auraUserFlags[223819] = NeverOnPlate -- Divine Purpose proc (talent Divine Purpose)
 
 -- NPC buffs that are completely useless
 ------------------------------------------------------------------------
