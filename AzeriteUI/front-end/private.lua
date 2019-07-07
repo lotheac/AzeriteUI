@@ -382,6 +382,8 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
                 [225787] = true, -- Sign of the Warrior (bonus event)
                 [299664] = true, -- Contract: Rustbolt Resistance
                 [264420] = true, -- Soldier of the Alliance (war mode)
+		[294027] = true, -- Avenging Wrath (LotP crit buff)
+		[272903] = true, -- Avenger's Might (+mastery during AW)
         }
         if (blacklist[spellID]) then
                 return false
