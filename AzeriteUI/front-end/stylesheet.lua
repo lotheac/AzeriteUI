@@ -3730,6 +3730,34 @@ local UnitFrameFocus = setmetatable({
 	HideWhenUnitIsPlayer = false, -- hide the frame when the unit is the player, or the target
 	HideWhenTargetIsCritter = false, -- hide the frame when unit is a critter
 
+	UseUnitStatus = true, 
+		UnitStatusPlace = { "CENTER", 0, 0 },
+		UnitStatusDrawLayer = { "ARTWORK", 2 },
+		UnitStatusJustifyH = "CENTER",
+		UnitStatusJustifyV = "MIDDLE",
+		UnitStatusFont = GetFont(14, true),
+		UnitStatusColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+		UseUnitStatusMessageOOM = L["oom"],
+		UnitStatusHideAFK = true, 
+		UnitStatusHideOffline = true, 
+		UnitStatusHideDead = true, 
+		UnitStatusSize = nil, 
+		UnitStatusPostUpdate = function(element, unit) 
+			local self = element._owner
+			local healthValue = self.Health.Value
+
+			if (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
+				element:Hide()
+			elseif element.status then 
+				element:Show()
+				healthValue:Hide()
+			else 
+				element:Hide()
+				healthValue:Show()
+			end 
+
+		end,
+
 }, { __index = Template_SmallFrame_Auras })
 
 ------------------------------------------------------------------
