@@ -18,8 +18,3 @@ The biggest contribution is to pledge to our Patreon, and help us secure the fut
 * Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)  
 * YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui)  
 * Reddit: [@AzeriteUI](https://www.reddit.com/r/azeriteui/)  
-
-## **Follow Goldpaw & Blakmane:**  
-* Twitter Blakmane: [@troko512](https://twitter.com/troko512)  
-* Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
-

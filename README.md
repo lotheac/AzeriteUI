@@ -34,20 +34,3 @@ This is not a feature we intend to implement. We do realize that some of you wou
 * Facebook: [@AzeriteUI](https://www.facebook.com/azeriteui/)  
 * YouTube: [@AzeriteUI](https://www.youtube.com/azeriteui)  
 * Reddit: [@AzeriteUI](https://www.reddit.com/r/azeriteui/)  
-
-## **Follow Goldpaw & Blakmane:**  
-* Twitter Blakmane: [@troko512](https://twitter.com/troko512)  
-* Twitter Goldpaw: [@GoldpawTheGreat](https://twitter.com/goldpawthegreat)  
-
-## **Translators:**  
-* deDE: **Maoe**  
-* esES: **Sonshine**  
-* frFR: **HipNoTik**  
-* ruRU: **Demorto** _(Anton Bozhina)_  
-* zhCN: **4679** _(Jiawei Zhou)_  
-* zhTW: **Alex Wang**  
-
-## **Official Supporters:**  
-* **Adam Stribley, Amariah Crawford, ChibiBespin, Elexys, Jennifer Graff, Kjartan Kirchhof, Jan Terje Hellemsbakken**  
-
-_Visit [www.patreon.com/AzeriteUI](https://www.patreon.com/azeriteui) to become an Official Supporter!_
