@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.158-Release] 2019-07-09
+### Fixed
+- Fixed an issue where the GameTooltip and our Azerite/Rep/XP tooltip would be visible at the same time when moving directly from the toggle button to an element above the ringframe - though covering it - that would show the GameTooltip. There should only be one tooltip at a time now. 
+
 ## [1.2.157-Release] 2019-07-07
 ### Added
 - Added the text based indicator for low mana or out of mana to the focus frame as well. 
