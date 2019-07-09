@@ -14,7 +14,11 @@ local GetNetStats = _G.GetNetStats
 local GetTime = _G.GetTime
 local UnitCastingInfo = _G.UnitCastingInfo
 local UnitChannelInfo = _G.UnitChannelInfo
+local UnitClass = _G.UnitClass
 local UnitExists = _G.UnitExists
+local UnitIsPlayer = _G.UnitIsPlayer
+local UnitIsUnit = _G.UnitIsUnit
+local UnitReaction = _G.UnitReaction
 
 -- WoW Constants
 local MILLISECONDS_ABBR = MILLISECONDS_ABBR
@@ -163,6 +167,32 @@ local updateSpellQueueValue = function(element)
 	element.SpellQueue:SetValue(value, true)
 end
 
+local UpdateColor = function(element, unit)
+	if element.OverrideColor then
+		return element:OverrideColor(unit)
+	end
+	local self = element._owner
+	local color, r, g, b
+	if (element.colorClass and UnitIsPlayer(unit)) then
+		local _, class = UnitClass(unit)
+		color = class and self.colors.class[class]
+	elseif (element.colorPetAsPlayer and UnitIsUnit(unit, "pet")) then 
+		local _, class = UnitClass("player")
+		color = class and self.colors.class[class]
+	elseif (element.colorReaction and UnitReaction(unit, "player")) then
+		color = self.colors.reaction[UnitReaction(unit, "player")]
+	end
+	if color then 
+		r, g, b = color[1], color[2], color[3]
+	end 
+	if (r) then 
+		element:SetStatusBarColor(r, g, b)
+	end 
+	if element.PostUpdateColor then 
+		element:PostUpdateColor(unit)
+	end 
+end
+
 local OnUpdate = function(element, elapsed)
 	local unit = element._owner.unit
 	if (not unit) or (not UnitExists(unit)) then 
@@ -271,6 +301,7 @@ Update = function(self, event, unit, ...)
 
 			element:SetMinMaxValues(0, element.total or element.max, true)
 			element:SetValue(element.duration, true) 
+			element:UpdateColor(unit)
 
 			if element.Name then element.Name:SetText(utf8sub(text, 32, true)) end
 			if element.Icon then element.Icon:SetTexture(texture) end
@@ -396,7 +427,8 @@ Update = function(self, event, unit, ...)
 
 			element:SetMinMaxValues(0, max, true)
 			element:SetValue(duration, true)
-			
+			element:UpdateColor(unit)
+
 			if element.Name then element.Name:SetText(utf8sub(name, 32, true)) end
 			if element.Icon then element.Icon:SetTexture(texture) end
 			if element.Value then element.Value:SetText("") end
@@ -498,6 +530,8 @@ local Enable = function(self)
 			self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP", Proxy)
 		end 
+
+		element.UpdateColor = UpdateColor
 		element:SetScript("OnUpdate", OnUpdate)
 
 		return true
@@ -526,5 +560,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 16)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 17)
 end 
