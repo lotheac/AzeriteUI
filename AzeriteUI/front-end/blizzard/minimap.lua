@@ -106,6 +106,10 @@ if (gameLocale == "zhCN") then
 	end
 end 
 
+local MouseIsOver = function(frame)
+	return (frame == GetMouseFocus())
+end
+
 -- Callbacks
 ----------------------------------------------------
 local Coordinates_OverrideValue = function(element, x, y)
