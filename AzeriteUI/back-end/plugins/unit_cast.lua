@@ -20,10 +20,12 @@ local UnitIsPlayer = _G.UnitIsPlayer
 local UnitIsUnit = _G.UnitIsUnit
 local UnitReaction = _G.UnitReaction
 
--- WoW Constants
-local MILLISECONDS_ABBR = MILLISECONDS_ABBR
+-- Localization
+local L_FAILED = _G.FAILED
+local L_INTERRUPTED = _G.INTERRUPTED
+local L_MILLISECONDS_ABBR = _G.MILLISECONDS_ABBR
 
--- Time constants
+-- Constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 
 -- Define it here so it can call itself later on
@@ -114,6 +116,9 @@ local clear = function(element)
 	end
 	if element.Value then 
 		element.Value:SetText("")
+	end
+	if element.Failed then 
+		element.Failed:SetText("")
 	end
 	if element.SpellQueue then 
 		element.SpellQueue:SetValue(0, true)
@@ -259,11 +264,22 @@ local OnUpdate = function(element, elapsed)
 			element:PostUpdate(unit, duration)
 		end
 		
+	elseif element.failedMessageTimer then 
+		element.failedMessageTimer = element.failedMessageTimer - elapsed
+		if (element.failedMessageTimer > 0) then 
+			return 
+		end 
+		element.failedMessageTimer = nil
+		local msg = element.Failed or element.Value or element.Name
+		if msg then 
+			msg:SetText("")
+		end
 	else
 		clear(element)
 		element.casting = nil
 		element.castID = nil
 		element.channeling = nil
+		element:Hide()
 		return element.PostUpdate and element:PostUpdate(unit)
 	end
 end 
@@ -298,7 +314,9 @@ Update = function(self, event, unit, ...)
 			element.tradeskill = isTradeSkill
 			element.total = nil
 			element.starttime = nil
-
+			element.failed = nil
+			element.failedMessageTimer = nil
+	
 			element:SetMinMaxValues(0, element.total or element.max, true)
 			element:SetValue(element.duration, true) 
 			element:UpdateColor(unit)
@@ -336,9 +354,19 @@ Update = function(self, event, unit, ...)
 		element.tradeskill = nil
 		element.total = nil
 		element.casting = nil
+		element.channeling = nil
 		element.notInterruptible = nil
+		element.castID = nil
 
-		element:Hide()
+		if element.timeToHold then
+			element.failedMessageTimer = element.timeToHold
+			local msg = element.Failed or element.Value or element.Name
+			if msg then 
+				msg:SetText(utf8sub(L_FAILED, 32, true)) 
+			end 
+		else
+			element:Hide()
+		end 
 		
 	elseif (event == "UNIT_SPELLCAST_STOP") then
 		local castID, spellID = ...
@@ -365,9 +393,20 @@ Update = function(self, event, unit, ...)
 		element.tradeskill = nil
 		element.total = nil
 		element.casting = nil
+		element.channeling = nil
 		element.notInterruptible = nil
+		element.castID = nil
 
-		element:Hide()
+		if element.timeToHold then
+			element.failedMessageTimer = element.timeToHold
+			local msg = element.Failed or element.Value or element.Name
+			if msg then 
+				msg:SetText(utf8sub(L_FAILED, 32, true)) 
+			end 
+		else
+			element:Hide()
+		end 
+
 		
 	elseif (event == "UNIT_SPELLCAST_INTERRUPTIBLE") then 
 		element.notInterruptible = nil
@@ -424,7 +463,8 @@ Update = function(self, event, unit, ...)
 
 			element.casting = nil
 			element.castID = nil
-
+			element.failedMessageTimer = nil
+	
 			element:SetMinMaxValues(0, max, true)
 			element:SetValue(duration, true)
 			element:UpdateColor(unit)
@@ -484,15 +524,16 @@ Update = function(self, event, unit, ...)
 		if UnitChannelInfo(unit) then
 			return Update(self, "UNIT_SPELLCAST_CHANNEL_START", unit)
 		end
+		if (not element.failedMessageTimer) then 
+			clear(element)
 
-		clear(element)
+			element.casting = nil
+			element.notInterruptible = nil
+			element.tradeskill = nil
+			element.total = nil
 
-		element.casting = nil
-		element.notInterruptible = nil
-		element.tradeskill = nil
-		element.total = nil
-
-		element:Hide()
+			element:Hide()
+		end 
 	end
 
 	if element.PostUpdate then 
@@ -520,7 +561,7 @@ local Enable = function(self)
 		if (not (unit and unit:match("%wtarget$"))) then
 			self:RegisterEvent("UNIT_SPELLCAST_START", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_FAILED", Proxy)
-			self:RegisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
+			--self:RegisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_STOP", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", Proxy)
@@ -546,7 +587,7 @@ local Disable = function(self)
 
 		self:UnregisterEvent("UNIT_SPELLCAST_START", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_FAILED", Proxy)
-		self:UnregisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
+		--self:UnregisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_STOP", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", Proxy)
@@ -560,5 +601,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 17)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 21)
 end 

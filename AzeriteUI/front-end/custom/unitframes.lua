@@ -3273,7 +3273,7 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		cast:SetSize(unpack(Layout.CastBarSize))
 		cast:SetFrameLevel(health:GetFrameLevel() + 1)
 		cast:Place(unpack(Layout.CastBarPlace))
-		cast:SetOrientation(Layout.CastBarOrientation) 
+		cast:SetOrientation(Layout.CastBarOrientation)
 		if Layout.CastBarDisableSmoothing then 
 			cast:DisableSmoothing()
 		else 
@@ -3566,6 +3566,7 @@ UnitStyles.StylePlayerHUDFrame = function(self, unit, id, Layout, ...)
 		cast:SetStatusBarColor(unpack(Layout.CastBarColor)) 
 		cast:SetOrientation(Layout.CastBarOrientation) -- set the bar to grow towards the top.
 		cast:DisableSmoothing(true) -- don't smoothe castbars, it'll make it inaccurate
+		cast.timeToHold = Layout.CastTimeToHoldFailed
 		self.Cast = cast
 		
 		if Layout.UseCastBarBackground then 

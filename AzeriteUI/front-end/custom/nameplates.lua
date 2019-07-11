@@ -227,6 +227,7 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		cast:SetStatusBarTexture(Layout.CastTexture)
 		cast:SetOrientation(Layout.CastOrientation)
 		cast:SetSmoothingFrequency(.1)
+		cast.timeToHold = Layout.CastTimeToHoldFailed
 		if Layout.CastSparkMap then 
 			cast:SetSparkMap(CastSparkMap)
 		end

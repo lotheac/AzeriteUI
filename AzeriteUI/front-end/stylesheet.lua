@@ -1542,6 +1542,7 @@ local NamePlates = {
 		CastColor = { Colors.cast[1], Colors.cast[2], Colors.cast[3], 1 },
 		CastTexture = GetMedia("nameplate_bar"),
 		CastTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
+		CastTimeToHoldFailed = .5, 
 		CastSparkMap = {
 			top = {
 				{ keyPercent =   0/256, offset = -16/32 }, 
@@ -2505,6 +2506,7 @@ local UnitFramePlayerHUD = {
 		CastBarTexture = Constant.SmallBarTexture, 
 		CastBarColor = { 70/255, 255/255, 131/255, .69 }, 
 		CastBarOrientation = "RIGHT",
+		CastTimeToHoldFailed = .5, 
 		CastBarSparkMap = {
 			top = {
 				{ keyPercent =   0/128, offset = -16/32 }, 
