@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.160-Release] 2019-07-11
+### Changed
+- The cast shield is now removed when a cast is interrupted or fails. 
+
+### Fixed
+- The message displayed on interrupted (but not failed) casts should now be "Interrupted", not "Failed". 
+
 ## [1.2.159-Release] 2019-07-11
 ### Added
 - The floating player castbar, as well as the castbars found on nameplates should now remain visible and display a message if the spellcast fails or is interrupted. 
