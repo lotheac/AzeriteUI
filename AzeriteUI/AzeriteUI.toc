@@ -115,6 +115,7 @@ locale\esES.lua
 locale\esMX.lua
 locale\esMX.lua
 locale\frFR.lua
+locale\itIT.lua
 locale\koKR.lua
 locale\ptBR.lua
 locale\ptPT.lua
