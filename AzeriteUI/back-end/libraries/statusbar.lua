@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 46)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 47)
 if (not LibStatusBar) then	
 	return
 end
@@ -396,65 +396,70 @@ local OnUpdate = function(self, elapsed)
 	if (data.elapsed < smoothingLimit) then
 		return
 	end
-	if (data.disableSmoothing) then
-		if (data.barValue <= data.barMin) or (data.barValue >= data.barMax) then
-			data.scaffold:SetScript("OnUpdate", nil)
-		end
-	elseif (data.smoothing) then
-		if (math_abs(data.barDisplayValue - data.barValue) < smoothingMinValue) then 
-			data.barDisplayValue = data.barValue
-			data.smoothing = nil
-		else 
-			-- The fraction of the total bar this total animation should cover  
-			local animsize = (data.barValue - data.smoothingInitialValue)/(data.barMax - data.barMin) 
 
-			local smartSpeed
-			if data.useSmartSoothing then 
-				if data.barValue > data.barDisplayValue then 
-					smartSpeed = smartSmoothingUpFrequency
-				elseif data.barValue < data.barDisplayValue then 
-					smartSpeed = smartSmoothingDownFrequency
+	if data.updatesRunning then 
+		if (data.disableSmoothing) then
+			if (data.barValue <= data.barMin) or (data.barValue >= data.barMax) then
+				--data.scaffold:SetScript("OnUpdate", nil)
+				data.updatesRunning = nil
+			end
+		elseif (data.smoothing) then
+			if (math_abs(data.barDisplayValue - data.barValue) < smoothingMinValue) then 
+				data.barDisplayValue = data.barValue
+				data.smoothing = nil
+			else 
+				-- The fraction of the total bar this total animation should cover  
+				local animsize = (data.barValue - data.smoothingInitialValue)/(data.barMax - data.barMin) 
+
+				local smartSpeed
+				if data.useSmartSoothing then 
+					if data.barValue > data.barDisplayValue then 
+						smartSpeed = smartSmoothingUpFrequency
+					elseif data.barValue < data.barDisplayValue then 
+						smartSpeed = smartSmoothingDownFrequency
+					end 
 				end 
-			end 
 
-			local smoothSpeed = smartSpeed or data.smoothingFrequency or smoothingFrequency
+				local smoothSpeed = smartSpeed or data.smoothingFrequency or smoothingFrequency
 
-			-- Points per second on average for the whole bar
-			local pps = (data.barMax - data.barMin)/smoothSpeed
+				-- Points per second on average for the whole bar
+				local pps = (data.barMax - data.barMin)/smoothSpeed
 
-			-- Position in time relative to the length of the animation, scaled from 0 to 1
-			local position = (GetTime() - data.smoothingStart)/smoothSpeed 
-			if (position < 1) then 
-				-- The change needed when using average speed
-				local average = pps * animsize * data.elapsed -- can and should be negative
+				-- Position in time relative to the length of the animation, scaled from 0 to 1
+				local position = (GetTime() - data.smoothingStart)/smoothSpeed 
+				if (position < 1) then 
+					-- The change needed when using average speed
+					local average = pps * animsize * data.elapsed -- can and should be negative
 
-				-- Tha change relative to point in time and distance passed
-				local change = 2*(3 * ( 1 - position )^2 * position) * average*2 --  y = 3 * (1 − t)^2 * t  -- quad bezier fast ascend + slow descend
-				--local change = 2*(3 * ( 1 - position ) * position^2) * average*2 -- y = 3 * (1 − t) * t^2 -- quad bezier slow ascend + fast descend
-				--local change = 2 * average * ((position < .7) and math_abs(position/.7) or math_abs((1-position)/.3)) -- linear slow ascend + fast descend
-				
-				--print(("time: %.3f pos: %.3f change: %.1f"):format(GetTime() - data.smoothingStart, position, change))
+					-- Tha change relative to point in time and distance passed
+					local change = 2*(3 * ( 1 - position )^2 * position) * average*2 --  y = 3 * (1 − t)^2 * t  -- quad bezier fast ascend + slow descend
+					--local change = 2*(3 * ( 1 - position ) * position^2) * average*2 -- y = 3 * (1 − t) * t^2 -- quad bezier slow ascend + fast descend
+					--local change = 2 * average * ((position < .7) and math_abs(position/.7) or math_abs((1-position)/.3)) -- linear slow ascend + fast descend
+					
+					--print(("time: %.3f pos: %.3f change: %.1f"):format(GetTime() - data.smoothingStart, position, change))
 
-				-- If there's room for a change in the intended direction, apply it, otherwise finish the animation
-				if ( (data.barValue > data.barDisplayValue) and (data.barValue > data.barDisplayValue + change) ) 
-				or ( (data.barValue < data.barDisplayValue) and (data.barValue < data.barDisplayValue + change) ) then 
-					data.barDisplayValue = data.barDisplayValue + change
+					-- If there's room for a change in the intended direction, apply it, otherwise finish the animation
+					if ( (data.barValue > data.barDisplayValue) and (data.barValue > data.barDisplayValue + change) ) 
+					or ( (data.barValue < data.barDisplayValue) and (data.barValue < data.barDisplayValue + change) ) then 
+						data.barDisplayValue = data.barDisplayValue + change
+					else 
+						data.barDisplayValue = data.barValue
+						data.smoothing = nil
+					end 
 				else 
 					data.barDisplayValue = data.barValue
 					data.smoothing = nil
 				end 
-			else 
-				data.barDisplayValue = data.barValue
-				data.smoothing = nil
 			end 
-		end 
-	else
-		if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) or (not data.smoothing) then
-			data.scaffold:SetScript("OnUpdate", nil)
+		else
+			if (data.barDisplayValue <= data.barMin) or (data.barDisplayValue >= data.barMax) or (not data.smoothing) then
+				--data.scaffold:SetScript("OnUpdate", nil)
+				data.updatesRunning = nil
+			end
 		end
-	end
 
-	Update(self, data.elapsed)
+		Update(self, data.elapsed)
+	end
 
 	-- call module OnUpdate handler
 	if data.OnUpdate then 
@@ -541,9 +546,10 @@ StatusBar.SetValue = function(self, value, overrideSmoothing)
 		data.smoothing = true
 	end
 	if (data.smoothing or (data.barDisplayValue > min) or (data.barDisplayValue < max)) then
-		if (not data.scaffold:GetScript("OnUpdate")) then
-			data.scaffold:SetScript("OnUpdate", OnUpdate)
-		end
+		data.updatesRunning = true
+		--if (not data.scaffold:GetScript("OnUpdate")) then
+		--	data.scaffold:SetScript("OnUpdate", OnUpdate)
+		--end
 		return 
 	end
 	Update(self)
@@ -906,6 +912,9 @@ LibStatusBar.CreateStatusBar = function(self, parent)
 	Textures[statusbar] = texCoords
 	
 	Update(statusbar)
+
+	-- Apply our custom handler
+	scaffold:SetScript("OnUpdate", OnUpdate)
 
 	return statusbar
 end
