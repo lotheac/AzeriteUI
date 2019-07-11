@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.161-Release] 2019-07-11
+### Added
+- Added the missing (though yet empty) localization file for Italian (itIT) game clients. 
+
 ## [1.2.160-Release] 2019-07-11
 ### Changed
 - The cast shield is now removed when a cast is interrupted or fails. 
