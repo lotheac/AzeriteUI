@@ -314,7 +314,6 @@ Update = function(self, event, unit, ...)
 			element.tradeskill = isTradeSkill
 			element.total = nil
 			element.starttime = nil
-			element.failed = nil
 			element.failedMessageTimer = nil
 	
 			element:SetMinMaxValues(0, element.total or element.max, true)
@@ -605,5 +604,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 22)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 23)
 end 
