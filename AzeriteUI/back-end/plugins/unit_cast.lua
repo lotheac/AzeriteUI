@@ -358,6 +358,8 @@ Update = function(self, event, unit, ...)
 		element.notInterruptible = nil
 		element.castID = nil
 
+		if element.Shield then element.Shield:Hide() end 
+
 		if element.timeToHold then
 			element.failedMessageTimer = element.timeToHold
 			local msg = element.Failed or element.Value or element.Name
@@ -397,11 +399,13 @@ Update = function(self, event, unit, ...)
 		element.notInterruptible = nil
 		element.castID = nil
 
+		if element.Shield then element.Shield:Hide() end 
+
 		if element.timeToHold then
 			element.failedMessageTimer = element.timeToHold
 			local msg = element.Failed or element.Value or element.Name
 			if msg then 
-				msg:SetText(utf8sub(L_FAILED, 32, true)) 
+				msg:SetText(utf8sub(L_INTERRUPTED, 32, true)) 
 			end 
 		else
 			element:Hide()
@@ -601,5 +605,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 21)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 22)
 end 
