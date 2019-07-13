@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.163-Release] 2019-07-13
+### Added
+- Our custom unitframe tooltips now show PvP icons for PvP enabled players, and a skull icon for bosses. 
+
 ## [1.2.162-Release] 2019-07-13
 ### Added
 - The nameplates now have heal prediction. 
