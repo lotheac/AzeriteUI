@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 32)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 33)
 if (not LibNamePlate) then	
 	return
 end
@@ -771,7 +771,7 @@ LibNamePlate.CreateNamePlate = function(self, baseFrame, name)
 	-- *Blizzard changed nameplate format and also anchoring points in Legion,
 	--  so naturally we're using a different function for this too. Speed!
 	if (LibNamePlate:IsBuild("8.2.0")) then 
-		plate:SetPoint("TOP", baseFrame, "TOP", 0, 0)
+		plate:SetPoint("CENTER", baseFrame, "CENTER", 0, 0)
 		plate:Show()	
 	else
 		local sizer = plate:CreateFrame()
