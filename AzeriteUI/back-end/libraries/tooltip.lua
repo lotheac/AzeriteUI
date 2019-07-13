@@ -1,4 +1,4 @@
-local LibTooltip = CogWheel:Set("LibTooltip", 51)
+local LibTooltip = CogWheel:Set("LibTooltip", 52)
 if (not LibTooltip) then	
 	return
 end
@@ -108,6 +108,13 @@ local LINE_PADDING = 4 -- padding between lines of text
 local FONT_TITLE = Game15Font_o1 
 local FONT_NORMAL = Game13Font_o1 -- Game12Font_o1
 local FONT_VALUE = Game13Font_o1
+
+-- Blizzard textures we use 
+local BOSS_TEXTURE = "|TInterface\\TargetingFrame\\UI-TargetingFrame-Skull:16:16:-2:1|t"
+local FFA_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-FFA:16:12:-2:1:64:64:6:34:0:40|t"
+local FACTION_ALLIANCE_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Alliance:16:12:-2:1:64:64:6:34:0:40|t"
+local FACTION_NEUTRAL_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Neutral:16:12:-2:1:64:64:6:34:0:40|t"
+local FACTION_HORDE_TEXTURE = "|TInterface\\TargetingFrame\\UI-PVP-Horde:16:16:-4:0:64:64:0:40:0:40|t"
 
 -- Blizzard tooltips
 local blizzardTips = {
@@ -1419,6 +1426,26 @@ Tooltip.SetUnit = function(self, unit)
 			-- *Add support for totalRP3 if it's enabled? 
 
 			-- name 
+			local displayName = data.name
+			if data.isPlayer then 
+				if data.isFFA then
+					displayName = FFA_TEXTURE .. " " .. displayName
+				elseif (data.isPVP and data.englishFaction) then
+					if (data.englishFaction == "Horde") then
+						displayName = FACTION_HORDE_TEXTURE .. " " .. displayName
+					elseif (data.englishFaction == "Alliance") then
+						displayName = FACTION_ALLIANCE_TEXTURE .. " " .. displayName
+					elseif (data.englishFaction == "Neutral") then
+						-- They changed this to their new atlas garbage in Legion, 
+						-- so for the sake of simplicty we'll just use the FFA PvP icon instead. Works.
+						displayName = FFA_TEXTURE .. " " .. displayName
+					end
+				end
+			else 
+				if data.isBoss then
+					displayName = BOSS_TEXTURE .. " " .. displayName
+				end
+			end
 
 			local levelText
 			if (data.effectiveLevel and (data.effectiveLevel > 0)) then 
@@ -1429,12 +1456,12 @@ Tooltip.SetUnit = function(self, unit)
 			local r, g, b = self:GetUnitHealthColor(unit)
 			if levelText then 
 				if self.showLevelWithName then 
-					self:AddLine(levelText .. colors.quest.gray.colorCode .. ": |r" .. data.name, r, g, b, true)
+					self:AddLine(levelText .. colors.quest.gray.colorCode .. ": |r" .. displayName, r, g, b, true)
 				else 
-					self:AddDoubleLine(data.name, levelText, r, g, b, nil, nil, nil, true)
+					self:AddDoubleLine(displayName, levelText, r, g, b, nil, nil, nil, true)
 				end 
 			else
-				self:AddLine(data.name, r, g, b, true)
+				self:AddLine(displayName, r, g, b, true)
 			end 
 
 			-- titles
