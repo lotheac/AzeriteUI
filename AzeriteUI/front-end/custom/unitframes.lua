@@ -1702,11 +1702,11 @@ local StylePartyFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Custom little magic script handler
-	if Layout.HealthOnTexCoordChanged then 
-		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthOnTexCoordChanged)
+	if Layout.HealthPreviewOnTexCoordChanged then 
+		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthPreviewOnTexCoordChanged)
 	end
 	
-	healthPreview.PostUpdate = Layout.HealthOnTexCoordChanged
+	healthPreview.PostUpdate = Layout.HealthPreviewOnTexCoordChanged
 	health.Preview = healthPreview
 
 	self.Health = health
@@ -2352,11 +2352,11 @@ local StyleRaidFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Custom little magic script handler
-	if Layout.HealthOnTexCoordChanged then 
-		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthOnTexCoordChanged)
+	if Layout.HealthPreviewOnTexCoordChanged then 
+		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthPreviewOnTexCoordChanged)
 	end
 	
-	healthPreview.PostUpdate = Layout.HealthOnTexCoordChanged
+	healthPreview.PostUpdate = Layout.HealthPreviewOnTexCoordChanged
 	health.Preview = healthPreview
 	self.Health = health
 	self.Health.PostUpdate = Layout.HealthBarPostUpdate
@@ -2942,11 +2942,11 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Custom little magic script handler
-	if Layout.HealthOnTexCoordChanged then 
-		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthOnTexCoordChanged)
+	if Layout.HealthPreviewOnTexCoordChanged then 
+		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthPreviewOnTexCoordChanged)
 	end
 	
-	healthPreview.PostUpdate = Layout.HealthOnTexCoordChanged
+	healthPreview.PostUpdate = Layout.HealthPreviewOnTexCoordChanged
 	health.Preview = healthPreview
 
 	self.Health = health
@@ -3893,11 +3893,11 @@ UnitStyles.StyleTargetFrame = function(self, unit, id, Layout, ...)
 	end 
 
 	-- Custom little magic script handler
-	if Layout.HealthOnTexCoordChanged then 
-		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthOnTexCoordChanged)
+	if Layout.HealthPreviewOnTexCoordChanged then 
+		healthPreview:SetScript("OnTexCoordChanged", Layout.HealthPreviewOnTexCoordChanged)
 	end
 	
-	healthPreview.PostUpdate = Layout.HealthOnTexCoordChanged
+	healthPreview.PostUpdate = Layout.HealthPreviewOnTexCoordChanged
 	health.Preview = healthPreview
 
 	self.Health = health
