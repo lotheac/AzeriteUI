@@ -124,7 +124,7 @@ local Update = function(self, event, unit)
 	element:Show()
 
 	if element.PostUpdate then 
-		element:PostUpdate(unit, specIndex)
+		element:PostUpdate(unit, absorb, maxHealth)
 	end 
 	
 end 
@@ -174,5 +174,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Absorb", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("Absorb", Enable, Disable, Proxy, 5)
 end 
