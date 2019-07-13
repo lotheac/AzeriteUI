@@ -657,20 +657,35 @@ local HealPredict_UpdateTexture = function(element, healthPreview, change, start
 	if (element.orientation == "RIGHT") then 
 		local min,max = healthPreview:GetMinMaxValues()
 		local value = healthPreview:GetValue() / max
+		local tex = element.Texture
+		local texCoord = tex.texCoord
+		local texValue, texChange = value, change
+		local left, right, top, bottom = 0, 1, 0, 1
+		if texCoord then 
+			left = texCoord[1]
+			right = texCoord[2]
+			top = texCoord[3]
+			bottom = texCoord[4]
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+		end 
 
 		if (change > 0) then 
-			element.Texture:ClearAllPoints()
-			element.Texture:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
-			element.Texture:SetSize(change*element.width, element.height)
-			element.Texture:SetTexCoord(value, value + change, 0, 1)
-			element.Texture:SetVertexColor(0, .7, 0, .25)
+			tex:ClearAllPoints()
+			tex:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+			tex:SetSize(change*element.width, element.height)
+			tex:SetTexCoord(texValue, texValue + texChange, top, bottom)
+			tex:SetVertexColor(0, .7, 0, .25)
 			element:Show()
 		elseif (change < 0) then 
-			element.Texture:ClearAllPoints()
-			element.Texture:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
-			element.Texture:SetSize((-change)*element.width, element.height)
-			element.Texture:SetTexCoord(value + change, value, 0, 1)
-			element.Texture:SetVertexColor(.5, 0, 0, .75)
+			tex:ClearAllPoints()
+			tex:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+			tex:SetSize((-change)*element.width, element.height)
+			tex:SetTexCoord(texValue + texChange, texValue, top, bottom)
+			tex:SetVertexColor(.5, 0, 0, .75)
 			element:Show()
 		else 
 			element:Hide()
@@ -679,20 +694,35 @@ local HealPredict_UpdateTexture = function(element, healthPreview, change, start
 	elseif (element.orientation == "LEFT") then 
 		local min,max = healthPreview:GetMinMaxValues()
 		local value = healthPreview:GetValue() / max
+		local tex = element.Texture
+		local texCoord = tex.texCoord
+		local texValue, texChange = value, change
+		local left, right, top, bottom = 0, 1, 0, 1
+		if texCoord then 
+			left = texCoord[1]
+			right = texCoord[2]
+			top = texCoord[3]
+			bottom = texCoord[4]
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+		end 
 
 		if (change > 0) then 
-			element.Texture:ClearAllPoints()
-			element.Texture:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
-			element.Texture:SetSize(change*element.width, element.height)
-			element.Texture:SetTexCoord(value + change, value, 0, 1)
-			element.Texture:SetVertexColor(0, .7, 0, .25)
+			tex:ClearAllPoints()
+			tex:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
+			tex:SetSize(change*element.width, element.height)
+			tex:SetTexCoord(texValue + texChange, texValue, top, bottom)
+			tex:SetVertexColor(0, .7, 0, .25)
 			element:Show()
 		elseif (change < 0) then
-			element.Texture:ClearAllPoints()
-			element.Texture:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
-			element.Texture:SetSize((-change)*element.width, element.height)
-			element.Texture:SetTexCoord(value, value + change, 0, 1)
-			element.Texture:SetVertexColor(.5, 0, 0, .75)
+			tex:ClearAllPoints()
+			tex:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
+			tex:SetSize((-change)*element.width, element.height)
+			tex:SetTexCoord(texValue, texValue + texChange, top, bottom)
+			tex:SetVertexColor(.5, 0, 0, .75)
 			element:Show()
 		else 
 			element:Hide()
@@ -700,7 +730,7 @@ local HealPredict_UpdateTexture = function(element, healthPreview, change, start
 	end 
 end
 
-local HealPredict_OnTexCoordChanged = function(element, left, right, top, bottom)
+local HealthPreview_OnTexCoordChanged = function(element, left, right, top, bottom)
 	local self = element._owner 
 	if not self then 
 		return 
@@ -1498,7 +1528,7 @@ local NamePlates = {
 	UseHealth = true, 
 		HealthPlace = { "TOP", 0, -2 },
 		HealthSize = { 84, 14 }, 
-		HealthOrientation = "LEFT", 
+		HealthBarOrientation = "LEFT", 
 		HealthTexture = GetMedia("nameplate_bar"),
 		HealthTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
 		HealthSparkMap = {
@@ -1534,6 +1564,42 @@ local NamePlates = {
 		HealthBackdropTexture = GetMedia("nameplate_backdrop"),
 		HealthBackdropDrawLayer = { "BACKGROUND", -2 },
 		HealthBackdropColor = { 1, 1, 1, 1 },
+
+	UseHealPredict = true, 
+		HealPredictPlace = { "TOPRIGHT", 0, 0 }, -- relative to the health bar, not the frame! 
+		HealPredictSize = { 84, 14 }, 
+		HealPredictFrequentUpdates = true, 
+		HealPredictOrientation = "LEFT", 
+		HealPredictTexture = GetMedia("nameplate_bar"),
+		HealPredictTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
+		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
+		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
+
+	UseAbsorbBar = true, 
+		AbsorbBarPlace = { "TOP", 0, -2 },
+		AbsorbBarSize = { 84, 14 },
+		AbsorbBarOrientation = "RIGHT",
+		AbsorbBarSetFlippedHorizontally = true, 
+		AbsorbBarTexture = GetMedia("nameplate_bar"),
+		AbsorbBarTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
+		AbsorbBarColor = { 1, 1, 1, .35 },
+		AbsorbThreshold = 10/100,
+		AbsorbBarSparkMap = {
+			top = {
+				{ keyPercent =   0/256, offset = -16/32 }, 
+				{ keyPercent =   4/256, offset = -16/32 }, 
+				{ keyPercent =  19/256, offset =   0/32 }, 
+				{ keyPercent = 236/256, offset =   0/32 }, 
+				{ keyPercent = 256/256, offset = -16/32 }
+			},
+			bottom = {
+				{ keyPercent =   0/256, offset = -16/32 }, 
+				{ keyPercent =   4/256, offset = -16/32 }, 
+				{ keyPercent =  19/256, offset =   0/32 }, 
+				{ keyPercent = 236/256, offset =   0/32 }, 
+				{ keyPercent = 256/256, offset = -16/32 }
+			}
+		},
 
 	UseCast = true, 
 		CastPlace = { "TOP", 0, -22 },
@@ -2158,7 +2224,7 @@ local UnitFramePlayer = {
 		HealPredictSize = nil, 
 		HealPredictFrequentUpdates = true, 
 		HealPredictOrientation = "RIGHT", 
-		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
 		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
 
 	UseAbsorbBar = true,
@@ -3024,7 +3090,7 @@ local UnitFrameTarget = {
 		HealPredictSize = nil, 
 		HealPredictFrequentUpdates = true, 
 		HealPredictOrientation = "LEFT", 
-		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
 		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
 
 	UseHealthBackdrop = true,
@@ -3844,7 +3910,7 @@ local UnitFrameParty = setmetatable({
 		HealPredictSize = nil, 
 		HealPredictFrequentUpdates = true, 
 		HealPredictOrientation = "RIGHT", 
-		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
 		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
 		HealPredictSize = Constant.TinyBar,
 		HealPredictTexture = Constant.TinyBarTexture,
@@ -4181,7 +4247,7 @@ local UnitFrameRaid = setmetatable({
 		HealPredictSize = nil, 
 		HealPredictFrequentUpdates = true, 
 		HealPredictOrientation = "RIGHT", 
-		HealthOnTexCoordChanged = HealPredict_OnTexCoordChanged, 
+		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
 		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
 		HealPredictSize = Constant.RaidBar,
 		HealPredictTexture = Constant.TinyBarTexture,
