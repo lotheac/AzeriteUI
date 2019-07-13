@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.162-Release] 2019-07-13
+### Added
+- The nameplates now have heal prediction. 
+- The nameplates now have an absorb bar. 
+
 ## [1.2.161-Release] 2019-07-11
 ### Added
 - Added the missing (though yet empty) localization file for Italian (itIT) game clients. 
