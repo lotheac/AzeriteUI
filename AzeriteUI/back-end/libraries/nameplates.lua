@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 33)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 35)
 if (not LibNamePlate) then	
 	return
 end
@@ -317,6 +317,7 @@ local UnregisterAllEvents = NamePlate_MT.__index.UnregisterAllEvents
 
 local IsMessageRegistered = LibNamePlate.IsMessageRegistered
 local RegisterMessage = LibNamePlate.RegisterMessage
+local SendMessage = LibNamePlate.SendMessage
 local UnregisterMessage = LibNamePlate.UnregisterMessage
 
 -- TODO: Cache some of this upon unit changes and show, to avoid so many function calls. 
@@ -578,6 +579,8 @@ NamePlate.RegisterMessage = function(self, event, func, unitless)
 	end
 end
 
+NamePlate.SendMessage = SendMessage -- Don't need a proxy on this one
+
 NamePlate.UnregisterMessage = function(self, event, func)
 	-- silently fail if the event isn't even registered
 	if not callbacks[self] or not callbacks[self][event] then
@@ -599,7 +602,6 @@ NamePlate.UnregisterMessage = function(self, event, func)
 		end
 	end
 end
-
 
 NamePlate.UpdateAllElements = function(self, event, ...)
 	local unit = self.unit

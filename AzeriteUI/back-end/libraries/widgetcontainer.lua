@@ -1,4 +1,4 @@
-local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 21)
+local LibWidgetContainer = CogWheel:Set("LibWidgetContainer", 22)
 if (not LibWidgetContainer) then	
 	return
 end
@@ -131,6 +131,7 @@ local UnregisterAllEvents = WidgetFrame_MT.__index.UnregisterAllEvents
 
 local IsMessageRegistered = LibWidgetContainer.IsMessageRegistered
 local RegisterMessage = LibWidgetContainer.RegisterMessage
+local SendMessage = LibWidgetContainer.SendMessage
 local UnregisterMessage = LibWidgetContainer.UnregisterMessage
 
 local UpdateAllElements = function(self, ...)
@@ -288,6 +289,8 @@ WidgetFrame.RegisterMessage = function(self, event, func, unitless)
 		end 
 	end
 end
+
+WidgetFrame.SendMessage = SendMessage -- Don't need a proxy on this one
 
 WidgetFrame.UnregisterMessage = function(self, event, func)
 	-- silently fail if the event isn't even registered
