@@ -1,7 +1,3 @@
-
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "Cast requires LibClientBuild to be loaded.")
-
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -199,13 +195,17 @@ local UpdateColor = function(element, unit)
 end
 
 local OnUpdate = function(element, elapsed)
-	local unit = element._owner.unit
+	local self = element._owner
+	local unit = self.unit
 	if (not unit) or (not UnitExists(unit)) then 
 		clear(element)
 		element.castID = nil
 		element.casting = nil
 		element.channeling = nil
-		element:Hide()
+		if (element:IsShown()) then 
+			element:Hide()
+			self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+		end
 		return element.PostUpdate and element:PostUpdate(unit)
 	end
 	local r, g, b
@@ -216,7 +216,10 @@ local OnUpdate = function(element, elapsed)
 			element.tradeskill = nil
 			element.casting = nil
 			element.channeling = nil
-			element:Hide()
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 			return element.PostUpdate and element:PostUpdate(unit)
 		end
 		if element.Value then
@@ -279,7 +282,10 @@ local OnUpdate = function(element, elapsed)
 		element.casting = nil
 		element.castID = nil
 		element.channeling = nil
-		element:Hide()
+		if (element:IsShown()) then 
+			element:Hide()
+			self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+		end
 		return element.PostUpdate and element:PostUpdate(unit)
 	end
 end 
@@ -335,11 +341,17 @@ Update = function(self, event, unit, ...)
 				updateSpellQueueValue(element)
 			end 
 	
-			element:Show()
+			if (not element:IsShown()) then 
+				element:Show()
+				self:SendMessage("CG_UNITFRAME_HAS_CAST_ELEMENT", self, unit)
+			end
 
 		else
 			element:SetValue(0, true)
-			element:Hide()
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 		end
 		
 	elseif (event == "UNIT_SPELLCAST_FAILED") then
@@ -366,7 +378,10 @@ Update = function(self, event, unit, ...)
 				msg:SetText(utf8sub(L_FAILED, 32, true)) 
 			end 
 		else
-			element:Hide()
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 		end 
 		
 	elseif (event == "UNIT_SPELLCAST_STOP") then
@@ -381,7 +396,10 @@ Update = function(self, event, unit, ...)
 		element.tradeskill = nil
 		element.total = nil
 
-		element:Hide()
+		if (element:IsShown()) then 
+			element:Hide()
+			self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+		end
 		
 	elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
 		local castID, spellID = ...
@@ -407,7 +425,10 @@ Update = function(self, event, unit, ...)
 				msg:SetText(utf8sub(L_INTERRUPTED, 32, true)) 
 			end 
 		else
-			element:Hide()
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 		end 
 
 		
@@ -487,11 +508,18 @@ Update = function(self, event, unit, ...)
 				updateSpellQueueValue(element)
 			end 
 
-			element:Show()
+			if (not element:IsShown()) then 
+				element:Show()
+				self:SendMessage("CG_UNITFRAME_HAS_CAST_ELEMENT", self, unit)
+			end
 			
 		else
 			element:SetValue(0, true)
-			element:Hide()
+
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 		end
 		
 	elseif (event == "UNIT_SPELLCAST_CHANNEL_UPDATE") then
@@ -517,7 +545,10 @@ Update = function(self, event, unit, ...)
 			clear(element)
 			element.channeling = nil
 			element.notInterruptible = nil
-			element:Hide()
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 		end
 		
 	else
@@ -535,7 +566,10 @@ Update = function(self, event, unit, ...)
 			element.tradeskill = nil
 			element.total = nil
 
-			element:Hide()
+			if (element:IsShown()) then 
+				element:Hide()
+				self:SendMessage("CG_UNITFRAME_LOST_CAST_ELEMENT", self, unit)
+			end
 		end 
 	end
 
@@ -604,5 +638,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 23)
+	Lib:RegisterElement("Cast", Enable, Disable, Proxy, 24)
 end 
