@@ -722,7 +722,7 @@ local SmallFrame_CastBarPostUpdate = function(element, unit)
 
 	-- This takes presedence
 	local casting = cast.casting or cast.channeling
-	cast.Name:SetShown(isCasting)
+	cast.Name:SetShown(casting)
 
 	-- Only show the health value if we're not casting, and no status should be visible
 	if (status) then 
