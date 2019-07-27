@@ -387,11 +387,12 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
 
 	elseif InCombatLockdown() then 
 
-		-- Iterate filtered auras first
-		if infoFlags then 
-			if unitIsPlayer[unit] and (bit_band(infoFlags, OnPlayer) ~= 0) then 
+		if userFlags then 
+			if unitIsPlayer[unit] and (bit_band(userFlags, OnPlayer) ~= 0) then 
 				return true  
 			end
+
+		elseif infoFlags then 
 			if (unitCaster and isOwnedByPlayer) and (bit_band(infoFlags, infoFilter.IsPlayerSpell) ~= 0) then 
 				return true  
 			end
@@ -403,7 +404,11 @@ auraFilters.player = function(element, isBuff, unit, isOwnedByPlayer, name, icon
 		end
 
 	else 
-		if isBuff then 
+		if userFlags then 
+			if unitIsPlayer[unit] and (bit_band(userFlags, OnPlayer) ~= 0) then 
+				return true  
+			end
+		elseif isBuff then 
 			if (not duration) or (duration <= 0) or (duration > 180) or (timeLeft and (timeLeft > 180)) then 
 				return true
 			end 
@@ -566,6 +571,16 @@ Private.GetMedia = function(name, type) return ([[Interface\AddOns\%s\media\%s.%
 -- Aura Filter Flag Database
 -- *Placing these at the end for tidyness 
 -----------------------------------------------------------------
+
+-- For testing
+------------------------------------------------------------------------
+--auraUserFlags[  8936] = OnPlayer -- Regrowth
+
+-- Musts that are game-breaking to not have there
+------------------------------------------------------------------------
+auraUserFlags[304696] = OnPlayer -- Alpha Fin (constantly moving mount)
+auraUserFlags[295858] = OnPlayer -- Molted Shell (constantly moving mount)
+auraUserFlags[304037] = OnPlayer -- Fermented Deviate Fish (transform)
 
 -- Spammy stuff that is implicit and not really needed
 --auraUserFlags[155722] = NeverOnPlate -- Rake (just for my own testing purposes)
