@@ -15,9 +15,18 @@ local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local UnitPowerType = _G.UnitPowerType
 
-
 -- Number abbreviations
 ---------------------------------------------------------------------	
+local large = function(value)
+	if (value >= 1e8) then 		return string_format("%.0fm", value/1e6) 	-- 100m, 1000m, 2300m, etc
+	elseif (value >= 1e6) then 	return string_format("%.1fm", value/1e6) 	-- 1.0m - 99.9m 
+	elseif (value >= 1e5) then 	return string_format("%.0fk", value/1e3) 	-- 100k - 999k
+	elseif (value >= 1e3) then 	return string_format("%.1fk", value/1e3) 	-- 1.0k - 99.9k
+	elseif (value > 0) then 	return value 								-- 1 - 999
+	else 						return ""
+	end 
+end 
+
 local short = function(value)
 	value = tonumber(value)
 	if (not value) then return "" end
@@ -236,5 +245,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 4)
+	Lib:RegisterElement("ExtraPower", Enable, Disable, Proxy, 5)
 end 

@@ -185,5 +185,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("PowerText", Enable, Disable, Proxy, 1)
+	Lib:RegisterElement("PowerText", Enable, Disable, Proxy, 2)
 end 
