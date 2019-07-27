@@ -191,12 +191,9 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		health:SetStatusBarTexture(Layout.HealthTexture)
 		health:SetOrientation(Layout.HealthBarOrientation)
 		health:SetSmoothingFrequency(.1)
-		if Layout.HealthSparkMap then 
-			health:SetSparkMap(HealthSparkMap)
-		end
-		if Layout.HealthTexCoord then 
-			health:SetTexCoord(unpack(Layout.HealthTexCoord))
-		end 
+		health:SetSparkMap(Layout.HealthSparkMap)
+		health:SetTexCoord(unpack(Layout.HealthTexCoord))
+		health.absorbThreshold = Layout.AbsorbThreshold
 		health.colorTapped = Layout.HealthColorTapped
 		health.colorDisconnected = Layout.HealthColorDisconnected
 		health.colorClass = Layout.HealthColorClass
@@ -204,57 +201,11 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 		health.colorReaction = Layout.HealthColorReaction
 		health.colorThreat = Layout.HealthColorThreat -- color units with threat in threat color
 		health.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
+		health.frequent = Layout.HealthFrequent
 		health.threatFeedbackUnit = Layout.HealthThreatFeedbackUnit
 		health.threatHideSolo = Layout.HealthThreatHideSolo
-		health.frequent = Layout.HealthFrequent
 		plate.Health = health
 
-		local healthPreview = plate:CreateStatusBar()
-		healthPreview:SetStatusBarTexture(Layout.HealthTexture)
-		healthPreview:SetOrientation(Layout.HealthBarOrientation or "RIGHT") 
-		healthPreview:SetFrameLevel(health:GetFrameLevel() - 1)
-		healthPreview:SetAlpha(.5)
-		healthPreview:SetSize(unpack(Layout.HealthSize))
-		healthPreview:Place(unpack(Layout.HealthPlace))
-		healthPreview:DisableSmoothing(true)
-		healthPreview:SetSparkTexture("")
-		if Layout.HealthTexCoord then 
-			healthPreview:SetTexCoord(unpack(Layout.HealthTexCoord))
-		end 
-		healthPreview.colorTapped = Layout.HealthColorTapped  -- color tap denied units 
-		healthPreview.colorDisconnected = Layout.HealthColorDisconnected -- color disconnected units
-		healthPreview.colorClass = Layout.HealthColorClass -- color players by class 
-		healthPreview.colorCivilian = Layout.HealthColorCivilian
-		healthPreview.colorReaction = Layout.HealthColorReaction -- color NPCs by their reaction standing with us
-		healthPreview.colorThreat = Layout.HealthColorThreat -- color units with threat in threat color
-		healthPreview.colorHealth = Layout.HealthColorHealth -- color anything else in the default health color
-	
-		healthPreview.PostUpdate = function(self)
-			local value = health:GetValue()
-			local displayValue = health:GetDisplayValue()
-			local _,maxValue = health:GetMinMaxValues()
-	
-			if displayValue < value then 
-				local difference = (value - displayValue)/maxValue
-				if difference > .10 then 
-					healthPreview:SetFrameLevel(health:GetFrameLevel() - 1)
-					healthPreview:Show()
-				else 
-					healthPreview:Hide()
-				end
-			elseif displayValue > value then 
-				healthPreview:Hide()
-			end 
-		end
-
-		-- Custom little magic script handler
-		if Layout.HealthPreviewOnTexCoordChanged then 
-			healthPreview:SetScript("OnTexCoordChanged", Layout.HealthPreviewOnTexCoordChanged)
-		end
-		
-		healthPreview.PostUpdate = Layout.HealthPreviewOnTexCoordChanged
-		health.Preview = healthPreview
-		
 		if Layout.UseHealthBackdrop then 
 			local healthBg = health:CreateTexture()
 			healthBg:SetPoint(unpack(Layout.HealthBackdropPlace))
@@ -264,54 +215,6 @@ Module.PostCreateNamePlate = function(self, plate, baseFrame)
 			healthBg:SetVertexColor(unpack(Layout.HealthBackdropColor))
 			plate.Health.Bg = healthBg
 		end 
-	end 
-
-	-- Heal Prediction
-	-----------------------------------------------------------	
-	if Layout.UseHealPredict then 
-		local healPredict = plate.Health:CreateFrame("Frame")
-		healPredict:SetPoint(unpack(Layout.HealPredictPlace))
-		healPredict:SetSize(unpack(Layout.HealPredictSize))
-		healPredict.width = Layout.HealPredictSize[1]
-		healPredict.height = Layout.HealPredictSize[2]
-		healPredict.frequent = Layout.HealPredictFrequentUpdates
-		healPredict.orientation = Layout.HealPredictOrientation
-
-		local healPredictTexture = healPredict:CreateTexture()
-		healPredictTexture:SetDrawLayer("ARTWORK", 0)
-		healPredictTexture:SetTexture(Layout.HealPredictTexture)
-		if Layout.HealPredictTexCoord then 
-			healPredictTexture.texCoord = { unpack(Layout.HealPredictTexCoord) }
-		end 
-		healPredict.Texture = healPredictTexture
-
-		plate.HealPredict = healPredict
-		plate.HealPredict.PostUpdate = Layout.HealPredictPostUpdate
-		plate.HealPredict.OverrideUpdate = Layout.HealPredictOverrideUpdate
-	end 
-
-	-- Absorb Bar
-	-----------------------------------------------------------	
-	if Layout.UseAbsorbBar then 
-		local absorb = plate:CreateStatusBar()
-		absorb:SetFrameLevel(plate.Health:GetFrameLevel() + 3)
-		absorb:Place(unpack(Layout.AbsorbBarPlace))
-		absorb:SetSize(unpack(Layout.AbsorbBarSize))
-		absorb:SetStatusBarTexture(Layout.AbsorbBarTexture)
-		absorb:SetOrientation(Layout.AbsorbBarOrientation) 
-		absorb:SetFlippedHorizontally(Layout.AbsorbBarSetFlippedHorizontally)
-		absorb:SetStatusBarColor(unpack(Layout.AbsorbBarColor)) 
-		absorb.absorbThreshold = Layout.AbsorbThreshold
-
-		if Layout.AbsorbBarTexCoord then 
-			absorb:SetTexCoord(unpack(Layout.AbsorbBarTexCoord))
-		end 
-
-		if Layout.AbsorbBarSparkMap then 
-			absorb:SetSparkMap(Layout.AbsorbBarSparkMap) -- set the map the spark follows along the bar.
-		end 
-
-		plate.Absorb = absorb
 	end 
 
 	if Layout.UseCast then 

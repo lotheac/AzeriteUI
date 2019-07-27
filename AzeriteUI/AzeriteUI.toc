@@ -78,7 +78,6 @@ back-end\plugins\generic_xp.lua
 back-end\plugins\generic_zone.lua
 
 # Unit dependant library plugins
-back-end\plugins\unit_absorb.lua
 back-end\plugins\unit_altpower.lua
 back-end\plugins\unit_auras.lua
 back-end\plugins\unit_cast.lua
@@ -90,7 +89,6 @@ back-end\plugins\unit_extrapower.lua
 back-end\plugins\unit_groupdebuff.lua
 back-end\plugins\unit_grouprole.lua
 back-end\plugins\unit_health.lua
-back-end\plugins\unit_healpredict.lua
 back-end\plugins\unit_level.lua
 back-end\plugins\unit_manatext.lua
 back-end\plugins\unit_name.lua

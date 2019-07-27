@@ -653,110 +653,92 @@ local Tooltip_PostCreate = function(tooltip)
 	tooltip.PostUpdateStatusBar = Tooltip_StatusBar_PostUpdate
 end
 
-local HealPredict_UpdateTexture = function(element, healthPreview, change, startPoint, endPoint)
-	if (element.orientation == "RIGHT") then 
-		local min,max = healthPreview:GetMinMaxValues()
-		local value = healthPreview:GetValue() / max
-		local tex = element.Texture
-		local texCoord = tex.texCoord
-		local texValue, texChange = value, change
-		local left, right, top, bottom = 0, 1, 0, 1
-		if texCoord then 
-			left = texCoord[1]
-			right = texCoord[2]
-			top = texCoord[3]
-			bottom = texCoord[4]
-			local rangeH, rangeV
-			rangeH = right - left
-			rangeV = bottom - top
-			texChange = change*value
-			texValue = left + value*rangeH
-		end 
+local PlayerFrame_CastBarPostUpdate = function(element, unit)
+	local self = element._owner
+	local cast = self.Cast
+	local health = self.Health
 
-		if (change > 0) then 
-			tex:ClearAllPoints()
-			tex:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
-			tex:SetSize(change*element.width, element.height)
-			tex:SetTexCoord(texValue, texValue + texChange, top, bottom)
-			tex:SetVertexColor(0, .7, 0, .25)
-			element:Show()
-		elseif (change < 0) then 
-			tex:ClearAllPoints()
-			tex:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
-			tex:SetSize((-change)*element.width, element.height)
-			tex:SetTexCoord(texValue + texChange, texValue, top, bottom)
-			tex:SetVertexColor(.5, 0, 0, .75)
-			element:Show()
-		else 
-			element:Hide()
-		end 
+	local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
+	local unitLevel = UnitLevel(unit)
+	local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+	local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
+	local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
 
-	elseif (element.orientation == "LEFT") then 
-		local min,max = healthPreview:GetMinMaxValues()
-		local value = healthPreview:GetValue() / max
-		local tex = element.Texture
-		local texCoord = tex.texCoord
-		local texValue, texChange = value, change
-		local left, right, top, bottom = 0, 1, 0, 1
-		if texCoord then 
-			left = texCoord[1]
-			right = texCoord[2]
-			top = texCoord[3]
-			bottom = texCoord[4]
-			local rangeH, rangeV
-			rangeH = right - left
-			rangeV = bottom - top
-			texChange = change*value
-			texValue = left + value*rangeH
-		end 
-
-		if (change > 0) then 
-			tex:ClearAllPoints()
-			tex:SetPoint("BOTTOMRIGHT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
-			tex:SetSize(change*element.width, element.height)
-			tex:SetTexCoord(texValue + texChange, texValue, top, bottom)
-			tex:SetVertexColor(0, .7, 0, .25)
-			element:Show()
-		elseif (change < 0) then
-			tex:ClearAllPoints()
-			tex:SetPoint("BOTTOMLEFT", healthPreview:GetStatusBarTexture(), "BOTTOMLEFT", 0, 0)
-			tex:SetSize((-change)*element.width, element.height)
-			tex:SetTexCoord(texValue, texValue + texChange, top, bottom)
-			tex:SetVertexColor(.5, 0, 0, .75)
-			element:Show()
-		else 
-			element:Hide()
-		end 
+	if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+		health.Value:Hide()
+		health.ValueAbsorb:Hide()
+		cast.Value:Hide()
+		cast.Name:Hide()
+	elseif (cast.casting or cast.channeling) then 
+		health.Value:Hide()
+		health.ValueAbsorb:Hide()
+		cast.Value:Show()
+		cast.Name:Show()
+	else 
+		health.Value:Show()
+		health.ValueAbsorb:Show()
+		cast.Value:Hide()
+		cast.Name:Hide()
 	end 
 end
 
-local HealthPreview_OnTexCoordChanged = function(element, left, right, top, bottom)
-	local self = element._owner 
-	if not self then 
-		return 
+local TargetFrame_CastBarPostUpdate = function(element, unit)
+	local self = element._owner
+	local cast = self.Cast
+	local health = self.Health
+
+	local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
+	local unitLevel = UnitLevel(unit)
+	local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
+	local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
+	local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
+
+	if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
+		health.Value:Hide()
+		health.ValueAbsorb:Hide()
+		health.ValuePercent:Hide()
+		cast.Value:Hide()
+		cast.Name:Hide()
+	elseif (cast.casting or cast.channeling) then 
+		health.Value:Hide()
+		health.ValueAbsorb:Hide()
+		health.ValuePercent:Hide()
+		cast.Value:Show()
+		cast.Name:Show()
+	else 
+		health.Value:Show()
+		health.ValueAbsorb:Show()
+		health.ValuePercent:SetShown(isBoss or isPlayer or isEliteOrRare)
+		cast.Value:Hide()
+		cast.Name:Hide()
 	end 
-
-	local element = self.HealPredict
-	if not element:IsShown() then 
-		return 
-	end 
-
-	local change = element.change
-	local startPoint = element.startPoint
-	local endPoint = element.endPoint
-
-	if not change or not startPoint or not endPoint then 
-		return element:Hide()
-	end 
-
-	HealPredict_UpdateTexture(element, element._owner.Health.Preview, change, startPoint, endPoint)
 end
 
-local HealPredict_OverrideUpdate = function(element, unit, change, startPoint, endPoint)
-	HealPredict_UpdateTexture(element, element._owner.Health.Preview, change, startPoint, endPoint)
-	element.change = change
-	element.startPoint = startPoint
-	element.endPoint = endPoint
+local SmallFrame_CastBarPostUpdate = function(element, unit)
+	local self = element._owner
+	local cast = self.Cast
+	local health = self.Health
+	local status = self.UnitStatus
+
+	-- This takes presedence
+	local casting = cast.casting or cast.channeling
+	cast.Name:SetShown(isCasting)
+
+	-- Only show the health value if we're not casting, and no status should be visible
+	if (status) then 
+		if (casting) then 
+			status:Hide()
+			health.Value:Hide()
+		elseif (status.status) then 
+			status:Show()
+			health.Value:Hide()
+		else 
+			status:Hide()
+			health.Value:Show()
+		end 
+	else 
+		health.Value:SetShown(not casting)
+	end 
 end
 
 ------------------------------------------------
@@ -1573,33 +1555,6 @@ local NamePlates = {
 		HealPredictTexture = GetMedia("nameplate_bar"),
 		HealPredictTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
 		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
-		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
-
-	UseAbsorbBar = true, 
-		AbsorbBarPlace = { "TOP", 0, -2 },
-		AbsorbBarSize = { 84, 14 },
-		AbsorbBarOrientation = "RIGHT",
-		AbsorbBarSetFlippedHorizontally = true, 
-		AbsorbBarTexture = GetMedia("nameplate_bar"),
-		AbsorbBarTexCoord = { 14/256,(256-14)/256,14/64,(64-14)/64 },
-		AbsorbBarColor = { 1, 1, 1, .35 },
-		AbsorbThreshold = 10/100,
-		AbsorbBarSparkMap = {
-			top = {
-				{ keyPercent =   0/256, offset = -16/32 }, 
-				{ keyPercent =   4/256, offset = -16/32 }, 
-				{ keyPercent =  19/256, offset =   0/32 }, 
-				{ keyPercent = 236/256, offset =   0/32 }, 
-				{ keyPercent = 256/256, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/256, offset = -16/32 }, 
-				{ keyPercent =   4/256, offset = -16/32 }, 
-				{ keyPercent =  19/256, offset =   0/32 }, 
-				{ keyPercent = 236/256, offset =   0/32 }, 
-				{ keyPercent = 256/256, offset = -16/32 }
-			}
-		},
 
 	UseCast = true, 
 		CastPlace = { "TOP", 0, -22 },
@@ -1858,32 +1813,6 @@ local Template_SmallFrame = {
 			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
 			HealthShowPercent = true, 
 
-	UseAbsorbBar = true,
-		AbsorbBarPlace = { "CENTER", 0, 0 },
-		AbsorbSize = Constant.SmallBar,
-		AbsorbBarOrientation = "LEFT",
-		AbsorbBarSetFlippedHorizontally = false, 
-		AbsorbBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =   4/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 126/128, offset = -16/32 },
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =   4/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 126/128, offset = -16/32 },
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		AbsorbBarTexture = Constant.SmallBarTexture,
-		AbsorbBarColor = { 1, 1, 1, .25 },
-		AbsorbThreshold = 10/100,
 
 	UseCastBar = true,
 		CastBarPlace = { "CENTER", 0, 0 },
@@ -1923,59 +1852,8 @@ local Template_SmallFrame = {
 		CastBarNameJustifyH = "CENTER", 
 		CastBarNameJustifyV = "MIDDLE",
 
-	CastBarPostUpdate =	function(cast, unit)
-		local self = cast._owner
-
-		-- This takes presedence
-		local isCasting = UnitCastingInfo(unit) or UnitChannelInfo(unit)
-		cast.Name:SetShown(isCasting)
-
-		-- Only show the health value if we're not casting, and no status should be visible
-		local unitStatus = self.UnitStatus
-		if unitStatus then 
-			if isCasting then 
-				unitStatus:Hide()
-				self.Health.Value:Hide()
-			elseif unitStatus.status then 
-				unitStatus:Show()
-				self.Health.Value:Hide()
-			else 
-				unitStatus:Hide()
-				self.Health.Value:Show()
-			end 
-		else 
-			self.Health.Value:SetShown(not isCasting)
-		end 
-	end,
-
-	HealthBarPostUpdate = function(health, unit)
-		local unit = health.unit
-		if not unit then 
-			return 
-		end 
-		local self = health._owner
-
-		-- This takes presedence
-		local isCasting = UnitCastingInfo(unit) or UnitChannelInfo(unit)
-		self.Cast.Name:SetShown(isCasting)
-
-		-- Only show the health value if we're not casting, and no status should be visible
-		local unitStatus = self.UnitStatus
-		if unitStatus then 
-			if isCasting then 
-				unitStatus:Hide()
-			elseif unitStatus.status then 
-				unitStatus:Show()
-				health.Value:Hide()
-			else 
-				unitStatus:Hide()
-				health.Value:Show()
-			end 
-		else 
-			health.Value:SetShown(not isCasting)
-		end 
-
-	end, 
+	CastBarPostUpdate =	SmallFrame_CastBarPostUpdate,
+	HealthBarPostUpdate = SmallFrame_CastBarPostUpdate, 
 
 	UseTargetHighlight = true, 
 		TargetHighlightParent = "Health", 
@@ -2036,8 +1914,6 @@ local Template_SmallFrame_Auras = setmetatable({
 local Template_SmallFrameReversed = setmetatable({
 	HealthBarOrientation = "LEFT", 
 	HealthBarSetFlippedHorizontally = true, 
-	AbsorbBarOrientation = "RIGHT",
-	AbsorbBarSetFlippedHorizontally = true, 
 	CastBarOrientation = "LEFT", 
 	CastBarSetFlippedHorizontally = true, 
 }, { __index = Template_SmallFrame })
@@ -2045,8 +1921,6 @@ local Template_SmallFrameReversed = setmetatable({
 local Template_SmallFrameReversed_Auras = setmetatable({
 	HealthBarOrientation = "LEFT", 
 	HealthBarSetFlippedHorizontally = true, 
-	AbsorbBarOrientation = "RIGHT",
-	AbsorbBarSetFlippedHorizontally = true, 
 	CastBarOrientation = "LEFT", 
 	CastBarSetFlippedHorizontally = true, 
 	AuraFramePlace = { "RIGHT", -(Constant.SmallFrame[1] + 13), -1 },
@@ -2103,28 +1977,6 @@ local Template_TinyFrame = {
 			HealthValueColor = { Colors.offwhite[1], Colors.offwhite[2], Colors.offwhite[3], .75 },
 			HealthShowPercent = true, 
 		
-	UseAbsorbBar = true,
-		AbsorbBarPlace = { "BOTTOM", 0, 0 },
-		AbsorbSize = Constant.TinyBar,
-		AbsorbBarOrientation = "LEFT",
-		AbsorbBarSetFlippedHorizontally = false, 
-		AbsorbBarSparkMap = {
-			top = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			},
-			bottom = {
-				{ keyPercent =   0/128, offset = -16/32 }, 
-				{ keyPercent =  10/128, offset =   0/32 }, 
-				{ keyPercent = 119/128, offset =   0/32 }, 
-				{ keyPercent = 128/128, offset = -16/32 }
-			}
-		},
-		AbsorbBarTexture = Constant.TinyBarTexture,
-		AbsorbBarColor = { 1, 1, 1, .25 },
-		AbsorbThreshold = 10/100,
 	
 	UseCastBar = true,
 		CastBarPlace = { "BOTTOM", 0, 0 },
@@ -2205,7 +2057,6 @@ local UnitFramePlayer = {
 		HealthColorHealth = true, -- color anything else in the default health color
 		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
 
-
 	UseHealthBackdrop = true,
 		HealthBackdropPlace = { "CENTER", 1, -.5 },
 		HealthBackdropSize = { 716, 188 },
@@ -2219,30 +2070,6 @@ local UnitFramePlayer = {
 		HealthValueFont = GetFont(18, true),
 		HealthValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
-	UseHealPredict = true, 
-		HealPredictPlace = { "BOTTOMLEFT", 0, 0 }, -- relative to the health bar, not the frame! 
-		HealPredictSize = nil, 
-		HealPredictFrequentUpdates = true, 
-		HealPredictOrientation = "RIGHT", 
-		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
-		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
-
-	UseAbsorbBar = true,
-		AbsorbBarPlace = { "BOTTOMLEFT", 27, 27 },
-		AbsorbBarSize = nil,
-		AbsorbBarOrientation = "LEFT",
-		AbsorbBarColor = { 1, 1, 1, .35 },
-		AbsorbBarSparkMap = {
-			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
-			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-			{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-			{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, 
-			{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, 
-			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
-			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
-		},
-		AbsorbThreshold = 5/100,
-
 		UseAbsorbValue = true, 
 			AbsorbValuePlaceFunction = function(self) return "LEFT", self.Health.Value, "RIGHT", 13, 0 end, 
 			AbsorbValueDrawLayer = { "OVERLAY", 1 }, 
@@ -2250,7 +2077,6 @@ local UnitFramePlayer = {
 			AbsorbValueJustifyH = "CENTER", 
 			AbsorbValueJustifyV = "MIDDLE",
 			AbsorbValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
-
 	
 	UsePowerBar = true,
 		PowerPlace = { "BOTTOMLEFT", -101, 38 },
@@ -2317,7 +2143,7 @@ local UnitFramePlayer = {
 		ManaTextJustifyH = "CENTER", 
 		ManaTextJustifyV = "MIDDLE", 
 		ManaTextFont = GetFont(14, true),
-		ManaTextColor = { Colors.normal[1], Colors.normal[2], Colors.normal[3], .6 },
+		ManaTextColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 		ManaTextOverride = function(element, unit, min, max)
 			if (min == 0) or (max == 0) or (min == max) then
 				element:SetText("")
@@ -2344,6 +2170,26 @@ local UnitFramePlayer = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+		CastBarPostUpdate = PlayerFrame_CastBarPostUpdate,
+
+		UseCastBarName = true, 
+			CastBarNameParent = "Health",
+			CastBarNamePlace = { "LEFT", 27, 4 },
+			CastBarNameSize = { 250, 40 }, 
+			CastBarNameFont = GetFont(18, true),
+			CastBarNameColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .75 },
+			CastBarNameDrawLayer = { "OVERLAY", 1 }, 
+			CastBarNameJustifyH = "LEFT", 
+			CastBarNameJustifyV = "MIDDLE",
+
+		UseCastBarValue = true, 
+			CastBarValueParent = "Health",
+			CastBarValuePlace = { "RIGHT", -27, 4 },
+			CastBarValueDrawLayer = { "OVERLAY", 1 },
+			CastBarValueJustifyH = "CENTER",
+			CastBarValueJustifyV = "MIDDLE",
+			CastBarValueFont = GetFont(18, true),
+			CastBarValueColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
 	UseCombatIndicator = true, 
 		CombatIndicatorPlace = { "BOTTOMLEFT", -(41 + 80/2), (22 - 80/2) },
@@ -2368,28 +2214,28 @@ local UnitFramePlayer = {
 			ThreatHealthPlace = { "CENTER", 1, -1 },
 			ThreatHealthSize = { 716, 188 },
 			ThreatHealthDrawLayer = { "BACKGROUND", -2 },
-			ThreatHealthAlpha = .5, 
+			ThreatHealthAlpha = .75, 
 
 		UsePowerThreat = true, 
 			ThreatPowerPlace = { "CENTER", 0, 0 }, 
 			ThreatPowerSize = { 120/157*256, 140/183*256 },
 			ThreatPowerTexture = GetMedia("power_crystal_glow"),
 			ThreatPowerDrawLayer = { "BACKGROUND", -2 },
-			ThreatPowerAlpha = .5,
+			ThreatPowerAlpha = .75,
 
 		UsePowerBgThreat = true, 
 			ThreatPowerBgPlace = { "BOTTOM", 7, -51 }, 
 			ThreatPowerBgSize = { 198,98 },
 			ThreatPowerBgTexture = GetMedia("pw_crystal_case_glow"),
 			ThreatPowerBgDrawLayer = { "BACKGROUND", -3 },
-			ThreatPowerBgAlpha = .5,
+			ThreatPowerBgAlpha = .75,
 
 		UseManaThreat = true, 
 			ThreatManaPlace = { "CENTER", 0, 0 }, 
 			ThreatManaSize = { 188, 188 },
 			ThreatManaTexture = GetMedia("orb_case_glow"),
 			ThreatManaDrawLayer = { "BACKGROUND", -2 },
-			ThreatManaAlpha = .5,
+			ThreatManaAlpha = .75,
 
 	UseMana = true, 
 		ManaType = "Orb",
@@ -2496,10 +2342,6 @@ local UnitFramePlayer = {
 		SeasonedHealthThreatTexture = GetMedia("hp_cap_case_glow"),
 		SeasonedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		SeasonedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		SeasonedAbsorbSize = { 385, 40 },
-		SeasonedAbsorbTexture = GetMedia("hp_cap_bar"),
-		SeasonedHealPredictSize = { 385, 40 },
-		SeasonedHealPredictTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastSize = { 385, 40 },
 		SeasonedCastTexture = GetMedia("hp_cap_bar_highlight"),
 		SeasonedManaOrbTexture = GetMedia("orb_case_hi"),
@@ -2522,10 +2364,6 @@ local UnitFramePlayer = {
 		HardenedHealthThreatTexture = GetMedia("hp_mid_case_glow"),
 		HardenedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		HardenedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		HardenedAbsorbSize = { 385, 37 },
-		HardenedAbsorbTexture = GetMedia("hp_lowmid_bar"),
-		HardenedHealPredictSize = { 385, 37 },
-		HardenedHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastSize = { 385, 37 },
 		HardenedCastTexture = GetMedia("hp_lowmid_bar"),
 		HardenedManaOrbTexture = GetMedia("orb_case_hi"),
@@ -2547,10 +2385,6 @@ local UnitFramePlayer = {
 		NoviceHealthThreatTexture = GetMedia("hp_low_case_glow"),
 		NovicePowerForegroundTexture = GetMedia("pw_crystal_case_low"),
 		NovicePowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
-		NoviceAbsorbSize = { 385, 37 },
-		NoviceAbsorbTexture = GetMedia("hp_lowmid_bar"),
-		NoviceHealPredictSize = { 385, 37 },
-		NoviceHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastSize = { 385, 37 },
 		NoviceCastTexture = GetMedia("hp_lowmid_bar"),
 		NoviceManaOrbTexture = GetMedia("orb_case_low"),
@@ -3085,14 +2919,6 @@ local UnitFrameTarget = {
 		HealthColorHealth = false, -- color anything else in the default health color
 		HealthFrequentUpdates = true, -- listen to frequent health events for more accurate updates
 
-	UseHealPredict = true, 
-		HealPredictPlace = { "TOPRIGHT", 0, 0 }, -- relative to the health bar, not the frame! 
-		HealPredictSize = nil, 
-		HealPredictFrequentUpdates = true, 
-		HealPredictOrientation = "LEFT", 
-		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
-		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
-
 	UseHealthBackdrop = true,
 		HealthBackdropPlace = { "CENTER", 1, -.5 },
 		HealthBackdropSize = { 716, 188 },
@@ -3115,22 +2941,6 @@ local UnitFrameTarget = {
 		HealthPercentFont = GetFont(18, true),
 		HealthPercentColor = { Colors.highlight[1], Colors.highlight[2], Colors.highlight[3], .5 },
 
-	UseAbsorbBar = true,
-		AbsorbBarPlace = { "TOPRIGHT", 27, 27 },
-		AbsorbBarSize = nil,
-		AbsorbBarOrientation = "RIGHT",
-		AbsorbBarSetFlippedHorizontally = true, 
-		AbsorbBarColor = { 1, 1, 1, .35 },
-		AbsorbBarSparkMap = {
-			{ keyPercent =   0/512, topOffset = -24/64, bottomOffset = -39/64 }, 
-			{ keyPercent =   9/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-			{ keyPercent = 460/512, topOffset =   0/64, bottomOffset = -16/64 }, 
-			{ keyPercent = 478/512, topOffset =   0/64, bottomOffset =   0/64 }, 
-			{ keyPercent = 483/512, topOffset =   0/64, bottomOffset =  -3/64 }, 
-			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
-			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
-		},
-		AbsorbThreshold = 5/100,
 
 		UseAbsorbValue = true, 
 			AbsorbValuePlaceFunction = function(self) return "RIGHT", self.Health.Value, "LEFT", -13, 0 end, 
@@ -3330,6 +3140,7 @@ local UnitFrameTarget = {
 			{ keyPercent = 507/512, topOffset =   0/64, bottomOffset = -46/64 }, 
 			{ keyPercent = 512/512, topOffset = -11/64, bottomOffset = -54/64 }  
 		},
+		CastBarPostUpdate = TargetFrame_CastBarPostUpdate,
 
 		UseCastBarName = true, 
 			CastBarNameParent = "Health",
@@ -3357,14 +3168,14 @@ local UnitFrameTarget = {
 		UseHealthThreat = true, 
 			ThreatHealthTexCoord = { 1,0,0,1 },
 			ThreatHealthDrawLayer = { "BACKGROUND", -2 },
-			ThreatHealthAlpha = .5, 
+			ThreatHealthAlpha = .75, 
 
 		UsePortraitThreat = true, 
 			ThreatPortraitPlace = { "CENTER", 0, 0 }, 
 			ThreatPortraitSize = { 187, 187 },
 			ThreatPortraitTexture = GetMedia("portrait_frame_glow"),
 			ThreatPortraitDrawLayer = { "BACKGROUND", -2 },
-			ThreatPortraitAlpha = .5,
+			ThreatPortraitAlpha = .75,
 
 	UseAuras = true,
 		AuraSize = 40, -- aurasize
@@ -3423,8 +3234,6 @@ local UnitFrameTarget = {
 		UseProgressiveCastBar = true, 
 		UseProgressiveThreat = true, 
 		UseProgressivePortrait = true, 
-		UseProgressiveAbsorbBar = true, 
-		UseProgressiveHealPredict = true, 
 
 		BossHealthPlace = { "TOPRIGHT", -27, -27 }, 
 		BossHealthSize = { 533, 40 },
@@ -3456,10 +3265,6 @@ local UnitFrameTarget = {
 		BossHealthThreatTexture = GetMedia("hp_boss_case_glow"),
 		BossPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		BossPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		BossAbsorbSize = { 533, 40 },
-		BossAbsorbTexture = GetMedia("hp_boss_bar"),
-		BossHealPredictSize = { 533, 40 },
-		BossHealPredictTexture = GetMedia("hp_boss_bar"),
 		BossCastPlace = { "TOPRIGHT", -27, -27 }, 
 		BossCastSize = { 533, 40 },
 		BossCastTexture = GetMedia("hp_boss_bar"),
@@ -3505,10 +3310,6 @@ local UnitFrameTarget = {
 		SeasonedHealthThreatTexture = GetMedia("hp_cap_case_glow"),
 		SeasonedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		SeasonedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		SeasonedAbsorbSize = { 385, 40 },
-		SeasonedAbsorbTexture = GetMedia("hp_cap_bar"),
-		SeasonedHealPredictSize = { 385, 40 },
-		SeasonedHealPredictTexture = GetMedia("hp_cap_bar"),
 		SeasonedCastPlace = { "TOPRIGHT", -27, -27 }, 
 		SeasonedCastSize = { 385, 40 },
 		SeasonedCastTexture = GetMedia("hp_cap_bar"),
@@ -3548,10 +3349,6 @@ local UnitFrameTarget = {
 		HardenedHealthThreatTexture = GetMedia("hp_mid_case_glow"),
 		HardenedPowerForegroundTexture = GetMedia("pw_crystal_case"),
 		HardenedPowerForegroundColor = { Colors.ui.stone[1], Colors.ui.stone[2], Colors.ui.stone[3] },
-		HardenedAbsorbSize = { 385, 37 },
-		HardenedAbsorbTexture = GetMedia("hp_lowmid_bar"),
-		HardenedHealPredictSize = { 385, 37 },
-		HardenedHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		HardenedCastPlace = { "TOPRIGHT", -27, -27 }, 
 		HardenedCastSize = { 385, 37 },
 		HardenedCastTexture = GetMedia("hp_lowmid_bar"),
@@ -3590,10 +3387,6 @@ local UnitFrameTarget = {
 		NoviceHealthThreatTexture = GetMedia("hp_low_case_glow"),
 		NovicePowerForegroundTexture = GetMedia("pw_crystal_case_low"),
 		NovicePowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
-		NoviceAbsorbSize = { 385, 37 },
-		NoviceAbsorbTexture = GetMedia("hp_lowmid_bar"),
-		NoviceHealPredictSize = { 385, 37 },
-		NoviceHealPredictTexture = GetMedia("hp_lowmid_bar"),
 		NoviceCastPlace = { "TOPRIGHT", -27, -27 }, 
 		NoviceCastSize = { 385, 37 },
 		NoviceCastTexture = GetMedia("hp_lowmid_bar"),
@@ -3638,10 +3431,6 @@ local UnitFrameTarget = {
 		CritterHealthThreatTexture = GetMedia("hp_critter_case_glow"),
 		CritterPowerForegroundTexture = GetMedia("pw_crystal_case_low"),
 		CritterPowerForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] },
-		CritterAbsorbSize = { 40, 36 },
-		CritterAbsorbTexture = GetMedia("hp_critter_bar"),
-		CritterHealPredictSize = { 40, 36 },
-		CritterHealPredictTexture = GetMedia("hp_critter_bar"),
 		CritterCastPlace = { "TOPRIGHT", -24, -24 },
 		CritterCastSize = { 40, 36 },
 		CritterCastTexture = GetMedia("hp_critter_bar"),
@@ -3663,73 +3452,6 @@ local UnitFrameTarget = {
 		CritterPortraitForegroundTexture = GetMedia("portrait_frame_lo"),
 		CritterPortraitForegroundColor = { Colors.ui.wood[1], Colors.ui.wood[2], Colors.ui.wood[3] }, 
 
-
-	CastBarPostUpdate =	function(cast, unit)
-		local absorb = cast._owner.Absorb
-		local health = cast._owner.Health
-
-		local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
-		local unitLevel = UnitLevel(unit)
-		local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
-		local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
-		local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
-
-		if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
-			health.Percent:Hide()
-			health.Value:Hide()
-			absorb.Value:Hide()
-			cast.Value:Hide()
-			cast.Name:Hide()
-		elseif (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
-			health.Percent:Hide()
-			health.Value:Hide()
-			absorb.Value:Hide()
-			cast.Value:Show()
-			cast.Name:Show()
-		else 
-			health.Percent:SetShown(isBoss or isPlayer or isEliteOrRare)
-			health.Value:Show()
-			absorb.Value:Show()
-			cast.Value:Hide()
-			cast.Name:Hide()
-		end 
-	end,
-
-	HealthBarPostUpdate = function(health, unit)
-		local unit = health.unit 
-		if not unit then 
-			return 
-		end 
-
-		local absorb = health._owner.Absorb
-		local cast = health._owner.Cast
-
-		local isPlayer = UnitIsPlayer(unit) -- and UnitIsEnemy(unit)
-		local unitLevel = UnitLevel(unit)
-		local unitClassification = (unitLevel and (unitLevel < 1)) and "worldboss" or UnitClassification(unit)
-		local isBoss = unitClassification == "boss" or unitClassification == "worldboss"
-		local isEliteOrRare = unitClassification == "rare" or unitClassification == "elite" or unitClassification == "rareelite"
-
-		if ((unitLevel and unitLevel == 1) and (not UnitIsPlayer("target"))) then 
-			health.Percent:Hide()
-			health.Value:Hide()
-			absorb.Value:Hide()
-			cast.Value:Hide()
-			cast.Name:Hide()
-		elseif (UnitCastingInfo(unit) or UnitChannelInfo(unit)) then 
-			health.Percent:Hide()
-			health.Value:Hide()
-			absorb.Value:Hide()
-			cast.Value:Show()
-			cast.Name:Show()
-		else 
-			health.Percent:SetShown(isBoss or isPlayer or isEliteOrRare)
-			health.Value:Show()
-			absorb.Value:Show()
-			cast.Value:Hide()
-			cast.Name:Hide()
-		end 
-	end
 }
 
 -- Target of Target
@@ -3904,16 +3626,6 @@ local UnitFrameParty = setmetatable({
 	HealthColorPetAsPlayer = true, -- color your pet as you 
 	HealthColorReaction = true, -- color NPCs by their reaction standing with us
 	HealthColorHealth = true, -- color anything else in the default health color
-
-	UseHealPredict = true, 
-		HealPredictPlace = { "TOPLEFT", 0, 0 }, -- relative to the health bar, not the frame! 
-		HealPredictSize = nil, 
-		HealPredictFrequentUpdates = true, 
-		HealPredictOrientation = "RIGHT", 
-		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
-		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
-		HealPredictSize = Constant.TinyBar,
-		HealPredictTexture = Constant.TinyBarTexture,
 
 	UseUnitStatus = true, -- Prio #4
 		UnitStatusPlace = { "CENTER", 0, -(7 + 100/2) },
@@ -4241,19 +3953,6 @@ local UnitFrameRaid = setmetatable({
 		HealthColorReaction = true, -- color NPCs by their reaction standing with us
 		HealthColorHealth = true, -- color anything else in the default health color
 		UseHealthValue = false,
-	
-	UseHealPredict = true, 
-		HealPredictPlace = { "TOPLEFT", 0, 0 }, -- relative to the health bar, not the frame! 
-		HealPredictSize = nil, 
-		HealPredictFrequentUpdates = true, 
-		HealPredictOrientation = "RIGHT", 
-		HealthPreviewOnTexCoordChanged = HealthPreview_OnTexCoordChanged, 
-		HealPredictOverrideUpdate = HealPredict_OverrideUpdate,
-		HealPredictSize = Constant.RaidBar,
-		HealPredictTexture = Constant.TinyBarTexture,
-
-	AbsorbSize = Constant.RaidBar,
-		AbsorbBarColor = { 1, 1, 1, .5 },
 
 	UseName = true, 
 		NamePlace = { "TOP", 0, 1 - 2 }, 

@@ -5,12 +5,23 @@ assert(LibPlayerData, "UnitHealth requires LibPlayerData to be loaded.")
 local _G = _G
 local math_floor = math.floor
 local pairs = pairs
+local string_find = string.find
+local string_format = string.format
 local tonumber = tonumber
 local tostring = tostring
 local unpack = unpack
 
 -- WoW API
+local IsInGroup = _G.IsInGroup
+local IsInInstance = _G.IsInInstance
+local UnitClass = _G.UnitClass
 local UnitClassification = _G.UnitClassification
+local UnitExists = _G.UnitExists
+local UnitIsFriend = _G.UnitIsFriend
+local UnitGetIncomingHeals = _G.UnitGetIncomingHeals
+local UnitGetTotalAbsorbs = _G.UnitGetTotalAbsorbs
+local UnitGetTotalHealAbsorbs = _G.UnitGetTotalHealAbsorbs
+local UnitGUID = _G.UnitGUID
 local UnitHealth = _G.UnitHealth
 local UnitHealthMax = _G.UnitHealthMax
 local UnitIsConnected = _G.UnitIsConnected
@@ -21,9 +32,28 @@ local UnitIsTapDenied = _G.UnitIsTapDenied
 local UnitLevel = _G.UnitLevel
 local UnitPlayerControlled = _G.UnitPlayerControlled
 local UnitReaction = _G.UnitReaction
+local UnitThreatSituation = _G.UnitThreatSituation
+
+local minAbsorbDisplaySize = .1
+local maxAbsorbDisplaySize = .6
+
+-- WoW Strings
+local S_AFK = _G.AFK
+local S_DEAD = _G.DEAD
+local S_PLAYER_OFFLINE = _G.PLAYER_OFFLINE
 
 -- Number abbreviations
 ---------------------------------------------------------------------	
+local large = function(value)
+	if (value >= 1e8) then 		return string_format("%.0fm", value/1e6) 	-- 100m, 1000m, 2300m, etc
+	elseif (value >= 1e6) then 	return string_format("%.1fm", value/1e6) 	-- 1.0m - 99.9m 
+	elseif (value >= 1e5) then 	return string_format("%.0fk", value/1e3) 	-- 100k - 999k
+	elseif (value >= 1e3) then 	return string_format("%.1fk", value/1e3) 	-- 1.0k - 99.9k
+	elseif (value > 0) then 	return value 								-- 1 - 999
+	else 						return ""
+	end 
+end 
+
 local short = function(value)
 	value = tonumber(value)
 	if (not value) then return "" end
@@ -54,74 +84,96 @@ if (gameLocale == "zhCN") then
 	end
 end 
 
-local UpdateValue = function(element, unit, min, max, disconnected, dead, tapped)
-	if element.OverrideValue then
-		return element:OverrideValue(unit, min, max, disconnected, dead, tapped)
-	end
-	local value = element.Value or element:IsObjectType("FontString") and element 
-	if value then
-		if (min == 0 or max == 0) and (not value.showAtZero) then
-			value:SetText("")
+local UpdateValues = function(health, unit, min, max)
+
+	local healthValue = health.Value
+	if healthValue then 
+		if healthValue.Override then 
+			healthValue:Override(unit, min, max)
 		else
-			if value.showDeficit then
-				if value.showPercent then
-					if value.showMaximum then
-						value:SetFormattedText("%s / %s - %.0f%%", short(max - min), short(max), math_floor(min/max * 100))
-					else
-						value:SetFormattedText("%s / %.0f%%", short(max - min), math_floor(min/max * 100))
-					end
+			if (health.disconnected) then 
+				healthValue:SetText(S_PLAYER_OFFLINE)
+			elseif (health.dead) then 
+				healthValue:SetText(S_DEAD)
+			else 
+				if (min == 0 or max == 0) and (not healthValue.showAtZero) then
+					healthValue:SetText("")
 				else
-					if value.showMaximum then
-						value:SetFormattedText("%s / %s", short(max - min), short(max))
-					else
-						value:SetFormattedText("%s", short(max - min))
-					end
-				end
-			else
-				if value.showPercent then
-					if value.showMaximum then
-						value:SetFormattedText("%s / %s - %.0f%%", short(min), short(max), math_floor(min/max * 100))
-					else
-						value:SetFormattedText("%.0f%%", math_floor(min/max * 100))
-					end
-				else
-					if value.showMaximum then
-						value:SetFormattedText("%s / %s", short(min), short(max))
-					else
-						value:SetFormattedText("%s", short(min))
-					end
+					healthValue:SetFormattedText("%s", large(min))
 				end
 			end
-		end
+
+			if healthValue.PostUpdate then 
+				healthValue:PostUpdate(unit, min, max)
+			end 
+		end 
+	end
+
+	local healthPercent = health.ValuePercent
+	if healthPercent then 
+		if healthPercent.Override then 
+			healthPercent:Override(unit, min, max)
+		else
+			if (health.disconnected or health.dead) then 
+				healthPercent:SetText("")
+			else 
+				healthPercent:SetFormattedText("%.0f", min/max*100 - (min/max*100)%1)
+			end 
+			if healthPercent.PostUpdate then 
+				healthPercent:PostUpdate(unit, min, max)
+			end 
+		end 
+	end
+
+	local absorbValue = health.ValueAbsorb
+	if absorbValue then 
+		local curAbsorb = health.curAbsorb
+		if (curAbsorb > 0) then 
+			if absorbValue.Override then 
+				absorbValue:Override(unit, curAbsorb)
+			else
+				if (health.disconnected or health.dead) then 
+					absorbValue:SetText("")
+				else 
+					absorbValue:SetFormattedText("%s", short(curAbsorb))
+				end 
+				if absorbValue.PostUpdate then 
+					absorbValue:PostUpdate(unit, curAbsorb)
+				end 
+			end 
+		else 
+			absorbValue:SetText("")
+		end 
 	end
 end 
 
-local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped)
-	if element.OverrideColor then
-		return element:OverrideColor(unit, min, max, disconnected, dead, tapped)
+local UpdateColors = function(health, unit, min, max)
+	if health.OverrideColor then
+		return health:OverrideColor(unit, min, max)
 	end
-	local self = element._owner
+
+	local self = health._owner
 	local color, r, g, b
-	if (element.colorTapped and tapped) then
+	if (health.colorTapped and tapped) then
 		color = self.colors.tapped
-	elseif (element.colorDisconnected and disconnected) then
+	elseif (health.colorDisconnected and disconnected) then
 		color = self.colors.disconnected
-	elseif (element.colorDead and dead) then
+	elseif (health.colorDead and dead) then
 		color = self.colors.dead
-	elseif (element.colorCivilian and UnitIsPlayer(unit) and UnitIsFriend("player", unit)) then 
+	elseif (health.colorCivilian and UnitIsPlayer(unit) and UnitIsFriend("player", unit)) then 
 		color = self.colors.reaction.civilian
-	elseif (element.colorClass and UnitIsPlayer(unit)) then
+	elseif (health.colorClass and UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
 		color = class and self.colors.class[class]
-	elseif (element.colorPetAsPlayer and UnitIsUnit(unit, "pet")) then 
+	elseif (health.colorPetAsPlayer and UnitIsUnit(unit, "pet")) then 
 		local _, class = UnitClass("player")
 		color = class and self.colors.class[class]
 	else 
 
 		-- BUG: Non-existent '*target' or '*pet' units cause UnitThreatSituation() errors (thank you oUF!)
 		local threat
-		if ((not element.hideThreatSolo) or (IsInGroup() or IsInInstance())) then
-			local feedbackUnit = element.threatFeedbackUnit
+		if ((not health.hideThreatSolo) or (IsInGroup() or IsInInstance())) then
+			local feedbackUnit = health.threatFeedbackUnit
 			if (feedbackUnit and (feedbackUnit ~= unit) and UnitExists(feedbackUnit)) then
 				threat = UnitThreatSituation(feedbackUnit, unit)
 			else
@@ -129,84 +181,305 @@ local UpdateColor = function(element, unit, min, max, disconnected, dead, tapped
 			end
 		end
 
-		if (element.colorThreat and threat) then 
+		if (health.colorThreat and threat) then 
 			color = self.colors.threat[threat]
-		elseif (element.colorReaction and UnitReaction(unit, "player")) then
+		elseif (health.colorReaction and UnitReaction(unit, "player")) then
 			color = self.colors.reaction[UnitReaction(unit, "player")]
+		elseif (health.colorHealth) then 
+			color = self.colors.health
 		end
 	end
+
 	if color then 
 		r, g, b = color[1], color[2], color[3]
+		health:SetStatusBarColor(r, g, b)
+		health.Preview:SetStatusBarColor(r, g, b)
 	end 
-	if (element.colorHealth) and (not r) then 
-		r, g, b = self.colors.health[1], self.colors.health[2], self.colors.health[3]
-	end
-	if (r) then 
-		element:SetStatusBarColor(r, g, b)
-	end 
-	if element.PostUpdateColor then 
-		element:PostUpdateColor(unit, min, max, disconnected, dead, tapped)
+	
+	if health.PostUpdateColor then 
+		health:PostUpdateColor(unit, min, max, r, g, b)
 	end 
 end
 
-local forcedEvents = {
-	["Forced"] = true,
-	["PLAYER_TARGET_CHANGED"] = true, 
-	["PLAYER_FOCUS_CHANGED"] = true,
-	["UPDATE_MOUSEOVER_UNIT"] = true
-}
+local UpdateOrientations = function(health)
+	local orientation = health:GetOrientation() or "RIGHT"
+	local orientationFlippedH = health:IsFlippedHorizontally()
+	local orientationFlippedV = health:IsFlippedVertically()
+
+	local mirrorOrientation =  orientation == "LEFT" and "RIGHT" 
+							or orientation == "RIGHT" and "LEFT" 
+							or orientation == "UP" and "DOWN"
+							or orientation == "DOWN" and "UP"
+
+	local mirrorFlippedH = (mirrorOrientation == "RIGHT") and true or false
+	local mirrorFlippedV = (mirrorOrientation == "DOWN") and true or false
+
+	local preview = health.Preview
+	preview:SetOrientation(orientation) 
+	preview:SetFlippedHorizontally(orientationFlippedH)
+	preview:SetFlippedVertically(orientationFlippedV)
+
+	local absorb = health.Absorb
+	absorb:SetOrientation(mirrorOrientation) 
+	absorb:SetFlippedHorizontally(mirrorFlippedH)
+	absorb:SetFlippedVertically(mirrorFlippedV)
+end 
+
+local UpdateSizes = function(health)
+	-- Retrieve and round off the bar size
+	local width, height = health:GetSize()
+	width = math_floor(width + .5)
+	height = math_floor(height + .5)
+
+	health.Absorb:SetSize(width, height)
+	health.Preview:SetSize(width, height)
+	health.Predict:SetSize(width, height)
+end
+
+local UpdateStatusBarTextures = function(health)
+	local texture = health:GetStatusBarTexture():GetTexture()
+	health.Absorb:SetStatusBarTexture(texture)
+	health.Preview:SetStatusBarTexture(texture)
+	health.Predict:SetTexture(texture)
+end
+
+local UpdateTexCoords = function(health)
+	local left, right, top, bottom = health:GetTexCoord()
+	health.Absorb:SetTexCoord(left, right, top, bottom)
+	health.Preview:SetTexCoord(left, right, top, bottom)
+
+	-- Forcing an update to adjust the prediction texture.
+	-- This might be at a tiny, tiny performance cost, 
+	-- but this whole function is only ever called when 
+	-- the Health bar's texcoords are manually changed. 
+	health:ForceUpdate()
+end
 
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
 	end 
 
-	local element = self.Health
-	if element.PreUpdate then
-		element:PreUpdate(unit)
+	-- Allow modules to run their pre-updates
+	local health = self.Health
+	if health.PreUpdate then
+		health:PreUpdate(unit)
 	end
 
-	local forced = event and forcedEvents[event]
-	local disconnected = not UnitIsConnected(unit)
-	local dead = UnitIsDeadOrGhost(unit)
-	local min = (dead or disconnected) and 0 or UnitHealth(unit)
-	local max = (dead or disconnected) and 0 or UnitHealthMax(unit)
-	local tapped = (not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)
+	-- Different GUID means a different player or NPC,
+	-- so we want updates to be instant, not smoothed. 
+	local guid = UnitGUID(unit)
+	local forced = guid ~= health.guid
 
-	element:SetMinMaxValues(0, max, forced)
-	element:SetValue(min, forced)
-	element:UpdateColor(unit, min, max, disconnected, dead, tapped)
-	element:UpdateValue(unit, min, max, disconnected, dead, tapped)
+	-- Store some basic values on the health element
+	health.guid = guid
+	health.disconnected = not UnitIsConnected(unit)
+	health.dead = UnitIsDeadOrGhost(unit)
+	health.tapped = (not UnitPlayerControlled(unit)) and UnitIsTapDenied(unit)
 
-	local elementPreview = self.Health.Preview
-	if elementPreview then 
-		-- Prevent texture bugs from both min and max being zero
-		if (dead or disconnected) then 
-			if (elementPreview:IsShown()) then 
-				elementPreview:Hide()
-			end
-		else 
-			elementPreview:SetMinMaxValues(0, max, true)
-			elementPreview:SetValue(min, true)
-			elementPreview:UpdateColor(unit, min, max, disconnected, dead, tapped)
-			elementPreview:UpdateValue(unit, min, max, disconnected, dead, tapped)
+	-- If the unit is dead or offline, we can skip a lot of stuff, 
+	-- so we're making an exception for this early on. 
+	if (health.disconnected or health.dead) then 
+		-- Forcing all values to zero for dead or disconnected units. 
+		-- Never thought it made sense to "know" the health of something dead, 
+		-- since health is life, and you don't have it while dead. Doh. 
+		health.curAbsorb = 0 -- avoid nil bugs
+		health:SetMinMaxValues(0, 0, true)
+		health:SetValue(0, true)
+		health:UpdateValues(unit, 0, 0)
 
-			if (not elementPreview:IsShown()) then 
-				elementPreview:Show()
-			end
+		-- Hide all extra elements, they have no meaning when dead or disconnected. 
+		health.Preview:Hide()
+		health.Predict:Hide()
+		health.Absorb:Hide()
 
-			if elementPreview.PostUpdate then
-				elementPreview:PostUpdate(unit, min, max, disconnected, dead, tapped)
-			end	
+		-- Allow modules to run their post-updates
+		if health.PostUpdate then 
+			health:PostUpdate(unit, 0, 0)
 		end 
+		return 
 	end 
 
-	if (not element:IsShown()) then 
-		element:Show()
+	-- Retrieve element pointers
+	local absorb = health.Absorb 
+	local predict = health.Predict 
+	local preview = health.Preview
+
+	-- Retrieve values for our bars
+	local curHealth = UnitHealth(unit) -- The unit's current health
+	local maxHealth = UnitHealthMax(unit) -- The unit's maximum health
+	local allAbsorbs = UnitGetTotalAbsorbs(unit) or 0 -- The total amount of damage the unit can absorb before losing health
+	local allNegativeHeals = UnitGetTotalHealAbsorbs(unit) or 0 -- The total amount of healing the unit can absorb without gaining health
+	local myIncomingHeal = UnitGetIncomingHeals(unit, "player") or 0 -- Incoming heals to the unit cast by the player
+	local allIncomingHeal = UnitGetIncomingHeals(unit) or 0 -- Incoming heals to the unit from any source
+	local otherIncomingHeal = 0
+
+	-- Store this for the postupdates
+	health.curAbsorb = allAbsorbs
+
+	health:SetMinMaxValues(0, maxHealth, forced)
+	health:SetValue(curHealth, forced)
+	health:UpdateValues(unit, curHealth, maxHealth)
+	health:UpdateColors(unit, curHealth, maxHealth)
+
+	-- Always force this to be instant regardless of bar settings. 
+	-- If it's not instant, the prediction will be misaligned.
+	preview:SetMinMaxValues(0, maxHealth, true)
+	preview:SetValue(curHealth, true)
+
+
+	local hasOverHealAbsorb = false
+	if (allNegativeHeals > allIncomingHeal) then
+		allNegativeHeals = allNegativeHeals - allIncomingHeal
+		allIncomingHeal = 0
+		myIncomingHeal = 0
+
+		if (curHealth < allNegativeHeals) then
+			hasOverHealAbsorb = true
+			allNegativeHeals = curHealth
+		end
+	else
+		allIncomingHeal = allIncomingHeal - allNegativeHeals
+		allNegativeHeals = 0
+
+		if (curHealth + allIncomingHeal > maxHealth) then
+			allIncomingHeal = maxHealth - curHealth
+		end
+
+		if (allIncomingHeal < myIncomingHeal) then
+			myIncomingHeal = allIncomingHeal
+		else
+			otherIncomingHeal = allIncomingHeal - myIncomingHeal
+		end
 	end
 
-	if element.PostUpdate then
-		return element:PostUpdate(unit, min, max, disconnected, dead, tapped)
+	local maxAbsorb = health.maxAbsorb or maxAbsorbDisplaySize
+	local hasOverAbsorb = (allAbsorbs > 0) and (curHealth + allIncomingHeal + allAbsorbs >= maxHealth)
+	local absorbDisplay = (allAbsorbs > maxHealth*maxAbsorb) and maxHealth*maxAbsorb or allAbsorbs
+	if (absorbDisplay < maxHealth * (health.absorbThreshold or .1)) then 
+		absorbDisplay = 0
+	end
+
+	absorb:SetMinMaxValues(0, maxHealth) 
+	absorb:SetValue(absorbDisplay, forced) 
+
+	local showPrediction, change
+	if ((allIncomingHeal > 0) or (allNegativeHeals > 0)) then 
+		local startPoint = curHealth/maxHealth
+
+		-- Dev switch to test absorbs with normal healing
+		--allIncomingHeal, allNegativeHeals = allNegativeHeals, allIncomingHeal
+
+		-- Hide predictions if the change is very small, or if the unit is at max health. 
+		change = (allIncomingHeal - allNegativeHeals)/maxHealth
+		if ((curHealth < maxHealth) and (change > (health.predictThreshold or .05))) then 
+			local endPoint = startPoint + change
+
+			-- Crop heal prediction overflows
+			if (endPoint > 1) then 
+				endPoint = 1
+				change = endPoint - startPoint
+			end
+
+			-- Crop heal absorb overflows
+			if (endPoint < 0) then 
+				endPoint = 0
+				change = -startPoint
+			end
+
+			-- This shouldn't happen, but let's do it anyway. 
+			if (startPoint ~= endPoint) then 
+				showPrediction = true
+			end
+		end 
+
+	end
+
+	if (showPrediction) then 
+		local orientation = preview:GetOrientation()
+		local min,max = preview:GetMinMaxValues()
+		local value = preview:GetValue() / max
+		local previewTexture = preview:GetStatusBarTexture()
+		local previewWidth, previewHeight = preview:GetSize()
+		local left, right, top, bottom = preview:GetTexCoord()
+	
+		if (orientation == "RIGHT") then 
+			local texValue, texChange = value, change
+	
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+	
+			if (change > 0) then 
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				predict:SetSize(change*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				predict:SetVertexColor(0, .7, 0, .25)
+				predict:Show()
+			elseif (change < 0) then 
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				predict:SetSize((-change)*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				predict:SetVertexColor(.5, 0, 0, .75)
+				predict:Show()
+			else 
+				predict:Hide()
+			end 
+	
+		elseif (orientation == "LEFT") then 
+			local texValue, texChange = value, change
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+	
+			if (change > 0) then 
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMLEFT", 0, 0)
+				predict:SetSize(change*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				predict:SetVertexColor(0, .7, 0, .25)
+				predict:Show()
+			elseif (change < 0) then
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMLEFT", 0, 0)
+				predict:SetSize((-change)*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				predict:SetVertexColor(.5, 0, 0, .75)
+				predict:Show()
+			else 
+				predict:Hide()
+			end 
+		end 
+
+		if (not predict:IsShown()) then 
+			predict:Show()
+		end 
+	else
+		if (predict:IsShown()) then 
+			predict:Hide()
+		end 
+	end
+
+	if (not health:IsShown()) then 
+		health:Show()
+	end
+
+	if (not preview:IsShown()) then 
+		preview:Show()
+	end 
+
+	if (not absorb:IsShown()) then 
+		absorb:Show()
+	end 
+
+	if health.PostUpdate then
+		return health:PostUpdate(unit, curHealth, maxHealth)
 	end	
 end
 
@@ -214,50 +487,98 @@ local Proxy = function(self, ...)
 	return (self.Health.Override or Update)(self, ...)
 end 
 
-local ForceUpdate = function(element)
-	return Proxy(element._owner, "Forced", element._owner.unit)
+local ForceUpdate = function(health)
+	return Proxy(health._owner, "Forced", health._owner.unit)
 end
 
 local Enable = function(self)
-	local element = self.Health
-	local elementPreview = element and element.Preview
+	local unit = self.unit
+	local health = self.Health
 
-	if element then
+	if health then
+		health._owner = self
+		health.unit = unit
+		health.guid = nil
+		health.ForceUpdate = ForceUpdate
+		health.UpdateColors = UpdateColors
+		health.UpdateValues = UpdateValues
 
-		element.unit = self.unit
-		element._owner = self
-		element.ForceUpdate = ForceUpdate
+		-- Post updates to make sure the sub-elements follow the health
+		health.PostUpdateSize = UpdateSizes
+		health.PostUpdateWidth = UpdateSizes
+		health.PostUpdateHeight = UpdateSizes
+		health.PostUpdateOrientation = UpdateOrientations
+		health.PostUpdateStatusBarTexture = UpdateStatusBarTextures
+		health.PostUpdateTexCoord = UpdateTexCoords
 
-		if element.frequent then
+		-- Health events
+		if health.frequent then
 			self:RegisterEvent("UNIT_HEALTH_FREQUENT", Proxy)
 		else
 			self:RegisterEvent("UNIT_HEALTH", Proxy)
 		end
-
 		self:RegisterEvent("UNIT_MAXHEALTH", Proxy)
+
+		-- Color events
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
 		self:RegisterEvent("UNIT_FACTION", Proxy) 
 		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Proxy)
 		self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", Proxy)
 
-		element.UpdateColor = UpdateColor
-		element.UpdateValue = UpdateValue
+		-- Predict events
+		self:RegisterEvent("UNIT_HEAL_PREDICTION", Proxy)
 
-		if elementPreview then 
-			elementPreview._owner = self
-			elementPreview.ForceUpdate = ForceUpdate
+		-- Absorb events
+		self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Proxy)
+		self:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", Proxy)
 
-			elementPreview.UpdateColor = UpdateColor
-			elementPreview.UpdateValue = UpdateValue
+		if (not health.Preview) then 
+			local preview = health:CreateStatusBar()
+			preview._owner = self
+			preview:SetAllPoints(health)
+			preview:SetFrameLevel(health:GetFrameLevel() - 1)
+			preview:DisableSmoothing(true)
+			preview:SetSparkTexture("")
+			preview:SetAlpha(.5)
+			health.Preview = preview
 		end 
+
+		if (not health.Predict) then 
+			local predict = health:CreateTexture()
+			predict._owner = health
+			predict:SetDrawLayer("ARTWORK", 0)
+			health.Predict = predict
+		end 
+
+		if (not health.Absorb) then 
+			local absorb = health:CreateStatusBar()
+			absorb._owner = health
+			absorb:SetAllPoints(health)
+			absorb:SetFrameLevel(health:GetFrameLevel() + 3)
+			absorb:SetSparkTexture(health:GetSparkTexture())
+			absorb:SetStatusBarColor(1, 1, 1)
+			absorb:SetAlpha((string_find(unit, "raid") or string_find(unit, "party")) and .5 or ((unit == "player") or (unit == "target")) and .35 or .25)
+			health.Absorb = absorb
+		end 
+
+		--health.PostUpdateSparkTexture = UpdateSparkTexture -- all sparks
+		--health.PostUpdateSparkColor = UpdateSparkColor -- all sparks
+
+		health:PostUpdateSize()
+		health:PostUpdateOrientation()
+		health:PostUpdateStatusBarTexture()
+		health:PostUpdateTexCoord()
 
 		return true
 	end
 end
 
 local Disable = function(self)
-	local element = self.Health
-	if element then 
+	local health = self.Health
+	if health then 
+		health.guid = nil
+
+		-- Kill off any events connected to this
 		self:UnregisterEvent("UNIT_HEALTH_FREQUENT", Proxy)
 		self:UnregisterEvent("UNIT_HEALTH", Proxy)
 		self:UnregisterEvent("UNIT_MAXHEALTH", Proxy)
@@ -265,10 +586,38 @@ local Disable = function(self)
 		self:UnregisterEvent("UNIT_FACTION", Proxy) 
 		self:UnregisterEvent("UNIT_THREAT_SITUATION_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_THREAT_LIST_UPDATE", Proxy)
+		self:UnregisterEvent("UNIT_HEAL_PREDICTION", Proxy)
+		self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Proxy)
+		self:UnregisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", Proxy)
+
+		-- Hide the element on disable
+		health:Hide()
+
+		-- Hide the sub elements
+		if health.Absorb then 
+			health.Absorb:Hide()
+		end
+		if health.Predict then 
+			health.Predict:Hide()
+		end
+		if health.Preview then 
+			health.Preview:Hide()
+		end
+
+		-- Clear out the texts
+		if health.Value then 
+			health.Value:SetText("")
+		end
+		if health.ValuePercent then 
+			health.ValuePercent:SetText("")
+		end
+		if health.ValueAbsorb then 
+			health.ValueAbsorb:SetText("")
+		end
 	end
 end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 23)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 29)
 end 
