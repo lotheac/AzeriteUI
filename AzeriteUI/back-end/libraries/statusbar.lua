@@ -1,4 +1,4 @@
-local LibStatusBar = CogWheel:Set("LibStatusBar", 47)
+local LibStatusBar = CogWheel:Set("LibStatusBar", 51)
 if (not LibStatusBar) then	
 	return
 end
@@ -99,114 +99,6 @@ local SetTexCoord = function(self, ...)
 	end
 end 
 
--- Will move this into the main update function later, 
--- just keeping it here for now while developing.
-local UpdateByGrowthDirection = {
-	RIGHT = function(self, percentage, displaySize, width, height, sparkBefore, sparkAfter)
-		local data = Bars[self]
-		local bar = data.bar
-		local spark = data.spark
-
-		if data.reversedH then
-			-- bar grows from the left to right
-			-- and the bar is also flipped horizontally 
-			-- (e.g. target absorbbar)
-			SetTexCoord(bar, 1, 1-percentage, 0, 1) 
-		else 
-			-- bar grows from the left to right
-			-- (e.g. player healthbar)
-			SetTexCoord(bar, 0, percentage, 0, 1) 
-		end 
-
-		bar:ClearAllPoints()
-		bar:SetPoint("TOP")
-		bar:SetPoint("BOTTOM")
-		bar:SetPoint("LEFT")
-		bar:SetSize(displaySize, height)
-		
-		spark:ClearAllPoints()
-		spark:SetPoint("TOP", bar, "TOPRIGHT", 0, sparkBefore*height)
-		spark:SetPoint("BOTTOM", bar, "BOTTOMRIGHT", 0, -sparkAfter*height)
-		spark:SetSize(data.sparkThickness, height - (sparkBefore + sparkAfter)*height)
-
-	end, 
-	LEFT = function(self, percentage, displaySize, width, height, sparkBefore, sparkAfter)
-		local data = Bars[self]
-		local bar = data.bar
-		local spark = data.spark
-
-		if data.reversedH then 
-			-- bar grows from the right to left
-			-- and the bar is also flipped horizontally 
-			-- (e.g. target healthbar)
-			SetTexCoord(bar, percentage, 0, 0, 1) 
-		else 
-			-- bar grows from the right to left
-			-- (e.g. player absorbbar)
-			SetTexCoord(bar, 1-percentage, 1, 0, 1)
-		end 
-
-		bar:ClearAllPoints()
-		bar:SetPoint("TOP")
-		bar:SetPoint("BOTTOM")
-		bar:SetPoint("RIGHT")
-		bar:SetSize(displaySize, height)
-		
-		spark:ClearAllPoints()
-		spark:SetPoint("TOP", bar, "TOPLEFT", 0, sparkBefore*height)
-		spark:SetPoint("BOTTOM", bar, "BOTTOMLEFT", 0, -sparkAfter*height)
-		spark:SetSize(data.sparkThickness, height - (sparkBefore + sparkAfter)*height)
-
-	end, 
-	UP = function(self, percentage, displaySize, width, height, sparkBefore, sparkAfter)
-		local data = Bars[self]
-		local bar = data.bar
-		local spark = data.spark
-
-		if data.reversed then 
-			SetTexCoord(bar, 1, 0, 1-percentage, 1)
-			sparkBefore, sparkAfter = sparkAfter, sparkBefore
-		else 
-			SetTexCoord(bar, 0, 1, 1-percentage, 1)
-		end 
-
-		bar:ClearAllPoints()
-		bar:SetPoint("LEFT")
-		bar:SetPoint("RIGHT")
-		bar:SetPoint("BOTTOM")
-		bar:SetSize(width, displaySize)
-		
-		spark:ClearAllPoints()
-		spark:SetPoint("LEFT", bar, "TOPLEFT", -sparkBefore*width, 0)
-		spark:SetPoint("RIGHT", bar, "TOPRIGHT", sparkAfter*width, 0)
-		spark:SetSize(width - (sparkBefore + sparkAfter)*width, data.sparkThickness)
-
-	end, 
-	DOWN = function(self, percentage, displaySize, width, height, sparkBefore, sparkAfter)
-		local data = Bars[self]
-		local bar = data.bar
-		local spark = data.spark
-
-		if data.reversed then 
-			SetTexCoord(bar, 1, 0, 0, percentage)
-			sparkBefore, sparkAfter = sparkAfter, sparkBefore
-		else 
-			SetTexCoord(bar, 0, 1, 0, percentage)
-		end 
-
-		bar:ClearAllPoints()
-		bar:SetPoint("LEFT")
-		bar:SetPoint("RIGHT")
-		bar:SetPoint("TOP")
-		bar:SetSize(width, displaySize)
-
-		spark:ClearAllPoints()
-		spark:SetPoint("LEFT", bar, "BOTTOMLEFT", -sparkBefore*width, 0)
-		spark:SetPoint("RIGHT", bar, "BOTTOMRIGHT", sparkAfter*width, 0)
-		spark:SetSize(width - (sparkBefore + sparkAfter*width), data.sparkThickness)
-	end
-}
-
 local Update = function(self, elapsed)
 	local data = Bars[self]
 
@@ -247,7 +139,7 @@ local Update = function(self, elapsed)
 
 		-- if there's a sparkmap, let's apply it!
 		local sparkPoint, sparkAnchor
-		local sparkOffsetTop, sparkOffsetBottom = 0,0
+		local sparkBefore, sparkAfter = 0,0
 		local sparkMap = data.sparkMap
 		if sparkMap then 
 
@@ -302,8 +194,8 @@ local Update = function(self, elapsed)
 				local diffTop = sparkMap.top[topAfter].offset - sparkMap.top[topBefore].offset
 				local diffBottom = sparkMap.bottom[bottomAfter].offset - sparkMap.bottom[bottomBefore].offset
 	
-				sparkOffsetTop = (sparkMap.top[topBefore].offset + diffTop*currentPercentTop) --* height
-				sparkOffsetBottom = (sparkMap.bottom[bottomBefore].offset + diffBottom*currentPercentBottom) --* height
+				sparkBefore = (sparkMap.top[topBefore].offset + diffTop*currentPercentTop) --* height
+				sparkAfter = (sparkMap.bottom[bottomBefore].offset + diffBottom*currentPercentBottom) --* height
 	
 			else 
 				-- iterate through the map to figure out what points we are between
@@ -329,13 +221,99 @@ local Update = function(self, elapsed)
 				local diffTop = sparkMap[above].topOffset - sparkMap[below].topOffset
 				local diffBottom = sparkMap[above].bottomOffset - sparkMap[below].bottomOffset
 
-				sparkOffsetTop = (sparkMap[below].topOffset + diffTop*currentPercent) --* height
-				sparkOffsetBottom = (sparkMap[below].bottomOffset + diffBottom*currentPercent) --* height
+				sparkBefore = (sparkMap[below].topOffset + diffTop*currentPercent) --* height
+				sparkAfter = (sparkMap[below].bottomOffset + diffBottom*currentPercent) --* height
 			end 
 		end 
 		
-		-- Hashed tables are just such a nice way to get post updates done faster :) 
-		UpdateByGrowthDirection[orientation](self, mult, displaySize, width, height, sparkOffsetTop, sparkOffsetBottom)
+		if (orientation == "RIGHT") then 
+
+			if data.reversedH then
+				-- bar grows from the left to right
+				-- and the bar is also flipped horizontally 
+				-- (e.g. target absorbbar)
+				SetTexCoord(bar, 1, 1-mult, 0, 1) 
+			else 
+				-- bar grows from the left to right
+				-- (e.g. player healthbar)
+				SetTexCoord(bar, 0, mult, 0, 1) 
+			end 
+	
+			bar:ClearAllPoints()
+			bar:SetPoint("TOP")
+			bar:SetPoint("BOTTOM")
+			bar:SetPoint("LEFT")
+			bar:SetSize(displaySize, height)
+			
+			spark:ClearAllPoints()
+			spark:SetPoint("TOP", bar, "TOPRIGHT", 0, sparkBefore*height)
+			spark:SetPoint("BOTTOM", bar, "BOTTOMRIGHT", 0, -sparkAfter*height)
+			spark:SetSize(data.sparkThickness, height - (sparkBefore + sparkAfter)*height)
+	
+		elseif (orientation == "LEFT") then 
+	
+			if data.reversedH then 
+				-- bar grows from the right to left
+				-- and the bar is also flipped horizontally 
+				-- (e.g. target healthbar)
+				SetTexCoord(bar, mult, 0, 0, 1) 
+			else 
+				-- bar grows from the right to left
+				-- (e.g. player absorbbar)
+				SetTexCoord(bar, 1-mult, 1, 0, 1)
+			end 
+	
+			bar:ClearAllPoints()
+			bar:SetPoint("TOP")
+			bar:SetPoint("BOTTOM")
+			bar:SetPoint("RIGHT")
+			bar:SetSize(displaySize, height)
+			
+			spark:ClearAllPoints()
+			spark:SetPoint("TOP", bar, "TOPLEFT", 0, sparkBefore*height)
+			spark:SetPoint("BOTTOM", bar, "BOTTOMLEFT", 0, -sparkAfter*height)
+			spark:SetSize(data.sparkThickness, height - (sparkBefore + sparkAfter)*height)
+	
+		elseif (orientation == "UP") then 
+	
+			if data.reversed then 
+				SetTexCoord(bar, 1, 0, 1-mult, 1)
+				sparkBefore, sparkAfter = sparkAfter, sparkBefore
+			else 
+				SetTexCoord(bar, 0, 1, 1-mult, 1)
+			end 
+	
+			bar:ClearAllPoints()
+			bar:SetPoint("LEFT")
+			bar:SetPoint("RIGHT")
+			bar:SetPoint("BOTTOM")
+			bar:SetSize(width, displaySize)
+			
+			spark:ClearAllPoints()
+			spark:SetPoint("LEFT", bar, "TOPLEFT", -sparkBefore*width, 0)
+			spark:SetPoint("RIGHT", bar, "TOPRIGHT", sparkAfter*width, 0)
+			spark:SetSize(width - (sparkBefore + sparkAfter)*width, data.sparkThickness)
+	
+		elseif (orientation == "DOWN") then 
+	
+			if data.reversed then 
+				SetTexCoord(bar, 1, 0, 0, mult)
+				sparkBefore, sparkAfter = sparkAfter, sparkBefore
+			else 
+				SetTexCoord(bar, 0, 1, 0, mult)
+			end 
+	
+			bar:ClearAllPoints()
+			bar:SetPoint("LEFT")
+			bar:SetPoint("RIGHT")
+			bar:SetPoint("TOP")
+			bar:SetSize(width, displaySize)
+	
+			spark:ClearAllPoints()
+			spark:SetPoint("LEFT", bar, "BOTTOMLEFT", -sparkBefore*width, 0)
+			spark:SetPoint("RIGHT", bar, "BOTTOMRIGHT", sparkAfter*width, 0)
+			spark:SetSize(width - (sparkBefore + sparkAfter*width), data.sparkThickness)
+		end
 
 		if (not bar:IsShown()) then
 			bar:Show()
@@ -378,9 +356,9 @@ local Update = function(self, elapsed)
 	end
 
 	-- Allow modules to add their postupdates here
-	if (self.PostUpdate and (not skipPost)) then 
-		self:PostUpdate(value, min, max)
-	end
+	--if (self.PostUpdate and (not skipPost)) then 
+	--	self:PostUpdate(value, min, max)
+	--end
 
 end
 
@@ -485,6 +463,9 @@ StatusBar.SetTexCoord = function(self, ...)
 	local tex = Textures[self]
 	tex[1], tex[2], tex[3], tex[4] = ...
 	Update(self, true)
+	if (self.PostUpdateTexCoord) then 
+		self:PostUpdateTexCoord(...)
+	end 
 end
 
 StatusBar.GetTexCoord = function(self)
@@ -495,6 +476,10 @@ end
 StatusBar.GetRealTexCoord = function(self)
 	local texCoords = Bars[self].texCoords
 	return texCoords[1], texCoords[2], texCoords[3], texCoords[4]
+end
+
+StatusBar.GetSparkTexture = function(self)
+	return Bars[self].spark:GetTexture()
 end
 
 StatusBar.SetSmoothingFrequency = function(self, smoothingFrequency)
@@ -601,6 +586,9 @@ StatusBar.SetStatusBarTexture = function(self, ...)
 	-- Causes a stack overflow if the texture is changed in PostUpdate, 
 	-- as could easily be the case with some bars. 
 	Update(self, true)
+	if (self.PostUpdateStatusBarTexture) then 
+		self:PostUpdateStatusBarTexture(...)
+	end
 end
 
 StatusBar.SetFlippedHorizontally = function(self, reversed)
@@ -609,6 +597,14 @@ end
 
 StatusBar.SetFlippedVertically = function(self, reversed)
 	Bars[self].reversedV = reversed
+end
+
+StatusBar.IsFlippedHorizontally = function(self)
+	return Bars[self].reversedH
+end
+
+StatusBar.IsFlippedVertically = function(self)
+	return Bars[self].reversedV
 end
 
 StatusBar.SetSparkMap = function(self, sparkMap)
@@ -622,10 +618,16 @@ StatusBar.SetSparkTexture = function(self, ...)
 	else
 		Bars[self].spark:SetTexture(...)
 	end
+	if (self.PostUpdateSparkTexture) then 
+		self:PostUpdateSparkTexture(...)
+	end 
 end
 
 StatusBar.SetSparkColor = function(self, ...)
 	Bars[self].spark:SetVertexColor(...)
+	if (self.PostUpdateSparkColor) then 
+		self:PostUpdateSparkColor(...)
+	end
 end 
 
 StatusBar.SetSparkMinMaxPercent = function(self, min, max)
@@ -657,6 +659,9 @@ StatusBar.SetOrientation = function(self, orientation)
 	elseif (orientation == "UP") or (orientation == "DOWN") then 
 		data.spark:SetTexCoord(1,11/32,0,11/32,1,19/32,0,19/32)
 		--data.spark:SetTexCoord(1,3/32,0,3/32,1,28/32,0,28/32) 
+	end 
+	if (self.PostUpdateOrientation) then 
+		self:PostUpdateOrientation(orientation)
 	end 
 end
 
@@ -711,20 +716,31 @@ end
 
 StatusBar.SetSize = function(self, ...)
 	Bars[self].scaffold:SetSize(...)
-	--Update(self)
+	if self.PostUpdateSize then 
+		self:PostUpdateSize(...)
+	end 
 end
 
 StatusBar.SetWidth = function(self, ...)
 	Bars[self].scaffold:SetWidth(...)
-	--Update(self)
+	if self.PostUpdateWidth then 
+		self:PostUpdateWidth(...)
+	end 
 end
 
 StatusBar.SetHeight = function(self, ...)
 	Bars[self].scaffold:SetHeight(...)
-	--Update(self)
+	if self.PostUpdateHeight then 
+		self:PostUpdateHeight(...)
+	end 
 end
 
-StatusBar.GetHeight = function(self, ...)
+StatusBar.GetHeight = LibStatusBar:IsBuild("8.2.0") and 
+function(self, ...)
+	return Bars[self].scaffold:GetHeight()
+end
+or
+function(self, ...)
 	local top = self:GetTop()
 	local bottom = self:GetBottom()
 	if top and bottom then
@@ -734,7 +750,12 @@ StatusBar.GetHeight = function(self, ...)
 	end
 end
 
-StatusBar.GetWidth = function(self, ...)
+StatusBar.GetWidth = LibStatusBar:IsBuild("8.2.0") and 
+function(self, ...)
+	return Bars[self].scaffold:GetWidth()
+end
+or
+function(self, ...)
 	local left = self:GetLeft()
 	local right = self:GetRight()
 	if left and right then
