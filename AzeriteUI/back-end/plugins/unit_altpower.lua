@@ -10,34 +10,17 @@ local UnitPowerMax = _G.UnitPowerMax
 -- Sourced from BlizzardInterfaceResources/Resources/EnumerationTables.lua
 local ALTERNATE_POWER_INDEX = Enum and Enum.PowerType.Alternate or ALTERNATE_POWER_INDEX or 10
 
-local utf8sub = function(str, i, dots)
-	if not str then return end
-	local bytes = str:len()
-	if bytes <= i then
-		return str
-	else
-		local len, pos = 0, 1
-		while pos <= bytes do
-			len = len + 1
-			local c = str:byte(pos)
-			if c > 0 and c <= 127 then
-				pos = pos + 1
-			elseif c >= 192 and c <= 223 then
-				pos = pos + 2
-			elseif c >= 224 and c <= 239 then
-				pos = pos + 3
-			elseif c >= 240 and c <= 247 then
-				pos = pos + 4
-			end
-			if len == i then break end
-		end
-		if len == i and pos <= bytes then
-			return str:sub(1, pos - 1)..(dots and "..." or "")
-		else
-			return str
-		end
-	end
-end
+-- Number abbreviations
+---------------------------------------------------------------------	
+local large = function(value)
+	if (value >= 1e8) then 		return string_format("%.0fm", value/1e6) 	-- 100m, 1000m, 2300m, etc
+	elseif (value >= 1e6) then 	return string_format("%.1fm", value/1e6) 	-- 1.0m - 99.9m 
+	elseif (value >= 1e5) then 	return string_format("%.0fk", value/1e3) 	-- 100k - 999k
+	elseif (value >= 1e3) then 	return string_format("%.1fk", value/1e3) 	-- 1.0k - 99.9k
+	elseif (value > 0) then 	return value 								-- 1 - 999
+	else 						return ""
+	end 
+end 
 
 local short = function(value)
 	value = tonumber(value)
@@ -196,5 +179,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 7)
+	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 8)
 end 
