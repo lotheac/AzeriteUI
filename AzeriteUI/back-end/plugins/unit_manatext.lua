@@ -108,8 +108,8 @@ local Update = function(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
-	local min = UnitPower(unit, ManaID)
-	local max = UnitPowerMax(unit, ManaID)
+	local min = UnitPower(unit, ManaID) or 0
+	local max = UnitPowerMax(unit, ManaID) or 0
 
 	if (min == 0) or (max == 0) then 
 		if (element:IsShown()) then 
@@ -185,5 +185,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("PowerText", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("PowerText", Enable, Disable, Proxy, 3)
 end 

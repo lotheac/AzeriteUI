@@ -3135,6 +3135,7 @@ UnitStyles.StylePlayerFrame = function(self, unit, id, Layout, ...)
 		manaText:SetTextColor(unpack(Layout.ManaTextColor))
 		manaText.frequent = true
 		self.ManaText = manaText
+		self.ManaText.OverrideValue = Layout.ManaTextOverride
 	end
 
 	-- Update textures according to player level
