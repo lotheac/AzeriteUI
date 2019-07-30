@@ -154,11 +154,11 @@ local UpdateColors = function(health, unit, min, max)
 
 	local self = health._owner
 	local color, r, g, b
-	if (health.colorTapped and tapped) then
+	if (health.colorTapped and health.tapped) then
 		color = self.colors.tapped
-	elseif (health.colorDisconnected and disconnected) then
+	elseif (health.colorDisconnected and health.disconnected) then
 		color = self.colors.disconnected
-	elseif (health.colorDead and dead) then
+	elseif (health.colorDead and health.dead) then
 		color = self.colors.dead
 	elseif (health.colorCivilian and UnitIsPlayer(unit) and UnitIsFriend("player", unit)) then 
 		color = self.colors.reaction.civilian
@@ -619,5 +619,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 29)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 30)
 end 
