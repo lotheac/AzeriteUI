@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.164-Release] 2019-07-31
+### Changed
+- Updated frFR localization.
+- Made some minor improvements to the aura filter to amongst other things allow us to dismount (at least out of combat) those damn shells in Nazjatar that won't stop moving. Will make a better system for those in the future, possibly. This is in no way the end of the aura tweaks, btw, I have multiple coming before Classic! 
+- Reworked the unitframe health element to have health preview, heal predictions, and damage- and healing absorbs baked into the primary element, and having those latter mentioned auto-update themselves based on how the health element is set up. Currently every single health bar in the interface used every single one, so combining them was a choice made to simplify the workflow. When adopting this for the Orb elements in various upcoming addons, switches and exceptions will be added to make it function as intended. For now though, it's perfect for our current intended usage. 
+- Put the file loading of libraries and plugins into xml files which more easily can be ported between my various projects when changes are made. Another change aimed at making it easier to maintain multiple addons as we move ever closer to Classic! 
+
 ## [1.2.163-Release] 2019-07-13
 ### Added
 - Our custom unitframe tooltips now show PvP icons for PvP enabled players, and a skull icon for bosses. 
