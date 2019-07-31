@@ -1,4 +1,4 @@
-[ ![Become a Patreon](http://azerite.org/img/social-media-buttons-patreon-small.jpg) ](https://www.patreon.com/AzeriteUI) 
+[ ![Become a Patreon](http://azeriteui.com/img/social-media-buttons-patreon-small.jpg) ](https://www.patreon.com/AzeriteUI) 
 
 We are not looking for neither graphic artists nor code developers. There are other ways you can contribute to this project though.
 
