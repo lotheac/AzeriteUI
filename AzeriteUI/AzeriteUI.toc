@@ -24,87 +24,10 @@
 # Unique global addon font objects
 FontStyles.xml
 
-# Addon libraries, the main engine of it all
+# Addon libraries & plugins, the main engine of it all
 back-end\wheel.lua
-back-end\libraries\clientbuild.lua
-back-end\libraries\locale.lua
-back-end\libraries\hook.lua
-back-end\libraries\securehook.lua
-back-end\libraries\message.lua
-back-end\libraries\event.lua
-back-end\libraries\scale.lua
-back-end\libraries\db.lua
-back-end\libraries\module.lua
-back-end\libraries\frame.lua
-back-end\libraries\orb.lua
-back-end\libraries\statusbar.lua
-back-end\libraries\spinbar.lua
-back-end\libraries\sound.lua
-back-end\libraries\time.lua
-back-end\libraries\tooltipscanner.lua
-back-end\libraries\tooltip.lua
-back-end\libraries\fader.lua
-back-end\libraries\mover.lua
-back-end\libraries\shine.lua
-back-end\libraries\bagbutton.lua
-back-end\libraries\actionbutton.lua
-back-end\libraries\widgetcontainer.lua
-back-end\libraries\unitframe.lua
-back-end\libraries\blizzard.lua
-back-end\libraries\slash.lua
-back-end\libraries\aura.lua
-back-end\libraries\playerdata.lua
-back-end\libraries\menu.lua
-back-end\libraries\quest.lua
-back-end\libraries\bonusquest.lua
-back-end\libraries\chatbubble.lua
-back-end\libraries\chatframe.lua
-back-end\libraries\minimap.lua
-back-end\libraries\nameplates.lua
-back-end\libraries\taint.lua 
-
-# Generic library plugins
-back-end\plugins\generic_artifactpower.lua
-back-end\plugins\generic_clock.lua
-back-end\plugins\generic_coordinates.lua
-back-end\plugins\generic_difficulty.lua
-back-end\plugins\generic_framerate.lua
-back-end\plugins\generic_groupfinder.lua
-back-end\plugins\generic_honor.lua
-back-end\plugins\generic_latency.lua
-back-end\plugins\generic_mail.lua
-back-end\plugins\generic_reputation.lua
-back-end\plugins\generic_xp.lua
-back-end\plugins\generic_zone.lua
-
-# Unit dependant library plugins
-back-end\plugins\unit_altpower.lua
-back-end\plugins\unit_auras.lua
-back-end\plugins\unit_cast.lua
-back-end\plugins\unit_classification.lua
-back-end\plugins\unit_classpower.lua
-back-end\plugins\unit_combat.lua
-back-end\plugins\unit_crowdcontrol.lua
-back-end\plugins\unit_extrapower.lua
-back-end\plugins\unit_groupdebuff.lua
-back-end\plugins\unit_grouprole.lua
-back-end\plugins\unit_health.lua
-back-end\plugins\unit_level.lua
-back-end\plugins\unit_manatext.lua
-back-end\plugins\unit_name.lua
-back-end\plugins\unit_portrait.lua
-back-end\plugins\unit_power.lua
-back-end\plugins\unit_range.lua
-back-end\plugins\unit_raidrole.lua
-back-end\plugins\unit_raidtarget.lua
-back-end\plugins\unit_readycheck.lua
-back-end\plugins\unit_resurrectindicator.lua
-back-end\plugins\unit_spec.lua
-back-end\plugins\unit_status.lua
-back-end\plugins\unit_targeted.lua
-back-end\plugins\unit_targethighlight.lua
-back-end\plugins\unit_totem.lua
-back-end\plugins\unit_threat.lua
+back-end\libraries.xml
+back-end\plugins.xml
 
 # Addon localization
 locale\enUS.lua
