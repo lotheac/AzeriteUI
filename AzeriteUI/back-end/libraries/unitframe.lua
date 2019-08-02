@@ -1,4 +1,4 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 60)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 61)
 if (not LibUnitFrame) then	
 	return
 end
@@ -511,6 +511,12 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 	end 
 
 	local visDriver = LibUnitFrame:GetUnitFrameVisibilityDriver(unit)
+	if frame.visibilityOverrideDriver then 
+		visDriver = frame.visibilityOverrideDriver
+	elseif frame.visibilityPreDriver then
+		visDriver = frame.visibilityPreDriver .. visDriver
+	end
+
 	frame:SetAttribute("visibilityDriver", visDriver)
 	RegisterAttributeDriver(frame, "state-visibility", visDriver)
 
