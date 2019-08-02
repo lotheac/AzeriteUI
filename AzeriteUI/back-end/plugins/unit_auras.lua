@@ -192,21 +192,17 @@ local Aura_UpdateTimer = function(button, elapsed)
 				else
 					button.Time:SetText("")
 				end 
-				if button._owner.PostUpdateButton then
-					button._owner:PostUpdateButton(button, "Timer")
-				end
 			else
 				button:SetScript("OnUpdate", nil)
 				Aura_SetCooldownTimer(button, 0,0)
 				
 				button.Time:SetText("")
-				button._owner:ForceUpdate()				
-
-				if (button:IsShown() and button._owner.PostUpdateButton) then
-					button._owner:PostUpdateButton(button, "Timer")
-				end
+				button._owner:ForceUpdate()
 			end	
-			button.elapsed = 0
+			if (button:IsShown() and button._owner.PostUpdateButton) then
+				button._owner:PostUpdateButton(button, "Timer")
+			end
+		button.elapsed = 0
 		end
 	end
 end
@@ -420,10 +416,6 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 				-- Create a new button, and initially hide it while setting it up
 				element[visibleKey] = (element.CreateButton or CreateAuraButton) (element)
 				element[visibleKey]:Hide()
-
-				if element.PostCreateButton then
-					element:PostCreateButton(element[visibleKey])
-				end
 			end
 
 			local button = element[visibleKey]
@@ -461,7 +453,7 @@ local IterateBuffs = function(element, unit, filter, customFilter, visible)
 
 			-- Run module post updates
 			if element.PostUpdateButton then
-				element:PostUpdateButton(button)
+				element:PostUpdateButton(button, "Iteration")
 			end
 
 			-- Show the button if it was hidden
@@ -527,10 +519,6 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 				-- Create a new button, and initially hide it while setting it up
 				element[visibleKey] = (element.CreateButton or CreateAuraButton) (element)
 				element[visibleKey]:Hide()
-
-				if element.PostCreateButton then
-					element:PostCreateButton(element[visibleKey])
-				end
 			end
 
 			local button = element[visibleKey]
@@ -568,7 +556,7 @@ local IterateDebuffs = function(element, unit, filter, customFilter, visible)
 
 			-- Run module post updates
 			if element.PostUpdateButton then
-				element:PostUpdateButton(button)
+				element:PostUpdateButton(button, "Iteration")
 			end
 
 			-- Show the button if it was hidden
@@ -650,8 +638,16 @@ local Update = function(self, event, unit)
 			Buffs:PreUpdate(unit)
 		end
 
+		local buffFilter = Buffs.buffFilter or Buffs.auraFilter or Buffs.filter
+		local buffFilterFunc = Buffs.BuffFilter or Buffs.AuraFilter
+
+		-- Forcefully register aura watches for the relevant filters
+		-- This is to ensure force updates actually have the right filters and fully updated caches
+		if (event == "Forced") then 
+			LibAura:CacheUnitBuffsByFilter(unit, buffFilter)
+		end 
 		
-		local visible = IterateBuffs(Buffs, unit, Buffs.buffFilter or Buffs.auraFilter or Buffs.filter, Buffs.BuffFilter or Buffs.AuraFilter)
+		local visible = IterateBuffs(Buffs, unit, buffFilter, buffFilterFunc)
 
 		EvaluateVisibilities(Buffs, visible)
 
@@ -666,7 +662,16 @@ local Update = function(self, event, unit)
 			Debuffs:PreUpdate(unit)
 		end
 
-		local visible = IterateDebuffs(Debuffs, unit, Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter, Debuffs.DebuffFilter or Debuffs.AuraFilter)
+		local debuffFilter = Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter
+		local debuffFilterFunc = Debuffs.DebuffFilter or Debuffs.AuraFilter
+
+		-- Forcefully register aura watches for the relevant filters
+		-- This is to ensure force updates actually have the right filters and fully updated caches
+		if (event == "Forced") then 
+			LibAura:CacheUnitDebuffsByFilter(unit, debuffFilter)
+		end 
+
+		local visible = IterateDebuffs(Debuffs, unit, debuffFilter, debuffFilterFunc)
 
 		EvaluateVisibilities(Debuffs, visible)
 
@@ -788,5 +793,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 36)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 39)
 end 
