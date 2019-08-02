@@ -2,6 +2,8 @@
 local _G = _G
 
 -- WoW API
+local IsInGroup = _G.IsInGroup
+local IsInInstance = _G.IsInInstance
 local UnitExists = _G.UnitExists
 local UnitThreatSituation = _G.UnitThreatSituation
 
@@ -9,7 +11,10 @@ local UpdateColor = function(element, unit, status, r, g, b)
 	if element.OverrideColor then
 		return element:OverrideColor(unit, status, r, g, b)
 	end
-	element:SetVertexColor(r, g, b)
+
+	-- Just some little trickery to easily support both textures and frames
+	element[element.SetVertexColor and "SetVertexColor" or "SetBackdropBorderColor"](element, r, g, b)
+
 	if element.PostUpdateColor then 
 		element:PostUpdateColor(unit, status, r, g, b)
 	end 
@@ -40,19 +45,12 @@ local Update = function(self, event, unit)
 	local r, g, b
 	if (status and (status > 0)) then
 		r, g, b = self.colors.threat[status][1], self.colors.threat[status][2], self.colors.threat[status][3]
-
 		element:UpdateColor(unit, status, r, g, b)
-
-		if (not element:IsShown()) then
-			element:Show()
-		end 
-
+		element:Show()
 	else
-		if element:IsShown() then 
-			element:Hide()
-		end 
+		element:Hide()
 	end
-			
+	
 	if element.PostUpdate then
 		return element:PostUpdate(unit, status, r, g, b)
 	end	
@@ -92,5 +90,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Threat", Enable, Disable, Proxy, 5)
+	Lib:RegisterElement("Threat", Enable, Disable, Proxy, 8)
 end 
