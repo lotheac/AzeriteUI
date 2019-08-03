@@ -12,7 +12,7 @@ local UnitIsPVPFreeForAll = _G.UnitIsPVPFreeForAll
 local UnitIsPVPSanctuary = _G.UnitIsPVPSanctuary
 local UnitLevel = _G.UnitLevel
 
--- Objects that we're be looking for in the element
+-- Objects that we'll be looking for in the element
 local objects = {
 	boss = "Boss",
 	elite = "Elite", 
@@ -146,5 +146,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Classification", Enable, Disable, Proxy, 3)
+	Lib:RegisterElement("Classification", Enable, Disable, Proxy, 4)
 end 
