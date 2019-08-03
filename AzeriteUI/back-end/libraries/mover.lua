@@ -1,4 +1,4 @@
-local LibMover = CogWheel:Set("LibMover", 32)
+local LibMover = CogWheel:Set("LibMover", 34)
 if (not LibMover) then	
 	return
 end
@@ -483,6 +483,14 @@ end
 Mover.GetScale = function(self, scale)
 	return MoverData[self].scale
 end
+
+Mover.SetDefaultScale = function(self, scale)
+	MoverData[self].defaultScale = tonumber(scale) or 1
+end 
+
+Mover.GetDefaultScale = function(self)
+	return MoverData[self].defaultScale
+end 
 
 -- Sets the default position of the mover.
 -- This will parse the position provided. 
