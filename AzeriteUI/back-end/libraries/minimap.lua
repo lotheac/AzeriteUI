@@ -1,4 +1,4 @@
-local Version = 36 -- This library's version 
+local Version = 37 -- This library's version 
 local MapVersion = Version -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
@@ -619,6 +619,20 @@ LibMinimap.SyncMinimap = function(self, onlyQuery)
 	LibMinimap.minimap = LibMinimap.minimap or {}
 	LibMinimap.minimap[1] = Private.MapHolder
 	LibMinimap.minimap[2] = Version
+
+	local w,h = Minimap:GetSize()
+	local x,y = Minimap:GetCenter()
+	if (not x or not y) then 
+
+		-- Set the scaffold size and position to the default blizz values
+		Private.MapHolder:SetSize(140, 140)
+		Private.MapHolder:Place("TOPRIGHT", UIParent, "TOPRIGHT", -61 -22)
+
+		-- The following elements rely on but aren't slave to the holder size, 
+		-- and thus we need to manually update them after any size changes. 
+		LibMinimap:UpdateCompass()
+		LibMinimap:UpdateScale()
+	end 
 
 	return true
 end 
