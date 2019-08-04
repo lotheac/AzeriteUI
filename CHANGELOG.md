@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.165-Release] 2019-08-04
+### Fixed
+- Added a fallback size and position to our Minimap back-end, to prevent unreadable Map size- and position during startup. This should fix the issues related to TomCat's Minimap buttons. 
+
 ## [1.2.164-Release] 2019-07-31
 ### Changed
 - Updated frFR localization.
