@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.166-Release] 2019-08-05
+### Fixed
+- Fixed an issue where the red "this unit is targeting you" eye wouldn't appear for neutral NPCs. It should now be possible to see that Darkshore Crabs are actually attacking you.
+
 ## [1.2.165-Release] 2019-08-04
 ### Fixed
 - Added a fallback size and position to our Minimap back-end, to prevent unreadable Map size- and position during startup. This should fix the issues related to TomCat's Minimap buttons. 
