@@ -28,15 +28,7 @@ local Update = function(self, event, unit, ...)
 	if UnitExists(target) and (not UnitIsUnit(unit, "player")) then 
 		if UnitIsUnit(target, "player") then 
 			targetedUnit = "player"
-			if UnitIsFriend("player", unit) then 
-				targetedConditional = "help"
-				for objectName in pairs(targetToObject) do 
-					local object = element[objectName]
-					if object then 
-						object:SetShown(objectName == "YouByFriend")
-					end 
-				end 
-			elseif UnitIsEnemy(unit, "player") then 
+			if UnitCanAttack("player", unit) then 
 				targetedConditional = "harm"
 				for objectName in pairs(targetToObject) do 
 					local object = element[objectName]
@@ -44,10 +36,19 @@ local Update = function(self, event, unit, ...)
 						object:SetShown(objectName == "YouByEnemy")
 					end 
 				end 
+			else 
+				targetedConditional = "help"
+				for objectName in pairs(targetToObject) do 
+					local object = element[objectName]
+					if object then 
+						object:SetShown(objectName == "YouByFriend")
+					end 
+				end 
 			end 
+
 		elseif UnitIsUnit(target, "pet") then 
 			targetedUnit = "pet"
-			if UnitIsEnemy(unit, "player") then 
+			if UnitCanAttack("player", unit) then 
 				targetedConditional = "harm"
 				for objectName in pairs(targetToObject) do 
 					local object = element[objectName]
@@ -105,5 +106,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Targeted", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("Targeted", Enable, Disable, Proxy, 3)
 end 
