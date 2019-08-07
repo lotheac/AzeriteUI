@@ -74,11 +74,11 @@ local Update = function(self, event, unit)
 		name = utf8sub(name, element.maxChars, element.useDots)
 	end 
 
-	-- Display a fitting PvP icon, but suppress it if the unit is a PvP enabled boss
-	if element.showPvP and isPvP and not(element.showBoss and isBoss) then 
+	-- Display a fitting PvP icon, but suppress it if the unit is a PvP enabled boss, elite or rare
+	if element.showPvP and isPvP and not(element.showBoss and isBoss) and not(element.showElite and isElite) and not(element.showRare and isRare) then 
 		local faction = UnitFactionGroup(unit)
 		local pvp = (faction == "Alliance") and ALLIANCE_TEXTURE or (faction == "Horde") and HORDE_TEXTURE or FFA_TEXTURE
-		name = pvp .. name
+		name = name .. pvp
 	end 
 
 	-- Show a plus sign for elites, but suppress it if the unit is a boss
@@ -140,5 +140,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Name", Enable, Disable, Proxy, 5)
+	Lib:RegisterElement("Name", Enable, Disable, Proxy, 6)
 end 
