@@ -4,6 +4,7 @@ assert(LibPlayerData, "UnitHealth requires LibPlayerData to be loaded.")
 -- Lua API
 local _G = _G
 local math_floor = math.floor
+local math_modf = math.modf
 local pairs = pairs
 local string_find = string.find
 local string_format = string.format
@@ -42,8 +43,33 @@ local S_AFK = _G.AFK
 local S_DEAD = _G.DEAD
 local S_PLAYER_OFFLINE = _G.PLAYER_OFFLINE
 
--- Number abbreviations
+
+-- Utility Functions
 ---------------------------------------------------------------------	
+-- Calculate a RGB gradient from a minimum of 2 sets of RGB values
+local colorsAndPercent = function(currentValue, maxValue, ...)
+	if (currentValue <= 0 or maxValue == 0) then
+		return nil, ...
+	elseif (currentValue >= maxValue) then
+		return nil, select(-3, ...)
+	end
+	local num = select("#", ...) / 3
+	local segment, relperc = math_modf((currentValue / maxValue) * (num - 1))
+	return relperc, select((segment * 3) + 1, ...)
+end
+
+-- RGB color gradient calculation from a minimum of 2 sets of RGB values
+-- local r, g, b = gradient(currentValue, maxValue, r1, g1, b1, r2, g2, b2[, r3, g3, b3, ...])
+local gradient = function(currentValue, maxValue, ...)
+	local relperc, r1, g1, b1, r2, g2, b2 = colorsAndPercent(currentValue, maxValue, ...)
+	if (relperc) then
+		return r1 + (r2 - r1) * relperc, g1 + (g2 - g1) * relperc, b1 + (b2 - b1) * relperc
+	else
+		return r1, g1, b1
+	end
+end
+
+-- Number abbreviations
 local large = function(value)
 	if (value >= 1e8) then 		return string_format("%.0fm", value/1e6) 	-- 100m, 1000m, 2300m, etc
 	elseif (value >= 1e6) then 	return string_format("%.1fm", value/1e6) 	-- 1.0m - 99.9m 
@@ -165,6 +191,7 @@ local UpdateColors = function(health, unit, min, max)
 	elseif (health.colorClass and UnitIsPlayer(unit)) then
 		local _, class = UnitClass(unit)
 		color = class and self.colors.class[class]
+
 	elseif (health.colorPetAsPlayer and UnitIsUnit(unit, "pet")) then 
 		local _, class = UnitClass("player")
 		color = class and self.colors.class[class]
@@ -191,7 +218,11 @@ local UpdateColors = function(health, unit, min, max)
 	end
 
 	if color then 
-		r, g, b = color[1], color[2], color[3]
+		if (health.colorSmooth) then 
+			r, g, b = gradient(min, max, 1,0,0, color[1], color[2], color[3], color[1], color[2], color[3])
+		else 
+			r, g, b = color[1], color[2], color[3]
+		end 
 		health:SetStatusBarColor(r, g, b)
 		health.Preview:SetStatusBarColor(r, g, b)
 	end 
@@ -619,5 +650,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 30)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 32)
 end 
