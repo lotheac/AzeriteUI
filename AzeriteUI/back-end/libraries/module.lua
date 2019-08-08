@@ -1,4 +1,4 @@
-local LibModule = CogWheel:Set("LibModule", 29)
+local LibModule = CogWheel:Set("LibModule", 30)
 if (not LibModule) then	
 	return
 end
@@ -33,12 +33,14 @@ local string_match = string.match
 local table_concat = table.concat 
 local table_insert = table.insert
 local table_remove = table.remove
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 
 -- WoW API
 local GetAddOnEnableState = _G.GetAddOnEnableState
 local GetAddOnInfo = _G.GetAddOnInfo
+local GetBuildInfo = _G.GetBuildInfo
 local GetNumAddOns = _G.GetNumAddOns
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local IsLoggedIn = _G.IsLoggedIn
@@ -46,8 +48,10 @@ local IsShiftKeyDown = _G.IsShiftKeyDown
 local UnitName = _G.UnitName
 
 -- Library registries
-LibModule.addonDependencies = {} -- table holding module/widget/handler dependencies
-LibModule.addonIncompatibilities = {} -- table holding module/widget/handler incompatibilities
+LibModule.classicEnableList = LibModule.classicEnableList or {} -- table holding modules only compatible with Classic
+LibModule.classicDisableList = LibModule.classicDisableList or {} -- table holding modules incompatible with Classic
+LibModule.addonDependencies = LibModule.addonDependencies or {} -- table holding module/widget/handler dependencies
+LibModule.addonIncompatibilities = LibModule.addonIncompatibilities or {} -- table holding module/widget/handler incompatibilities
 LibModule.addonIsLoaded = LibModule.addonIsLoaded or {}
 LibModule.embeds = LibModule.embeds or {}
 LibModule.enabledModules = LibModule.enabledModules or {}
@@ -66,6 +70,8 @@ local PRIORITY_INDEX = { "HIGH", "NORMAL", "LOW", "PLUGIN" } -- indexed/ordered 
 local DEFAULT_MODULE_PRIORITY = "NORMAL" -- default load priority for new modules
 
 -- Speed shortcuts
+local classicEnableList = LibModule.classicEnableList
+local classicDisableList = LibModule.classicDisableList
 local addonDependencies = LibModule.addonDependencies
 local addonIncompatibilities = LibModule.addonIncompatibilities
 local addonIsLoaded = LibModule.addonIsLoaded
@@ -291,7 +297,19 @@ local ModuleProtoType = {
 		end
 	end,
 
+	SetToRetail = function(self)
+		classicDisableList[self] = true
+	end,
+
+	SetToClassic = function(self)
+		classicEnableList[self] = true
+	end,
+
 	IsIncompatible = function(self)
+		local isClassic = LibClientBuild:IsClassic()
+		if (isClassic and classicDisableList[self]) or ((not isClassic) and classicEnableList[self]) then 
+			return true 
+		end
 		if (not addonIncompatibilities[self]) then
 			return false
 		end

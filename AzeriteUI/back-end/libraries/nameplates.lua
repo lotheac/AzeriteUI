@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 35)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 36)
 if (not LibNamePlate) then	
 	return
 end
@@ -64,7 +64,6 @@ local UnitIsUnit = _G.UnitIsUnit
 local UnitLevel = _G.UnitLevel
 local UnitName = _G.UnitName
 local UnitReaction = _G.UnitReaction
-local UnitThreatSituation = _G.UnitThreatSituation
 
 -- WoW Frames & Objects
 local WorldFrame = _G.WorldFrame

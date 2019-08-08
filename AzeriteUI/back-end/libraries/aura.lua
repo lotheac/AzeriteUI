@@ -1,4 +1,4 @@
-local LibAura = CogWheel:Set("LibAura", 5)
+local LibAura = CogWheel:Set("LibAura", 6)
 if (not LibAura) then	
 	return
 end
@@ -229,6 +229,16 @@ LibAura.GetUnitAuraCacheByFilter = function(self, unit, filter)
 	return Cache[unit] and Cache[unit][filter] or LibAura:CacheUnitAurasByFilter(unit, filter)
 end
 
+LibAura.GetUnitBuffCacheByFilter = function(self, unit, filter)
+	local realFilter = "HELPFUL" .. (filter or "")
+	return Cache[unit] and Cache[unit][realFilter] or LibAura:CacheUnitAurasByFilter(unit, realFilter)
+end
+
+LibAura.GetUnitDebuffCacheByFilter = function(self, unit, filter)
+	local realFilter = "HARMFUL" .. (filter or "")
+	return Cache[unit] and Cache[unit][realFilter] or LibAura:CacheUnitAurasByFilter(unit, realFilter)
+end
+
 LibAura.GetUnitAura = function(self, unit, auraID, filter)
 	local cache = self:GetUnitAuraCacheByFilter(unit, filter)
 	local aura = cache and cache[auraID]
@@ -238,7 +248,7 @@ LibAura.GetUnitAura = function(self, unit, auraID, filter)
 end
 
 LibAura.GetUnitBuff = function(self, unit, auraID, filter)
-	local cache = self:CacheUnitAurasByFilter(unit, "HELPFUL" .. (filter or ""))
+	local cache = self:GetUnitBuffCacheByFilter(unit, filter)
 	local aura = cache and cache[auraID]
 	if aura then 
 		return aura[1], aura[2], aura[3], aura[4], aura[5], aura[6], aura[7], aura[8], aura[9], aura[10], aura[11], aura[12], aura[13], aura[14], aura[15], aura[16], aura[17], aura[18]
@@ -246,7 +256,7 @@ LibAura.GetUnitBuff = function(self, unit, auraID, filter)
 end
 
 LibAura.GetUnitDebuff = function(self, unit, auraID, filter)
-	local cache = self:CacheUnitAurasByFilter(unit, "HARMFUL" .. (filter or ""))
+	local cache = self:GetUnitDebuffCacheByFilter(unit, filter)
 	local aura = cache and cache[auraID]
 	if aura then 
 		return aura[1], aura[2], aura[3], aura[4], aura[5], aura[6], aura[7], aura[8], aura[9], aura[10], aura[11], aura[12], aura[13], aura[14], aura[15], aura[16], aura[17], aura[18]
@@ -404,6 +414,8 @@ local embedMethods = {
 	GetUnitBuff = true,
 	GetUnitDebuff = true,
 	GetUnitAuraCacheByFilter = true,
+	GetUnitBuffCacheByFilter = true, 
+	GetUnitDebuffCacheByFilter = true, 
 	RegisterAuraWatch = true,
 	UnregisterAuraWatch = true,
 	GetAllAuraInfoFlags = true, 

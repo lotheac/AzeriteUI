@@ -1,3 +1,10 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
+if IS_CLASSIC then 
+	return 
+end 
 
 -- Lua API
 local _G = _G

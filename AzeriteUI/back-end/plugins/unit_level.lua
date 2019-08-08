@@ -31,7 +31,7 @@ local Update = function(self, event, unit)
 
 	-- Damn you blizzard and your effective level nonsense!
 	local unitLevel = UnitLevel(unit)
-	local unitEffectiveLevel = UnitEffectiveLevel(unit)
+	local unitEffectiveLevel = UnitEffectiveLevel and UnitEffectiveLevel(unit) or unitLevel
 
 	if element.visibilityFilter then 
 		if (not element:visibilityFilter(unit)) then 
@@ -72,7 +72,7 @@ local Update = function(self, event, unit)
 		end 
 
 	-- Battle pets 
-	elseif (UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit)) then 
+	elseif ((UnitIsWildBattlePet and UnitIsWildBattlePet(unit)) or (UnitIsBattlePetCompanion and UnitIsBattlePetCompanion(unit))) then 
 		unitLevel = UnitBattlePetLevel(unit)
 		element:SetText(unitLevel)
 		if element.defaultColor then 
@@ -204,5 +204,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Level", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("Level", Enable, Disable, Proxy, 7)
 end 

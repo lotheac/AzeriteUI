@@ -1969,7 +1969,7 @@ Tooltip.OnShow = function(self)
 	end 
 
 	-- Is the battle pet tip forbidden too? Batter safe than sorry!
-	if (not BattlePetTooltip:IsForbidden() and BattlePetTooltip:IsShown()) then 
+	if BattlePetTooltip and ((not BattlePetTooltip:IsForbidden() and BattlePetTooltip:IsShown())) then 
 		BattlePetTooltip:Hide()
 	end 
 

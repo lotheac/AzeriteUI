@@ -15,6 +15,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
+Module:SetToRetail()
+
 local Layout, L, MenuTable
 
 -- Registries

@@ -1,3 +1,8 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "UnitCast requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
+
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -589,6 +594,11 @@ end
 local Enable = function(self)
 	local element = self.Cast
 	if element then
+		if IS_CLASSIC then 
+			element:Hide()
+			return
+		end 
+
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 
@@ -601,12 +611,15 @@ local Enable = function(self)
 			--self:RegisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_STOP", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", Proxy)
-			self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", Proxy)
-			self:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_DELAYED", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", Proxy)
 			self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP", Proxy)
+
+			if (not IS_CLASSIC) then 
+				self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", Proxy)
+				self:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", Proxy)
+			end 
 		end 
 
 		element.UpdateColor = UpdateColor
@@ -622,17 +635,24 @@ local Disable = function(self)
 		element:SetScript("OnUpdate", nil)
 		element:Hide()
 
+		if IS_CLASSIC then 
+			return
+		end 
+
 		self:UnregisterEvent("UNIT_SPELLCAST_START", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_FAILED", Proxy)
 		--self:UnregisterEvent("UNIT_SPELLCAST_FAILED_QUIET", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_STOP", Proxy)
-		self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED", Proxy)
-		self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_DELAYED", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_START", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_STOP", Proxy)
+
+		if (not IS_CLASSIC) then 
+			self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED", Proxy)
+			self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", Proxy)
+		end
 	end
 end 
 

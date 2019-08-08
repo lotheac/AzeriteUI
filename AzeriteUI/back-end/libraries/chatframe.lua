@@ -1,4 +1,4 @@
-local LibChatWindow, version = CogWheel:Set("LibChatWindow", 23)
+local LibChatWindow, version = CogWheel:Set("LibChatWindow", 24)
 if (not LibChatWindow) then	
 	return
 end
@@ -369,7 +369,7 @@ LibChatWindow.GetChatWindowScrollBar = function(self, frame)
 end 
 
 LibChatWindow.GetChatWindowScrollBarThumbTexture = function(self, frame)
-	return frame.ScrollBar.ThumbTexture
+	return frame.ScrollBar and frame.ScrollBar.ThumbTexture
 end 
 
 LibChatWindow.GetChatWindowTab = function(self, frame)

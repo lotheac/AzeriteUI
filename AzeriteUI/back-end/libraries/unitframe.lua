@@ -1,7 +1,12 @@
-local LibUnitFrame = CogWheel:Set("LibUnitFrame", 62)
+local LibUnitFrame = CogWheel:Set("LibUnitFrame", 63)
 if (not LibUnitFrame) then	
 	return
 end
+
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "LibUnitFrame requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
 
 local LibEvent = CogWheel("LibEvent")
 assert(LibEvent, "LibUnitFrame requires LibEvent to be loaded.")
@@ -15,6 +20,7 @@ assert(LibWidgetContainer, "LibUnitFrame requires LibWidgetContainer to be loade
 local LibTooltip = CogWheel("LibTooltip")
 assert(LibTooltip, "LibUnitFrame requires LibTooltip to be loaded.")
 
+LibClientBuild:Embed(LibUnitFrame)
 LibEvent:Embed(LibUnitFrame)
 LibFrame:Embed(LibUnitFrame)
 LibTooltip:Embed(LibUnitFrame)
@@ -120,7 +126,7 @@ local Colors = {
 	rested = prepare( 23/255, 93/255, 180/255 ),
 	restedbonus = prepare( 192/255, 111/255, 255/255 ),
 	tapped = prepare( 153/255, 153/255, 153/255 ),
-	threat = {
+	threat = (not IS_CLASSIC) and {
 		[0] = prepare( GetThreatStatusColor(0) ),
 		[1] = prepare( GetThreatStatusColor(1) ),
 		[2] = prepare( GetThreatStatusColor(2) ),
@@ -460,7 +466,9 @@ LibUnitFrame.SpawnUnitFrame = function(self, unit, parent, styleFunc, ...)
 		frame:RegisterEvent("PLAYER_TARGET_CHANGED", UnitFrame.OverrideAllElements, true)
 
 	elseif (unit == "focus") then
-		frame:RegisterEvent("PLAYER_FOCUS_CHANGED", UnitFrame.OverrideAllElements, true)
+		if (not IS_CLASSIC) then 
+			frame:RegisterEvent("PLAYER_FOCUS_CHANGED", UnitFrame.OverrideAllElements, true)
+		end 
 
 	elseif (unit == "mouseover") then
 		frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT", UnitFrame.OverrideAllElements, true)

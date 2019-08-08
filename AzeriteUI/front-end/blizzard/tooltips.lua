@@ -112,8 +112,8 @@ local OnTooltipSetUnit = function(tooltip)
 		isboss = classification == "worldboss"
 		reaction = UnitReaction(unit, "player")
 		istapped = UnitIsTapDenied(unit)
-		iswildpet = UnitIsWildBattlePet(unit)
-		isbattlepet = UnitIsBattlePetCompanion(unit)
+		iswildpet = UnitIsWildBattlePet and UnitIsWildBattlePet(unit)
+		isbattlepet = UnitIsBattlePetCompanion and UnitIsBattlePetCompanion(unit)
 
 		if isbattlepet or iswildpet then
 			level = UnitBattlePetLevel(unit)

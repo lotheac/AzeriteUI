@@ -1,7 +1,12 @@
-local LibPlayerData = CogWheel:Set("LibPlayerData", 4)
+local LibPlayerData = CogWheel:Set("LibPlayerData", 5)
 if (not LibPlayerData) then	
 	return
 end
+
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "LibPlayerData requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
 
 -- Lua API
 local _G = _G
@@ -57,6 +62,8 @@ if classIsDamage[playerClass] then
 	CURRENT_ROLE = "DAMAGER"
 	LibPlayerData.frame:SetScript("OnEvent", nil)
 	LibPlayerData.frame:UnregisterAllEvents()
+elseif IS_CLASSIC then 
+	CURRENT_ROLE = classCanTank[playerClass] and "TANK" or "DAMAGER"
 else
 	LibPlayerData.frame:SetScript("OnEvent", function(self, event, ...) 
 		if (event == "PLAYER_LOGIN") then
@@ -90,61 +97,85 @@ end
 
 -- Returns the maximum level the account has access to 
 LibPlayerData.GetEffectivePlayerMaxLevel = function()
-	return MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel()]
+	return IS_CLASSIC and 60 or MAX_PLAYER_LEVEL_TABLE[GetAccountExpansionLevel()]
 end
 
 -- Returns the maximum level in the current expansion 
 LibPlayerData.GetEffectiveExpansionMaxLevel = function()
-	return MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
+	return IS_CLASSIC and 60 or MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
 end
 
 -- Is the provided level at the account's maximum level?
 LibPlayerData.IsUnitLevelAtEffectiveMaxLevel = function(level)
-	return (level >= LibPlayerData.GetEffectivePlayerMaxLevel())
+	if IS_CLASSIC then 
+		return (level == 60)
+	else 
+		return (level >= LibPlayerData.GetEffectivePlayerMaxLevel())
+	end 
 end
 
 -- Is the provided level at the expansions's maximum level?
 LibPlayerData.IsUnitLevelAtEffectiveExpansionMaxLevel = function(level)
-	return (level >= LibPlayerData.GetEffectiveExpansionMaxLevel())
+	if IS_CLASSIC then 
+		return (level == 60)
+	else 
+		return (level >= LibPlayerData.GetEffectiveExpansionMaxLevel())
+	end
 end 
 
 -- Is the player at the account's maximum level?
 LibPlayerData.IsPlayerAtEffectiveMaxLevel = function()
-	return LibPlayerData.IsUnitLevelAtEffectiveMaxLevel(UnitLevel("player"))
+	if IS_CLASSIC then 
+		return (level == 60)
+	else 
+		return LibPlayerData.IsUnitLevelAtEffectiveMaxLevel(UnitLevel("player"))
+	end
 end
 
 -- Is the player at the expansions's maximum level?
 LibPlayerData.IsPlayerAtEffectiveExpansionMaxLevel = function()
-	return LibPlayerData.IsUnitLevelAtEffectiveExpansionMaxLevel(UnitLevel("player"))
+	if IS_CLASSIC then 
+		return (level == 60)
+	else 
+		return LibPlayerData.IsUnitLevelAtEffectiveExpansionMaxLevel(UnitLevel("player"))
+	end
 end
 
 -- Return whether the player currently can gain XP
 LibPlayerData.PlayerHasXP = function(useExpansionMax)
-	if IsXPUserDisabled() then 
-		return false 
-	elseif useExpansionMax then 
-		return (not LibPlayerData.IsPlayerAtEffectiveExpansionMaxLevel())
-	else
-		return (not LibPlayerData.IsPlayerAtEffectiveMaxLevel())
-	end 
+	if IS_CLASSIC then 
+		return true
+	else 
+		if IsXPUserDisabled() then 
+			return false 
+		elseif useExpansionMax then 
+			return (not LibPlayerData.IsPlayerAtEffectiveExpansionMaxLevel())
+		else
+			return (not LibPlayerData.IsPlayerAtEffectiveMaxLevel())
+		end 
+	end
 end
 
 -- Returns whether the player is  tracking a reputation
 LibPlayerData.PlayerHasRep = function()
-	local name, reaction, min, max, current, factionID = GetWatchedFactionInfo()
-	if name then 
-		local numFactions = GetNumFactions()
-		for i = 1, numFactions do
-			local factionName, description, standingID, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID, hasBonusRepGain, canBeLFGBonus = GetFactionInfo(i)
-			local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
-			if (factionName == name) then
-				if standingID then 
-					return true
-				else 
-					return false
-				end 
+	if IS_CLASSIC then 
+		return false
+	else 
+		local name, reaction, min, max, current, factionID = GetWatchedFactionInfo()
+		if name then 
+			local numFactions = GetNumFactions()
+			for i = 1, numFactions do
+				local factionName, description, standingID, barMin, barMax, barValue, atWarWith, canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID, hasBonusRepGain, canBeLFGBonus = GetFactionInfo(i)
+				local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+				if (factionName == name) then
+					if standingID then 
+						return true
+					else 
+						return false
+					end 
+				end
 			end
-		end
+		end 
 	end 
 end
 

@@ -1,4 +1,4 @@
-local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 28)
+local LibTooltipScanner = CogWheel:Set("LibTooltipScanner", 29)
 if (not LibTooltipScanner) then	
 	return
 end
@@ -641,13 +641,13 @@ LibTooltipScanner.GetTooltipDataForActionItem = function(self, actionSlot, tbl)
 		local itemName, _itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, iconFileDataID, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID, isCraftingReagent = GetItemInfo(itemLink)
 
 		local effectiveLevel, previewLevel, origLevel = GetDetailedItemLevelInfo(itemLink)
-		local isBattlePet, battlePetLevel, battlePetRarity = GetBattlePetInfo(itemLink)
+		local isBattlePet, battlePetLevel, battlePetRarity = GetBattlePetInfo and GetBattlePetInfo(itemLink)
 
 		local itemStats = GetItemStats(itemLink)
 
-		local spec = GetSpecialization()
-		local role = GetSpecializationRole(spec)
-		local primaryStat = select(6, GetSpecializationInfo(spec, nil, nil, nil, UnitSex("player")))
+		local spec = GetSpecialization and GetSpecialization()
+		local role = GetSpecializationRole and GetSpecializationRole(spec)
+		local primaryStat = GetSpecializationInfo and select(6, GetSpecializationInfo(spec, nil, nil, nil, UnitSex("player")))
 
 		tbl.itemName = itemName -- localized
 		tbl.itemID = tonumber(string_match(itemLink, "item:(%d+)"))
@@ -1386,10 +1386,10 @@ LibTooltipScanner.GetTooltipDataForUnit = function(self, unit, tbl)
 
 		-- Retrieve generic data
 		local isPlayer = UnitIsPlayer(unit)
-		local isBattlePet = UnitIsBattlePetCompanion(unit)
-		local isWildPet = UnitIsWildBattlePet(unit)
-		local unitEffectiveLevel = UnitEffectiveLevel(unit)
+		local isBattlePet = UnitIsBattlePetCompanion and UnitIsBattlePetCompanion(unit)
+		local isWildPet = UnitIsWildBattlePet and UnitIsWildBattlePet(unit)
 		local unitLevel = UnitLevel(unit)
+		local unitEffectiveLevel = UnitEffectiveLevel and UnitEffectiveLevel(unit) or unitLevel
 		local unitName, unitRealm = UnitName(unit)
 		local isDead = UnitIsDead(unit) or UnitIsGhost(unit)
 

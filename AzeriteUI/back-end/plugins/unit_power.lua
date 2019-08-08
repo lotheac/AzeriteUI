@@ -1,3 +1,8 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
+
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -128,7 +133,7 @@ local Update = function(self, event, unit)
 	local element = self.Power
 	local powerID, powerType, isAlternate
 
-	if element.showAlternate then 
+	if (not IS_CLASSIC) and element.showAlternate then 
 		local barType, minPower, startInset, endInset, smooth, hideFromOthers, showOnRaid, opaqueSpark, opaqueFlash, anchorTop, powerName, powerTooltip = UnitAlternatePowerInfo(unit)
 
 		if (barType and (event ~= "UNIT_POWER_BAR_HIDE")) then 

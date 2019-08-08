@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("GroupTools", "PLUGIN", "LibEvent", "LibDB", "LibFader", "LibFrame", "LibSound")
+Module:SetToRetail()
 
 -- Lua API
 local _G = _G

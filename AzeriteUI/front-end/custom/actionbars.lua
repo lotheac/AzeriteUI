@@ -1,3 +1,7 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
 local ADDON = ...
 
 local Core = CogWheel("LibModule"):GetModule(ADDON)
@@ -20,9 +24,9 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
-local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
-local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
-local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
+local FindActiveAzeriteItem = _G.C_AzeriteItem and _G.C_AzeriteItem.FindActiveAzeriteItem
+local GetAzeriteItemXPInfo = _G.C_AzeriteItem and _G.C_AzeriteItem.GetAzeriteItemXPInfo
+local GetPowerLevel = _G.C_AzeriteItem and _G.C_AzeriteItem.GetPowerLevel
 local InCombatLockdown = _G.InCombatLockdown
 local IsMounted = _G.IsMounted
 local TaxiRequestEarlyLanding = _G.TaxiRequestEarlyLanding
@@ -339,7 +343,7 @@ local Bars_UpdateTooltip = function(self)
 
 	local tooltip = self:GetTooltip()
 	local hasXP = Module.PlayerHasXP()
-	local hasAP = FindActiveAzeriteItem()
+	local hasAP = (not IS_CLASSIC) and FindActiveAzeriteItem()
 	local colors = Layout.Colors
 
 	local NC = "|r"

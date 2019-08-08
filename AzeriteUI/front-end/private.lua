@@ -8,7 +8,6 @@ local pairs = pairs
 local rawget = rawget
 local select = select
 local setmetatable = setmetatable
-local string_match = string.match
 local tonumber = tonumber
 local unpack = unpack
 
@@ -23,7 +22,6 @@ local UnitPlayerControlled = _G.UnitPlayerControlled
 -- Addon API
 local GetPlayerRole = CogWheel("LibPlayerData").GetPlayerRole
 local HasAuraInfoFlags = CogWheel("LibAura").HasAuraInfoFlags
-
 
 -- Databases
 local infoFilter = CogWheel("LibAura"):GetAllAuraInfoBitFilters() -- Aura flags by keywords

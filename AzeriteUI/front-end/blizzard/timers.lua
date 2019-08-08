@@ -6,6 +6,8 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardMirrorTimers", "LibMessage", "LibEvent", "LibSecureHook", "LibFrame", "LibStatusBar")
+Module:SetToRetail()
+
 local Layout
 
 -- Lua API

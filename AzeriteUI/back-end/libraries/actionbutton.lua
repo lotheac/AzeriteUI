@@ -1,7 +1,12 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 53)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 55)
 if (not LibSecureButton) then	
 	return
 end
+
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "LibSecureButton requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
 
 local LibEvent = CogWheel("LibEvent")
 assert(LibEvent, "LibSecureButton requires LibEvent to be loaded.")
@@ -20,6 +25,7 @@ LibEvent:Embed(LibSecureButton)
 LibFrame:Embed(LibSecureButton)
 LibSound:Embed(LibSecureButton)
 LibTooltip:Embed(LibSecureButton)
+LibClientBuild:Embed(LibSecureButton)
 
 -- Lua API
 local _G = _G
@@ -66,6 +72,14 @@ local IsStackableAction = _G.IsStackableAction
 local IsUsableAction = _G.IsUsableAction
 local SetClampedTextureRotation = _G.SetClampedTextureRotation
 local UnitClass = _G.UnitClass
+
+-- TODO: remove and fix
+if LibClientBuild:IsClassic() then 
+	GetOverrideBarIndex = function() return 0 end
+	GetVehicleBarIndex = function() return 0 end
+	GetTempShapeshiftBarIndex = function() return 0 end
+	GetVehicleBarIndex = function() return 0 end
+end 
 
 -- Doing it this way to make the transition to library later on easier
 LibSecureButton.embeds = LibSecureButton.embeds or {} 
@@ -763,9 +777,13 @@ ActionButton.UpdateGrid = function(self)
 		if HasAction(self.buttonAction) and (self:GetSpellID() ~= 0) then 
 			return self:SetAlpha(1)
 		elseif (CursorHasSpell() or CursorHasItem()) then 
-			if (not UnitHasVehicleUI("player")) and (not HasOverrideActionBar()) and (not HasVehicleActionBar()) and (not HasTempShapeshiftActionBar()) then
+			if IS_CLASSIC then 
 				return self:SetAlpha(1)
-			end  
+			else
+				if (not UnitHasVehicleUI("player")) and (not HasOverrideActionBar()) and (not HasVehicleActionBar()) and (not HasTempShapeshiftActionBar()) then
+					return self:SetAlpha(1)
+				end  
+			end 
 		else 
 			local cursor = GetCursorInfo()
 			if cursor == "petaction" or cursor == "spell" or cursor == "macro" or cursor == "mount" or cursor == "item" or cursor == "battlepet" then 
@@ -777,6 +795,10 @@ ActionButton.UpdateGrid = function(self)
 end
 
 ActionButton.UpdateSpellHighlight = function(self)
+	if IS_CLASSIC then 
+		self.SpellHighlight:Hide()
+		return
+	end
 	local spellId = self:GetSpellID()
 	if (spellId and IsSpellOverlayed(spellId)) then
 		self.SpellHighlight:Show()
@@ -891,8 +913,6 @@ ActionButton.OnEnable = function(self)
 	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE", Update)
 	self:RegisterEvent("ACTIONBAR_HIDEGRID", Update)
 	self:RegisterEvent("ACTIONBAR_SHOWGRID", Update)
-	self:RegisterEvent("ARCHAEOLOGY_CLOSED", Update)
-	self:RegisterEvent("COMPANION_UPDATE", Update)
 	--self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
 	self:RegisterEvent("CURSOR_UPDATE", Update)
 	self:RegisterEvent("LOSS_OF_CONTROL_ADDED", Update)
@@ -906,20 +926,24 @@ ActionButton.OnEnable = function(self)
 	self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
 	--self:RegisterEvent("PLAYER_REGEN_ENABLED", Update)
 	self:RegisterEvent("PLAYER_TARGET_CHANGED", Update)
-	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
-	self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
 	self:RegisterEvent("SPELL_UPDATE_CHARGES", Update)
 	self:RegisterEvent("SPELL_UPDATE_ICON", Update)
 	self:RegisterEvent("TRADE_SKILL_CLOSE", Update)
 	self:RegisterEvent("TRADE_SKILL_SHOW", Update)
 	--self:RegisterEvent("SPELLS_CHANGED", Update)
-	self:RegisterEvent("UNIT_ENTERED_VEHICLE", Update)
-	self:RegisterEvent("UNIT_EXITED_VEHICLE", Update)
 	self:RegisterEvent("UPDATE_BINDINGS", Update)
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", Update)
-	self:RegisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
-	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
 
+	if (not LibClientBuild:IsClassic()) then 
+		self:RegisterEvent("ARCHAEOLOGY_CLOSED", Update)
+		self:RegisterEvent("COMPANION_UPDATE", Update)
+		self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
+		self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
+		self:RegisterEvent("UNIT_ENTERED_VEHICLE", Update)
+		self:RegisterEvent("UNIT_EXITED_VEHICLE", Update)
+		self:RegisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
+		self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
+	end 
 end
 
 ActionButton.OnDisable = function(self)
@@ -929,8 +953,6 @@ ActionButton.OnDisable = function(self)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE", Update)
 	self:UnregisterEvent("ACTIONBAR_HIDEGRID", Update)
 	self:UnregisterEvent("ACTIONBAR_SHOWGRID", Update)
-	self:UnregisterEvent("ARCHAEOLOGY_CLOSED", Update)
-	self:UnregisterEvent("COMPANION_UPDATE", Update)
 	--self:UnregisterEvent("CURRENT_SPELL_CAST_CHANGED", Update)
 	self:UnregisterEvent("CURSOR_UPDATE", Update)
 	self:UnregisterEvent("LOSS_OF_CONTROL_ADDED", Update)
@@ -944,19 +966,24 @@ ActionButton.OnDisable = function(self)
 	self:UnregisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", Update)
 	--self:UnregisterEvent("PLAYER_REGEN_ENABLED", Update)
 	self:UnregisterEvent("PLAYER_TARGET_CHANGED", Update)
-	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
-	self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
 	self:UnregisterEvent("SPELL_UPDATE_CHARGES", Update)
 	self:UnregisterEvent("SPELL_UPDATE_ICON", Update)
 	self:UnregisterEvent("TRADE_SKILL_CLOSE", Update)
 	self:UnregisterEvent("TRADE_SKILL_SHOW", Update)
 	--self:UnregisterEvent("SPELLS_CHANGED", Update)
-	self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Update)
-	self:UnregisterEvent("UNIT_EXITED_VEHICLE", Update)
 	self:UnregisterEvent("UPDATE_BINDINGS", Update)
 	self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", Update)
-	self:UnregisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
-	self:UnregisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
+
+	if (not LibClientBuild:IsClassic()) then 
+		self:UnregisterEvent("ARCHAEOLOGY_CLOSED", Update)
+		self:UnregisterEvent("COMPANION_UPDATE", Update)
+		self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", Update)
+		self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", Update)
+		self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Update)
+		self:UnregisterEvent("UNIT_EXITED_VEHICLE", Update)
+		self:UnregisterEvent("UPDATE_SUMMONPETS_ACTION", Update)
+		self:UnregisterEvent("UPDATE_VEHICLE_ACTIONBAR", Update)
+	end
 end
 
 ActionButton.OnEvent = function(button, event, ...)

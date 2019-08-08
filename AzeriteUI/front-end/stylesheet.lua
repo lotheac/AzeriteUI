@@ -765,6 +765,7 @@ local Core = {
 		--ObjectiveTracker = true, 
 		OrderHall = true,
 		PlayerPowerBarAlt = true, 
+		QuestWatchFrame = true, 
 		TotemFrame = true, 
 		Tutorials = true,
 		

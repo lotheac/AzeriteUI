@@ -1,4 +1,4 @@
-local LibFrame = CogWheel:Set("LibFrame", 53)
+local LibFrame = CogWheel:Set("LibFrame", 54)
 if (not LibFrame) then	
 	return
 end
@@ -255,6 +255,24 @@ local frameWidgetPrototype = {
 			self:SetSize(...)
 		end
 	end, 
+
+	-- Assign multiple properties at once. 
+	-- Intented to simplify assignment operations in front-end stylesheets. 
+	-- Process is generic enough to be a good fit for the back-end.
+	SetProperties = function(self, ...)
+		local numArgs = select("#", ...)
+		if (numArgs == 1) then 
+			local list = ...
+			for property,value in pairs(list) do 
+				self[property] = value
+			end
+		else 
+			for i = 1,numArgs,2 do 
+				local property,value = select(i, ...)
+				self[property] = value
+			end 
+		end 
+	end,
 
 	-- ConsolePort assumes this exists on a multiple of frames, 
 	-- so we're adding it and just opt out of various things by setting it to true.

@@ -6,6 +6,7 @@ if (not Core) then
 end
 
 local Module = Core:NewModule("BlizzardMicroMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
+Module:SetToRetail()
 
 -- Lua API
 local _G = _G

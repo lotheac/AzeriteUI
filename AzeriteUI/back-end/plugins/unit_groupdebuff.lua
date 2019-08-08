@@ -1,3 +1,8 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
+
 -- Lua API
 local _G = _G
 local math_ceil = math.ceil
@@ -375,8 +380,11 @@ local Enable = function(self)
 		end
 
 		self:RegisterEvent("UNIT_AURA", Proxy)
-		self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy, true)
-	
+
+		if (not IS_CLASSIC) then 
+			self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy, true)
+		end
+
 		return true
 	end
 end 
@@ -388,11 +396,14 @@ local Disable = function(self)
 		element:SetScript("OnUpdate", nil)
 
 		self:UnregisterEvent("UNIT_AURA", Proxy)
-		self:UnregisterEvent("PLAYER_SPECIALIZATION_CHANGED", UpdateSpec)
+
+		if (not IS_CLASSIC) then 
+			self:UnregisterEvent("PLAYER_SPECIALIZATION_CHANGED", UpdateSpec)
+		end
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("GroupAura", Enable, Disable, Proxy, 8)
+	Lib:RegisterElement("GroupAura", Enable, Disable, Proxy, 9)
 end 

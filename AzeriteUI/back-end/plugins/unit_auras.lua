@@ -1,3 +1,6 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "UnitAuras requires LibClientBuild to be loaded.")
+
 local LibFrame = CogWheel("LibFrame")
 assert(LibFrame, "UnitAuras requires LibFrame to be loaded.")
 
@@ -29,12 +32,13 @@ local BLING_TEXTURE = [[Interface\Cooldown\star4]]
 -- Aura Cache
 local Cache = {}
 
--- Utility Functions
------------------------------------------------------
--- Time constants
+-- Constants
 local DAY, HOUR, MINUTE = 86400, 3600, 60
 local LONG_THRESHOLD = MINUTE*3
+local HZ = 1/20
 
+-- Utility Functions
+-----------------------------------------------------
 local formatTime = function(time)
 	if (time > DAY) then -- more than a day
 		return "%.0f%s", math_ceil(time / DAY), "d"
@@ -159,7 +163,7 @@ local Aura_OnLeave = function(button)
 end
 
 local Aura_SetCooldownTimer = function(button, start, duration)
-	if button._owner.showCooldownSpiral then
+	if button._owner.showSpirals then
 
 		local cooldown = button.Cooldown
 		cooldown:SetSwipeColor(0, 0, 0, .75)
@@ -178,58 +182,50 @@ local Aura_SetCooldownTimer = function(button, start, duration)
 	end 
 end 
 
-local HZ = 1/20
 local Aura_UpdateTimer = function(button, elapsed)
 	if button.timeLeft then
 		button.elapsed = (button.elapsed or 0) + elapsed
-
 		if (button.elapsed >= HZ) then
-			button.timeLeft = button.expirationTime - GetTime()
-
-			if (button.timeLeft > 0) then
-				if (button.timeLeft < LONG_THRESHOLD) or (button._owner.showLongCooldownValues) then 
-					button.Time:SetFormattedText(formatTime(button.timeLeft))
+			local element = button._owner
+			local timeLeft = button.expirationTime - GetTime()
+		
+			if (timeLeft > 0) then
+				if (button.showDurations) and ((timeLeft < LONG_THRESHOLD) or (element.showLongDurations)) then 
+					button.Time:SetFormattedText(formatTime(timeLeft))
 				else
 					button.Time:SetText("")
 				end 
 			else
 				button:SetScript("OnUpdate", nil)
 				Aura_SetCooldownTimer(button, 0,0)
-				
 				button.Time:SetText("")
-				button._owner:ForceUpdate()
+				element:ForceUpdate()
 			end	
-			if (button:IsShown() and button._owner.PostUpdateButton) then
-				button._owner:PostUpdateButton(button, "Timer")
+			if (button:IsShown() and element.PostUpdateButton) then
+				element:PostUpdateButton(button, "Timer")
 			end
-		button.elapsed = 0
+			button.timeLeft = timeLeft
+			button.elapsed = 0
 		end
 	end
 end
 
 -- Use this to initiate the timer bars and spirals on the auras
 local Aura_SetTimer = function(button, fullDuration, expirationTime)
-	if fullDuration and (fullDuration > 0) then
-
+	if (fullDuration and (fullDuration > 0)) then
 		button.fullDuration = fullDuration
 		button.timeStarted = expirationTime - fullDuration
 		button.timeLeft = expirationTime - GetTime()
 		button:SetScript("OnUpdate", Aura_UpdateTimer)
-
 		Aura_SetCooldownTimer(button, button.timeStarted, button.fullDuration)
-
 	else
 		button:SetScript("OnUpdate", nil)
-
 		Aura_SetCooldownTimer(button, 0,0)
-
 		button.Time:SetText("")
 		button.fullDuration = 0
 		button.timeStarted = 0
 		button.timeLeft = 0
 	end
-
-	-- Run module post update
 	if (button:IsShown() and button._owner.PostUpdateButton) then
 		button._owner:PostUpdateButton(button, "Timer")
 	end
@@ -327,8 +323,8 @@ local SetAuraButtonPosition = function(element, button, order)
 	elementH = (elementH + .5) - (elementH + .5)%1
 
 	-- Get the accurate size of the slots with spacing 
-	local width = element.auraSize + element.spacingH
-	local height = element.auraSize + element.spacingV
+	local width = (element.auraSize or element.auraWidth) + element.spacingH
+	local height = (element.auraSize or element.auraHeight) + element.spacingV
 	
 	-- Number of columns
 	local numCols = (elementW + element.spacingH)/width
@@ -360,13 +356,6 @@ local SetAuraButtonPosition = function(element, button, order)
 	button:SetPoint(point, offsetX, offsetY)
 end 
 
-local CacheElementData = function(element, unit, filter, customFilter)
-end
-
-local IterateElementData = function(element)
-end
-
-local tables = {}
 local IterateBuffs = function(element, unit, filter, customFilter, visible)
 	local visibleBuffs = 0
 	local visible = visible or 0
@@ -593,23 +582,41 @@ local EvaluateVisibilities = function(element, visible)
 	end 
 end
 
+local EvaluateFilters = function(element, ...)
+	local numFilters = select("#", ...)
+	for i = 1,numFilters do 
+		
+	end 
+end
+
+local UpdateElement = function(self, event, unit)
+end
+
 local Update = function(self, event, unit)
 	if (not unit) or (unit ~= self.unit) then 
 		return 
 	end 
 
+	-- All three elements can actually contain both buffs and debuffs,
+	-- their element names are only indicating their default behavior. 
 	local Auras = self.Auras
+	local Buffs = self.Buffs
+	local Debuffs = self.Debuffs
+
 	if Auras then 
 		if Auras.PreUpdate then
 			Auras:PreUpdate(unit)
 		end
 
-		local buffFilter = Auras.buffFilter or Auras.auraFilter or Auras.filter
-		local debuffFilter = Auras.debuffFilter or Auras.auraFilter or Auras.filter
-		local buffFilterFunc = Auras.BuffFilter or Auras.AuraFilter
-		local debuffFilterFunc = Auras.DebuffFilter or Auras.AuraFilter
+		-- Filter strings
+		local buffFilter = Auras.filter or Auras.filterBuffs 
+		local debuffFilter = Auras.filter or Auras.filterDebuffs
+		
+		-- Filter functions
+		local buffFilterFunc = Auras.func or Auras.funcBuffs 
+		local debuffFilterFunc = Auras.func or Auras.funcDebuffs
 
-		-- Forcefully register aura watches for the relevant filters
+		-- Forcefully register cache the auras for the relevant filters
 		-- This is to ensure force updates actually have the right filters and fully updated caches
 		if (event == "Forced") then 
 			LibAura:CacheUnitBuffsByFilter(unit, buffFilter)
@@ -638,8 +645,11 @@ local Update = function(self, event, unit)
 			Buffs:PreUpdate(unit)
 		end
 
-		local buffFilter = Buffs.buffFilter or Buffs.auraFilter or Buffs.filter
-		local buffFilterFunc = Buffs.BuffFilter or Buffs.AuraFilter
+		local buffFilter = Buffs.buffFilterString or Buffs.auraFilterString or Buffs.filter
+		local buffFilterFunc = Buffs.buffFilterFunc or Buffs.auraFilterFunc
+
+		local debuffFilter = Buffs.debuffFilterString or Buffs.auraFilterString or Buffs.filter
+		local debuffFilterFunc = Buffs.debuffFilterFunc or Buffs.auraFilterFunc
 
 		-- Forcefully register aura watches for the relevant filters
 		-- This is to ensure force updates actually have the right filters and fully updated caches
@@ -662,8 +672,8 @@ local Update = function(self, event, unit)
 			Debuffs:PreUpdate(unit)
 		end
 
-		local debuffFilter = Debuffs.debuffFilter or Debuffs.auraFilter or Debuffs.filter
-		local debuffFilterFunc = Debuffs.DebuffFilter or Debuffs.AuraFilter
+		local debuffFilter = Debuffs.debuffFilterString or Debuffs.auraFilterString or Debuffs.filter
+		local debuffFilterFunc = Debuffs.debuffFilterFunc or Debuffs.auraFilterFunc
 
 		-- Forcefully register aura watches for the relevant filters
 		-- This is to ensure force updates actually have the right filters and fully updated caches
@@ -726,15 +736,18 @@ local Enable = function(self)
 			self:RegisterEvent("PLAYER_ENTERING_WORLD", Proxy, true)
 			self:RegisterEvent("PLAYER_REGEN_DISABLED", Proxy, true)
 			self:RegisterEvent("PLAYER_REGEN_ENABLED", Proxy, true)
-			self:RegisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
-			self:RegisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
-			self:RegisterEvent("UNIT_EXITING_VEHICLE", Proxy)
-			self:RegisterEvent("UNIT_EXITED_VEHICLE", Proxy)
-			self:RegisterEvent("VEHICLE_UPDATE", Proxy, true)
 
 			if (unit == "target") or (unit == "targettarget") then
 				self:RegisterEvent("PLAYER_TARGET_CHANGED", Proxy, true)
 			end
+
+			if (not LibClientBuild:IsClassic()) then 
+				self:RegisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
+				self:RegisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
+				self:RegisterEvent("UNIT_EXITING_VEHICLE", Proxy)
+				self:RegisterEvent("UNIT_EXITED_VEHICLE", Proxy)
+				self:RegisterEvent("VEHICLE_UPDATE", Proxy, true)
+			end 
 		end
 
 		return true
@@ -774,24 +787,26 @@ local Disable = function(self)
 	
 		if not ((Auras and Auras.frequent) or (Buffs and Buffs.frequent) or (Debuffs and Debuffs.frequent)) then
 			self:UnregisterMessage("CG_UNIT_AURA", Proxy)
-			
 			self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
 			self:UnregisterEvent("PLAYER_REGEN_DISABLED", Proxy)
 			self:UnregisterEvent("PLAYER_REGEN_ENABLED", Proxy)
-			self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
-			self:UnregisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
-			self:UnregisterEvent("UNIT_EXITING_VEHICLE", Proxy)
-			self:UnregisterEvent("UNIT_EXITED_VEHICLE", Proxy)
-			self:UnregisterEvent("VEHICLE_UPDATE", Proxy)
 
 			if (unit == "target") or (unit == "targettarget") then
 				self:UnregisterEvent("PLAYER_TARGET_CHANGED", Proxy)
 			end
+
+			if (not LibClientBuild:IsClassic()) then 
+				self:UnregisterEvent("UNIT_ENTERED_VEHICLE", Proxy)
+				self:UnregisterEvent("UNIT_ENTERING_VEHICLE", Proxy)
+				self:UnregisterEvent("UNIT_EXITING_VEHICLE", Proxy)
+				self:UnregisterEvent("UNIT_EXITED_VEHICLE", Proxy)
+				self:UnregisterEvent("VEHICLE_UPDATE", Proxy)
+			end 
 		end
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 39)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 42)
 end 

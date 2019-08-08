@@ -1,3 +1,7 @@
+local LibClientBuild = CogWheel("LibClientBuild")
+assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild:IsClassic()
 
 -- Lua API
 local _G = _G
@@ -72,29 +76,37 @@ end
 local Enable = function(self)
 	local element = self.Spec
 	if element then
-		element._owner = self
-		element.ForceUpdate = ForceUpdate
-
-		if (UnitLevel("player") < SHOW_SPEC_LEVEL) then 
+		if IS_CLASSIC then 
 			element:Hide()
-			self:RegisterEvent("PLAYER_LEVEL_UP", SpecUpdate, true)
-		else 
-			self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy, true)
-		end 
+			return 
+		else
+			element._owner = self
+			element.ForceUpdate = ForceUpdate
 
-		return true
+			if (UnitLevel("player") < SHOW_SPEC_LEVEL) then 
+				element:Hide()
+				self:RegisterEvent("PLAYER_LEVEL_UP", SpecUpdate, true)
+			else 
+				self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy, true)
+			end 
+
+			return true
+		end
 	end
 end 
 
 local Disable = function(self)
 	local element = self.Spec
 	if element then
-		self:UnregisterEvent("PLAYER_LEVEL_UP", SpecUpdate)
-		self:UnregisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy)
+		if (not IS_CLASSIC) then 
+			self:UnregisterEvent("PLAYER_LEVEL_UP", SpecUpdate)
+			self:UnregisterEvent("PLAYER_SPECIALIZATION_CHANGED", Proxy)
+		end 
+		element:Hide()
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Spec", Enable, Disable, Proxy, 2)
+	Lib:RegisterElement("Spec", Enable, Disable, Proxy, 3)
 end 
