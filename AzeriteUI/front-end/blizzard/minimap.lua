@@ -2,9 +2,6 @@ local LibClientBuild = CogWheel("LibClientBuild")
 assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
 
 local IS_CLASSIC = LibClientBuild:IsClassic()
-if IS_CLASSIC then 
-	return 
-end 
 
 local ADDON = ...
 local Core = CogWheel("LibModule"):GetModule(ADDON)
@@ -32,18 +29,17 @@ local tonumber = tonumber
 local unpack = unpack
 
 -- WoW API
-local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
-local GetAccountExpansionLevel = _G.GetAccountExpansionLevel
-local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
+local FindActiveAzeriteItem = C_AzeriteItem and C_AzeriteItem.FindActiveAzeriteItem
+local GetAzeriteItemXPInfo = C_AzeriteItem and C_AzeriteItem.GetAzeriteItemXPInfo
 local GetFactionInfo = _G.GetFactionInfo
-local GetFactionParagonInfo = _G.C_Reputation.GetFactionParagonInfo
+local GetFactionParagonInfo = C_Reputation and C_Reputation.GetFactionParagonInfo
 local GetFramerate = _G.GetFramerate
 local GetFriendshipReputation = _G.GetFriendshipReputation
 local GetNetStats = _G.GetNetStats
 local GetNumFactions = _G.GetNumFactions
-local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
+local GetPowerLevel = C_AzeriteItem and C_AzeriteItem.GetPowerLevel
 local GetWatchedFactionInfo = _G.GetWatchedFactionInfo
-local IsFactionParagon = _G.C_Reputation.IsFactionParagon
+local IsFactionParagon = C_Reputation and C_Reputation.IsFactionParagon
 local IsXPUserDisabled = _G.IsXPUserDisabled
 local SetCursor = _G.SetCursor
 local ToggleCalendar = _G.ToggleCalendar
@@ -179,7 +175,7 @@ local Toggle_UpdateTooltip = function(toggle)
 
 	local hasXP = Module.PlayerHasXP()
 	local hasRep = Module.PlayerHasRep()
-	local hasAP = FindActiveAzeriteItem()
+	local hasAP = (not IS_CLASSIC) and FindActiveAzeriteItem()
 
 	local NC = "|r"
 	local colors = toggle._owner.colors 
@@ -596,7 +592,10 @@ local Time_UpdateTooltip = function(self)
 	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, lsuffix, useStandardTime)), rh, gh, bh, r, g, b)
 	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, string_format(getTimeStrings(sh, sm, ssuffix, useStandardTime)), rh, gh, bh, r, g, b)
 	tooltip:AddLine(" ")
-	tooltip:AddLine(L["%s to toggle calendar."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+
+	if (not IS_CLASSIC) then 
+		tooltip:AddLine(L["%s to toggle calendar."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
+	end
 
 	if useServerTime then 
 		tooltip:AddLine(L["%s to use local computer time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
@@ -625,7 +624,9 @@ end
 
 local Time_OnClick = function(self, mouseButton)
 	if (mouseButton == "LeftButton") then
-		ToggleCalendar()
+		if (ToggleCalendar) then 
+			ToggleCalendar()
+		end 
 
 	elseif (mouseButton == "MiddleButton") then 
 		Module.db.useServerTime = not Module.db.useServerTime
@@ -1202,48 +1203,49 @@ Module.SetUpMinimap = function(self)
 	end 
 
 	if Layout.UseGroupFinderEye then 
-		local queueButton = _G.QueueStatusMinimapButton
+		local queueButton = QueueStatusMinimapButton
+		if queueButton then 
+			local button = Handler:CreateOverlayFrame()
+			button:SetFrameLevel(button:GetFrameLevel() + 10) 
+			button:Place(unpack(Layout.GroupFinderEyePlace))
+			button:SetSize(unpack(Layout.GroupFinderEyeSize))
 
-		local button = Handler:CreateOverlayFrame()
-		button:SetFrameLevel(button:GetFrameLevel() + 10) 
-		button:Place(unpack(Layout.GroupFinderEyePlace))
-		button:SetSize(unpack(Layout.GroupFinderEyeSize))
+			queueButton:SetParent(button)
+			queueButton:ClearAllPoints()
+			queueButton:SetPoint("CENTER", 0, 0)
+			queueButton:SetSize(unpack(Layout.GroupFinderEyeSize))
 
-		queueButton:SetParent(button)
-		queueButton:ClearAllPoints()
-		queueButton:SetPoint("CENTER", 0, 0)
-		queueButton:SetSize(unpack(Layout.GroupFinderEyeSize))
+			if Layout.UseGroupFinderEyeBackdrop then 
+				local backdrop = queueButton:CreateTexture()
+				backdrop:SetDrawLayer("BACKGROUND", -6)
+				backdrop:SetPoint("CENTER", 0, 0)
+				backdrop:SetSize(unpack(Layout.GroupFinderEyeBackdropSize))
+				backdrop:SetTexture(Layout.GroupFinderEyeBackdropTexture)
+				backdrop:SetVertexColor(unpack(Layout.GroupFinderEyeBackdropColor))
+			end 
 
-		if Layout.UseGroupFinderEyeBackdrop then 
-			local backdrop = queueButton:CreateTexture()
-			backdrop:SetDrawLayer("BACKGROUND", -6)
-			backdrop:SetPoint("CENTER", 0, 0)
-			backdrop:SetSize(unpack(Layout.GroupFinderEyeBackdropSize))
-			backdrop:SetTexture(Layout.GroupFinderEyeBackdropTexture)
-			backdrop:SetVertexColor(unpack(Layout.GroupFinderEyeBackdropColor))
-		end 
+			if Layout.GroupFinderEyeTexture then 
+				local UIHider = CreateFrame("Frame")
+				UIHider:Hide()
+				queueButton.Eye.texture:SetParent(UIHider)
+				queueButton.Eye.texture:SetAlpha(0)
 
-		if Layout.GroupFinderEyeTexture then 
-			local UIHider = CreateFrame("Frame")
-			UIHider:Hide()
-			queueButton.Eye.texture:SetParent(UIHider)
-			queueButton.Eye.texture:SetAlpha(0)
+				--local iconTexture = button:CreateTexture()
+				local iconTexture = queueButton:CreateTexture()
+				iconTexture:SetDrawLayer("ARTWORK", 1)
+				iconTexture:SetPoint("CENTER", 0, 0)
+				iconTexture:SetSize(unpack(Layout.GroupFinderEyeSize))
+				iconTexture:SetTexture(Layout.GroupFinderEyeTexture)
+				iconTexture:SetVertexColor(unpack(Layout.GroupFinderEyeColor))
+			else
+				queueButton.Eye:SetSize(unpack(Layout.GroupFinderEyeSize)) 
+				queueButton.Eye.texture:SetSize(unpack(Layout.GroupFinderEyeSize))
+			end 
 
-			--local iconTexture = button:CreateTexture()
-			local iconTexture = queueButton:CreateTexture()
-			iconTexture:SetDrawLayer("ARTWORK", 1)
-			iconTexture:SetPoint("CENTER", 0, 0)
-			iconTexture:SetSize(unpack(Layout.GroupFinderEyeSize))
-			iconTexture:SetTexture(Layout.GroupFinderEyeTexture)
-			iconTexture:SetVertexColor(unpack(Layout.GroupFinderEyeColor))
-		else
-			queueButton.Eye:SetSize(unpack(Layout.GroupFinderEyeSize)) 
-			queueButton.Eye.texture:SetSize(unpack(Layout.GroupFinderEyeSize))
-		end 
-
-		if Layout.GroupFinderQueueStatusPlace then 
-			QueueStatusFrame:ClearAllPoints()
-			QueueStatusFrame:SetPoint(unpack(Layout.GroupFinderQueueStatusPlace))
+			if Layout.GroupFinderQueueStatusPlace then 
+				QueueStatusFrame:ClearAllPoints()
+				QueueStatusFrame:SetPoint(unpack(Layout.GroupFinderQueueStatusPlace))
+			end 
 		end 
 	end 
 
@@ -1363,7 +1365,7 @@ Module.UpdateBars = function(self, event, ...)
 	-- Priority us currently xp > rep > ap
 	local hasRep = Module.PlayerHasRep()
 	local hasXP = Module.PlayerHasXP()
-	local hasAP = FindActiveAzeriteItem()
+	local hasAP = (not IS_CLASSIC) and FindActiveAzeriteItem()
 
 	-- Will include choices later on
 	local first, second 
@@ -1603,9 +1605,11 @@ Module.OnEnable = function(self)
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent") -- size and mask must be updated after this
 
 	if Layout.UseStatusRings then 
-		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
-		self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
-		self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
+		if (not IS_CLASSIC) then 
+			self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
+			self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
+			self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
+		end 
 		self:RegisterEvent("PLAYER_ALIVE", "OnEvent")
 		self:RegisterEvent("PLAYER_FLAGS_CHANGED", "OnEvent")
 		self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")

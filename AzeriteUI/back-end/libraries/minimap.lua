@@ -1,4 +1,4 @@
-local Version = 37 -- This library's version 
+local Version = 38 -- This library's version 
 local MapVersion = Version -- Minimap library version the minimap created by this is compatible with
 local LibMinimap, OldVersion = CogWheel:Set("LibMinimap", Version)
 if (not LibMinimap) then
@@ -7,6 +7,8 @@ end
 
 local LibClientBuild = CogWheel("LibClientBuild")
 assert(LibClientBuild, "LibMinimap requires LibClientBuild to be loaded.")
+
+local IS_CLASSIC = LibClientBuild
 
 local LibMessage = CogWheel("LibMessage")
 assert(LibMessage, "LibMinimap requires LibMessage to be loaded.")
@@ -705,6 +707,10 @@ end
 -- These "alpha" values range from 0 to 255, for some obscure reason,
 -- so a value of 127 would be 127/255 ≃ 0.5ish in the normal API.
 LibMinimap.SetMinimapQuestBlobAlpha = function(self, blobInside, blobOutside, ringOutside, ringInside)
+	if IS_CLASSIC then 
+		return 
+	end 
+
 	check(blobInside, 1, "number")
 	check(blobOutside, 2, "number")
 	check(ringOutside, 3, "number")
@@ -748,6 +754,10 @@ end
 
 -- Set all blob values at once
 LibMinimap.SetMinimapBlobAlpha = function(self, blobInside, blobOutside, ringOutside, ringInside)
+	if IS_CLASSIC then 
+		return 
+	end 
+	
 	check(blobInside, 1, "number")
 	check(blobOutside, 2, "number")
 	check(ringOutside, 3, "number")
