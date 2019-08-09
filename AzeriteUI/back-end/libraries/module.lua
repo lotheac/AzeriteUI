@@ -3,10 +3,6 @@ if (not LibModule) then
 	return
 end
 
--- We require this library to properly handle startup events
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "LibModule requires LibClientBuild to be loaded.")
-
 local LibMessage = CogWheel("LibMessage")
 assert(LibMessage, "LibModule requires LibMessage to be loaded.")
 
@@ -297,19 +293,7 @@ local ModuleProtoType = {
 		end
 	end,
 
-	SetToRetail = function(self)
-		classicDisableList[self] = true
-	end,
-
-	SetToClassic = function(self)
-		classicEnableList[self] = true
-	end,
-
 	IsIncompatible = function(self)
-		local isClassic = LibClientBuild:IsClassic()
-		if (isClassic and classicDisableList[self]) or ((not isClassic) and classicEnableList[self]) then 
-			return true 
-		end
 		if (not addonIncompatibilities[self]) then
 			return false
 		end

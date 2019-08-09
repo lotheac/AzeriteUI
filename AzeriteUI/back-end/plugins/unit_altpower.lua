@@ -1,10 +1,8 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-
 -- Lua API
 local _G = _G
+local string_format = string.format
+local tonumber = tonumber
+local tostring = tostring
 
 -- WoW API
 local UnitAlternatePowerInfo = _G.UnitAlternatePowerInfo
@@ -147,11 +145,6 @@ end
 local Enable = function(self)
 	local element = self.AltPower
 	if element then
-		if IS_CLASSIC then 
-			element:Hide()
-			return 
-		end 
-
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 		element.UpdateValue = UpdateValue
@@ -177,19 +170,15 @@ end
 local Disable = function(self)
 	local element = self.AltPower
 	if element then
-		element:Hide()
-		if IS_CLASSIC then 
-			return 
-		end 
-
 		self:UnregisterEvent("UNIT_POWER_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_MAXPOWER", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_HIDE", Proxy)
+		element:Hide()
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 9)
+	Lib:RegisterElement("AltPower", Enable, Disable, Proxy, 10)
 end 

@@ -1,9 +1,4 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
 local ADDON = ...
-
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
 	return 
@@ -343,7 +338,7 @@ local Bars_UpdateTooltip = function(self)
 
 	local tooltip = self:GetTooltip()
 	local hasXP = Module.PlayerHasXP()
-	local hasAP = (not IS_CLASSIC) and FindActiveAzeriteItem()
+	local hasAP = FindActiveAzeriteItem()
 	local colors = Layout.Colors
 
 	local NC = "|r"

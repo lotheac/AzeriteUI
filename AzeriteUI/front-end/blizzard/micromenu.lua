@@ -1,12 +1,10 @@
 local ADDON = ...
-
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
 	return 
 end
 
 local Module = Core:NewModule("BlizzardMicroMenu", "LibEvent", "LibDB", "LibTooltip", "LibFrame")
-Module:SetToRetail()
 
 -- Lua API
 local _G = _G

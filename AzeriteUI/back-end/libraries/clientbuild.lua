@@ -1,4 +1,4 @@
-local LibClientBuild = CogWheel:Set("LibClientBuild", 29)
+local LibClientBuild = CogWheel:Set("LibClientBuild", 30)
 if (not LibClientBuild) then
 	return
 end
@@ -244,31 +244,6 @@ LibClientBuild.IsBuild = function(self, version)
 	else 
 		return clientIsAtLeast[version]
 	end 
-end
-
--- Check if the current client is a Classic client
-LibClientBuild.IsClassic = function(self, version)
-	-- First check if this is a classic patch at all.
-	-- This is needed since the classic build numbers 
-	-- are slightly behind the retail builds. 
-	if (not string_match(clientPatch, "1\.13\.(%d+)")) then 
-		return false
-	end
-
-	-- If a specific build version was requested, 
-	-- make sure we're at that version or higher.
-	if version then 
-		local patchException = patchExceptions[version]
-		if patchException then 
-			return (patchException == clientPatch) and clientIsAtLeast[version]
-		else 
-			return clientIsAtLeast[version]
-		end
-	end 
-
-	-- If this was just a generic Classic check,
-	-- tell the module we're good to go!
-	return true
 end
 
 -- Module embedding

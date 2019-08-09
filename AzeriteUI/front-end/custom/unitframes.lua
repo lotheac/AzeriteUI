@@ -45,9 +45,6 @@ UnitFrameArena:SetIncompatible("Gladius")
 UnitFrameArena:SetIncompatible("GladiusEx")
 --UnitFramePlayerHUD:SetIncompatible("SimpleClassPower")
 
--- Classic incompatibilities
-UnitFrameArena:SetToRetail()
-
 -- Keep these local
 local UnitStyles = {} 
 

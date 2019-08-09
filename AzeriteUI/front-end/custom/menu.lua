@@ -6,17 +6,13 @@ against manually manipulating it as it'll change frequently.
 -Lars
 
 --]]--
-
 local ADDON, Private = ...
-
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
 	return 
 end
 
 local Module = Core:NewModule("OptionsMenu", "HIGH", "LibMessage", "LibEvent", "LibDB", "LibFrame", "LibSound", "LibTooltip")
-Module:SetToRetail()
-
 local Layout, L, MenuTable
 
 -- Registries

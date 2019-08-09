@@ -1,8 +1,3 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-
 local LibPlayerData = CogWheel("LibPlayerData")
 assert(LibPlayerData, "UnitHealth requires LibPlayerData to be loaded.")
 
@@ -156,28 +151,26 @@ local UpdateValues = function(health, unit, min, max)
 		end 
 	end
 
-	if (not IS_CLASSIC) then 
-		local absorbValue = health.ValueAbsorb
-		if absorbValue then 
-			local curAbsorb = health.curAbsorb
-			if (curAbsorb > 0) then 
-				if absorbValue.Override then 
-					absorbValue:Override(unit, curAbsorb)
-				else
-					if (health.disconnected or health.dead) then 
-						absorbValue:SetText("")
-					else 
-						absorbValue:SetFormattedText("%s", short(curAbsorb))
-					end 
-					if absorbValue.PostUpdate then 
-						absorbValue:PostUpdate(unit, curAbsorb)
-					end 
+	local absorbValue = health.ValueAbsorb
+	if absorbValue then 
+		local curAbsorb = health.curAbsorb
+		if (curAbsorb > 0) then 
+			if absorbValue.Override then 
+				absorbValue:Override(unit, curAbsorb)
+			else
+				if (health.disconnected or health.dead) then 
+					absorbValue:SetText("")
+				else 
+					absorbValue:SetFormattedText("%s", short(curAbsorb))
 				end 
-			else 
-				absorbValue:SetText("")
+				if absorbValue.PostUpdate then 
+					absorbValue:PostUpdate(unit, curAbsorb)
+				end 
 			end 
-		end
-	end 
+		else 
+			absorbValue:SetText("")
+		end 
+	end
 end 
 
 local UpdateColors = function(health, unit, min, max)
@@ -204,21 +197,19 @@ local UpdateColors = function(health, unit, min, max)
 		color = class and self.colors.class[class]
 	else 
 
-		if (not IS_CLASSIC) then 
-			-- BUG: Non-existent '*target' or '*pet' units cause UnitThreatSituation() errors (thank you oUF!)
-			local threat
-			if ((not health.hideThreatSolo) or (IsInGroup() or IsInInstance())) then
-				local feedbackUnit = health.threatFeedbackUnit
-				if (feedbackUnit and (feedbackUnit ~= unit) and UnitExists(feedbackUnit)) then
-					threat = UnitThreatSituation(feedbackUnit, unit)
-				else
-					threat = UnitThreatSituation(unit)
-				end
+		-- BUG: Non-existent '*target' or '*pet' units cause UnitThreatSituation() errors (thank you oUF!)
+		local threat
+		if ((not health.hideThreatSolo) or (IsInGroup() or IsInInstance())) then
+			local feedbackUnit = health.threatFeedbackUnit
+			if (feedbackUnit and (feedbackUnit ~= unit) and UnitExists(feedbackUnit)) then
+				threat = UnitThreatSituation(feedbackUnit, unit)
+			else
+				threat = UnitThreatSituation(unit)
 			end
-			if (health.colorThreat and threat) then 
-				color = self.colors.threat[threat]
-			end
-		end 
+		end
+		if (health.colorThreat and threat) then 
+			color = self.colors.threat[threat]
+		end
 
 		if (not color) then 
 			if (health.colorReaction and UnitReaction(unit, "player")) then
@@ -262,12 +253,10 @@ local UpdateOrientations = function(health)
 	preview:SetFlippedHorizontally(orientationFlippedH)
 	preview:SetFlippedVertically(orientationFlippedV)
 
-	if (not IS_CLASSIC) then 
-		local absorb = health.Absorb
-		absorb:SetOrientation(mirrorOrientation) 
-		absorb:SetFlippedHorizontally(mirrorFlippedH)
-		absorb:SetFlippedVertically(mirrorFlippedV)
-	end 
+	local absorb = health.Absorb
+	absorb:SetOrientation(mirrorOrientation) 
+	absorb:SetFlippedHorizontally(mirrorFlippedH)
+	absorb:SetFlippedVertically(mirrorFlippedV)
 end 
 
 local UpdateSizes = function(health)
@@ -277,32 +266,23 @@ local UpdateSizes = function(health)
 	height = math_floor(height + .5)
 
 	health.Preview:SetSize(width, height)
-
-	if (not IS_CLASSIC) then 
-		health.Absorb:SetSize(width, height)
-		health.Predict:SetSize(width, height)
-	end 
+	health.Absorb:SetSize(width, height)
+	health.Predict:SetSize(width, height)
 end
 
 local UpdateStatusBarTextures = function(health)
 	local texture = health:GetStatusBarTexture():GetTexture()
 	health.Preview:SetStatusBarTexture(texture)
-
-	if (not IS_CLASSIC) then 
-		health.Absorb:SetStatusBarTexture(texture)
-		health.Predict:SetTexture(texture)
-	end
+	health.Absorb:SetStatusBarTexture(texture)
+	health.Predict:SetTexture(texture)
 end
 
 local UpdateTexCoords = function(health)
 	local left, right, top, bottom = health:GetTexCoord()
 	health.Preview:SetTexCoord(left, right, top, bottom)
+	health.Absorb:SetTexCoord(left, right, top, bottom)
 
-	if (not IS_CLASSIC) then 
-		health.Absorb:SetTexCoord(left, right, top, bottom)
-	end 
-
-		-- Forcing an update to adjust the prediction texture.
+	-- Forcing an update to adjust the prediction texture.
 	-- This might be at a tiny, tiny performance cost, 
 	-- but this whole function is only ever called when 
 	-- the Health bar's texcoords are manually changed. 
@@ -344,11 +324,8 @@ local Update = function(self, event, unit)
 
 		-- Hide all extra elements, they have no meaning when dead or disconnected. 
 		health.Preview:Hide()
-
-		if (not IS_CLASSIC) then 
-			health.Predict:Hide()
-			health.Absorb:Hide()
-		end 
+		health.Predict:Hide()
+		health.Absorb:Hide()
 
 		-- Allow modules to run their post-updates
 		if health.PostUpdate then 
@@ -384,146 +361,143 @@ local Update = function(self, event, unit)
 	preview:SetMinMaxValues(0, maxHealth, true)
 	preview:SetValue(curHealth, true)
 
-	if (not IS_CLASSIC) then 
-		local hasOverHealAbsorb = false
-		if (allNegativeHeals > allIncomingHeal) then
-			allNegativeHeals = allNegativeHeals - allIncomingHeal
-			allIncomingHeal = 0
-			myIncomingHeal = 0
-	
-			if (curHealth < allNegativeHeals) then
-				hasOverHealAbsorb = true
-				allNegativeHeals = curHealth
-			end
+	local hasOverHealAbsorb = false
+	if (allNegativeHeals > allIncomingHeal) then
+		allNegativeHeals = allNegativeHeals - allIncomingHeal
+		allIncomingHeal = 0
+		myIncomingHeal = 0
+
+		if (curHealth < allNegativeHeals) then
+			hasOverHealAbsorb = true
+			allNegativeHeals = curHealth
+		end
+	else
+		allIncomingHeal = allIncomingHeal - allNegativeHeals
+		allNegativeHeals = 0
+
+		if (curHealth + allIncomingHeal > maxHealth) then
+			allIncomingHeal = maxHealth - curHealth
+		end
+
+		if (allIncomingHeal < myIncomingHeal) then
+			myIncomingHeal = allIncomingHeal
 		else
-			allIncomingHeal = allIncomingHeal - allNegativeHeals
-			allNegativeHeals = 0
-	
-			if (curHealth + allIncomingHeal > maxHealth) then
-				allIncomingHeal = maxHealth - curHealth
+			otherIncomingHeal = allIncomingHeal - myIncomingHeal
+		end
+	end
+
+	local maxAbsorb = health.maxAbsorb or maxAbsorbDisplaySize
+	local hasOverAbsorb = (allAbsorbs > 0) and (curHealth + allIncomingHeal + allAbsorbs >= maxHealth)
+	local absorbDisplay = (allAbsorbs > maxHealth*maxAbsorb) and maxHealth*maxAbsorb or allAbsorbs
+	if (absorbDisplay < maxHealth * (health.absorbThreshold or .1)) then 
+		absorbDisplay = 0
+	end
+
+	absorb:SetMinMaxValues(0, maxHealth) 
+	absorb:SetValue(absorbDisplay, forced) 
+
+	local showPrediction, change
+	if ((allIncomingHeal > 0) or (allNegativeHeals > 0)) then 
+		local startPoint = curHealth/maxHealth
+
+		-- Dev switch to test absorbs with normal healing
+		--allIncomingHeal, allNegativeHeals = allNegativeHeals, allIncomingHeal
+
+		-- Hide predictions if the change is very small, or if the unit is at max health. 
+		change = (allIncomingHeal - allNegativeHeals)/maxHealth
+		if ((curHealth < maxHealth) and (change > (health.predictThreshold or .05))) then 
+			local endPoint = startPoint + change
+
+			-- Crop heal prediction overflows
+			if (endPoint > 1) then 
+				endPoint = 1
+				change = endPoint - startPoint
 			end
-	
-			if (allIncomingHeal < myIncomingHeal) then
-				myIncomingHeal = allIncomingHeal
-			else
-				otherIncomingHeal = allIncomingHeal - myIncomingHeal
+
+			-- Crop heal absorb overflows
+			if (endPoint < 0) then 
+				endPoint = 0
+				change = -startPoint
 			end
-		end
+
+			-- This shouldn't happen, but let's do it anyway. 
+			if (startPoint ~= endPoint) then 
+				showPrediction = true
+			end
+		end 
+
+	end
+
+	if (showPrediction) then 
+		local orientation = preview:GetOrientation()
+		local min,max = preview:GetMinMaxValues()
+		local value = preview:GetValue() / max
+		local previewTexture = preview:GetStatusBarTexture()
+		local previewWidth, previewHeight = preview:GetSize()
+		local left, right, top, bottom = preview:GetTexCoord()
 	
-		local maxAbsorb = health.maxAbsorb or maxAbsorbDisplaySize
-		local hasOverAbsorb = (allAbsorbs > 0) and (curHealth + allIncomingHeal + allAbsorbs >= maxHealth)
-		local absorbDisplay = (allAbsorbs > maxHealth*maxAbsorb) and maxHealth*maxAbsorb or allAbsorbs
-		if (absorbDisplay < maxHealth * (health.absorbThreshold or .1)) then 
-			absorbDisplay = 0
-		end
+		if (orientation == "RIGHT") then 
+			local texValue, texChange = value, change
 	
-		absorb:SetMinMaxValues(0, maxHealth) 
-		absorb:SetValue(absorbDisplay, forced) 
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
 	
-		local showPrediction, change
-		if ((allIncomingHeal > 0) or (allNegativeHeals > 0)) then 
-			local startPoint = curHealth/maxHealth
-	
-			-- Dev switch to test absorbs with normal healing
-			--allIncomingHeal, allNegativeHeals = allNegativeHeals, allIncomingHeal
-	
-			-- Hide predictions if the change is very small, or if the unit is at max health. 
-			change = (allIncomingHeal - allNegativeHeals)/maxHealth
-			if ((curHealth < maxHealth) and (change > (health.predictThreshold or .05))) then 
-				local endPoint = startPoint + change
-	
-				-- Crop heal prediction overflows
-				if (endPoint > 1) then 
-					endPoint = 1
-					change = endPoint - startPoint
-				end
-	
-				-- Crop heal absorb overflows
-				if (endPoint < 0) then 
-					endPoint = 0
-					change = -startPoint
-				end
-	
-				-- This shouldn't happen, but let's do it anyway. 
-				if (startPoint ~= endPoint) then 
-					showPrediction = true
-				end
-			end 
-	
-		end
-	
-		if (showPrediction) then 
-			local orientation = preview:GetOrientation()
-			local min,max = preview:GetMinMaxValues()
-			local value = preview:GetValue() / max
-			local previewTexture = preview:GetStatusBarTexture()
-			local previewWidth, previewHeight = preview:GetSize()
-			local left, right, top, bottom = preview:GetTexCoord()
-		
-			if (orientation == "RIGHT") then 
-				local texValue, texChange = value, change
-		
-				local rangeH, rangeV
-				rangeH = right - left
-				rangeV = bottom - top
-				texChange = change*value
-				texValue = left + value*rangeH
-		
-				if (change > 0) then 
-					predict:ClearAllPoints()
-					predict:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMRIGHT", 0, 0)
-					predict:SetSize(change*previewWidth, previewHeight)
-					predict:SetTexCoord(texValue, texValue + texChange, top, bottom)
-					predict:SetVertexColor(0, .7, 0, .25)
-					predict:Show()
-				elseif (change < 0) then 
-					predict:ClearAllPoints()
-					predict:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMRIGHT", 0, 0)
-					predict:SetSize((-change)*previewWidth, previewHeight)
-					predict:SetTexCoord(texValue + texChange, texValue, top, bottom)
-					predict:SetVertexColor(.5, 0, 0, .75)
-					predict:Show()
-				else 
-					predict:Hide()
-				end 
-		
-			elseif (orientation == "LEFT") then 
-				local texValue, texChange = value, change
-				local rangeH, rangeV
-				rangeH = right - left
-				rangeV = bottom - top
-				texChange = change*value
-				texValue = left + value*rangeH
-		
-				if (change > 0) then 
-					predict:ClearAllPoints()
-					predict:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMLEFT", 0, 0)
-					predict:SetSize(change*previewWidth, previewHeight)
-					predict:SetTexCoord(texValue + texChange, texValue, top, bottom)
-					predict:SetVertexColor(0, .7, 0, .25)
-					predict:Show()
-				elseif (change < 0) then
-					predict:ClearAllPoints()
-					predict:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMLEFT", 0, 0)
-					predict:SetSize((-change)*previewWidth, previewHeight)
-					predict:SetTexCoord(texValue, texValue + texChange, top, bottom)
-					predict:SetVertexColor(.5, 0, 0, .75)
-					predict:Show()
-				else 
-					predict:Hide()
-				end 
-			end 
-	
-			if (not predict:IsShown()) then 
+			if (change > 0) then 
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				predict:SetSize(change*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				predict:SetVertexColor(0, .7, 0, .25)
 				predict:Show()
-			end 
-		else
-			if (predict:IsShown()) then 
+			elseif (change < 0) then 
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMRIGHT", 0, 0)
+				predict:SetSize((-change)*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				predict:SetVertexColor(.5, 0, 0, .75)
+				predict:Show()
+			else 
 				predict:Hide()
 			end 
-		end
-	end 
+	
+		elseif (orientation == "LEFT") then 
+			local texValue, texChange = value, change
+			local rangeH, rangeV
+			rangeH = right - left
+			rangeV = bottom - top
+			texChange = change*value
+			texValue = left + value*rangeH
+	
+			if (change > 0) then 
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMRIGHT", previewTexture, "BOTTOMLEFT", 0, 0)
+				predict:SetSize(change*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue + texChange, texValue, top, bottom)
+				predict:SetVertexColor(0, .7, 0, .25)
+				predict:Show()
+			elseif (change < 0) then
+				predict:ClearAllPoints()
+				predict:SetPoint("BOTTOMLEFT", previewTexture, "BOTTOMLEFT", 0, 0)
+				predict:SetSize((-change)*previewWidth, previewHeight)
+				predict:SetTexCoord(texValue, texValue + texChange, top, bottom)
+				predict:SetVertexColor(.5, 0, 0, .75)
+				predict:Show()
+			else 
+				predict:Hide()
+			end 
+		end 
 
+		if (not predict:IsShown()) then 
+			predict:Show()
+		end 
+	else
+		if (predict:IsShown()) then 
+			predict:Hide()
+		end 
+	end
 
 	if (not health:IsShown()) then 
 		health:Show()
@@ -533,10 +507,8 @@ local Update = function(self, event, unit)
 		preview:Show()
 	end 
 
-	if (not IS_CLASSIC) then 
-		if (not absorb:IsShown()) then 
-			absorb:Show()
-		end 
+	if (not absorb:IsShown()) then 
+		absorb:Show()
 	end 
 
 	if health.PostUpdate then
@@ -583,18 +555,15 @@ local Enable = function(self)
 		-- Color events
 		self:RegisterEvent("UNIT_CONNECTION", Proxy)
 		self:RegisterEvent("UNIT_FACTION", Proxy) 
+		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Proxy)
+		self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", Proxy)
 
-		if (not IS_CLASSIC) then 
-			self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Proxy)
-			self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", Proxy)
+		-- Predict events
+		self:RegisterEvent("UNIT_HEAL_PREDICTION", Proxy)
 
-			-- Predict events
-			self:RegisterEvent("UNIT_HEAL_PREDICTION", Proxy)
-
-			-- Absorb events
-			self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Proxy)
-			self:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", Proxy)
-		end
+		-- Absorb events
+		self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", Proxy)
+		self:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", Proxy)
 
 		if (not health.Preview) then 
 			local preview = health:CreateStatusBar()
@@ -607,24 +576,22 @@ local Enable = function(self)
 			health.Preview = preview
 		end 
 
-		if (not IS_CLASSIC) then 
-			if (not health.Predict) then 
-				local predict = health:CreateTexture()
-				predict._owner = health
-				predict:SetDrawLayer("ARTWORK", 0)
-				health.Predict = predict
-			end 
+		if (not health.Predict) then 
+			local predict = health:CreateTexture()
+			predict._owner = health
+			predict:SetDrawLayer("ARTWORK", 0)
+			health.Predict = predict
+		end 
 
-			if (not health.Absorb) then 
-				local absorb = health:CreateStatusBar()
-				absorb._owner = health
-				absorb:SetAllPoints(health)
-				absorb:SetFrameLevel(health:GetFrameLevel() + 3)
-				absorb:SetSparkTexture(health:GetSparkTexture())
-				absorb:SetStatusBarColor(1, 1, 1)
-				absorb:SetAlpha((string_find(unit, "raid") or string_find(unit, "party")) and .5 or ((unit == "player") or (unit == "target")) and .35 or .25)
-				health.Absorb = absorb
-			end 
+		if (not health.Absorb) then 
+			local absorb = health:CreateStatusBar()
+			absorb._owner = health
+			absorb:SetAllPoints(health)
+			absorb:SetFrameLevel(health:GetFrameLevel() + 3)
+			absorb:SetSparkTexture(health:GetSparkTexture())
+			absorb:SetStatusBarColor(1, 1, 1)
+			absorb:SetAlpha((string_find(unit, "raid") or string_find(unit, "party")) and .5 or ((unit == "player") or (unit == "target")) and .35 or .25)
+			health.Absorb = absorb
 		end 
 
 		--health.PostUpdateSparkTexture = UpdateSparkTexture -- all sparks
@@ -685,5 +652,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Health", Enable, Disable, Proxy, 34)
+	Lib:RegisterElement("Health", Enable, Disable, Proxy, 35)
 end 

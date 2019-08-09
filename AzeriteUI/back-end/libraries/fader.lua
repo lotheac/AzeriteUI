@@ -1,12 +1,7 @@
-local LibFader = CogWheel:Set("LibFader", 16)
+local LibFader = CogWheel:Set("LibFader", 19)
 if (not LibFader) then	
 	return
 end
-
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "LibFader requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
 
 local LibFrame = CogWheel("LibFrame")
 assert(LibFrame, "LibFader requires LibFrame to be loaded.")
@@ -16,7 +11,6 @@ assert(LibEvent, "LibFader requires LibEvent to be loaded.")
 
 LibFrame:Embed(LibFader)
 LibEvent:Embed(LibFader)
-LibClientBuild:Embed(LibFader)
 
 -- Lua API
 local _G = _G
@@ -307,7 +301,7 @@ LibFader.CheckPower = function(self)
 end 
 
 LibFader.CheckVehicle = function(self)
-	if (not IS_CLASSIC) and (UnitInVehicle("player") or HasVehicleActionBar()) then 
+	if (UnitInVehicle("player") or HasVehicleActionBar()) then 
 		Data.inVehicle = true
 		return 
 	end 
@@ -315,7 +309,7 @@ LibFader.CheckVehicle = function(self)
 end 
 
 LibFader.CheckOverride = function(self)
-	if (not IS_CLASSIC) and (HasOverrideActionBar() or HasTempShapeshiftActionBar()) then 
+	if (HasOverrideActionBar() or HasTempShapeshiftActionBar()) then 
 		Data.hasOverride = true
 		return 
 	end 
@@ -323,7 +317,7 @@ LibFader.CheckOverride = function(self)
 end 
 
 LibFader.CheckPossess = function(self)
-	if (not IS_CLASSIC) and (sPossessBarVisible()) then 
+	if (IsPossessBarVisible()) then 
 		Data.hasPossess = true
 		return 
 	end 
@@ -528,23 +522,20 @@ for target in pairs(LibFader.embeds) do
 	LibFader:Embed(target)
 end
 
-LibFader:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
+LibFader:RegisterEvent("GROUP_ROSTER_UPDATE", "OnEvent") 
 LibFader:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+LibFader:RegisterEvent("PLAYER_FOCUS_CHANGED", "OnEvent") 
 LibFader:RegisterEvent("PLAYER_REGEN_DISABLED", "OnEvent") 
 LibFader:RegisterEvent("PLAYER_REGEN_ENABLED", "OnEvent") 
 LibFader:RegisterEvent("PLAYER_TARGET_CHANGED", "OnEvent") 
-LibFader:RegisterEvent("GROUP_ROSTER_UPDATE", "OnEvent") 
+LibFader:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "OnEvent") 
+LibFader:RegisterEvent("UPDATE_POSSESS_BAR", "OnEvent") 
+LibFader:RegisterEvent("ZONE_CHANGED_NEW_AREA", "OnEvent")
 LibFader:RegisterUnitEvent("UNIT_AURA", "OnEvent", "player")
+LibFader:RegisterUnitEvent("UNIT_DISPLAYPOWER", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_ENTERING_VEHICLE", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "OnEvent", "player") 
+LibFader:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "OnEvent", "player") 
 LibFader:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "OnEvent", "player") 
 LibFader:RegisterUnitEvent("UNIT_POWER_FREQUENT", "OnEvent", "player") 
-LibFader:RegisterUnitEvent("UNIT_DISPLAYPOWER", "OnEvent", "player") 
-
-if (not IS_CLASSIC) then 
-	LibFader:RegisterEvent("PLAYER_FOCUS_CHANGED", "OnEvent") 
-	LibFader:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "OnEvent") 
-	LibFader:RegisterEvent("UPDATE_POSSESS_BAR", "OnEvent") 
-	LibFader:RegisterUnitEvent("UNIT_ENTERING_VEHICLE", "OnEvent", "player") 
-	LibFader:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "OnEvent", "player") 
-	LibFader:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "OnEvent", "player") 
-	LibFader:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "OnEvent", "player") 
-end 

@@ -1,13 +1,4 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-if IS_CLASSIC then 
-	return 
-end 
-
 local ADDON = ...
-
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
 	return 

@@ -1,11 +1,3 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-if IS_CLASSIC then 
-	return 
-end 
-
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -210,5 +202,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("Reputation", Enable, Disable, Proxy, 6)
+	Lib:RegisterElement("Reputation", Enable, Disable, Proxy, 7)
 end 

@@ -1,8 +1,3 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-
 local ADDON = ...
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
@@ -175,7 +170,7 @@ local Toggle_UpdateTooltip = function(toggle)
 
 	local hasXP = Module.PlayerHasXP()
 	local hasRep = Module.PlayerHasRep()
-	local hasAP = (not IS_CLASSIC) and FindActiveAzeriteItem()
+	local hasAP = FindActiveAzeriteItem()
 
 	local NC = "|r"
 	local colors = toggle._owner.colors 
@@ -592,10 +587,7 @@ local Time_UpdateTooltip = function(self)
 	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_LOCALTIME, string_format(getTimeStrings(lh, lm, lsuffix, useStandardTime)), rh, gh, bh, r, g, b)
 	tooltip:AddDoubleLine(TIMEMANAGER_TOOLTIP_REALMTIME, string_format(getTimeStrings(sh, sm, ssuffix, useStandardTime)), rh, gh, bh, r, g, b)
 	tooltip:AddLine(" ")
-
-	if (not IS_CLASSIC) then 
-		tooltip:AddLine(L["%s to toggle calendar."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
-	end
+	tooltip:AddLine(L["%s to toggle calendar."]:format(green..L["<Left-Click>"]..NC), rh, gh, bh)
 
 	if useServerTime then 
 		tooltip:AddLine(L["%s to use local computer time."]:format(green..L["<Middle-Click>"]..NC), rh, gh, bh)
@@ -1365,7 +1357,7 @@ Module.UpdateBars = function(self, event, ...)
 	-- Priority us currently xp > rep > ap
 	local hasRep = Module.PlayerHasRep()
 	local hasXP = Module.PlayerHasXP()
-	local hasAP = (not IS_CLASSIC) and FindActiveAzeriteItem()
+	local hasAP = FindActiveAzeriteItem()
 
 	-- Will include choices later on
 	local first, second 
@@ -1605,11 +1597,9 @@ Module.OnEnable = function(self)
 	self:RegisterEvent("VARIABLES_LOADED", "OnEvent") -- size and mask must be updated after this
 
 	if Layout.UseStatusRings then 
-		if (not IS_CLASSIC) then 
-			self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
-			self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
-			self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
-		end 
+		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "OnEvent") -- Bar count updates
+		self:RegisterEvent("DISABLE_XP_GAIN", "OnEvent")
+		self:RegisterEvent("ENABLE_XP_GAIN", "OnEvent")
 		self:RegisterEvent("PLAYER_ALIVE", "OnEvent")
 		self:RegisterEvent("PLAYER_FLAGS_CHANGED", "OnEvent")
 		self:RegisterEvent("PLAYER_LEVEL_UP", "OnEvent")

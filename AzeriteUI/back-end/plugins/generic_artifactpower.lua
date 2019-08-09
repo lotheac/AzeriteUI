@@ -1,16 +1,3 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "UnitHealth requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-if IS_CLASSIC then 
-	return 
-end 
-
--- WoW Client Constants
-if (not LibClientBuild:IsBuild("8.0.1")) then 
-	return 
-end 
-
 -- Lua API
 local _G = _G
 local math_floor = math.floor
@@ -20,9 +7,9 @@ local tostring = tostring
 
 -- WoW API
 local Item = _G.Item
-local FindActiveAzeriteItem = _G.C_AzeriteItem and _G.C_AzeriteItem.FindActiveAzeriteItem
-local GetAzeriteItemXPInfo = _G.C_AzeriteItem and _G.C_AzeriteItem.GetAzeriteItemXPInfo
-local GetPowerLevel = _G.C_AzeriteItem and _G.C_AzeriteItem.GetPowerLevel
+local FindActiveAzeriteItem = _G.C_AzeriteItem.FindActiveAzeriteItem
+local GetAzeriteItemXPInfo = _G.C_AzeriteItem.GetAzeriteItemXPInfo
+local GetPowerLevel = _G.C_AzeriteItem.GetPowerLevel
 
 local short = function(value)
 	value = tonumber(value)
@@ -166,11 +153,6 @@ end
 local Enable = function(self)
 	local element = self.ArtifactPower
 	if element then
-		if IS_CLASSIC then 
-			element:Hide()
-			return 
-		else 
-		end 
 		element._owner = self
 		element.ForceUpdate = ForceUpdate
 		element.UpdateValue = UpdateValue
@@ -188,18 +170,16 @@ end
 local Disable = function(self)
 	local element = self.ArtifactPower
 	if element then
-		if (not IS_CLASSIC) then 
-			self:UnregisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", Proxy)
-			self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
-			self:UnregisterEvent("PLAYER_LOGIN", Proxy)
-			self:UnregisterEvent("PLAYER_ALIVE", Proxy)
-			self:UnregisterEvent("CVAR_UPDATE", Proxy)
-		end 
+		self:UnregisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", Proxy)
+		self:UnregisterEvent("PLAYER_ENTERING_WORLD", Proxy)
+		self:UnregisterEvent("PLAYER_LOGIN", Proxy)
+		self:UnregisterEvent("PLAYER_ALIVE", Proxy)
+		self:UnregisterEvent("CVAR_UPDATE", Proxy)
 		element:Hide()
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)), (CogWheel("LibMinimap", true)) }) do 
-	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 14)
+	Lib:RegisterElement("ArtifactPower", Enable, Disable, Proxy, 15)
 end 

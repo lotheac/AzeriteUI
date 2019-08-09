@@ -1,12 +1,8 @@
-local LibClientBuild = CogWheel("LibClientBuild")
-assert(LibClientBuild, "ClassPower requires LibClientBuild to be loaded.")
-
-local IS_CLASSIC = LibClientBuild:IsClassic()
-
 -- Lua API
 local _G = _G
 local math_floor = math.floor
 local pairs = pairs
+local string_format = string.format
 local tonumber = tonumber
 local tostring = tostring
 local unpack = unpack
@@ -133,7 +129,7 @@ local Update = function(self, event, unit)
 	local element = self.Power
 	local powerID, powerType, isAlternate
 
-	if (not IS_CLASSIC) and element.showAlternate then 
+	if element.showAlternate then 
 		local barType, minPower, startInset, endInset, smooth, hideFromOthers, showOnRaid, opaqueSpark, opaqueFlash, anchorTop, powerName, powerTooltip = UnitAlternatePowerInfo(unit)
 
 		if (barType and (event ~= "UNIT_POWER_BAR_HIDE")) then 
@@ -251,8 +247,6 @@ end
 local Disable = function(self)
 	local element = self.Power
 	if element then
-		element:Hide()
-
 		self:UnregisterEvent("UNIT_POWER_FREQUENT", Proxy)
 		self:UnregisterEvent("UNIT_POWER_UPDATE", Proxy)
 		self:UnregisterEvent("UNIT_POWER_BAR_SHOW", Proxy)
@@ -261,11 +255,11 @@ local Disable = function(self)
 		self:UnregisterEvent("UNIT_CONNECTION", Proxy)
 		self:UnregisterEvent("UNIT_MAXPOWER", Proxy)
 		self:UnregisterEvent("UNIT_FACTION", Proxy)
-
+		element:Hide()
 	end
 end 
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Power", Enable, Disable, Proxy, 13)
+	Lib:RegisterElement("Power", Enable, Disable, Proxy, 14)
 end 
