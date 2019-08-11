@@ -183,8 +183,9 @@ Module.CreatePointHook = function(self, object)
 
 	-- Don't create multiple hooks
 	if (not StyleCache[object]) then 
-		hooksecurefunc(object, "SetPoint", ResetPoint)
+		hooksecurefunc(object, "SetPoint",ResetPoint)
 	end
+	StyleCache[object] = true
 end 
 
 Module.DisableMappy = function(object)
@@ -236,9 +237,7 @@ Module.StyleAlertFrames = function(self)
 		hooksecurefunc(alertFrame, "UpdateAnchors", AlertFrame_PostUpdateAnchors)
 		hooksecurefunc("GroupLootContainer_Update", GroupLootContainer_PostUpdate)
 	end
-
 	StyleCache[alertFrame] = true
-
 end
 
 Module.StyleExtraActionButton = function(self)
@@ -459,11 +458,12 @@ Module.StyleZoneAbilityButton = function(self)
 end 
 
 Module.StyleDurabilityFrame = function(self)
-	-- This still breaks in 8.2.0, regardless of our frame library updates. 
-	-- So until further changes have been made, we need it disabled. 
-	if (not Layout.StyleDurabilityFrame) or (self:IsBuild("8.2.0")) then 
+	if (not Layout.StyleDurabilityFrame) then 
 		return 
 	end
+
+	-- Set this already here, to prevent broken SetPoint hooking in 8.2.0 
+	StyleCache[DurabilityFrame] = true 
 
 	self:DisableMappy(DurabilityFrame)
 	self:CreateHolder(DurabilityFrame, unpack(Layout.DurabilityFramePlace))
@@ -565,7 +565,6 @@ Module.StyleTalkingHeadFrame = function(self)
 		frame:HookScript("OnShow", AlertFrame_PostUpdateAnchors)
 		frame:HookScript("OnHide", AlertFrame_PostUpdateAnchors)
 	end
-
 	StyleCache[frame] = true
 end
 
