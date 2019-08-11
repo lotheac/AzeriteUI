@@ -1029,7 +1029,7 @@ local BlizzardFloaterHUD = {
 	Colors = Colors,
 
 	StyleExtraActionButton = true, 
-		ExtraActionButtonFramePlace = { "CENTER", 210 + 27, -60 },
+		ExtraActionButtonFramePlace = { "CENTER", "UICenter", "CENTER", 210 + 27, -60 },
 		ExtraActionButtonPlace = { "CENTER", 0, 0 },
 		ExtraActionButtonSize = { 64, 64 },
 
@@ -1069,7 +1069,7 @@ local BlizzardFloaterHUD = {
 		ExtraActionButtonKillStyleTexture = true, 
 
 	StyleZoneAbilityButton = true, 
-		ZoneAbilityButtonFramePlace = { "CENTER", 210 + 27, -60 },
+		ZoneAbilityButtonFramePlace = { "CENTER", "UICenter", "CENTER", 210 + 27, -60 },
 		ZoneAbilityButtonPlace = { "CENTER", 0, 0 },
 		ZoneAbilityButtonSize = { 64, 64 },
 
@@ -1101,13 +1101,13 @@ local BlizzardFloaterHUD = {
 		ZoneAbilityButtonKillStyleTexture = true, 
 
 	StyleDurabilityFrame = true, 
-		DurabilityFramePlace = { "CENTER", 190, 0 },
+		DurabilityFramePlace = { "CENTER", "UIParent", "CENTER", 190, 0 },
 
 	StyleVehicleSeatIndicator = true, 
-		VehicleSeatIndicatorPlace = { "CENTER", 424, 0 }, 
+		VehicleSeatIndicatorPlace = { "CENTER", "UICenter", "CENTER", 424, 0 }, 
 
 	StyleTalkingHeadFrame = true, 
-		StyleTalkingHeadFramePlace = { "TOP", 0, -(60 + 40) }, 
+		StyleTalkingHeadFramePlace = { "TOP", "UICenter", "TOP", 0, -(60 + 40) }, 
 
 	StyleAlertFrames = true, 
 		AlertFramesPlace = { "TOP", "UICenter", "TOP", 0, -40 }, 
