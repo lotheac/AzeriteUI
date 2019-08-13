@@ -1174,7 +1174,7 @@ LibNamePlate.KillClassClutter810 = function(self)
 		ClassNameplateBarRogueDruidFrame, 
 		ClassNameplateBarPaladinRuneFrame,
 		ClassNameplateBarPaladinFrame, 
-		ClassNameplateBarWindwalkerMonkFrame, 
+		ClassNameplateBarWindwalkerMonkFrame, -- taint?
 		ClassNameplateBrewmasterBarFrame, 
 		ClassNameplateBarChiFrame, 
 		ClassNameplateBarMageFrame, 
