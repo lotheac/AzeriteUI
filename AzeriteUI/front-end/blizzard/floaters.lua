@@ -463,6 +463,7 @@ Module.StyleDurabilityFrame = function(self)
 	end
 
 	-- Set this already here, to prevent broken SetPoint hooking in 8.2.0 
+	--*Note to self: would anchoring relative to the MinimapCluster solve it?
 	StyleCache[DurabilityFrame] = true 
 
 	self:DisableMappy(DurabilityFrame)
@@ -572,9 +573,7 @@ Module.StyleErrorFrame = function(self)
 	if (not Layout.StyleErrorFrame) then 
 		return 
 	end 
-
 	local frame = UIErrorsFrame
-
 	if Layout.ErrorFrameStrata then 
 		frame:SetFrameStrata(Layout.ErrorFrameStrata)
 	end 
@@ -584,13 +583,9 @@ Module.GetFloaterTooltip = function(self)
 	return self:GetTooltip("CG_FloaterTooltip") or self:CreateTooltip("CG_FloaterTooltip")
 end
 
-Module.PreInit = function(self)
-	local PREFIX = Core:GetPrefix()
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[BlizzardFloaterHUD]")
-end 
-
 Module.OnInit = function(self)
 	self.db = self:NewConfig("FloaterHUD", defaults, "global")
+	Layout = CogWheel("LibDB"):GetDatabase(Core:GetPrefix()..":[BlizzardFloaterHUD]")
 
 	local proxy = self:CreateFrame("Frame", nil, "UICenter", "SecureHandlerAttributeTemplate")
 	proxy.UpdateTalkingHead = function(proxy, ...) self:UpdateTalkingHead() end 
