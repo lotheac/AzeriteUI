@@ -765,7 +765,6 @@ local Core = {
 		--ObjectiveTracker = true, 
 		OrderHall = true,
 		PlayerPowerBarAlt = true, 
-		QuestWatchFrame = true, 
 		TotemFrame = true, 
 		Tutorials = true,
 		
@@ -782,8 +781,6 @@ local Core = {
 							or 	CogWheel("LibModule"):IsAddOnEnabled("GladiusEx") ),
 
 		--Warnings = true,
-		WorldMap = true,
-		WorldState = true,
 		ZoneText = true
 	},
 	DisableUIMenuPages = {
