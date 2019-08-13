@@ -555,7 +555,7 @@ Module.StyleTalkingHeadFrame = function(self)
 	-- We do this to prevent alerts from anchoring to this frame when it is shown.
 	local AlertFrame = _G.AlertFrame
 	for index, alertFrameSubSystem in ipairs(AlertFrame.alertFrameSubSystems) do
-		if (alertFrameSubSystem.anchorFrame and (alertFrameSubSystem.anchorFrame == content)) then
+		if (alertFrameSubSystem.anchorFrame and (alertFrameSubSystem.anchorFrame == frame)) then
 			table_remove(AlertFrame.alertFrameSubSystems, index)
 		end
 	end
