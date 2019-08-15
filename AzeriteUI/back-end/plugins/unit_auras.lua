@@ -54,28 +54,6 @@ local formatTime = function(time)
 	end	
 end
 
-local formatTime2 = function(time)
-	if time > DAY then -- more than a day
-		time = time + DAY/2
-		return "%.0f%s", time/DAY - time/DAY%1, "d"
-	elseif time > HOUR then -- more than an hour
-		time = time + HOUR/2
-		return "%.0f%s", time/HOUR - time/HOUR%1, "h"
-	elseif time > MINUTE then -- more than a minute
-		time = time + MINUTE/2
-		return "%.0f%s", time/MINUTE - time/MINUTE%1, "m"
-	elseif time > 10 then -- more than 10 seconds
-		return "%.0f", time - time%1
-	elseif time >= 1 then -- more than 5 seconds
-		return "|cffff8800%.0f|r", time - time%1
-	elseif time > 0 then
-		return "|cffff0000%.0f|r", time*10 - time*10%1
-	else
-		return ""
-	end	
-end
-
-
 -- Aura Button Template
 -----------------------------------------------------
 local Aura = LibFrame:CreateFrame("Button")
