@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 58)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 59)
 if (not LibSecureButton) then	
 	return
 end
@@ -720,6 +720,7 @@ ActionButton.UpdateFlash = function(self)
 			end
 		end 
 	end 
+	self:UpdateCheckedState()
 end 
 
 ActionButton.UpdateFlyout = function(self)
