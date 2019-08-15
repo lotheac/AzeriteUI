@@ -1,4 +1,4 @@
-local LibSecureButton = CogWheel:Set("LibSecureButton", 56)
+local LibSecureButton = CogWheel:Set("LibSecureButton", 57)
 if (not LibSecureButton) then	
 	return
 end
@@ -777,12 +777,26 @@ ActionButton.UpdateGrid = function(self)
 end
 
 ActionButton.UpdateSpellHighlight = function(self)
-	local spellId = self:GetSpellID()
-	if (spellId and IsSpellOverlayed(spellId)) then
-		self.SpellHighlight:Show()
-	else
-		self.SpellHighlight:Hide()
-	end
+	if self.SpellHighlight then 
+		local spellId = self:GetSpellID()
+		if (spellId and IsSpellOverlayed(spellId)) then
+			if (not self.SpellHighlight:IsShown()) then 
+				local model = self.SpellHighlight.Model
+				local w,h = self:GetSize()
+				if (w and h) then 
+					model:SetSize(w*2,h*2)
+					if (not model:IsShown()) then 
+						model:Show()
+					end 
+				else 
+					model:Hide()
+				end 
+				self.SpellHighlight:Show()
+			end 
+		else
+			self.SpellHighlight:Hide()
+		end
+	end 
 end
 
 -- Called when the usable state of the button changes
@@ -1067,11 +1081,13 @@ LibSecureButton.CreateButtonSpellHighlight = function(self, button)
 	local spellHighlight = button:CreateFrame("Frame")
 	spellHighlight:Hide()
 	spellHighlight:SetFrameLevel(button:GetFrameLevel() + 10)
+	button.SpellHighlight = spellHighlight
 
 	local texture = spellHighlight:CreateTexture()
 	texture:SetDrawLayer("ARTWORK", 2)
 	texture:SetAllPoints()
 	texture:SetVertexColor(255/255, 225/255, 125/255, 1)
+	button.SpellHighlight.Texture = texture
 
 	local model = spellHighlight:CreateFrame("PlayerModel")
 	model:Hide()
@@ -1083,27 +1099,6 @@ LibSecureButton.CreateButtonSpellHighlight = function(self, button)
 	model:SetCamDistanceScale(3)
 	model:SetPortraitZoom(0)
 	model:SetPosition(0, 0, 0)
-
-	local sizeFactor = 2 -- 3 is huge
-	local updateSize = function()
-		local w,h = button:GetSize()
-		if (w and h) then 
-			model:SetSize(w*sizeFactor,h*sizeFactor)
-			if (not model:IsShown()) then 
-				model:Show()
-			end 
-		else 
-			model:Hide()
-		end 
-	end
-	updateSize(model)
-
-	hooksecurefunc(button, "SetSize", updateSize)
-	hooksecurefunc(button, "SetWidth", updateSize)
-	hooksecurefunc(button, "SetHeight", updateSize)
-
-	button.SpellHighlight = spellHighlight
-	button.SpellHighlight.Texture = texture
 	button.SpellHighlight.Model = model
 end
 
@@ -1471,13 +1466,10 @@ LibSecureButton.SpawnActionButton = function(self, buttonType, parent, buttonTem
 	Buttons[self][button] = buttonType
 	AllButtons[button] = buttonType
 
-	-- Add any methods from the optional template.
-	-- *we're now allowing modules to overwrite methods.
+	-- Add anything in the optional template.
 	if buttonTemplate then
-		for methodName, func in pairs(buttonTemplate) do
-			if (type(func) == "function") then
-				button[methodName] = func
-			end
+		for key,value in pairs(buttonTemplate) do
+			button[key] = value
 		end
 	end
 	
