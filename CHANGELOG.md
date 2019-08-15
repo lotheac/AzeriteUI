@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.167-Release] 2019-08-15
+### Added 
+- Added a texture to indicate when abilities that fire on the next swing are enabled.
+
+### Changed
+- A lot of code optimization as we transition to the next generation of our layout- and default settings structure.
+- The standard gametooltip should now be scaled as our own tooltips, regardless of the current user interface scale. 
+
+### Fixed
+- Fixed issue #43, where the removal of the nameplate class resource bars could sometimes cause taint when first enabled in combat. 
+- Fixed durability frame repositioning, which has been broken since 8.2.0. 
+
 ## [1.2.166-Release] 2019-08-05
 ### Fixed
 - Fixed an issue where the red "this unit is targeting you" eye wouldn't appear for neutral NPCs. It should now be possible to see that Darkshore Crabs are actually attacking you.
