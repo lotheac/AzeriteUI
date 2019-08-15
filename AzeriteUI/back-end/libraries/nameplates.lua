@@ -1,4 +1,4 @@
-local LibNamePlate = CogWheel:Set("LibNamePlate", 36)
+local LibNamePlate = CogWheel:Set("LibNamePlate", 37)
 if (not LibNamePlate) then	
 	return
 end
@@ -1155,8 +1155,8 @@ LibNamePlate.Enable = function(self)
 	self:RegisterEvent("DISPLAY_SIZE_CHANGED", "OnEvent")
 	self:RegisterEvent("UI_SCALE_CHANGED", "OnEvent")
 
-	-- Kill 8.1.0 added personal resource display clutter
-	self:KillClassClutter810()
+	-- Remove Personal Resource Display clutter
+	self:KillClassClutter()
 
 	-- These we will enforce 
 	self:EnforceConsoleVars()
@@ -1165,40 +1165,18 @@ LibNamePlate.Enable = function(self)
 	self.enabled = true
 end 
 
-LibNamePlate.KillClassClutter810 = function(self)
-	for _,object in pairs({
-		ClassNameplateBarFrame, 
-		ClassNameplateBarShardFrame, 
-		ClassNameplateBarWarlockFrame, 
-		ClassNameplateBarComboPointFrame, 
-		ClassNameplateBarRogueDruidFrame, 
-		ClassNameplateBarPaladinRuneFrame,
-		ClassNameplateBarPaladinFrame, 
-		ClassNameplateBarWindwalkerMonkFrame, -- taint?
-		ClassNameplateBrewmasterBarFrame, 
-		ClassNameplateBarChiFrame, 
-		ClassNameplateBarMageFrame, 
-		ClassNameplateBarArcaneChargeFrame, 
-		ClassNameplateBarDeathKnightRuneButton, 
-		DeathKnightResourceOverlayFrame, 
-
-		ClassNameplateManaBarFrame, 
-		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.Border, 
-		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FeedbackFrame, 
-		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.FullPowerFrame, 
-		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.ManaCostPredictionBar, 
-		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.background, 
-		ClassNameplateManaBarFrame and ClassNameplateManaBarFrame.Texture
-	}) do
-		if object then 
-			object:ClearAllPoints()
-			object:SetParent(uiHider)
-			hooksecurefunc(object, "SetParent", function(self, parent) 
-				if (parent ~= uiHider) then 
-					self:SetParent(uiHider)
-				end 
-			end)
-		end 
+LibNamePlate.KillClassClutter = function(self)
+	if NamePlateDriverFrame then
+		DeathKnightResourceOverlayFrame:UnregisterAllEvents()
+		ClassNameplateBarMageFrame:UnregisterAllEvents()
+		ClassNameplateBarWindwalkerMonkFrame:UnregisterAllEvents()
+		ClassNameplateBarPaladinFrame:UnregisterAllEvents()
+		ClassNameplateBarRogueDruidFrame:UnregisterAllEvents()
+		ClassNameplateBarWarlockFrame:UnregisterAllEvents()
+		ClassNameplateManaBarFrame:UnregisterAllEvents()
+		ClassNameplateBrewmasterBarFrame:UnregisterAllEvents()
+		NamePlateDriverFrame:SetClassNameplateManaBar(nil)
+		NamePlateDriverFrame:SetClassNameplateBar(nil)
 	end
 end 
 
