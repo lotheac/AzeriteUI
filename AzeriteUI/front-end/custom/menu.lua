@@ -883,52 +883,47 @@ Module.CreateMenuTable = function(self)
 	end
 		
 	-- Nameplates
-	local NamePlateMenu = {
-		title = L["NamePlates"], type = nil, hasWindow = true, 
-		buttons = {
-		}
-	}
-
-	-- Nameplate aura settings. Only for our own nameplates. 
 	local NamePlates = Core:GetModule("NamePlates", true)
 	if NamePlates and not(NamePlates:IsIncompatible() or NamePlates:DependencyFailed()) then 
-		table_insert(NamePlateMenu.buttons, {
-			enabledTitle = L_ENABLED:format(L["Auras"]),
-			disabledTitle = L_DISABLED:format(L["Auras"]),
-			type = "TOGGLE_VALUE", 
-			configDB = "NamePlates", configKey = "enableAuras", 
-			proxyModule = "NamePlates"
+		table_insert(MenuTable, {
+			title = L["NamePlates"], type = nil, hasWindow = true, 
+			buttons = {
+				{
+					enabledTitle = L_ENABLED:format(L["Auras"]),
+					disabledTitle = L_DISABLED:format(L["Auras"]),
+					type = "TOGGLE_VALUE", 
+					configDB = "NamePlates", configKey = "enableAuras", 
+					proxyModule = "NamePlates"
+				},
+				{
+					title = MAKE_UNINTERACTABLE, type = nil, hasWindow = true, 
+					buttons = {
+						{
+							enabledTitle = L_ENABLED:format(L["Player"]),
+							disabledTitle = L_DISABLED:format(L["Player"]),
+							type = "TOGGLE_VALUE", 
+							configDB = "NamePlates", configKey = "clickThroughSelf", 
+							proxyModule = "NamePlates"
+						},
+						{
+							enabledTitle = L_ENABLED:format(L["Enemies"]),
+							disabledTitle = L_DISABLED:format(L["Enemies"]),
+							type = "TOGGLE_VALUE", 
+							configDB = "NamePlates", configKey = "clickThroughEnemies", 
+							proxyModule = "NamePlates"
+						},
+						{
+							enabledTitle = L_ENABLED:format(L["Friends"]),
+							disabledTitle = L_DISABLED:format(L["Friends"]),
+							type = "TOGGLE_VALUE", 
+							configDB = "NamePlates", configKey = "clickThroughFriends", 
+							proxyModule = "NamePlates"
+						}
+					}
+				}
+			}
 		})
 	end
-
-	-- Nameplate click-through settings. We always want these.
-	table_insert(NamePlateMenu.buttons, {
-		title = MAKE_UNINTERACTABLE, type = nil, hasWindow = true, 
-		buttons = {
-			{
-				enabledTitle = L_ENABLED:format(L["Player"]),
-				disabledTitle = L_DISABLED:format(L["Player"]),
-				type = "TOGGLE_VALUE", 
-				configDB = "NamePlates", configKey = "clickThroughSelf", 
-				proxyModule = "NamePlates"
-			},
-			{
-				enabledTitle = L_ENABLED:format(L["Enemies"]),
-				disabledTitle = L_DISABLED:format(L["Enemies"]),
-				type = "TOGGLE_VALUE", 
-				configDB = "NamePlates", configKey = "clickThroughEnemies", 
-				proxyModule = "NamePlates"
-			},
-			{
-				enabledTitle = L_ENABLED:format(L["Friends"]),
-				disabledTitle = L_DISABLED:format(L["Friends"]),
-				type = "TOGGLE_VALUE", 
-				configDB = "NamePlates", configKey = "clickThroughFriends", 
-				proxyModule = "NamePlates"
-			}
-		}
-	})
-	table_insert(MenuTable, NamePlateMenu)
 
 	-- Blizzard HUD elements
 	table_insert(MenuTable,	{
