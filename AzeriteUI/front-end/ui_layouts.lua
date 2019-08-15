@@ -499,7 +499,7 @@ Layouts.NamePlates = {
 		nameplateSelectedScale = 1, -- default 1
 
 		-- The max distance to show nameplates.
-		nameplateMaxDistance = 30, -- 20 is classic default(?), 60 is BfA default
+		nameplateMaxDistance = 50, -- 20 is classic default(?), 60 is BfA default
 
 		-- The max distance to show the target nameplate when the target is behind the camera.
 		nameplateTargetBehindMaxDistance = 15, -- default 15

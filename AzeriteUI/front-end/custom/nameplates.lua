@@ -129,9 +129,6 @@ end
 -- but before the library calls its own updates.
 Module.PreUpdateNamePlateOptions = function(self)
 
-	-- local preference
-	SetCVar("nameplateMaxDistance", 50)
-
 	-- If these are enabled the GameTooltip will become protected, 
 	-- and all sort of taints and bugs will occur.
 	-- This happens on specs that can dispel when hovering over nameplate auras.
