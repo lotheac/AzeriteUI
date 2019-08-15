@@ -3,7 +3,7 @@
 -- *will remove this later on and implement it in a safer way
 if not InCombatLockdown() then
 	SetCVar("scriptErrors", 1)
-	SetCVar("taintLog", 1)
+	SetCVar("taintLog", 2)
 end
 
 local Global, Version = "CogWheel", 6
