@@ -808,6 +808,7 @@ Module.SetUpMainFrameDropDown = function(self)
 		UIDropDownMenu_SetWidth(self, 50);
 	end
 
+	--[[
 	local customDropDown = CreateFrame("Frame", "CG_MAIN_DOCK_DROPDOWN", _G.ChatFrame1Tab, "UIDropDownMenuTemplate")
 	--customDropDown:Hide()
 	customDropDown:SetPoint("TOP", -80, -35)
@@ -816,6 +817,7 @@ Module.SetUpMainFrameDropDown = function(self)
 	FCFOptionsDropDown_OnLoad(customDropDown)
 
 	_G.ChatFrame1TabDropDown = customDropDown
+	--]]
 
 	local function FCF_Tab_OnClick(self, button)
 		local chatFrame = _G.ChatFrame1
@@ -824,7 +826,7 @@ Module.SetUpMainFrameDropDown = function(self)
 		if (button == "RightButton") then
 			chatFrame:StopMovingOrSizing()
 			CURRENT_CHAT_FRAME_ID = _G.ChatFrame1:GetID()
-			ToggleDropDownMenu(1, nil, customDropDown, "ChatFrame1Tab", 0, 0)
+			--ToggleDropDownMenu(1, nil, customDropDown, "ChatFrame1Tab", 0, 0)
 			return
 		end
 
