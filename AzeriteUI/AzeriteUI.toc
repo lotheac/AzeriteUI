@@ -47,7 +47,11 @@ locale\zhTW.lua
 # Addon specific data tables and methods. 
 front-end\private.lua
 
-# Addon specific layout and design. 
+# Default settings for user configurable options
+front-end\ui_defaults.lua
+
+# User interface layout data
+front-end\ui_layouts.lua
 front-end\stylesheet.lua
 
 # Main addon module, 
