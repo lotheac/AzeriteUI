@@ -1,4 +1,4 @@
-local LibBlizzard = CogWheel:Set("LibBlizzard", 27)
+local LibBlizzard = CogWheel:Set("LibBlizzard", 28)
 if (not LibBlizzard) then 
 	return
 end
@@ -245,7 +245,6 @@ UIWidgets["ActionBars"] = function(self)
 	for slot = 0,3 do
 		_G["CharacterBag"..slot.."Slot"]:UnregisterEvent("ITEM_PUSH") 
 	end
-	hooksecurefunc("ItemAnim_OnLoad", function(self) self:UnregisterEvent("ITEM_PUSH") end)
 
 	UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
 	UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil
