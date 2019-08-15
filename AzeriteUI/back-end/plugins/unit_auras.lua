@@ -158,14 +158,13 @@ local Aura_SetCooldownTimer = function(button, start, duration)
 end 
 
 local Aura_UpdateTimer = function(button, elapsed)
-	if button.timeLeft then
+	if button.Time then
 		button.elapsed = (button.elapsed or 0) + elapsed
 		if (button.elapsed >= HZ) then
 			local element = button._owner
 			local timeLeft = button.expirationTime - GetTime()
-		
 			if (timeLeft > 0) then
-				if (button.showDurations) and ((timeLeft < LONG_THRESHOLD) or (element.showLongDurations)) then 
+				if (element.showDurations) and ((timeLeft < LONG_THRESHOLD) or (element.showLongDurations)) then 
 					button.Time:SetFormattedText(formatTime(timeLeft))
 				else
 					button.Time:SetText("")
