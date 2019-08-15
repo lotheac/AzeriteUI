@@ -1,11 +1,13 @@
-local ADDON = ...
+local ADDON,Private = ...
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
 	return 
 end
-
 local Module = Core:NewModule("BlizzardInterfaceStyling", "LibEvent", "LibDB", "LibTooltip")
-local Layout, L
+
+-- Addon localization
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
+
 
 -- Lua API
 local _G = _G
@@ -34,6 +36,14 @@ local IsTradeSkillLinked = _G.C_TradeSkillUI.IsTradeSkillLinked
 local PlayerHasToy = _G.PlayerHasToy
 local UseItemByName = _G.UseItemByName
  
+-- Private addon API
+local GetConfig = Private.GetConfig
+local GetDefaults = Private.GetDefaults
+local GetLayout = Private.GetLayout
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
+
 -- Current player level
 local LEVEL = UnitLevel("player") 
 
@@ -307,12 +317,6 @@ Module.StartUp = function(self)
 	self:RegisterEvent("TRADE_SHOW", "OnEvent")
 	self:RegisterEvent("SKILL_LINES_CHANGED", "OnEvent")
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED", "OnEvent")
-end
-
-Module.PreInit = function(self)
-	local PREFIX = Core:GetPrefix()
-	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[ActionBarMain]")
 end
 
 Module.OnInit = function(self)

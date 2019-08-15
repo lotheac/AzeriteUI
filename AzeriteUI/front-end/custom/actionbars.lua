@@ -1,13 +1,12 @@
-local ADDON = ...
+local ADDON, Private = ...
 local Core = CogWheel("LibModule"):GetModule(ADDON)
 if (not Core) then 
 	return 
 end
-
--- Note that there's still a lot of hardcoded things in this file, 
--- and it will eventually be changed to be fully Layout driven. 
-local Layout, L
 local Module = Core:NewModule("ActionBarMain", "LibEvent", "LibMessage", "LibDB", "LibFrame", "LibSound", "LibTooltip", "LibSecureButton", "LibWidgetContainer", "LibPlayerData")
+
+-- Addon localization
+local L = CogWheel("LibLocale"):GetLocale(ADDON)
 
 -- Lua API
 local _G = _G
@@ -19,15 +18,23 @@ local tonumber = tonumber
 local tostring = tostring
 
 -- WoW API
-local FindActiveAzeriteItem = _G.C_AzeriteItem and _G.C_AzeriteItem.FindActiveAzeriteItem
-local GetAzeriteItemXPInfo = _G.C_AzeriteItem and _G.C_AzeriteItem.GetAzeriteItemXPInfo
-local GetPowerLevel = _G.C_AzeriteItem and _G.C_AzeriteItem.GetPowerLevel
-local InCombatLockdown = _G.InCombatLockdown
-local IsMounted = _G.IsMounted
-local TaxiRequestEarlyLanding = _G.TaxiRequestEarlyLanding
-local UnitLevel = _G.UnitLevel
-local UnitOnTaxi = _G.UnitOnTaxi
-local UnitRace = _G.UnitRace
+local FindActiveAzeriteItem = C_AzeriteItem.FindActiveAzeriteItem
+local GetAzeriteItemXPInfo = C_AzeriteItem.GetAzeriteItemXPInfo
+local GetPowerLevel = C_AzeriteItem.GetPowerLevel
+local InCombatLockdown = InCombatLockdown
+local IsMounted = IsMounted
+local TaxiRequestEarlyLanding = TaxiRequestEarlyLanding
+local UnitLevel = UnitLevel
+local UnitOnTaxi = UnitOnTaxi
+local UnitRace = UnitRace
+
+-- Private addon API
+local GetConfig = Private.GetConfig
+local GetDefaults = Private.GetDefaults
+local GetLayout = Private.GetLayout
+local GetFont = Private.GetFont
+local GetMedia = Private.GetMedia
+local Colors = Private.Colors
 
 -- Blizzard textures for generic styling
 local BLANK_TEXTURE = [[Interface\ChatFrame\ChatFrameBackground]]
@@ -144,39 +151,6 @@ local secureSnippets = {
 		end 
 
 	]=]
-}
-
--- Default settings
--- *Note that changing these have no effect in-game, 
---  as they are only defaults, not current ones. 
-local defaults = {
-
-	-- unlock buttons
-	buttonLock = true, 
-
-	-- Valid range is 0 to 17. anything outside will be limited to this range. 
-	extraButtonsCount = 5, -- default this to a full standard bar, just to make it slightly easier for people
-
-	-- Valid values are 'always','hover','combat'
-	extraButtonsVisibility = "combat", -- defaulting this to combat, so new users can access their full default bar
-
-	-- Whether actions are performed when pressing the button or releasing it
-	castOnDown = true,
-
-	-- TODO! 
-	-- *Options below are not yet implemented!
-
-	-- Modifier keys required to drag spells, 
-	-- if none are selected, buttons aren't locked. 
-	dragRequireAlt = true, 
-	dragRequireCtrl = true, 
-	dragRequireShift = true, 
-
-	petBarEnabled = true, 
-	petBarVisibility = "hover",
-
-	stanceBarEnabled = true, 
-	stanceBarVisibility = "hover"
 }
 
 -- Old removed settings we need to purge from old databases
@@ -339,7 +313,7 @@ local Bars_UpdateTooltip = function(self)
 	local tooltip = self:GetTooltip()
 	local hasXP = Module.PlayerHasXP()
 	local hasAP = FindActiveAzeriteItem()
-	local colors = Layout.Colors
+	local colors = Colors
 
 	local NC = "|r"
 	local rt, gt, bt = unpack(colors.title)
@@ -487,17 +461,16 @@ ActionButton.PostUpdate = function(self)
 end 
 
 ActionButton.PostCreate = function(self, ...)
-
-	self:SetSize(unpack(Layout.ButtonSize))
+	self:SetSize(unpack(self.layout.ButtonSize))
 
 	-- Assign our own global custom colors
-	self.colors = Layout.Colors or self.colors
+	self.colors = Colors or self.colors
 
 	-- Restyle the blizz layers
 	-----------------------------------------------------
-	self.Icon:SetSize(unpack(Layout.IconSize))
+	self.Icon:SetSize(unpack(self.layout.IconSize))
 	self.Icon:ClearAllPoints()
-	self.Icon:SetPoint(unpack(Layout.IconPlace))
+	self.Icon:SetPoint(unpack(self.layout.IconPlace))
 
 	-- If SetTexture hasn't been called, the mask and probably texcoords won't stick. 
 	-- This started happening in build 8.1.0.29600 (March 5th, 2019), or at least that's when I noticed.
@@ -508,197 +481,197 @@ ActionButton.PostCreate = function(self, ...)
 	-- and just removed it after the texture has been set up. 
 	--self.Icon:SetTexture("Interface\\Icons\\Ability_pvp_gladiatormedallion")
 
-	if Layout.MaskTexture then 
-		self.Icon:SetMask(Layout.MaskTexture)
-	elseif Layout.IconTexCoord then 
-		self.Icon:SetTexCoord(unpack(Layout.IconTexCoord))
+	if self.layout.MaskTexture then 
+		self.Icon:SetMask(self.layout.MaskTexture)
+	elseif self.layout.IconTexCoord then 
+		self.Icon:SetTexCoord(unpack(self.layout.IconTexCoord))
 	else 
 		self.Icon:SetTexCoord(0, 1, 0, 1)
 	end 
 
-	if Layout.UseSlot then 
-		self.Slot:SetSize(unpack(Layout.SlotSize))
+	if self.layout.UseSlot then 
+		self.Slot:SetSize(unpack(self.layout.SlotSize))
 		self.Slot:ClearAllPoints()
-		self.Slot:SetPoint(unpack(Layout.SlotPlace))
-		self.Slot:SetTexture(Layout.SlotTexture)
-		self.Slot:SetVertexColor(unpack(Layout.SlotColor))
+		self.Slot:SetPoint(unpack(self.layout.SlotPlace))
+		self.Slot:SetTexture(self.layout.SlotTexture)
+		self.Slot:SetVertexColor(unpack(self.layout.SlotColor))
 	end 
 
-	self.Pushed:SetDrawLayer(unpack(Layout.PushedDrawLayer))
-	self.Pushed:SetSize(unpack(Layout.PushedSize))
+	self.Pushed:SetDrawLayer(unpack(self.layout.PushedDrawLayer))
+	self.Pushed:SetSize(unpack(self.layout.PushedSize))
 	self.Pushed:ClearAllPoints()
-	self.Pushed:SetPoint(unpack(Layout.PushedPlace))
-	self.Pushed:SetMask(Layout.MaskTexture)
-	self.Pushed:SetColorTexture(unpack(Layout.PushedColor))
+	self.Pushed:SetPoint(unpack(self.layout.PushedPlace))
+	self.Pushed:SetMask(self.layout.MaskTexture)
+	self.Pushed:SetColorTexture(unpack(self.layout.PushedColor))
 	self:SetPushedTexture(self.Pushed)
-	self:GetPushedTexture():SetBlendMode(Layout.PushedBlendMode)
+	self:GetPushedTexture():SetBlendMode(self.layout.PushedBlendMode)
 		
 	-- We need to put it back in its correct drawlayer, 
 	-- or Blizzard will set it to ARTWORK which can lead 
 	-- to it randomly being drawn behind the icon texture. 
-	self:GetPushedTexture():SetDrawLayer(unpack(Layout.PushedDrawLayer)) 
+	self:GetPushedTexture():SetDrawLayer(unpack(self.layout.PushedDrawLayer)) 
 
 	-- Add a simpler checked texture
 	if self.SetCheckedTexture then
 		self.Checked = self.Checked or self:CreateTexture()
-		self.Checked:SetDrawLayer(unpack(Layout.CheckedDrawLayer))
-		self.Checked:SetSize(unpack(Layout.CheckedSize))
+		self.Checked:SetDrawLayer(unpack(self.layout.CheckedDrawLayer))
+		self.Checked:SetSize(unpack(self.layout.CheckedSize))
 		self.Checked:ClearAllPoints()
-		self.Checked:SetPoint(unpack(Layout.CheckedPlace))
-		self.Checked:SetMask(Layout.MaskTexture)
-		self.Checked:SetColorTexture(unpack(Layout.CheckedColor))
+		self.Checked:SetPoint(unpack(self.layout.CheckedPlace))
+		self.Checked:SetMask(self.layout.MaskTexture)
+		self.Checked:SetColorTexture(unpack(self.layout.CheckedColor))
 		self:SetCheckedTexture(self.Checked)
-		self:GetCheckedTexture():SetBlendMode(Layout.CheckedBlendMode)
+		self:GetCheckedTexture():SetBlendMode(self.layout.CheckedBlendMode)
 	end
 
-	self.Flash:SetDrawLayer(unpack(Layout.FlashDrawLayer))
-	self.Flash:SetSize(unpack(Layout.FlashSize))
+	self.Flash:SetDrawLayer(unpack(self.layout.FlashDrawLayer))
+	self.Flash:SetSize(unpack(self.layout.FlashSize))
 	self.Flash:ClearAllPoints()
-	self.Flash:SetPoint(unpack(Layout.FlashPlace))
-	self.Flash:SetTexture(Layout.FlashTexture)
-	self.Flash:SetVertexColor(unpack(Layout.FlashColor))
-	self.Flash:SetMask(Layout.MaskTexture)
+	self.Flash:SetPoint(unpack(self.layout.FlashPlace))
+	self.Flash:SetTexture(self.layout.FlashTexture)
+	self.Flash:SetVertexColor(unpack(self.layout.FlashColor))
+	self.Flash:SetMask(self.layout.MaskTexture)
 
-	self.Cooldown:SetSize(unpack(Layout.CooldownSize))
+	self.Cooldown:SetSize(unpack(self.layout.CooldownSize))
 	self.Cooldown:ClearAllPoints()
-	self.Cooldown:SetPoint(unpack(Layout.CooldownPlace))
-	self.Cooldown:SetSwipeTexture(Layout.CooldownSwipeTexture)
-	self.Cooldown:SetSwipeColor(unpack(Layout.CooldownSwipeColor))
-	self.Cooldown:SetDrawSwipe(Layout.ShowCooldownSwipe)
-	self.Cooldown:SetBlingTexture(Layout.CooldownBlingTexture, unpack(Layout.CooldownBlingColor)) 
-	self.Cooldown:SetDrawBling(Layout.ShowCooldownBling)
+	self.Cooldown:SetPoint(unpack(self.layout.CooldownPlace))
+	self.Cooldown:SetSwipeTexture(self.layout.CooldownSwipeTexture)
+	self.Cooldown:SetSwipeColor(unpack(self.layout.CooldownSwipeColor))
+	self.Cooldown:SetDrawSwipe(self.layout.ShowCooldownSwipe)
+	self.Cooldown:SetBlingTexture(self.layout.CooldownBlingTexture, unpack(self.layout.CooldownBlingColor)) 
+	self.Cooldown:SetDrawBling(self.layout.ShowCooldownBling)
 
-	self.ChargeCooldown:SetSize(unpack(Layout.ChargeCooldownSize))
+	self.ChargeCooldown:SetSize(unpack(self.layout.ChargeCooldownSize))
 	self.ChargeCooldown:ClearAllPoints()
-	self.ChargeCooldown:SetPoint(unpack(Layout.ChargeCooldownPlace))
-	self.ChargeCooldown:SetSwipeTexture(Layout.ChargeCooldownSwipeTexture, unpack(Layout.ChargeCooldownSwipeColor))
-	self.ChargeCooldown:SetSwipeColor(unpack(Layout.ChargeCooldownSwipeColor))
-	self.ChargeCooldown:SetBlingTexture(Layout.ChargeCooldownBlingTexture, unpack(Layout.ChargeCooldownBlingColor)) 
-	self.ChargeCooldown:SetDrawSwipe(Layout.ShowChargeCooldownSwipe)
-	self.ChargeCooldown:SetDrawBling(Layout.ShowChargeCooldownBling)
+	self.ChargeCooldown:SetPoint(unpack(self.layout.ChargeCooldownPlace))
+	self.ChargeCooldown:SetSwipeTexture(self.layout.ChargeCooldownSwipeTexture, unpack(self.layout.ChargeCooldownSwipeColor))
+	self.ChargeCooldown:SetSwipeColor(unpack(self.layout.ChargeCooldownSwipeColor))
+	self.ChargeCooldown:SetBlingTexture(self.layout.ChargeCooldownBlingTexture, unpack(self.layout.ChargeCooldownBlingColor)) 
+	self.ChargeCooldown:SetDrawSwipe(self.layout.ShowChargeCooldownSwipe)
+	self.ChargeCooldown:SetDrawBling(self.layout.ShowChargeCooldownBling)
 
 	self.CooldownCount:ClearAllPoints()
-	self.CooldownCount:SetPoint(unpack(Layout.CooldownCountPlace))
-	self.CooldownCount:SetFontObject(Layout.CooldownCountFont)
-	self.CooldownCount:SetJustifyH(Layout.CooldownCountJustifyH)
-	self.CooldownCount:SetJustifyV(Layout.CooldownCountJustifyV)
-	self.CooldownCount:SetShadowOffset(unpack(Layout.CooldownCountShadowOffset))
-	self.CooldownCount:SetShadowColor(unpack(Layout.CooldownCountShadowColor))
-	self.CooldownCount:SetTextColor(unpack(Layout.CooldownCountColor))
+	self.CooldownCount:SetPoint(unpack(self.layout.CooldownCountPlace))
+	self.CooldownCount:SetFontObject(self.layout.CooldownCountFont)
+	self.CooldownCount:SetJustifyH(self.layout.CooldownCountJustifyH)
+	self.CooldownCount:SetJustifyV(self.layout.CooldownCountJustifyV)
+	self.CooldownCount:SetShadowOffset(unpack(self.layout.CooldownCountShadowOffset))
+	self.CooldownCount:SetShadowColor(unpack(self.layout.CooldownCountShadowColor))
+	self.CooldownCount:SetTextColor(unpack(self.layout.CooldownCountColor))
 
 	self.Count:ClearAllPoints()
-	self.Count:SetPoint(unpack(Layout.CountPlace))
-	self.Count:SetFontObject(Layout.CountFont)
-	self.Count:SetJustifyH(Layout.CountJustifyH)
-	self.Count:SetJustifyV(Layout.CountJustifyV)
-	self.Count:SetShadowOffset(unpack(Layout.CountShadowOffset))
-	self.Count:SetShadowColor(unpack(Layout.CountShadowColor))
-	self.Count:SetTextColor(unpack(Layout.CountColor))
+	self.Count:SetPoint(unpack(self.layout.CountPlace))
+	self.Count:SetFontObject(self.layout.CountFont)
+	self.Count:SetJustifyH(self.layout.CountJustifyH)
+	self.Count:SetJustifyV(self.layout.CountJustifyV)
+	self.Count:SetShadowOffset(unpack(self.layout.CountShadowOffset))
+	self.Count:SetShadowColor(unpack(self.layout.CountShadowColor))
+	self.Count:SetTextColor(unpack(self.layout.CountColor))
 
-	if Layout.CountMaxDisplayed then 
-		self.maxDisplayCount = Layout.CountMaxDisplayed
+	if self.layout.CountMaxDisplayed then 
+		self.maxDisplayCount = self.layout.CountMaxDisplayed
 	end
 
-	if Layout.CountPostUpdate then 
-		self.PostUpdateCount = Layout.CountPostUpdate
+	if self.layout.CountPostUpdate then 
+		self.PostUpdateCount = self.layout.CountPostUpdate
 	end
 
 	self.Keybind:ClearAllPoints()
-	self.Keybind:SetPoint(unpack(Layout.KeybindPlace))
-	self.Keybind:SetFontObject(Layout.KeybindFont)
-	self.Keybind:SetJustifyH(Layout.KeybindJustifyH)
-	self.Keybind:SetJustifyV(Layout.KeybindJustifyV)
-	self.Keybind:SetShadowOffset(unpack(Layout.KeybindShadowOffset))
-	self.Keybind:SetShadowColor(unpack(Layout.KeybindShadowColor))
-	self.Keybind:SetTextColor(unpack(Layout.KeybindColor))
+	self.Keybind:SetPoint(unpack(self.layout.KeybindPlace))
+	self.Keybind:SetFontObject(self.layout.KeybindFont)
+	self.Keybind:SetJustifyH(self.layout.KeybindJustifyH)
+	self.Keybind:SetJustifyV(self.layout.KeybindJustifyV)
+	self.Keybind:SetShadowOffset(unpack(self.layout.KeybindShadowOffset))
+	self.Keybind:SetShadowColor(unpack(self.layout.KeybindShadowColor))
+	self.Keybind:SetTextColor(unpack(self.layout.KeybindColor))
 
-	if Layout.UseSpellHighlight then 
+	if self.layout.UseSpellHighlight then 
 		self.SpellHighlight:ClearAllPoints()
-		self.SpellHighlight:SetPoint(unpack(Layout.SpellHighlightPlace))
-		self.SpellHighlight:SetSize(unpack(Layout.SpellHighlightSize))
-		self.SpellHighlight.Texture:SetTexture(Layout.SpellHighlightTexture)
-		self.SpellHighlight.Texture:SetVertexColor(unpack(Layout.SpellHighlightColor))
+		self.SpellHighlight:SetPoint(unpack(self.layout.SpellHighlightPlace))
+		self.SpellHighlight:SetSize(unpack(self.layout.SpellHighlightSize))
+		self.SpellHighlight.Texture:SetTexture(self.layout.SpellHighlightTexture)
+		self.SpellHighlight.Texture:SetVertexColor(unpack(self.layout.SpellHighlightColor))
 	end 
 
-	if Layout.UseSpellAutoCast then 
+	if self.layout.UseSpellAutoCast then 
 		self.SpellAutoCast:ClearAllPoints()
-		self.SpellAutoCast:SetPoint(unpack(Layout.SpellAutoCastPlace))
-		self.SpellAutoCast:SetSize(unpack(Layout.SpellAutoCastSize))
-		self.SpellAutoCast.Ants:SetTexture(Layout.SpellAutoCastAntsTexture)
-		self.SpellAutoCast.Ants:SetVertexColor(unpack(Layout.SpellAutoCastAntsColor))	
-		self.SpellAutoCast.Glow:SetTexture(Layout.SpellAutoCastGlowTexture)
-		self.SpellAutoCast.Glow:SetVertexColor(unpack(Layout.SpellAutoCastGlowColor))	
+		self.SpellAutoCast:SetPoint(unpack(self.layout.SpellAutoCastPlace))
+		self.SpellAutoCast:SetSize(unpack(self.layout.SpellAutoCastSize))
+		self.SpellAutoCast.Ants:SetTexture(self.layout.SpellAutoCastAntsTexture)
+		self.SpellAutoCast.Ants:SetVertexColor(unpack(self.layout.SpellAutoCastAntsColor))	
+		self.SpellAutoCast.Glow:SetTexture(self.layout.SpellAutoCastGlowTexture)
+		self.SpellAutoCast.Glow:SetVertexColor(unpack(self.layout.SpellAutoCastGlowColor))	
 	end 
 
-	if Layout.UseBackdropTexture then 
+	if self.layout.UseBackdropTexture then 
 		self.Backdrop = self:CreateTexture()
-		self.Backdrop:SetSize(unpack(Layout.BackdropSize))
-		self.Backdrop:SetPoint(unpack(Layout.BackdropPlace))
-		self.Backdrop:SetDrawLayer(unpack(Layout.BackdropDrawLayer))
-		self.Backdrop:SetTexture(Layout.BackdropTexture)
+		self.Backdrop:SetSize(unpack(self.layout.BackdropSize))
+		self.Backdrop:SetPoint(unpack(self.layout.BackdropPlace))
+		self.Backdrop:SetDrawLayer(unpack(self.layout.BackdropDrawLayer))
+		self.Backdrop:SetTexture(self.layout.BackdropTexture)
 	end 
 
 	self.Darken = self:CreateTexture()
 	self.Darken:SetDrawLayer("BACKGROUND", 3)
-	self.Darken:SetSize(unpack(Layout.IconSize))
+	self.Darken:SetSize(unpack(self.layout.IconSize))
 	self.Darken:SetAllPoints(self.Icon)
-	self.Darken:SetMask(Layout.MaskTexture)
+	self.Darken:SetMask(self.layout.MaskTexture)
 	self.Darken:SetTexture(BLANK_TEXTURE)
 	self.Darken:SetVertexColor(0, 0, 0)
 	self.Darken.highlight = 0
 	self.Darken.normal = .35
 
-	if Layout.UseIconShade then 
+	if self.layout.UseIconShade then 
 		self.Shade = self:CreateTexture()
 		self.Shade:SetSize(self.Icon:GetSize())
 		self.Shade:SetAllPoints(self.Icon)
-		self.Shade:SetDrawLayer(unpack(Layout.IconShadeDrawLayer))
-		self.Shade:SetTexture(Layout.IconShadeTexture)
+		self.Shade:SetDrawLayer(unpack(self.layout.IconShadeDrawLayer))
+		self.Shade:SetTexture(self.layout.IconShadeTexture)
 	end 
 
-	if Layout.UseBorderBackdrop or Layout.UseBorderTexture then 
+	if self.layout.UseBorderBackdrop or self.layout.UseBorderTexture then 
 
 		self.BorderFrame = self:CreateFrame("Frame")
 		self.BorderFrame:SetFrameLevel(self:GetFrameLevel() + 5)
 		self.BorderFrame:SetAllPoints(self)
 
-		if Layout.UseBorderBackdrop then 
-			self.BorderFrame:Place(unpack(Layout.BorderFramePlace))
-			self.BorderFrame:SetSize(unpack(Layout.BorderFrameSize))
-			self.BorderFrame:SetBackdrop(Layout.BorderFrameBackdrop)
-			self.BorderFrame:SetBackdropColor(unpack(Layout.BorderFrameBackdropColor))
-			self.BorderFrame:SetBackdropBorderColor(unpack(Layout.BorderFrameBackdropBorderColor))
+		if self.layout.UseBorderBackdrop then 
+			self.BorderFrame:Place(unpack(self.layout.BorderFramePlace))
+			self.BorderFrame:SetSize(unpack(self.layout.BorderFrameSize))
+			self.BorderFrame:SetBackdrop(self.layout.BorderFrameBackdrop)
+			self.BorderFrame:SetBackdropColor(unpack(self.layout.BorderFrameBackdropColor))
+			self.BorderFrame:SetBackdropBorderColor(unpack(self.layout.BorderFrameBackdropBorderColor))
 		end
 
-		if Layout.UseBorderTexture then 
+		if self.layout.UseBorderTexture then 
 			self.Border = self.BorderFrame:CreateTexture()
-			self.Border:SetPoint(unpack(Layout.BorderPlace))
-			self.Border:SetDrawLayer(unpack(Layout.BorderDrawLayer))
-			self.Border:SetSize(unpack(Layout.BorderSize))
-			self.Border:SetTexture(Layout.BorderTexture)
-			self.Border:SetVertexColor(unpack(Layout.BorderColor))
+			self.Border:SetPoint(unpack(self.layout.BorderPlace))
+			self.Border:SetDrawLayer(unpack(self.layout.BorderDrawLayer))
+			self.Border:SetSize(unpack(self.layout.BorderSize))
+			self.Border:SetTexture(self.layout.BorderTexture)
+			self.Border:SetVertexColor(unpack(self.layout.BorderColor))
 		end 
 	end
 
-	if Layout.UseGlow then 
+	if self.layout.UseGlow then 
 		self.Glow = self.Overlay:CreateTexture()
-		self.Glow:SetDrawLayer(unpack(Layout.GlowDrawLayer))
-		self.Glow:SetSize(unpack(Layout.GlowSize))
-		self.Glow:SetPoint(unpack(Layout.GlowPlace))
-		self.Glow:SetTexture(Layout.GlowTexture)
-		self.Glow:SetVertexColor(unpack(Layout.GlowColor))
-		self.Glow:SetBlendMode(Layout.GlowBlendMode)
+		self.Glow:SetDrawLayer(unpack(self.layout.GlowDrawLayer))
+		self.Glow:SetSize(unpack(self.layout.GlowSize))
+		self.Glow:SetPoint(unpack(self.layout.GlowPlace))
+		self.Glow:SetTexture(self.layout.GlowTexture)
+		self.Glow:SetVertexColor(unpack(self.layout.GlowColor))
+		self.Glow:SetBlendMode(self.layout.GlowBlendMode)
 		self.Glow:Hide()
 	end 
 
 end 
 
 ActionButton.PostUpdateCooldown = function(self, cooldown)
-	cooldown:SetSwipeColor(unpack(Layout.CooldownSwipeColor))
+	cooldown:SetSwipeColor(unpack(self.layout.CooldownSwipeColor))
 end 
 
 ActionButton.PostUpdateChargeCooldown = function(self, cooldown)
-	cooldown:SetSwipeColor(unpack(Layout.ChargeCooldownSwipeColor))
+	cooldown:SetSwipeColor(unpack(self.layout.ChargeCooldownSwipeColor))
 end
 
 -- Module API
@@ -712,21 +685,21 @@ Module.ArrangeButtons = function(self)
 end
 
 Module.SpawnExitButton = function(self)
-	local colors = Layout.Colors
+	local colors = Colors
 
 	local button = self:CreateFrame("Button", nil, "UICenter", "SecureActionButtonTemplate")
 	button:SetFrameStrata("MEDIUM")
 	button:SetFrameLevel(100)
-	button:Place(unpack(Layout.ExitButtonPlace))
-	button:SetSize(unpack(Layout.ExitButtonSize))
+	button:Place(unpack(self.layout.ExitButtonPlace))
+	button:SetSize(unpack(self.layout.ExitButtonSize))
 	button:SetAttribute("type", "macro")
 	button:SetAttribute("macrotext", "/leavevehicle [target=vehicle,exists,canexitvehicle]\n/dismount [mounted]")
 
 	-- Put our texture on the button
 	button.texture = button:CreateTexture()
-	button.texture:SetSize(unpack(Layout.ExitButtonTextureSize))
-	button.texture:SetPoint(unpack(Layout.ExitButtonTexturePlace))
-	button.texture:SetTexture(Layout.ExitButtonTexturePath)
+	button.texture:SetSize(unpack(self.layout.ExitButtonTextureSize))
+	button.texture:SetPoint(unpack(self.layout.ExitButtonTexturePlace))
+	button.texture:SetTexture(self.layout.ExitButtonTexturePath)
 
 	button:SetScript("OnEnter", function(button)
 		local tooltip = self:GetActionButtonTooltip()
@@ -768,16 +741,24 @@ end
 Module.SpawnButtons = function(self)
 	local db = self.db
 	local proxy = self:GetSecureUpdater()
+
+	-- Private test mode to show all
+	local FORCED = false 
+
+	-- Make sure the button template inherits 
+	-- our layout cache before spawning the buttons. 
+	ActionButton.layout = self.layout
+
+	-- Local caches
 	local buttons, hover = {}, {} 
 
-	local FORCED = false -- Private test mode to show all
-
+	-- Spawn!
 	for id = 1,NUM_ACTIONBAR_BUTTONS do 
 		local id2 = id + NUM_ACTIONBAR_BUTTONS
 		
 		-- Store all buttons
 		buttons[id] = self:SpawnActionButton("action", self.frame, ActionButton, 1, id)
-		buttons[id2] = self:SpawnActionButton("action", self.frame, ActionButton, _G.BOTTOMLEFT_ACTIONBAR_PAGE, id)
+		buttons[id2] = self:SpawnActionButton("action", self.frame, ActionButton, BOTTOMLEFT_ACTIONBAR_PAGE, id)
 
 		-- Store the buttons that have hover options
 		hover[buttons[id]] = id > 7 
@@ -976,7 +957,7 @@ Module.UpdateCastOnDown = function(self)
 end 
 
 Module.UpdateConsolePortBindings = function(self)
-	local CP = _G.ConsolePort
+	local CP = ConsolePort
 	if (not CP) then 
 		return 
 	end 
@@ -993,16 +974,16 @@ Module.UpdateBindings = function(self)
 end
 
 Module.UpdateTooltipSettings = function(self)
-	if (not Layout.UseTooltipSettings) then 
+	if (not self.layout.UseTooltipSettings) then 
 		return 
 	end 
 	local tooltip = self:GetActionButtonTooltip()
-	tooltip.colorNameAsSpellWithUse = Layout.TooltipColorNameAsSpellWithUse
-	tooltip.hideItemLevelWithUse = Layout.TooltipHideItemLevelWithUse
-	tooltip.hideStatsWithUseEffect = Layout.TooltipHideStatsWithUse
-	tooltip.hideBindsWithUseEffect = Layout.TooltipHideBindsWithUse
-	tooltip.hideUniqueWithUseEffect = Layout.TooltipHideUniqueWithUse
-	tooltip.hideEquipTypeWithUseEffect = Layout.TooltipHideEquipTypeWithUse
+	tooltip.colorNameAsSpellWithUse = self.layout.TooltipColorNameAsSpellWithUse
+	tooltip.hideItemLevelWithUse = self.layout.TooltipHideItemLevelWithUse
+	tooltip.hideStatsWithUseEffect = self.layout.TooltipHideStatsWithUse
+	tooltip.hideBindsWithUseEffect = self.layout.TooltipHideBindsWithUse
+	tooltip.hideUniqueWithUseEffect = self.layout.TooltipHideUniqueWithUse
+	tooltip.hideEquipTypeWithUseEffect = self.layout.TooltipHideEquipTypeWithUse
 end 
 
 Module.UpdateSettings = function(self, event, ...)
@@ -1026,7 +1007,7 @@ Module.OnEvent = function(self, event, ...)
 end 
 
 Module.ParseSavedSettings = function(self)
-	local db = self:NewConfig("ActionBars", defaults, "global")
+	local db = GetConfig(self:GetName())
 
 	-- Convert old options to new, if present 
 	local extraButtons
@@ -1086,14 +1067,9 @@ Module.ParseSavedSettings = function(self)
 	return db
 end
 
-Module.PreInit = function(self)
-	local PREFIX = Core:GetPrefix()
-	L = CogWheel("LibLocale"):GetLocale(PREFIX)
-	Layout = CogWheel("LibDB"):GetDatabase(PREFIX..":[ActionBarMain]")
-end
-
 Module.OnInit = function(self)
 	self.db = self:ParseSavedSettings()
+	self.layout = GetLayout(self:GetName())
 	self.frame = self:CreateFrame("Frame", nil, "UICenter")
 
 	local proxy = self:CreateFrame("Frame", nil, parent, "SecureHandlerAttributeTemplate")
@@ -1106,7 +1082,7 @@ Module.OnInit = function(self)
 	end 
 	proxy:Execute([=[ Buttons = table.new(); Pagers = table.new(); ]=])
 	proxy:SetFrameRef("UICenter", self:GetFrame("UICenter"))
-	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", _G.BOTTOMLEFT_ACTIONBAR_PAGE);
+	proxy:SetAttribute("BOTTOMLEFT_ACTIONBAR_PAGE", BOTTOMLEFT_ACTIONBAR_PAGE);
 	proxy:SetAttribute("arrangeButtons", secureSnippets.arrangeButtons)
 	proxy:SetAttribute("_onattributechanged", secureSnippets.attributeChanged)
 	self.proxyUpdater = proxy
@@ -1115,7 +1091,7 @@ Module.OnInit = function(self)
 	self:SpawnButtons()
 
 	-- Spawn the optional Exit button
-	if Layout.UseExitButton then 
+	if self.layout.UseExitButton then 
 		self:SpawnExitButton()
 	end
 

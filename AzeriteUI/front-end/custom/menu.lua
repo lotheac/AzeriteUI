@@ -768,22 +768,22 @@ Module.CreateMenuTable = function(self)
 					buttons = {
 						{
 							title = L["No Extra Buttons"], type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 0 }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsCount", optionArgs = { 0 }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
 							title = L["+%.0f Buttons"]:format(5), type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 5 }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsCount", optionArgs = { 5 }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
 							title = L["+%.0f Buttons"]:format(11), type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 11 }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsCount", optionArgs = { 11 }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
 							title = L["+%.0f Buttons"]:format(17), type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsCount", optionArgs = { 17 }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsCount", optionArgs = { 17 }, 
 							proxyModule = "ActionBarMain"
 						}
 					}
@@ -794,19 +794,19 @@ Module.CreateMenuTable = function(self)
 						{
 							title = L["MouseOver"], 
 							type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsVisibility", optionArgs = { "hover" }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsVisibility", optionArgs = { "hover" }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
 							title = L["MouseOver + Combat"], 
 							type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsVisibility", optionArgs = { "combat" }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsVisibility", optionArgs = { "combat" }, 
 							proxyModule = "ActionBarMain"
 						},
 						{
 							title = L["Always Visible"], 
 							type = "SET_VALUE", 
-							configDB = "ActionBars", configKey = "extraButtonsVisibility", optionArgs = { "always" }, 
+							configDB = "ActionBarMain", configKey = "extraButtonsVisibility", optionArgs = { "always" }, 
 							proxyModule = "ActionBarMain"
 						}
 					}
@@ -815,7 +815,7 @@ Module.CreateMenuTable = function(self)
 					enabledTitle = L_ENABLED:format(L["Cast on Down"]),
 					disabledTitle = L_DISABLED:format(L["Cast on Down"]),
 					type = "TOGGLE_VALUE", hasWindow = false, 
-					configDB = "ActionBars", configKey = "castOnDown", 
+					configDB = "ActionBarMain", configKey = "castOnDown", 
 					proxyModule = "ActionBarMain"
 				}
 			}
@@ -835,99 +835,100 @@ Module.CreateMenuTable = function(self)
 			enabledTitle = L_ENABLED:format(L["Button Lock"]),
 			disabledTitle = L_DISABLED:format(L["Button Lock"]),
 			type = "TOGGLE_VALUE", hasWindow = false, 
-			configDB = "ActionBars", configKey = "buttonLock", 
+			configDB = "ActionBarMain", configKey = "buttonLock", 
 			proxyModule = "ActionBarMain"
 		})
 		table_insert(MenuTable, ActionBarMenu)
 	end
 
 	-- Unitframes
-	local UnitFrameMenu = {
-		title = L["UnitFrames"], type = nil, hasWindow = true, 
+	local UnitFrameParty = Core:GetModule("UnitFrameParty", true)
+	local UnitFrameRaid = Core:GetModule("UnitFrameRaid", true)
+	local UnitFrameArena = Core:GetModule("UnitFrameArena", true)
+	if (UnitFrameParty or UnitFrameRaid or UnitFrameArena) then 
+		local UnitFrameMenu = {
+			title = L["UnitFrames"], type = nil, hasWindow = true, 
+			buttons = {
+				-- Player options
+			}
+		}
+		if UnitFrameParty and not (UnitFrameParty:IsIncompatible() or UnitFrameParty:DependencyFailed()) then 
+			table_insert(UnitFrameMenu.buttons, {
+				enabledTitle = L_ENABLED:format(L["Party Frames"]),
+				disabledTitle = L_DISABLED:format(L["Party Frames"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
+				proxyModule = "UnitFrameParty"
+			})
+		end
+		if UnitFrameRaid and not (UnitFrameRaid:IsIncompatible() or UnitFrameRaid:DependencyFailed()) then 
+			table_insert(UnitFrameMenu.buttons, {
+				enabledTitle = L_ENABLED:format(L["Raid Frames"]),
+				disabledTitle = L_DISABLED:format(L["Raid Frames"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "UnitFrameRaid", configKey = "enableRaidFrames", 
+				proxyModule = "UnitFrameRaid"
+			})
+		end
+		if UnitFrameArena and not (UnitFrameArena:IsIncompatible() or UnitFrameArena:DependencyFailed()) then 
+			table_insert(UnitFrameMenu.buttons, {
+				enabledTitle = L_ENABLED:format(L["PvP Frames"]),
+				disabledTitle = L_DISABLED:format(L["PvP Frames"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
+				proxyModule = "UnitFrameArena"
+			})
+		end
+		table_insert(MenuTable, UnitFrameMenu)
+	end
+		
+	-- Nameplates
+	local NamePlateMenu = {
+		title = L["NamePlates"], type = nil, hasWindow = true, 
 		buttons = {
-			-- Player options
 		}
 	}
 
-	local UnitFrameParty = Core:GetModule("UnitFrameParty", true)
-	if UnitFrameParty and not (UnitFrameParty:IsIncompatible() or UnitFrameParty:DependencyFailed()) then 
-		table_insert(UnitFrameMenu.buttons, {
-			enabledTitle = L_ENABLED:format(L["Party Frames"]),
-			disabledTitle = L_DISABLED:format(L["Party Frames"]),
-			type = "TOGGLE_VALUE", 
-			configDB = "UnitFrameParty", configKey = "enablePartyFrames", 
-			proxyModule = "UnitFrameParty"
-		})
-	end
-
-	local UnitFrameRaid = Core:GetModule("UnitFrameRaid", true)
-	if UnitFrameRaid and not (UnitFrameRaid:IsIncompatible() or UnitFrameRaid:DependencyFailed()) then 
-		table_insert(UnitFrameMenu.buttons, {
-			enabledTitle = L_ENABLED:format(L["Raid Frames"]),
-			disabledTitle = L_DISABLED:format(L["Raid Frames"]),
-			type = "TOGGLE_VALUE", 
-			configDB = "UnitFrameRaid", configKey = "enableRaidFrames", 
-			proxyModule = "UnitFrameRaid"
-		})
-	end
-
-	local UnitFrameArena = Core:GetModule("UnitFrameArena", true)
-	if UnitFrameArena and not (UnitFrameArena:IsIncompatible() or UnitFrameArena:DependencyFailed()) then 
-		table_insert(UnitFrameMenu.buttons, {
-			enabledTitle = L_ENABLED:format(L["PvP Frames"]),
-			disabledTitle = L_DISABLED:format(L["PvP Frames"]),
-			type = "TOGGLE_VALUE", 
-			configDB = "UnitFrameArena", configKey = "enableArenaFrames", 
-			proxyModule = "UnitFrameArena"
-		})
-	end
-	table_insert(MenuTable, UnitFrameMenu)
-		
-
-	-- Nameplates
+	-- Nameplate aura settings. Only for our own nameplates. 
 	local NamePlates = Core:GetModule("NamePlates", true)
-	if NamePlates and not (NamePlates:IsIncompatible() or NamePlates:DependencyFailed()) then 
-		table_insert(MenuTable, {
-			title = L["NamePlates"], type = nil, hasWindow = true, 
-			buttons = {
-				-- Disable player auras
-				{
-					enabledTitle = L_ENABLED:format(L["Auras"]),
-					disabledTitle = L_DISABLED:format(L["Auras"]),
-					type = "TOGGLE_VALUE", 
-					configDB = "NamePlates", configKey = "enableAuras", 
-					proxyModule = "NamePlates"
-				},
-				-- Click-through settings
-				{
-					title = MAKE_UNINTERACTABLE, type = nil, hasWindow = true, 
-					buttons = {
-						{
-							enabledTitle = L_ENABLED:format(L["Player"]),
-							disabledTitle = L_DISABLED:format(L["Player"]),
-							type = "TOGGLE_VALUE", 
-							configDB = "NamePlates", configKey = "clickThroughSelf", 
-							proxyModule = "NamePlates"
-						},
-						{
-							enabledTitle = L_ENABLED:format(L["Enemies"]),
-							disabledTitle = L_DISABLED:format(L["Enemies"]),
-							type = "TOGGLE_VALUE", 
-							configDB = "NamePlates", configKey = "clickThroughEnemies", 
-							proxyModule = "NamePlates"
-						},
-						{
-							enabledTitle = L_ENABLED:format(L["Friends"]),
-							disabledTitle = L_DISABLED:format(L["Friends"]),
-							type = "TOGGLE_VALUE", 
-							configDB = "NamePlates", configKey = "clickThroughFriends", 
-							proxyModule = "NamePlates"
-						}
-					}
-				}
-			}
+	if NamePlates and not(NamePlates:IsIncompatible() or NamePlates:DependencyFailed()) then 
+		table_insert(NamePlateMenu.buttons, {
+			enabledTitle = L_ENABLED:format(L["Auras"]),
+			disabledTitle = L_DISABLED:format(L["Auras"]),
+			type = "TOGGLE_VALUE", 
+			configDB = "NamePlates", configKey = "enableAuras", 
+			proxyModule = "NamePlates"
 		})
-	end 
+	end
+
+	-- Nameplate click-through settings. We always want these.
+	table_insert(NamePlateMenu.buttons, {
+		title = MAKE_UNINTERACTABLE, type = nil, hasWindow = true, 
+		buttons = {
+			{
+				enabledTitle = L_ENABLED:format(L["Player"]),
+				disabledTitle = L_DISABLED:format(L["Player"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "NamePlates", configKey = "clickThroughSelf", 
+				proxyModule = "NamePlates"
+			},
+			{
+				enabledTitle = L_ENABLED:format(L["Enemies"]),
+				disabledTitle = L_DISABLED:format(L["Enemies"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "NamePlates", configKey = "clickThroughEnemies", 
+				proxyModule = "NamePlates"
+			},
+			{
+				enabledTitle = L_ENABLED:format(L["Friends"]),
+				disabledTitle = L_DISABLED:format(L["Friends"]),
+				type = "TOGGLE_VALUE", 
+				configDB = "NamePlates", configKey = "clickThroughFriends", 
+				proxyModule = "NamePlates"
+			}
+		}
+	})
+	table_insert(MenuTable, NamePlateMenu)
 
 	-- Blizzard HUD elements
 	table_insert(MenuTable,	{
