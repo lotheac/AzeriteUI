@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. Be aware th
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.168-Release] 2019-08-15
+### Fixed
+- Fixed the issue introduced in the previous update that caused actionbuttons to appear pressed down all the time.
+
 ## [1.2.167-Release] 2019-08-15
 ### Added 
 - Added a texture to indicate when abilities that fire on the next swing are enabled.
