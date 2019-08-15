@@ -63,7 +63,6 @@ local Aura_OnClick = function(button, buttonPressed, down)
 	if button.OnClick then 
 		return button:OnClick(buttonPressed, down)
 	end 
-
 	-- Only called if no override exists above
 	if (buttonPressed == "RightButton") and (not InCombatLockdown()) then
 		-- Some times an update is run right after the unit has been removed, 
@@ -90,7 +89,6 @@ local Aura_UpdateTooltip = function(button)
 	local tooltip = button:GetTooltip()
 	tooltip:Hide()
 	tooltip:SetMinimumWidth(160)
-
 	local element = button._owner
 	if element.tooltipDefaultPosition then 
 		tooltip:SetDefaultAnchor(button)
@@ -100,7 +98,6 @@ local Aura_UpdateTooltip = function(button)
 	else 
 		tooltip:SetSmartAnchor(button, element.tooltipOffsetX or 10, element.tooltipOffsetY or 10)
 	end 
-
 	if button.isBuff then 
 		tooltip:SetUnitBuff(button.unit, button:GetID(), button.filter)
 	else 
@@ -112,11 +109,9 @@ local Aura_OnEnter = function(button)
 	if button.OnEnter then 
 		return button:OnEnter()
 	end 
-
 	button.isMouseOver = true
 	button.UpdateTooltip = Aura_UpdateTooltip
 	button:UpdateTooltip()
-
 	if button.PostEnter then 
 		return button:PostEnter()
 	end 
@@ -139,13 +134,11 @@ end
 
 local Aura_SetCooldownTimer = function(button, start, duration)
 	if button._owner.showSpirals then
-
 		local cooldown = button.Cooldown
 		cooldown:SetSwipeColor(0, 0, 0, .75)
 		cooldown:SetDrawEdge(false)
 		cooldown:SetDrawBling(false)
 		cooldown:SetDrawSwipe(true)
-
 		if (duration > .5) then
 			cooldown:SetCooldown(start, duration)
 			cooldown:Show()
@@ -789,5 +782,5 @@ end
 
 -- Register it with compatible libraries
 for _,Lib in ipairs({ (CogWheel("LibUnitFrame", true)), (CogWheel("LibNamePlate", true)) }) do 
-	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 43)
+	Lib:RegisterElement("Auras", Enable, Disable, Proxy, 45)
 end 
